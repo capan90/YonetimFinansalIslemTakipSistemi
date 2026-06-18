@@ -1,8 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\YonetimFinansalIslemTakipSistemi.Domain\YonetimFinansalIslemTakipSistemi.Domain.csproj" />
     <ProjectReference Include="..\YonetimFinansalIslemTakipSistemi.Application\YonetimFinansalIslemTakipSistemi.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.*" />
+    <!-- Design paketi yalnızca migration araçları içindir; çalışma zamanında dağıtılmaz. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <PropertyGroup>

@@ -1,0 +1,17 @@
+using Microsoft.EntityFrameworkCore;
+using YonetimFinansalIslemTakipSistemi.Domain.Entities;
+
+namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Persistence;
+
+public class AppDbContext : DbContext
+{
+    public DbSet<CashTransaction> CashTransactions => Set<CashTransaction>();
+
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        // Tüm IEntityTypeConfiguration implementasyonları bu assembly'den otomatik yüklenir
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+    }
+}

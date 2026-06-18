@@ -1,47 +1,47 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
+using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Commands.CreateCashTransaction;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Queries.GetCashTransactions;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Commands.CreateUser;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Commands.DeleteUser;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Commands.UpdateUser;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Queries.GetUsers;
-using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Users;
+using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Infrastructure;
-using YonetimFinansalIslemTakipSistemi.UI.ViewModels.CashTransactions;
 using YonetimFinansalIslemTakipSistemi.Infrastructure.Persistence;
+using YonetimFinansalIslemTakipSistemi.UI.ViewModels.CashTransactions;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Login;
+using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Users;
 
 namespace YonetimFinansalIslemTakipSistemi.UI;
 
 public partial class App : System.Windows.Application
 {
-    /// <summary>
-    /// Uygulama genelinde kullanılabilecek service provider.
-    /// </summary>
     public static IServiceProvider Services { get; private set; } = null!;
 
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
 
-        // Dialog kapandığında app'in otomatik kapanmasını engeller; shutdown bu metotta kontrol edilir.
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-        // Bağlantı bilgisi önce ortam değişkeninden okunur; ayarlanmamışsa yerel varsayılan kullanılır.
         var connectionString = Environment.GetEnvironmentVariable("YONETIM_DB_CONNECTION")
             ?? "Host=localhost;Port=5432;Database=yonetim_db;Username=postgres;Password=postgres123";
 
         var services = new ServiceCollection();
         services.AddInfrastructure(connectionString);
 
-        // Command handler'lar
-        services.AddScoped<CreateCashTransactionHandler>();
+        // Oturum bağlamı — LoginViewModel başarılı girişte Set() çağırır; diğer VM'ler IUserContext okur
+        var userContext = new UserContext();
+        services.AddSingleton(userContext);
+        services.AddSingleton<IUserContext>(userContext);
 
-        // Query handler'lar
+        // CashTransaction handler'lar
+        services.AddScoped<CreateCashTransactionHandler>();
         services.AddScoped<GetCashTransactionsHandler>();
 
-        // User command handler'lar
+        // User handler'lar
         services.AddScoped<CreateUserHandler>();
         services.AddScoped<UpdateUserHandler>();
         services.AddScoped<DeleteUserHandler>();
@@ -50,6 +50,7 @@ public partial class App : System.Windows.Application
         // ViewModels
         services.AddTransient<LoginViewModel>();
         services.AddTransient<CashTransactionListViewModel>();
+        services.AddTransient<CashTransactionFormViewModel>();
         services.AddTransient<UserManagementViewModel>();
         services.AddTransient<UserFormViewModel>();
 

@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.UI.Common;
 
@@ -9,6 +10,7 @@ namespace YonetimFinansalIslemTakipSistemi.UI.ViewModels.Login;
 public class LoginViewModel : INotifyPropertyChanged
 {
     private readonly IAuthenticationService _authService;
+    private readonly UserContext _userContext;
     private string  _userName     = string.Empty;
     private string  _password     = string.Empty;
     private string? _errorMessage;
@@ -39,15 +41,15 @@ public class LoginViewModel : INotifyPropertyChanged
 
     public ICommand LoginCommand { get; }
 
-    public LoginViewModel(IAuthenticationService authService)
+    public LoginViewModel(IAuthenticationService authService, UserContext userContext)
     {
         _authService = authService;
+        _userContext = userContext;
         LoginCommand = new RelayCommand(async () => await ExecuteLoginAsync());
     }
 
     private async Task ExecuteLoginAsync()
     {
-        // Boş alan validasyonu — servis çağrısından önce kontrol edilir.
         if (string.IsNullOrWhiteSpace(UserName))
         {
             ErrorMessage = "Kullanıcı adı boş olamaz.";
@@ -64,9 +66,15 @@ public class LoginViewModel : INotifyPropertyChanged
         var result = await _authService.AuthenticateAsync(UserName, Password);
 
         if (result.Success)
+        {
+            // Oturum bağlamını singleton'a yaz; tüm VM'ler IUserContext üzerinden okur
+            _userContext.Set(result.UserId!.Value, result.FullName!);
             LoginCompleted?.Invoke();
+        }
         else
+        {
             ErrorMessage = result.ErrorMessage;
+        }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

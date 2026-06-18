@@ -64,6 +64,9 @@ public class CreateCashTransactionHandler
         if (request.TransactionDate == default)
             return "İşlem tarihi geçersiz.";
 
+        if (request.TransactionDate.Date > DateTime.Today)
+            return "İşlem tarihi bugünden ileri olamaz.";
+
         if (!Enum.IsDefined(typeof(TransactionType), request.TransactionType))
             return "Geçersiz işlem tipi.";
 

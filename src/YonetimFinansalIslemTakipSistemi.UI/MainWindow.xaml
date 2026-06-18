@@ -17,6 +17,11 @@
 
     <DockPanel Margin="8">
 
+        <!-- Araç çubuğu -->
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+            <Button Content="+ Yeni İşlem" Width="110" Click="NewTransactionButton_Click"/>
+        </StackPanel>
+
         <!-- Filtre Paneli -->
         <GroupBox DockPanel.Dock="Top" Header="Filtrele" Margin="0,0,0,8" Padding="8">
             <WrapPanel Orientation="Horizontal" ItemHeight="30">

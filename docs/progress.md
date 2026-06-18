@@ -7,12 +7,20 @@
 - [x] Domain katmanı: BaseEntity, User, CashTransaction, TransactionType, CurrencyType
 - [x] Application katmanı: ICashTransactionRepository, IUserRepository
 - [x] Application katmanı: CreateCashTransaction use case (Request, Response, Handler, OperationResult)
+- [x] Infrastructure katmanı: AppDbContext (EF Core + Npgsql), CashTransactionRepository, ServiceRegistration
+- [x] EF Core migration: InitialCreate — cash_transactions tablosu PostgreSQL'de oluşturuldu
+- [x] WPF DI composition root: AppDbContext, Repository ve Handler App.xaml.cs'te bağlandı
+- [x] Uçtan uca doğrulama: CreateCashTransaction akışı PostgreSQL'e gerçek kayıt yazdı
+
+- [x] CashTransaction listeleme ekranı: GetCashTransactionsQuery/Handler, CashTransactionDto, GetFilteredAsync
+- [x] WPF liste UI: RelayCommand, CashTransactionListViewModel, MainWindow filtre paneli + DataGrid
+- [x] Runtime doğrulama: uygulama açılıyor, liste yükleniyor, 5 filtre senaryosu DB seviyesinde geçti
 
 ## Devam Eden
 
-- [ ] Infrastructure: DbContext ve repository implementasyonları
+- [ ] Login ekranı (UI)
 
 ## Sıradaki
 
-- [ ] Login ekranı (UI)
-- [ ] Ana pencere iskelet (UI)
+- [ ] Ana pencere iskelet ve navigasyon (UI)
+- [ ] User entity için migration ve UserRepository implementasyonu

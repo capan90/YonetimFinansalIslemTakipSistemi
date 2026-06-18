@@ -4,6 +4,7 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Com
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Queries.GetCashTransactions;
 using YonetimFinansalIslemTakipSistemi.Infrastructure;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.CashTransactions;
+using YonetimFinansalIslemTakipSistemi.Infrastructure.Persistence;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Login;
 
 namespace YonetimFinansalIslemTakipSistemi.UI;
@@ -15,7 +16,7 @@ public partial class App : System.Windows.Application
     /// </summary>
     public static IServiceProvider Services { get; private set; } = null!;
 
-    protected override void OnStartup(StartupEventArgs e)
+    protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
 
@@ -42,6 +43,9 @@ public partial class App : System.Windows.Application
         Services = services.BuildServiceProvider();
 
         var scope = Services.CreateScope();
+
+        // [DEV-ONLY] Seed servisini çalıştır; mantık Infrastructure'da kapsüllü
+        await scope.ServiceProvider.GetRequiredService<IDevDataSeeder>().SeedAsync();
 
         // Önce login ekranı; iptal veya başarısız girişte uygulamayı kapat.
         var loginWindow = new LoginWindow(scope.ServiceProvider);

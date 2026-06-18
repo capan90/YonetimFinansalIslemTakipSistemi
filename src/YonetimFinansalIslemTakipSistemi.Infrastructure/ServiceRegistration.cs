@@ -21,9 +21,12 @@ public static class ServiceRegistration
             options.UseNpgsql(connectionString));
 
         services.AddScoped<ICashTransactionRepository, CashTransactionRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
 
-        // V1: Sabit kullanıcı auth. DB-backed auth hazır olduğunda burası değişir.
-        services.AddSingleton<IAuthenticationService, LocalAuthenticationService>();
+        services.AddScoped<IAuthenticationService, DatabaseAuthenticationService>();
+
+        // [DEV-ONLY] Geliştirme ortamı seed servisi
+        services.AddScoped<IDevDataSeeder, DevDataSeeder>();
 
         return services;
     }

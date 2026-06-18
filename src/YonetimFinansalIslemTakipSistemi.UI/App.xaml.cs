@@ -2,6 +2,11 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Commands.CreateCashTransaction;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Queries.GetCashTransactions;
+using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Commands.CreateUser;
+using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Commands.DeleteUser;
+using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Commands.UpdateUser;
+using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Queries.GetUsers;
+using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Users;
 using YonetimFinansalIslemTakipSistemi.Infrastructure;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.CashTransactions;
 using YonetimFinansalIslemTakipSistemi.Infrastructure.Persistence;
@@ -36,9 +41,17 @@ public partial class App : System.Windows.Application
         // Query handler'lar
         services.AddScoped<GetCashTransactionsHandler>();
 
+        // User command handler'lar
+        services.AddScoped<CreateUserHandler>();
+        services.AddScoped<UpdateUserHandler>();
+        services.AddScoped<DeleteUserHandler>();
+        services.AddScoped<GetUsersHandler>();
+
         // ViewModels
         services.AddTransient<LoginViewModel>();
         services.AddTransient<CashTransactionListViewModel>();
+        services.AddTransient<UserManagementViewModel>();
+        services.AddTransient<UserFormViewModel>();
 
         Services = services.BuildServiceProvider();
 

@@ -6,6 +6,15 @@
         mc:Ignorable="d"
         Title="Yönetim — Nakit İşlemler" Height="600" Width="1000">
 
+    <DockPanel>
+
+        <!-- Menü çubuğu -->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="Yönetim">
+                <MenuItem Header="Kullanıcılar" Click="OpenUserManagement_Click"/>
+            </MenuItem>
+        </Menu>
+
     <DockPanel Margin="8">
 
         <!-- Filtre Paneli -->
@@ -72,6 +81,8 @@
                                     Width="130"/>
             </DataGrid.Columns>
         </DataGrid>
+
+    </DockPanel>
 
     </DockPanel>
 </Window>

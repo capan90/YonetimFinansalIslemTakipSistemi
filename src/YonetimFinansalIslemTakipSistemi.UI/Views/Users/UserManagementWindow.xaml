@@ -1,0 +1,58 @@
+<Window x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.Users.UserManagementWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Kullanıcı Yönetimi"
+        Height="480" Width="680"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResizeWithGrip"
+        Loaded="Window_Loaded">
+
+    <DockPanel Margin="10">
+
+        <!-- Toolbar -->
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+            <Button Content="Ekle"    Width="80" Margin="0,0,6,0" Click="AddButton_Click"/>
+            <Button Content="Düzenle" Width="80" Margin="0,0,6,0" Click="EditButton_Click"/>
+            <Button Content="Sil"     Width="80" Command="{Binding DeleteCommand}"/>
+        </StackPanel>
+
+        <!-- Hata mesajı -->
+        <TextBlock DockPanel.Dock="Bottom"
+                   Text="{Binding ErrorMessage}"
+                   Foreground="Red"
+                   Margin="0,6,0,0"
+                   TextWrapping="Wrap">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Visibility" Value="Visible"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ErrorMessage}" Value="{x:Null}">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+
+        <!-- Kullanıcı listesi -->
+        <DataGrid ItemsSource="{Binding Users}"
+                  SelectedItem="{Binding SelectedUser, Mode=TwoWay}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserAddRows="False"
+                  SelectionMode="Single"
+                  GridLinesVisibility="Horizontal"
+                  AlternatingRowBackground="#F5F5F5"
+                  HeadersVisibility="Column">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Ad Soyad"       Binding="{Binding FullName}"  Width="*"/>
+                <DataGridTextColumn Header="Kullanıcı Adı"  Binding="{Binding UserName}"  Width="150"/>
+                <DataGridCheckBoxColumn Header="Aktif"       Binding="{Binding IsActive}"  Width="55"/>
+                <DataGridTextColumn Header="Oluşturulma"
+                                    Binding="{Binding CreatedAt, StringFormat=dd.MM.yyyy HH:mm}"
+                                    Width="140"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+    </DockPanel>
+</Window>

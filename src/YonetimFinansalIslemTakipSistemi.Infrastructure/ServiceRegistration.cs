@@ -24,6 +24,7 @@ public static class ServiceRegistration
         services.AddScoped<IUserRepository, UserRepository>();
 
         services.AddScoped<IAuthenticationService, DatabaseAuthenticationService>();
+        services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
 
         // [DEV-ONLY] Geliştirme ortamı seed servisi
         services.AddScoped<IDevDataSeeder, DevDataSeeder>();

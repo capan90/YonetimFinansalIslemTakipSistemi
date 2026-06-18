@@ -4,6 +4,7 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Com
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Queries.GetCashTransactions;
 using YonetimFinansalIslemTakipSistemi.Infrastructure;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.CashTransactions;
+using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Login;
 
 namespace YonetimFinansalIslemTakipSistemi.UI;
 
@@ -17,6 +18,9 @@ public partial class App : System.Windows.Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        // Dialog kapandığında app'in otomatik kapanmasını engeller; shutdown bu metotta kontrol edilir.
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
         // Bağlantı bilgisi önce ortam değişkeninden okunur; ayarlanmamışsa yerel varsayılan kullanılır.
         var connectionString = Environment.GetEnvironmentVariable("YONETIM_DB_CONNECTION")
@@ -32,14 +36,25 @@ public partial class App : System.Windows.Application
         services.AddScoped<GetCashTransactionsHandler>();
 
         // ViewModels
+        services.AddTransient<LoginViewModel>();
         services.AddTransient<CashTransactionListViewModel>();
 
         Services = services.BuildServiceProvider();
 
-        // Scope, MainWindow'un ömrüyle eşleştirilir
-        var scope  = Services.CreateScope();
-        var window = new MainWindow(scope.ServiceProvider);
-        window.Closed += (_, _) => scope.Dispose();
-        window.Show();
+        var scope = Services.CreateScope();
+
+        // Önce login ekranı; iptal veya başarısız girişte uygulamayı kapat.
+        var loginWindow = new LoginWindow(scope.ServiceProvider);
+        if (loginWindow.ShowDialog() != true)
+        {
+            scope.Dispose();
+            Shutdown();
+            return;
+        }
+
+        // Başarılı giriş — ana pencereyi aç; kapanınca uygulama sonlanır.
+        var mainWindow = new MainWindow(scope.ServiceProvider);
+        mainWindow.Closed += (_, _) => { scope.Dispose(); Shutdown(); };
+        mainWindow.Show();
     }
 }

@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Repositories;
+using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Infrastructure.Persistence;
 using YonetimFinansalIslemTakipSistemi.Infrastructure.Repositories;
+using YonetimFinansalIslemTakipSistemi.Infrastructure.Services;
 
 namespace YonetimFinansalIslemTakipSistemi.Infrastructure;
 
@@ -19,6 +21,9 @@ public static class ServiceRegistration
             options.UseNpgsql(connectionString));
 
         services.AddScoped<ICashTransactionRepository, CashTransactionRepository>();
+
+        // V1: Sabit kullanıcı auth. DB-backed auth hazır olduğunda burası değişir.
+        services.AddSingleton<IAuthenticationService, LocalAuthenticationService>();
 
         return services;
     }

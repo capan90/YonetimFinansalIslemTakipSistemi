@@ -16,11 +16,13 @@
 - [x] WPF liste UI: RelayCommand, CashTransactionListViewModel, MainWindow filtre paneli + DataGrid
 - [x] Runtime doğrulama: uygulama açılıyor, liste yükleniyor, 5 filtre senaryosu DB seviyesinde geçti
 
-## Devam Eden
-
-- [ ] Login ekranı (UI)
+- [x] Login ekranı: LoginWindow, LoginViewModel, IAuthenticationService, AuthResult
+- [x] DB-backed authentication: UserConfiguration, UserRepository, DatabaseAuthenticationService (BCrypt)
+- [x] EF Core migration: AddUsersTable — users tablosu PostgreSQL'de oluşturuldu
+- [x] IDevDataSeeder + DevDataSeeder [DEV-ONLY]: ilk çalıştırmada admin seed kullanıcısı
+- [x] Uçtan uca doğrulama: admin / Admin123! ile giriş yapıldı, MainWindow açıldı
 
 ## Sıradaki
 
 - [ ] Ana pencere iskelet ve navigasyon (UI)
-- [ ] User entity için migration ve UserRepository implementasyonu
+- [ ] Kullanıcı yönetimi ekranı (admin tarafından kullanıcı oluşturma)

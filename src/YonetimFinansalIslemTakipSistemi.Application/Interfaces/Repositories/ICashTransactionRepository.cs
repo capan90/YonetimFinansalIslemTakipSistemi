@@ -28,4 +28,12 @@ public interface ICashTransactionRepository
 
     /// <summary>Fiziksel silme değil; BaseEntity.IsDeleted alanını işaretler.</summary>
     Task DeleteAsync(Guid id);
+
+    /// <summary>
+    /// Opsiyonel filtrelerle kayıt listesi döndürür. Null olan filtreler görmezden gelinir.
+    /// Soft delete global query filter'ı devrede — IsDeleted burada tekrar yazılmaz.
+    /// </summary>
+    Task<IReadOnlyList<CashTransaction>> GetFilteredAsync(
+        DateTime? from, DateTime? to,
+        TransactionType? type, CurrencyType? currency);
 }

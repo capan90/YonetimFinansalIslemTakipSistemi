@@ -1,7 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Commands.CreateCashTransaction;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Queries.GetCashTransactions;
 using YonetimFinansalIslemTakipSistemi.Infrastructure;
+using YonetimFinansalIslemTakipSistemi.UI.ViewModels.CashTransactions;
 
 namespace YonetimFinansalIslemTakipSistemi.UI;
 
@@ -9,7 +11,6 @@ public partial class App : System.Windows.Application
 {
     /// <summary>
     /// Uygulama genelinde kullanılabilecek service provider.
-    /// Pencereler ve bileşenler buradan servis çözümleyebilir.
     /// </summary>
     public static IServiceProvider Services { get; private set; } = null!;
 
@@ -23,11 +24,22 @@ public partial class App : System.Windows.Application
 
         var services = new ServiceCollection();
         services.AddInfrastructure(connectionString);
+
+        // Command handler'lar
         services.AddScoped<CreateCashTransactionHandler>();
+
+        // Query handler'lar
+        services.AddScoped<GetCashTransactionsHandler>();
+
+        // ViewModels
+        services.AddTransient<CashTransactionListViewModel>();
 
         Services = services.BuildServiceProvider();
 
-        new MainWindow().Show();
+        // Scope, MainWindow'un ömrüyle eşleştirilir
+        var scope  = Services.CreateScope();
+        var window = new MainWindow(scope.ServiceProvider);
+        window.Closed += (_, _) => scope.Dispose();
+        window.Show();
     }
 }
-

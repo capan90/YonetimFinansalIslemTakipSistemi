@@ -62,4 +62,19 @@ public class CashTransactionRepository : ICashTransactionRepository
         entity.DeletedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
     }
+
+    public async Task<IReadOnlyList<CashTransaction>> GetFilteredAsync(
+        DateTime? from, DateTime? to, TransactionType? type, CurrencyType? currency)
+    {
+        var query = _context.CashTransactions.AsQueryable();
+
+        if (from.HasValue)     query = query.Where(x => x.TransactionDate >= from.Value);
+        if (to.HasValue)       query = query.Where(x => x.TransactionDate <= to.Value);
+        if (type.HasValue)     query = query.Where(x => x.TransactionType == type.Value);
+        if (currency.HasValue) query = query.Where(x => x.CurrencyType == currency.Value);
+
+        return await query
+            .OrderByDescending(x => x.TransactionDate)
+            .ToListAsync();
+    }
 }

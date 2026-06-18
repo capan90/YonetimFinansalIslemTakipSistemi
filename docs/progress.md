@@ -22,7 +22,13 @@
 - [x] IDevDataSeeder + DevDataSeeder [DEV-ONLY]: ilk çalıştırmada admin seed kullanıcısı
 - [x] Uçtan uca doğrulama: admin / Admin123! ile giriş yapıldı, MainWindow açıldı
 
+- [x] Kullanıcı yönetimi: CreateUser, UpdateUser, DeleteUser, GetUsers (vertical slice)
+- [x] IPasswordHasher + BcryptPasswordHasher (Clean Architecture: BCrypt Application dışında)
+- [x] UserManagementWindow + UserFormWindow (liste, oluşturma, düzenleme, soft delete)
+- [x] Son aktif kullanıcı silme / pasifleştirme koruması
+- [x] Uçtan uca doğrulama: tüm CRUD ve hata senaryoları başarılı
+
 ## Sıradaki
 
 - [ ] Ana pencere iskelet ve navigasyon (UI)
-- [ ] Kullanıcı yönetimi ekranı (admin tarafından kullanıcı oluşturma)
+- [ ] Nakit işlem oluşturma ekranı (CreateCashTransaction UI)

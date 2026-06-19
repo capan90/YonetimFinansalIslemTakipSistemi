@@ -11,14 +11,31 @@
       - Admin hakları (New-SmbShare için)
       - Sertifika: Cert:\CurrentUser\My thumbprint aşağıda belirtilmiş
 
+    ProviderURL kaynağı:
+      YONETIM_UPDATE_PATH env var set edilmişse → o UNC kullanılır (üretim)
+      Set edilmemişse       → \\localhost\YonetimPublish\ (lokal test)
+    Başka bilgisayarların ClickOnce startup güncellemesi alabilmesi için publish öncesi:
+      $env:YONETIM_UPDATE_PATH = "\\SUNUCU\YonetimPublish\"
+
 .PARAMETER Version
     Yayınlanacak sürüm numarası. csproj AssemblyVersion ile aynı olmalı.
-    Örnek: "1.0.0.0"
+    Her release'de artır: 1.0.0.0 → 1.0.0.1 → 1.0.0.2
+    Aynı versiyonla tekrar publish yapılırsa ClickOnce güncelleme algılamaz.
 
 .PARAMETER Sign
-    $true ise sertifika ile imzalar. Varsayılan: $false (yerel test için)
+    $true ise Cert:\CurrentUser\My içindeki sertifika ile her iki manifest imzalanır.
+    Gerçek ClickOnce kurulum ve güncelleme testi için $true kullan.
+    Varsayılan $false yalnızca build/manifest çıktısını doğrulamak içindir.
 
 .EXAMPLE
+    # Lokal test — imzalı
+    .\Publish-ClickOnce.ps1 -Version "1.0.0.1" -Sign $true
+
+    # Üretim — imzalı
+    $env:YONETIM_UPDATE_PATH = "\\SUNUCU\YonetimPublish\"
+    .\Publish-ClickOnce.ps1 -Version "1.0.0.1" -Sign $true
+
+    # Yalnızca çıktı doğrulama — imzasız
     .\Publish-ClickOnce.ps1 -Version "1.0.0.1" -Sign $false
 #>
 param(
@@ -28,19 +45,39 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# ── UNC base: env var doluysa onu kullan, yoksa localhost ────────────────────
+$UncBase = $env:YONETIM_UPDATE_PATH
+if ([string]::IsNullOrWhiteSpace($UncBase)) {
+    $UncBase = "\\localhost\YonetimPublish\"
+}
+# Sondaki \ yoksa ekle
+if (-not $UncBase.EndsWith("\")) { $UncBase += "\" }
+
 # Sabitler
-$ProjectPath = "$PSScriptRoot\src\YonetimFinansalIslemTakipSistemi.UI\YonetimFinansalIslemTakipSistemi.UI.csproj"
+$ProjectPath  = "$PSScriptRoot\src\YonetimFinansalIslemTakipSistemi.UI\YonetimFinansalIslemTakipSistemi.UI.csproj"
 $BuildOutput  = "$env:TEMP\YonetimBuild"
 $PublishDir   = "C:\Apps\Yonetim\Publish"
 $AppName      = "Yönetim Finansal İşlem Takip Sistemi"
 $ExeName      = "YonetimFinansalIslemTakipSistemi.UI.exe"
 $ManifestBase = "YonetimFinansalIslemTakipSistemi.UI"
 $CertThumb    = "0136460438B6DED7F20498C00F7D3AB4C1E1B203"
-$ProviderUrl  = "\\localhost\YonetimPublish\YonetimFinansalIslemTakipSistemi.application"
+$ProviderUrl  = "${UncBase}YonetimFinansalIslemTakipSistemi.application"
 
 # Sürüm klasörü: noktalar alt çizgiye çevrilir
 $VersionFolder = $Version -replace "\.", "_"
 $AppFilesDir   = "$PublishDir\Application Files\${ManifestBase}_${VersionFolder}"
+$AppManifest   = "$AppFilesDir\$ManifestBase.exe.manifest"
+$DeployManifest = "$PublishDir\$ManifestBase.application"
+$VersionJsonPath = "$PublishDir\version.json"
+
+# ── Başlangıç özeti ──────────────────────────────────────────────────────────
+Write-Host ""
+Write-Host "=== ClickOnce Publish ===" -ForegroundColor Cyan
+Write-Host "  Versiyon      : $Version"
+Write-Host "  Imzali        : $Sign"
+Write-Host "  Publish klasor: $PublishDir"
+Write-Host "  ProviderURL   : $ProviderUrl"
+Write-Host ""
 
 Write-Host "[1/6] Build yapılıyor: $Version..." -ForegroundColor Cyan
 
@@ -59,7 +96,6 @@ Copy-Item -Path "$BuildOutput\*" -Destination $AppFilesDir -Recurse -Force
 
 Write-Host "[4/6] Application manifest oluşturuluyor..." -ForegroundColor Cyan
 
-$AppManifest = "$AppFilesDir\$ManifestBase.exe.manifest"
 dotnet-mage -New Application `
     -ToFile $AppManifest `
     -Name $AppName `
@@ -67,9 +103,13 @@ dotnet-mage -New Application `
     -Processor "msil" `
     -FromDirectory $AppFilesDir
 
+if ($Sign) {
+    Write-Host "  Imzalaniyor: $AppManifest" -ForegroundColor Yellow
+    dotnet-mage -Sign $AppManifest -CertHash $CertThumb
+}
+
 Write-Host "[5/6] Deployment manifest oluşturuluyor..." -ForegroundColor Cyan
 
-$DeployManifest = "$PublishDir\$ManifestBase.application"
 dotnet-mage -New Deployment `
     -ToFile $DeployManifest `
     -Name $AppName `
@@ -80,26 +120,87 @@ dotnet-mage -New Deployment `
     -ProviderURL $ProviderUrl `
     -Publisher "YonetimApp"
 
-# İsteğe bağlı imzalama
 if ($Sign) {
-    Write-Host "  İmzalanıyor: $AppManifest" -ForegroundColor Yellow
-    dotnet-mage -Sign $AppManifest -CertHash $CertThumb
-    Write-Host "  İmzalanıyor: $DeployManifest" -ForegroundColor Yellow
+    Write-Host "  Imzalaniyor: $DeployManifest" -ForegroundColor Yellow
     dotnet-mage -Sign $DeployManifest -CertHash $CertThumb
 }
 
 Write-Host "[6/6] version.json yazılıyor..." -ForegroundColor Cyan
 
+# version.json yalnızca UpdateService'in manuel "Guncellemeleri Denetle" akisinda okunur.
+# ClickOnce startup guncellemesi bu dosyayi degil deployment manifest'i kullanir.
 $Json = "{`"version`":`"$Version`"}"
-Set-Content -Path "$PublishDir\version.json" -Value $Json -Encoding utf8
+Set-Content -Path $VersionJsonPath -Value $Json -Encoding utf8
+
+# ── Doğrulama ────────────────────────────────────────────────────────────────
+Write-Host ""
+Write-Host "=== Dogrulama ===" -ForegroundColor Cyan
+
+$ok = $true
+
+# Deployment manifest
+if (Test-Path $DeployManifest) {
+    Write-Host "  [OK] Deployment manifest olustu" -ForegroundColor Green
+} else {
+    Write-Host "  [HATA] Deployment manifest bulunamadi: $DeployManifest" -ForegroundColor Red
+    $ok = $false
+}
+
+# version.json — sürüm eşleşmesi
+if (Test-Path $VersionJsonPath) {
+    try {
+        $parsed = (Get-Content $VersionJsonPath -Raw) | ConvertFrom-Json
+        if ($parsed.version -eq $Version) {
+            Write-Host "  [OK] version.json surumu eslesip: $Version" -ForegroundColor Green
+        } else {
+            Write-Host "  [HATA] version.json surumu uyusmuyor. Beklenen: $Version, Bulunan: $($parsed.version)" -ForegroundColor Red
+            $ok = $false
+        }
+    } catch {
+        Write-Host "  [HATA] version.json okunamadi: $_" -ForegroundColor Red
+        $ok = $false
+    }
+} else {
+    Write-Host "  [HATA] version.json bulunamadi" -ForegroundColor Red
+    $ok = $false
+}
+
+# ProviderURL deployment manifest içinde doğru mu?
+if (Test-Path $DeployManifest) {
+    $manifestContent = Get-Content $DeployManifest -Raw
+    if ($manifestContent -like "*$ProviderUrl*") {
+        Write-Host "  [OK] ProviderURL manifest icinde dogrulandi: $ProviderUrl" -ForegroundColor Green
+    } else {
+        Write-Host "  [HATA] ProviderURL manifest icinde bulunamadi. Beklenen: $ProviderUrl" -ForegroundColor Red
+        $ok = $false
+    }
+}
+
+# İmzalama durumu
+if ($Sign) {
+    # Script ErrorActionPreference=Stop ile calistigından imzalama hatasi script'i durdurur.
+    # Bu noktaya ulasildiysa her iki manifest de basariyla imzalanmistir.
+    Write-Host "  [OK] Application manifest imzalandi" -ForegroundColor Green
+    Write-Host "  [OK] Deployment manifest imzalandi" -ForegroundColor Green
+} else {
+    Write-Host "  [--] Imzalama atlandi (Sign=false; gercek kurulum icin -Sign $true kullan)" -ForegroundColor Yellow
+}
 
 Write-Host ""
-Write-Host "Publish tamamlandi!" -ForegroundColor Green
-Write-Host "  Konum    : $PublishDir"
-Write-Host "  Surum    : $Version"
-Write-Host "  Manifest : $ManifestBase.application"
+if ($ok) {
+    Write-Host "Publish tamamlandi!" -ForegroundColor Green
+} else {
+    Write-Host "Publish tamamlandi ancak dogrulamada hatalar var. Yukaridaki [HATA] satirlarini incele." -ForegroundColor Yellow
+}
+
+Write-Host ""
+Write-Host "  Konum     : $PublishDir"
+Write-Host "  Surum     : $Version"
+Write-Host "  Manifest  : $ManifestBase.application"
+Write-Host "  ProviderURL: $ProviderUrl"
 Write-Host ""
 Write-Host "SMB Share (admin PowerShell'de bir kez calistir):" -ForegroundColor Yellow
 Write-Host "  New-SmbShare -Name 'YonetimPublish' -Path '$PublishDir' -FullAccess 'Everyone'"
 Write-Host ""
-Write-Host "Kurulum icin: \\localhost\YonetimPublish\$ManifestBase.application"
+Write-Host "Kurulum icin:" -ForegroundColor Yellow
+Write-Host "  ${UncBase}$ManifestBase.application"

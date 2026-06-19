@@ -47,9 +47,10 @@
 - [x] AuditLogWindow: kullanıcı / tarih aralığı / işlem tipi filtreli liste ekranı
 - [x] MainWindow menü: Yönetim → Denetim Günlüğü
 
-## Sıradaki
+- [x] Dialog sistemi: IDialogService, DialogService, MessageDialog, ConfirmationDialog
+- [x] MessageBox kullanımları dialog sistemine taşındı (nakit işlem silme + kullanıcı silme onayı)
 
-- [ ] Dialog sistemi (Info, Success, Warning, Error, Question) — CLAUDE.md'de tanımlanmış, MessageBox geçici
+## Sıradaki
 - [ ] Yetki yönetimi
 - [ ] Rapor ekranı
 - [ ] Döviz ekranı

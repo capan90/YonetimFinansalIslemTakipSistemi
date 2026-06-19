@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Commands.DeleteUser;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Queries.GetUsers;
+using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
 using YonetimFinansalIslemTakipSistemi.UI.Common;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.ViewModels.Users;
@@ -12,6 +13,7 @@ public class UserManagementViewModel : INotifyPropertyChanged
 {
     private readonly GetUsersHandler _getUsersHandler;
     private readonly DeleteUserHandler _deleteHandler;
+    private readonly IDialogService _dialogService;
 
     private UserDto? _selectedUser;
     private string? _errorMessage;
@@ -32,10 +34,14 @@ public class UserManagementViewModel : INotifyPropertyChanged
 
     public ICommand DeleteCommand { get; }
 
-    public UserManagementViewModel(GetUsersHandler getUsersHandler, DeleteUserHandler deleteHandler)
+    public UserManagementViewModel(
+        GetUsersHandler getUsersHandler,
+        DeleteUserHandler deleteHandler,
+        IDialogService dialogService)
     {
         _getUsersHandler = getUsersHandler;
         _deleteHandler   = deleteHandler;
+        _dialogService   = dialogService;
 
         DeleteCommand = new RelayCommand(
             async () => await ExecuteDeleteAsync(),
@@ -53,8 +59,14 @@ public class UserManagementViewModel : INotifyPropertyChanged
     private async Task ExecuteDeleteAsync()
     {
         if (SelectedUser is null) return;
-        ErrorMessage = null;
 
+        // Silme işlemi geri alınamaz — onay gerekli
+        if (!_dialogService.ShowConfirmation(
+                $"'{SelectedUser.FullName}' adlı kullanıcıyı silmek istediğinize emin misiniz?",
+                "Kullanıcı Sil"))
+            return;
+
+        ErrorMessage = null;
         var result = await _deleteHandler.HandleAsync(new DeleteUserRequest { Id = SelectedUser.Id });
         if (!result.Success) { ErrorMessage = result.ErrorMessage; return; }
 

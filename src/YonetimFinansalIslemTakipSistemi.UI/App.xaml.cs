@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using YonetimFinansalIslemTakipSistemi.Application.Common;
+using YonetimFinansalIslemTakipSistemi.Application.Features.AuditLogs.Queries.GetAuditLogs;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Commands.CreateCashTransaction;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Commands.DeleteCashTransaction;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Commands.UpdateCashTransaction;
@@ -12,6 +13,9 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Queries.GetUse
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Infrastructure;
 using YonetimFinansalIslemTakipSistemi.Infrastructure.Persistence;
+using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
+using YonetimFinansalIslemTakipSistemi.UI.Services;
+using YonetimFinansalIslemTakipSistemi.UI.ViewModels.AuditLogs;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.CashTransactions;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Login;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Users;
@@ -34,6 +38,9 @@ public partial class App : System.Windows.Application
         var services = new ServiceCollection();
         services.AddInfrastructure(connectionString);
 
+        // Dialog servisi — singleton: durumsuz, her çağrıda yeni pencere nesnesi oluşturur
+        services.AddSingleton<IDialogService, DialogService>();
+
         // Oturum bağlamı — LoginViewModel başarılı girişte Set() çağırır; diğer VM'ler IUserContext okur
         var userContext = new UserContext();
         services.AddSingleton(userContext);
@@ -51,12 +58,16 @@ public partial class App : System.Windows.Application
         services.AddScoped<DeleteUserHandler>();
         services.AddScoped<GetUsersHandler>();
 
+        // Audit log handler
+        services.AddScoped<GetAuditLogsHandler>();
+
         // ViewModels
         services.AddTransient<LoginViewModel>();
         services.AddTransient<CashTransactionListViewModel>();
         services.AddTransient<CashTransactionFormViewModel>();
         services.AddTransient<UserManagementViewModel>();
         services.AddTransient<UserFormViewModel>();
+        services.AddTransient<AuditLogViewModel>();
 
         Services = services.BuildServiceProvider();
 

@@ -2,7 +2,9 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Commands.DeleteCashTransaction;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
+using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.CashTransactions;
+using YonetimFinansalIslemTakipSistemi.UI.Views.AuditLogs;
 using YonetimFinansalIslemTakipSistemi.UI.Views.CashTransactions;
 using YonetimFinansalIslemTakipSistemi.UI.Views.Users;
 
@@ -12,13 +14,15 @@ public partial class MainWindow : Window
 {
     private readonly IServiceProvider _services;
     private readonly CashTransactionListViewModel _listVm;
+    private readonly IDialogService _dialogService;
 
     public MainWindow(IServiceProvider services)
     {
         InitializeComponent();
-        _services   = services;
-        _listVm     = services.GetRequiredService<CashTransactionListViewModel>();
-        DataContext = _listVm;
+        _services       = services;
+        _listVm         = services.GetRequiredService<CashTransactionListViewModel>();
+        _dialogService  = services.GetRequiredService<IDialogService>();
+        DataContext     = _listVm;
 
         Loaded += async (_, _) => await _listVm.LoadAsync();
     }
@@ -46,14 +50,9 @@ public partial class MainWindow : Window
         var selected = _listVm.SelectedTransaction;
         if (selected is null) return;
 
-        var label    = string.IsNullOrWhiteSpace(selected.Description) ? "seçili işlemi" : $"'{selected.Description}'";
-        var confirm  = MessageBox.Show(
-            $"{label} silmek istediğinize emin misiniz?",
-            "İşlem Sil",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
-
-        if (confirm != MessageBoxResult.Yes) return;
+        var label = string.IsNullOrWhiteSpace(selected.Description) ? "seçili işlemi" : $"'{selected.Description}'";
+        if (!_dialogService.ShowConfirmation($"{label} silmek istediğinize emin misiniz?", "İşlem Sil"))
+            return;
 
         var handler     = _services.GetRequiredService<DeleteCashTransactionHandler>();
         var userContext = _services.GetRequiredService<IUserContext>();
@@ -67,7 +66,7 @@ public partial class MainWindow : Window
         var result = await handler.HandleAsync(request);
         if (!result.Success)
         {
-            MessageBox.Show(result.ErrorMessage, "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+            _dialogService.ShowError(result.ErrorMessage ?? "Beklenmeyen bir hata oluştu.");
             return;
         }
 
@@ -77,6 +76,12 @@ public partial class MainWindow : Window
     private void OpenUserManagement_Click(object sender, RoutedEventArgs e)
     {
         var win = new UserManagementWindow(_services) { Owner = this };
+        win.ShowDialog();
+    }
+
+    private void OpenAuditLog_Click(object sender, RoutedEventArgs e)
+    {
+        var win = new AuditLogWindow(_services) { Owner = this };
         win.ShowDialog();
     }
 }

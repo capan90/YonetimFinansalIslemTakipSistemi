@@ -63,8 +63,16 @@
 - [x] CreateOrUpdateExchangeRateHandler, GetExchangeRatesHandler
 - [x] ExchangeRateWindow: USD/EUR manuel kur girişi
 
+### Nakit İşlem Listesi — Running Balance
+- [x] GetAllForBalanceAsync: tüm aktif kayıtlar TransactionDate/CreatedAt/Id ASC
+- [x] Handler: ASC geçişte per-currency kümülatif bakiye hesabı (GetFinancialDirection() üzerinden)
+- [x] Filtre in-memory; tarih filtresi altında bile bakiye gerçek tarihsel değeri yansıtır
+- [x] DTO: TlBalanceAfter, UsdBalanceAfter, EurBalanceAfter
+- [x] MainWindow DataGrid: TL Bakiye / USD Bakiye / EUR Bakiye kolonları (sağa hizalı, N2)
+
 ---
 
-## Sıradaki
+## Sıradaki (V2)
 
-- TCMB entegrasyonu (opsiyonel V2 özelliği)
+- TCMB entegrasyonu: döviz kurlarını otomatik çekme
+- Transfer işlemi iki taraflı model (bkz. Teknik Borç)

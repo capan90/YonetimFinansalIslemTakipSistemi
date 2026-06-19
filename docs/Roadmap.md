@@ -26,15 +26,15 @@
 
 ## Aşama 5 - Finansal Modüller ✓
 - İşlem giriş ekranı
-- İşlem liste ekranı
+- İşlem liste ekranı + running balance kolonları
 - Filtreleme
 - Rapor ekranı
 
-## Aşama 6 - Destek Modülleri (kısmen)
+## Aşama 6 - Destek Modülleri ✓
 - [x] Dialog sistemi
 - [x] Audit log sistemi
 - [x] Güncelleme sistemi (ClickOnce)
-- [ ] Döviz ekranı
+- [x] Döviz ekranı
 
 ---
 

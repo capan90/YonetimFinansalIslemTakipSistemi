@@ -27,7 +27,6 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$env:DOTNET_ROLL_FORWARD = "Major"
 
 # Sabitler
 $ProjectPath = "$PSScriptRoot\src\YonetimFinansalIslemTakipSistemi.UI\YonetimFinansalIslemTakipSistemi.UI.csproj"

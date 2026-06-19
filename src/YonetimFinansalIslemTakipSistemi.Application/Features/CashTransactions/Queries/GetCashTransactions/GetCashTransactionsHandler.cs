@@ -56,6 +56,11 @@ public class GetCashTransactionsHandler
             filtered = filtered.Where(x => x.Entity.TransactionType == query.TransactionType.Value);
         if (query.CurrencyType.HasValue)
             filtered = filtered.Where(x => x.Entity.CurrencyType == query.CurrencyType.Value);
+        if (!string.IsNullOrWhiteSpace(query.DescriptionContains))
+            filtered = filtered.Where(x =>
+                x.Entity.Description != null &&
+                x.Entity.Description.Contains(query.DescriptionContains, StringComparison.OrdinalIgnoreCase));
+
         if (query.AmountOperator is not null && query.AmountValue.HasValue)
         {
             var val = query.AmountValue.Value;

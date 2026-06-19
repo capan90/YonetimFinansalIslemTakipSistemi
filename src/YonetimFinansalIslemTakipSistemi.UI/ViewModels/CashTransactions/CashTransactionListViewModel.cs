@@ -18,6 +18,7 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
     private string?             _selectedCurrencyType;
     private string?             _selectedAmountOperator;
     private string?             _amountValueText;
+    private string?             _descriptionFilter;
     private CashTransactionDto? _selectedTransaction;
 
     public CashTransactionListViewModel(GetCashTransactionsHandler handler)
@@ -69,6 +70,12 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
         set { _amountValueText = value; OnPropertyChanged(); }
     }
 
+    public string? DescriptionFilter
+    {
+        get => _descriptionFilter;
+        set { _descriptionFilter = value; OnPropertyChanged(); }
+    }
+
     // --- ComboBox kaynakları ---
 
     public IReadOnlyList<string> TransactionTypeOptions { get; } =
@@ -118,10 +125,11 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
             TransactionType = ParseTransactionType(SelectedTransactionType),
             CurrencyType    = ParseCurrencyType(SelectedCurrencyType),
             // Operatör ve tutar ikisi birlikte dolu olduğunda filtre aktif olur
-            AmountOperator  = !string.IsNullOrEmpty(SelectedAmountOperator) && amountValue.HasValue
-                                  ? SelectedAmountOperator
-                                  : null,
-            AmountValue     = amountValue
+            AmountOperator      = !string.IsNullOrEmpty(SelectedAmountOperator) && amountValue.HasValue
+                                      ? SelectedAmountOperator
+                                      : null,
+            AmountValue         = amountValue,
+            DescriptionContains = string.IsNullOrWhiteSpace(DescriptionFilter) ? null : DescriptionFilter.Trim()
         };
 
         var results = await _handler.HandleAsync(query);

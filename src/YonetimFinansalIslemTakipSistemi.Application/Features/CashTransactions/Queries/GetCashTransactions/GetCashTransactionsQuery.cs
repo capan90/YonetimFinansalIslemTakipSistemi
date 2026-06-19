@@ -12,6 +12,8 @@ public class GetCashTransactionsQuery
     public TransactionType? TransactionType  { get; set; }
     public CurrencyType?    CurrencyType     { get; set; }
     // Operatör: ">", ">=", "<", "<=", "=", "!=" — ikisi birlikte null ise filtre uygulanmaz
-    public string?          AmountOperator   { get; set; }
-    public decimal?         AmountValue      { get; set; }
+    public string?          AmountOperator      { get; set; }
+    public decimal?         AmountValue         { get; set; }
+    // Büyük/küçük harf duyarsız içerik araması; null veya boş → filtre yok
+    public string?          DescriptionContains { get; set; }
 }

@@ -39,10 +39,17 @@
 - [x] DateTime UTC fix: CreateCashTransaction ve UpdateCashTransaction handler'larında Npgsql timestamptz uyumu
 - [x] Uçtan uca doğrulama: oluşturma, düzenleme, silme, liste yenileme — tüm senaryolar başarılı
 
+- [x] Audit log sistemi: AuditLog entity, AuditAction enum, IAuditLogRepository/Service, AuditLogService
+- [x] EF Core migration: AddAuditLogsTable — audit_logs tablosu PostgreSQL'de oluşturuldu
+- [x] Audit enjeksiyonu: Create/Update/Delete CashTransaction + Create/Update/Delete User + Login
+- [x] OldValues/NewValues okunabilir format — pipe-ayrılmış Türkçe string (JSON kaldırıldı)
+- [x] Update audit diff — yalnızca değişen alanlar eski/yeni olarak yazılır
+- [x] AuditLogWindow: kullanıcı / tarih aralığı / işlem tipi filtreli liste ekranı
+- [x] MainWindow menü: Yönetim → Denetim Günlüğü
+
 ## Sıradaki
 
 - [ ] Dialog sistemi (Info, Success, Warning, Error, Question) — CLAUDE.md'de tanımlanmış, MessageBox geçici
-- [ ] Audit log sistemi — AuditLog tablosu, service, UI
 - [ ] Yetki yönetimi
 - [ ] Rapor ekranı
 - [ ] Döviz ekranı

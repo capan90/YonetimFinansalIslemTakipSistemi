@@ -2,6 +2,7 @@ using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Repositories;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Entities;
+using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 
 namespace YonetimFinansalIslemTakipSistemi.Application.Features.Users.Commands.CreateUser;
 
@@ -9,11 +10,19 @@ public class CreateUserHandler
 {
     private readonly IUserRepository _repository;
     private readonly IPasswordHasher _hasher;
+    private readonly IAuditLogService _auditLogService;
+    private readonly IUserContext _userContext;
 
-    public CreateUserHandler(IUserRepository repository, IPasswordHasher hasher)
+    public CreateUserHandler(
+        IUserRepository repository,
+        IPasswordHasher hasher,
+        IAuditLogService auditLogService,
+        IUserContext userContext)
     {
-        _repository = repository;
-        _hasher = hasher;
+        _repository      = repository;
+        _hasher          = hasher;
+        _auditLogService = auditLogService;
+        _userContext     = userContext;
     }
 
     public async Task<OperationResult<CreateUserResponse>> HandleAsync(CreateUserRequest request)
@@ -38,6 +47,15 @@ public class CreateUserHandler
         };
 
         await _repository.AddAsync(user);
+
+        // Audit: yeni kullanıcı oluşturuldu
+        var newValues = $"Kullanıcı Adı: {user.UserName} | Ad Soyad: {user.FullName}";
+        await _auditLogService.WriteAsync(
+            AuditAction.UserCreated,
+            _userContext.UserId,
+            _userContext.FullName,
+            "User", user.Id,
+            null, newValues);
 
         return OperationResult<CreateUserResponse>.Ok(new CreateUserResponse
         {

@@ -1,5 +1,7 @@
+using System.Globalization;
 using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Repositories;
+using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Entities;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 
@@ -12,10 +14,17 @@ namespace YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions
 public class CreateCashTransactionHandler
 {
     private readonly ICashTransactionRepository _repository;
+    private readonly IAuditLogService _auditLogService;
+    private readonly IUserContext _userContext;
 
-    public CreateCashTransactionHandler(ICashTransactionRepository repository)
+    public CreateCashTransactionHandler(
+        ICashTransactionRepository repository,
+        IAuditLogService auditLogService,
+        IUserContext userContext)
     {
-        _repository = repository;
+        _repository      = repository;
+        _auditLogService = auditLogService;
+        _userContext     = userContext;
     }
 
     public async Task<OperationResult<CreateCashTransactionResponse>> HandleAsync(
@@ -41,6 +50,16 @@ public class CreateCashTransactionHandler
 
         await _repository.AddAsync(entity);
 
+        // Audit: işlem oluşturuldu
+        var newValues = FormatTransaction(entity.TransactionDate, entity.TransactionType,
+                                          entity.CurrencyType, entity.Amount, entity.Description);
+        await _auditLogService.WriteAsync(
+            AuditAction.TransactionCreated,
+            _userContext.UserId,
+            _userContext.FullName,
+            "CashTransaction", entity.Id,
+            null, newValues);
+
         var response = new CreateCashTransactionResponse
         {
             Id = entity.Id,
@@ -53,6 +72,11 @@ public class CreateCashTransactionHandler
 
         return OperationResult<CreateCashTransactionResponse>.Ok(response);
     }
+
+    private static string FormatTransaction(
+        DateTime date, TransactionType type, CurrencyType currency, decimal amount, string description)
+        => $"Tarih: {date:dd.MM.yyyy} | Tip: {type} | Para Birimi: {currency} | " +
+           $"Tutar: {amount.ToString("N2", new CultureInfo("tr-TR"))} | Açıklama: {description}";
 
     /// <summary>
     /// Null döner = geçerli. Dolu string = hata mesajı.

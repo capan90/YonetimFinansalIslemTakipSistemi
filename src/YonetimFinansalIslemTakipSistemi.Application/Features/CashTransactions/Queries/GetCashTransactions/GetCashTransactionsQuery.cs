@@ -11,4 +11,6 @@ public class GetCashTransactionsQuery
     public DateTime?        DateTo          { get; set; }
     public TransactionType? TransactionType { get; set; }
     public CurrencyType?    CurrencyType    { get; set; }
+    public decimal?         AmountMin       { get; set; }
+    public decimal?         AmountMax       { get; set; }
 }

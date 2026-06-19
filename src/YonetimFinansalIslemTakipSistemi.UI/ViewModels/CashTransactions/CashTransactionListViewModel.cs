@@ -16,6 +16,8 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
     private DateTime?           _dateTo;
     private string?             _selectedTransactionType;
     private string?             _selectedCurrencyType;
+    private string?             _amountMinText;
+    private string?             _amountMaxText;
     private CashTransactionDto? _selectedTransaction;
 
     public CashTransactionListViewModel(GetCashTransactionsHandler handler)
@@ -51,6 +53,19 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
     {
         get => _selectedCurrencyType;
         set { _selectedCurrencyType = value; OnPropertyChanged(); }
+    }
+
+    // Serbest metin; geçersiz veya boş → filtre uygulanmaz
+    public string? AmountMinText
+    {
+        get => _amountMinText;
+        set { _amountMinText = value; OnPropertyChanged(); }
+    }
+
+    public string? AmountMaxText
+    {
+        get => _amountMaxText;
+        set { _amountMaxText = value; OnPropertyChanged(); }
     }
 
     // --- ComboBox kaynakları ---
@@ -95,7 +110,9 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
             DateFrom        = DateFrom,
             DateTo          = DateTo,
             TransactionType = ParseTransactionType(SelectedTransactionType),
-            CurrencyType    = ParseCurrencyType(SelectedCurrencyType)
+            CurrencyType    = ParseCurrencyType(SelectedCurrencyType),
+            AmountMin       = ParseAmount(AmountMinText),
+            AmountMax       = ParseAmount(AmountMaxText)
         };
 
         var results = await _handler.HandleAsync(query);
@@ -123,6 +140,20 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
         "EUR" => CurrencyType.EUR,
         _     => null
     };
+
+    // Boş veya geçersiz metin → null (filtre uygulanmaz); negatif değer reddedilir
+    private static decimal? ParseAmount(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return null;
+        // Hem nokta hem virgülü ondalık ayıracı olarak kabul et
+        var normalized = text.Trim().Replace(',', '.');
+        return decimal.TryParse(normalized,
+                   System.Globalization.NumberStyles.Number,
+                   System.Globalization.CultureInfo.InvariantCulture,
+                   out var value) && value >= 0
+            ? value
+            : null;
+    }
 
     public event PropertyChangedEventHandler? PropertyChanged;
     private void OnPropertyChanged([CallerMemberName] string? name = null)

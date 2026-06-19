@@ -56,6 +56,10 @@ public class GetCashTransactionsHandler
             filtered = filtered.Where(x => x.Entity.TransactionType == query.TransactionType.Value);
         if (query.CurrencyType.HasValue)
             filtered = filtered.Where(x => x.Entity.CurrencyType == query.CurrencyType.Value);
+        if (query.AmountMin.HasValue)
+            filtered = filtered.Where(x => x.Entity.Amount >= query.AmountMin.Value);
+        if (query.AmountMax.HasValue)
+            filtered = filtered.Where(x => x.Entity.Amount <= query.AmountMax.Value);
 
         // Ekranda newest-first; sıralama bakiye doğruluğunu etkilemez
         return filtered

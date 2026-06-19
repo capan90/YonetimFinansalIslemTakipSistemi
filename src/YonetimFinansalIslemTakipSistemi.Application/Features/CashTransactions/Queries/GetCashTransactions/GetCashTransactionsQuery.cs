@@ -9,8 +9,9 @@ public class GetCashTransactionsQuery
 {
     public DateTime?        DateFrom        { get; set; }
     public DateTime?        DateTo          { get; set; }
-    public TransactionType? TransactionType { get; set; }
-    public CurrencyType?    CurrencyType    { get; set; }
-    public decimal?         AmountMin       { get; set; }
-    public decimal?         AmountMax       { get; set; }
+    public TransactionType? TransactionType  { get; set; }
+    public CurrencyType?    CurrencyType     { get; set; }
+    // Operatör: ">", ">=", "<", "<=", "=", "!=" — ikisi birlikte null ise filtre uygulanmaz
+    public string?          AmountOperator   { get; set; }
+    public decimal?         AmountValue      { get; set; }
 }

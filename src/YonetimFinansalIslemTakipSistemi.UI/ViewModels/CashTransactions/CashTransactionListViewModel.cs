@@ -16,8 +16,8 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
     private DateTime?           _dateTo;
     private string?             _selectedTransactionType;
     private string?             _selectedCurrencyType;
-    private string?             _amountMinText;
-    private string?             _amountMaxText;
+    private string?             _selectedAmountOperator;
+    private string?             _amountValueText;
     private CashTransactionDto? _selectedTransaction;
 
     public CashTransactionListViewModel(GetCashTransactionsHandler handler)
@@ -55,17 +55,18 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
         set { _selectedCurrencyType = value; OnPropertyChanged(); }
     }
 
-    // Serbest metin; geçersiz veya boş → filtre uygulanmaz
-    public string? AmountMinText
+    // Operatör seçimi; null veya boş → tutar filtresi uygulanmaz
+    public string? SelectedAmountOperator
     {
-        get => _amountMinText;
-        set { _amountMinText = value; OnPropertyChanged(); }
+        get => _selectedAmountOperator;
+        set { _selectedAmountOperator = value; OnPropertyChanged(); }
     }
 
-    public string? AmountMaxText
+    // Karşılaştırılacak tutar; geçersiz veya boş → filtre uygulanmaz
+    public string? AmountValueText
     {
-        get => _amountMaxText;
-        set { _amountMaxText = value; OnPropertyChanged(); }
+        get => _amountValueText;
+        set { _amountValueText = value; OnPropertyChanged(); }
     }
 
     // --- ComboBox kaynakları ---
@@ -75,6 +76,10 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
 
     public IReadOnlyList<string> CurrencyTypeOptions { get; } =
         new[] { "Tümü", "TRY", "USD", "EUR" };
+
+    // Boş string → "filtre yok" seçeneği; geri kalanlar karşılaştırma operatörleri
+    public IReadOnlyList<string> AmountOperatorOptions { get; } =
+        new[] { "", ">", ">=", "<", "<=", "=", "!=" };
 
     // --- Seçim (Düzenle / Sil butonlarını aktif eder) ---
 
@@ -105,14 +110,18 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
 
     private async Task ExecuteFilterAsync()
     {
+        var amountValue = ParseAmount(AmountValueText);
         var query = new GetCashTransactionsQuery
         {
             DateFrom        = DateFrom,
             DateTo          = DateTo,
             TransactionType = ParseTransactionType(SelectedTransactionType),
             CurrencyType    = ParseCurrencyType(SelectedCurrencyType),
-            AmountMin       = ParseAmount(AmountMinText),
-            AmountMax       = ParseAmount(AmountMaxText)
+            // Operatör ve tutar ikisi birlikte dolu olduğunda filtre aktif olur
+            AmountOperator  = !string.IsNullOrEmpty(SelectedAmountOperator) && amountValue.HasValue
+                                  ? SelectedAmountOperator
+                                  : null,
+            AmountValue     = amountValue
         };
 
         var results = await _handler.HandleAsync(query);
@@ -141,16 +150,15 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
         _     => null
     };
 
-    // Boş veya geçersiz metin → null (filtre uygulanmaz); negatif değer reddedilir
+    // Boş veya geçersiz metin → null (filtre uygulanmaz); hem nokta hem virgül ondalık ayıracı olarak kabul edilir
     private static decimal? ParseAmount(string? text)
     {
         if (string.IsNullOrWhiteSpace(text)) return null;
-        // Hem nokta hem virgülü ondalık ayıracı olarak kabul et
         var normalized = text.Trim().Replace(',', '.');
         return decimal.TryParse(normalized,
                    System.Globalization.NumberStyles.Number,
                    System.Globalization.CultureInfo.InvariantCulture,
-                   out var value) && value >= 0
+                   out var value)
             ? value
             : null;
     }

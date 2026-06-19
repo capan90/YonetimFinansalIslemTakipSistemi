@@ -83,12 +83,11 @@
                           SelectedItem="{Binding SelectedCurrencyType, Mode=TwoWay}"
                           Width="90" Margin="0,0,12,0"/>
 
-                <Label Content="Min Tutar:" VerticalAlignment="Center"/>
-                <TextBox Text="{Binding AmountMinText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         Width="90" Margin="0,0,8,0" VerticalContentAlignment="Center"/>
-
-                <Label Content="Max Tutar:" VerticalAlignment="Center"/>
-                <TextBox Text="{Binding AmountMaxText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                <Label Content="Tutar:" VerticalAlignment="Center"/>
+                <ComboBox ItemsSource="{Binding AmountOperatorOptions}"
+                          SelectedItem="{Binding SelectedAmountOperator, Mode=TwoWay}"
+                          Width="48" Margin="0,0,4,0"/>
+                <TextBox Text="{Binding AmountValueText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          Width="90" Margin="0,0,12,0" VerticalContentAlignment="Center"/>
 
                 <Button Content="Filtrele"

@@ -79,6 +79,13 @@ public class CashTransactionRepository : ICashTransactionRepository
             .ToListAsync();
     }
 
+    public async Task<IReadOnlyList<CashTransaction>> GetAllForBalanceAsync()
+        => await _context.CashTransactions
+            .OrderBy(x => x.TransactionDate)
+            .ThenBy(x => x.CreatedAt)
+            .ThenBy(x => x.Id)
+            .ToListAsync();
+
     public async Task<List<CurrencyReportData>> GetReportDataAsync(
         DateTime? startUtc, DateTime? endExclusiveUtc)
     {

@@ -39,6 +39,13 @@ public interface ICashTransactionRepository
         TransactionType? type, CurrencyType? currency);
 
     /// <summary>
+    /// Running balance hesabı için tüm aktif kayıtları kronolojik sırada döndürür.
+    /// Soft-delete global query filter devrede — silinmiş kayıtlar dahil edilmez.
+    /// Sıralama: TransactionDate ASC, CreatedAt ASC, Id ASC (deterministik).
+    /// </summary>
+    Task<IReadOnlyList<CashTransaction>> GetAllForBalanceAsync();
+
+    /// <summary>
     /// Rapor için GROUP BY aggregate sorgusu.
     /// Soft-delete global query filter devrede — silinmiş kayıtlar dahil edilmez.
     /// Tarih aralığı yarı-açık: >= startUtc AND < endExclusiveUtc.

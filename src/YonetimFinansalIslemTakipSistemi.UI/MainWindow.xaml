@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Yönetim — Nakit İşlemler" Height="600" Width="1000">
+        Title="Yönetim — Nakit İşlemler" Height="600" Width="1200">
 
     <DockPanel>
 
@@ -121,6 +121,33 @@
                 <DataGridTextColumn Header="Açıklama"
                                     Binding="{Binding Description}"
                                     Width="*"/>
+                <DataGridTextColumn Header="TL Bakiye"
+                                    Binding="{Binding TlBalanceAfter, StringFormat=N2}"
+                                    Width="100">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Right"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="USD Bakiye"
+                                    Binding="{Binding UsdBalanceAfter, StringFormat=N2}"
+                                    Width="100">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Right"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="EUR Bakiye"
+                                    Binding="{Binding EurBalanceAfter, StringFormat=N2}"
+                                    Width="100">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Right"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
                 <DataGridTextColumn Header="Oluşturulma"
                                     Binding="{Binding CreatedAt, StringFormat=dd.MM.yyyy HH:mm}"
                                     Width="130"/>

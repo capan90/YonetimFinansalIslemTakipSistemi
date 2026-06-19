@@ -16,6 +16,12 @@ public partial class MainWindow : Window
     private readonly CashTransactionListViewModel _listVm;
     private readonly IDialogService _dialogService;
 
+    /// <summary>
+    /// true → kullanıcı "Çıkış Yap" seçti; App.xaml.cs döngü yeni login açar.
+    /// false → pencere X butonuyla kapatıldı; App.xaml.cs uygulamayı kapatır.
+    /// </summary>
+    public bool IsLogoutRequested { get; private set; }
+
     public MainWindow(IServiceProvider services)
     {
         InitializeComponent();
@@ -23,6 +29,12 @@ public partial class MainWindow : Window
         _listVm         = services.GetRequiredService<CashTransactionListViewModel>();
         _dialogService  = services.GetRequiredService<IDialogService>();
         DataContext     = _listVm;
+
+        // Oturumdaki kullanıcı adını araç çubuğuna yaz; boş ise gösterme
+        var userContext = services.GetRequiredService<IUserContext>();
+        LoggedInUserText.Text = string.IsNullOrWhiteSpace(userContext.FullName)
+            ? string.Empty
+            : userContext.FullName;
 
         Loaded += async (_, _) => await _listVm.LoadAsync();
     }
@@ -71,6 +83,17 @@ public partial class MainWindow : Window
         }
 
         await _listVm.LoadAsync();
+    }
+
+    private void Logout_Click(object sender, RoutedEventArgs e)
+    {
+        // Onay reddedilirse hiçbir şey değişmez; pencere açık kalır
+        if (!_dialogService.ShowConfirmation("Oturumu kapatmak istediğinize emin misiniz?", "Çıkış Yap"))
+            return;
+
+        // Logout: flag set, pencereyi kapat. Session temizleme App.xaml.cs'te scope dispose sonrası yapılır.
+        IsLogoutRequested = true;
+        Close();
     }
 
     private void OpenUserManagement_Click(object sender, RoutedEventArgs e)

@@ -3,17 +3,27 @@ using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 namespace YonetimFinansalIslemTakipSistemi.Application.Common;
 
 /// <summary>
-/// IUserContext'in oturum ömrü boyunca yaşayan singleton implementasyonu.
-/// Set() yalnızca LoginViewModel tarafından başarılı girişte bir kez çağrılır.
+/// IUserContext (okuma) ve IUserSession (yazma) singleton implementasyonu.
+/// IUserContext: handler'lar tarafından okunur.
+/// IUserSession: LoginViewModel (SetUser) ve App.xaml.cs (Clear) tarafından yazılır.
 /// </summary>
-public sealed class UserContext : IUserContext
+public sealed class UserContext : IUserContext, IUserSession
 {
-    public Guid UserId { get; private set; }
+    public Guid   UserId   { get; private set; }
     public string FullName { get; private set; } = string.Empty;
 
-    public void Set(Guid userId, string fullName)
+    public void SetUser(Guid userId, string fullName)
     {
         UserId   = userId;
         FullName = fullName;
+    }
+
+    /// <summary>
+    /// Logout sonrası çağrılır. Önceki kullanıcı verisi bir sonraki oturuma taşınmaz.
+    /// </summary>
+    public void Clear()
+    {
+        UserId   = Guid.Empty;
+        FullName = string.Empty;
     }
 }

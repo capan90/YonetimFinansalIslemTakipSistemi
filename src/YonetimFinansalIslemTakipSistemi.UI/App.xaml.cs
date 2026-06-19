@@ -41,10 +41,13 @@ public partial class App : System.Windows.Application
         // Dialog servisi — singleton: durumsuz, her çağrıda yeni pencere nesnesi oluşturur
         services.AddSingleton<IDialogService, DialogService>();
 
-        // Oturum bağlamı — LoginViewModel başarılı girişte Set() çağırır; diğer VM'ler IUserContext okur
+        // Oturum bağlamı — tek singleton örneği iki arayüz üzerinden açılır:
+        //   IUserContext (okuma): handler'lar ve VM'ler kullanır
+        //   IUserSession (yazma): LoginViewModel.SetUser(), App.xaml.cs.Clear()
         var userContext = new UserContext();
         services.AddSingleton(userContext);
         services.AddSingleton<IUserContext>(userContext);
+        services.AddSingleton<IUserSession>(userContext);
 
         // CashTransaction handler'lar
         services.AddScoped<CreateCashTransactionHandler>();
@@ -71,23 +74,57 @@ public partial class App : System.Windows.Application
 
         Services = services.BuildServiceProvider();
 
-        var scope = Services.CreateScope();
+        // [DEV-ONLY] Seed bir kez, kendi kısa ömürlü scope'uyla
+        using (var seedScope = Services.CreateScope())
+            await seedScope.ServiceProvider.GetRequiredService<IDevDataSeeder>().SeedAsync();
 
-        // [DEV-ONLY] Seed servisini çalıştır; mantık Infrastructure'da kapsüllü
-        await scope.ServiceProvider.GetRequiredService<IDevDataSeeder>().SeedAsync();
+        RunApplicationLoop();
+    }
 
-        // Önce login ekranı; iptal veya başarısız girişte uygulamayı kapat.
-        var loginWindow = new LoginWindow(scope.ServiceProvider);
-        if (loginWindow.ShowDialog() != true)
+    /// <summary>
+    /// Her oturum yeni bir IServiceScope alır → ayrı DbContext örneği → oturumlar arası veri karışmaz.
+    /// Login iptal / X → Shutdown. Logout → scope dispose + Clear → döngü yeni oturumla devam eder.
+    /// </summary>
+    private void RunApplicationLoop()
+    {
+        while (true)
         {
-            scope.Dispose();
-            Shutdown();
-            return;
-        }
+            var scope = Services.CreateScope();
+            bool isLogout;
 
-        // Başarılı giriş — ana pencereyi aç; kapanınca uygulama sonlanır.
-        var mainWindow = new MainWindow(scope.ServiceProvider);
-        mainWindow.Closed += (_, _) => { scope.Dispose(); Shutdown(); };
-        mainWindow.Show();
+            try
+            {
+                var loginWindow = new LoginWindow(scope.ServiceProvider);
+                Current.MainWindow = loginWindow;
+
+                if (loginWindow.ShowDialog() != true)
+                {
+                    Shutdown();
+                    return;
+                }
+
+                var mainWindow = new MainWindow(scope.ServiceProvider);
+                Current.MainWindow = mainWindow;
+                mainWindow.ShowDialog(); // MainWindow kapanana kadar bloke eder
+
+                isLogout = mainWindow.IsLogoutRequested;
+            }
+            finally
+            {
+                // Pencere kapandıktan sonra scope dispose edilir — DbContext, repo bağlantısı serbest bırakılır
+                scope.Dispose();
+            }
+
+            if (!isLogout)
+            {
+                // X butonuyla kapandı — uygulamayı kapat
+                Shutdown();
+                return;
+            }
+
+            // Logout: scope dispose sonrası session temizlenir → önceki kullanıcı verisi sonraki oturuma taşınmaz
+            Services.GetRequiredService<IUserSession>().Clear();
+            // Döngü devam eder: yeni scope, yeni LoginWindow
+        }
     }
 }

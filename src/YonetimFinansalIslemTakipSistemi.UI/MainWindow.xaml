@@ -12,22 +12,35 @@
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="Yönetim">
                 <MenuItem Header="Kullanıcılar" Click="OpenUserManagement_Click"/>
+                <MenuItem Header="Denetim Günlüğü" Click="OpenAuditLog_Click"/>
             </MenuItem>
         </Menu>
 
     <DockPanel Margin="8">
 
         <!-- Araç çubuğu -->
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
-            <Button Content="+ Yeni İşlem" Width="110" Margin="0,0,6,0"
-                    Click="NewTransactionButton_Click"/>
-            <Button Content="Düzenle" Width="80" Margin="0,0,6,0"
-                    IsEnabled="{Binding HasSelectedTransaction}"
-                    Click="EditTransactionButton_Click"/>
-            <Button Content="Sil" Width="60"
-                    IsEnabled="{Binding HasSelectedTransaction}"
-                    Click="DeleteTransactionButton_Click"/>
-        </StackPanel>
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <!-- Sağ: kullanıcı adı + çıkış butonu — DockPanel'de önce Dock="Right" olan yerleşir -->
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock x:Name="LoggedInUserText"
+                           VerticalAlignment="Center"
+                           Margin="0,0,10,0"
+                           Foreground="#555555"/>
+                <Button Content="Çıkış Yap" Width="90"
+                        Click="Logout_Click"/>
+            </StackPanel>
+            <!-- Sol: işlem butonları -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Content="+ Yeni İşlem" Width="110" Margin="0,0,6,0"
+                        Click="NewTransactionButton_Click"/>
+                <Button Content="Düzenle" Width="80" Margin="0,0,6,0"
+                        IsEnabled="{Binding HasSelectedTransaction}"
+                        Click="EditTransactionButton_Click"/>
+                <Button Content="Sil" Width="60"
+                        IsEnabled="{Binding HasSelectedTransaction}"
+                        Click="DeleteTransactionButton_Click"/>
+            </StackPanel>
+        </DockPanel>
 
         <!-- Filtre Paneli -->
         <GroupBox DockPanel.Dock="Top" Header="Filtrele" Margin="0,0,0,8" Padding="8">

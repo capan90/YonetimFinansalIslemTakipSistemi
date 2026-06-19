@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.UI.Common;
 
@@ -10,7 +9,7 @@ namespace YonetimFinansalIslemTakipSistemi.UI.ViewModels.Login;
 public class LoginViewModel : INotifyPropertyChanged
 {
     private readonly IAuthenticationService _authService;
-    private readonly UserContext _userContext;
+    private readonly IUserSession _userSession;
     private string  _userName     = string.Empty;
     private string  _password     = string.Empty;
     private string? _errorMessage;
@@ -41,10 +40,10 @@ public class LoginViewModel : INotifyPropertyChanged
 
     public ICommand LoginCommand { get; }
 
-    public LoginViewModel(IAuthenticationService authService, UserContext userContext)
+    public LoginViewModel(IAuthenticationService authService, IUserSession userSession)
     {
         _authService = authService;
-        _userContext = userContext;
+        _userSession = userSession;
         LoginCommand = new RelayCommand(async () => await ExecuteLoginAsync());
     }
 
@@ -68,7 +67,7 @@ public class LoginViewModel : INotifyPropertyChanged
         if (result.Success)
         {
             // Oturum bağlamını singleton'a yaz; tüm VM'ler IUserContext üzerinden okur
-            _userContext.Set(result.UserId!.Value, result.FullName!);
+            _userSession.SetUser(result.UserId!.Value, result.FullName!);
             LoginCompleted?.Invoke();
         }
         else

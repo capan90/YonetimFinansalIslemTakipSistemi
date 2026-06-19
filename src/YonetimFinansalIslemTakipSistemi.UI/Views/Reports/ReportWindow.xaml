@@ -11,20 +11,27 @@
 
         <!-- Filtre Paneli -->
         <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
-            <Button DockPanel.Dock="Right"
-                    Content="Yenile"
-                    Width="80"
-                    Command="{Binding LoadReportCommand}">
-                <Button.Style>
-                    <Style TargetType="Button">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsLoading}" Value="True">
-                                <Setter Property="IsEnabled" Value="False"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-            </Button>
+            <!-- Sağ: Önizle + Yenile -->
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button Content="Önizle"
+                        Width="80"
+                        Margin="0,0,6,0"
+                        IsEnabled="{Binding HasReport}"
+                        Click="Preview_Click"/>
+                <Button Content="Yenile"
+                        Width="80"
+                        Command="{Binding LoadReportCommand}">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                    <Setter Property="IsEnabled" Value="False"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </StackPanel>
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <Label Content="Başlangıç:" VerticalAlignment="Center"/>
                 <DatePicker SelectedDate="{Binding StartDate, Mode=TwoWay}"

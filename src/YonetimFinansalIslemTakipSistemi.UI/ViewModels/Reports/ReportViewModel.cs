@@ -19,6 +19,16 @@ public class ReportViewModel : INotifyPropertyChanged
     private bool      _isLoading;
     private string?   _errorMessage;
 
+    // Son başarılı yükleme sonucu — önizleme ve export için önbellek
+    public ReportDto? LastReportDto { get; private set; }
+
+    private bool _hasReport;
+    public bool HasReport
+    {
+        get => _hasReport;
+        private set { _hasReport = value; OnPropertyChanged(); }
+    }
+
     // Para birimi özet kartları — her zaman 3 nesne; boşken sıfırlı
     private CurrencySummaryDto _trySummary = EmptySummary(CurrencyType.TRY, "TL");
     private CurrencySummaryDto _usdSummary = EmptySummary(CurrencyType.USD, "USD");
@@ -105,6 +115,9 @@ public class ReportViewModel : INotifyPropertyChanged
             var dto = result.Data!;
 
             // Para birimi kartlarını güncelle
+            LastReportDto = dto;
+            HasReport     = true;
+
             TrySummary = dto.CurrencySummaries.FirstOrDefault(c => c.Currency == CurrencyType.TRY)
                          ?? EmptySummary(CurrencyType.TRY, "TL");
             UsdSummary = dto.CurrencySummaries.FirstOrDefault(c => c.Currency == CurrencyType.USD)

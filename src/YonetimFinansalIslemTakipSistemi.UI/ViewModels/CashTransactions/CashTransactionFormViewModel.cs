@@ -1,9 +1,10 @@
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Commands.CreateCashTransaction;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Commands.UpdateCashTransaction;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Queries.GetCashTransactions;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.UI.Common;
@@ -12,15 +13,21 @@ namespace YonetimFinansalIslemTakipSistemi.UI.ViewModels.CashTransactions;
 
 public class CashTransactionFormViewModel : INotifyPropertyChanged
 {
-    private readonly CreateCashTransactionHandler _handler;
+    private readonly CreateCashTransactionHandler _createHandler;
+    private readonly UpdateCashTransactionHandler _updateHandler;
     private readonly IUserContext _userContext;
 
-    private DateTime _transactionDate = DateTime.Today;
+    private Guid?    _editTargetId;
+    private DateTime _transactionDate         = DateTime.Today;
     private string   _selectedTransactionType = "Tahsilat";
     private string   _selectedCurrencyType    = "TRY";
     private string   _amountText              = string.Empty;
     private string   _description             = string.Empty;
     private string?  _errorMessage;
+
+    public bool IsEditMode { get; private set; }
+
+    public string WindowTitle => IsEditMode ? "İşlemi Düzenle" : "Yeni Nakit İşlem";
 
     public DateTime TransactionDate
     {
@@ -68,11 +75,31 @@ public class CashTransactionFormViewModel : INotifyPropertyChanged
 
     public ICommand SaveCommand { get; }
 
-    public CashTransactionFormViewModel(CreateCashTransactionHandler handler, IUserContext userContext)
+    public CashTransactionFormViewModel(
+        CreateCashTransactionHandler createHandler,
+        UpdateCashTransactionHandler updateHandler,
+        IUserContext userContext)
     {
-        _handler     = handler;
-        _userContext = userContext;
-        SaveCommand  = new RelayCommand(async () => await ExecuteSaveAsync());
+        _createHandler = createHandler;
+        _updateHandler = updateHandler;
+        _userContext   = userContext;
+        SaveCommand    = new RelayCommand(async () => await ExecuteSaveAsync());
+    }
+
+    /// <summary>
+    /// Düzenleme modunda formu doldurur. ShowDialog() öncesi çağrılmalıdır.
+    /// DTO'daki display string'ler form ComboBox seçenekleriyle birebir uyuşur (GetCashTransactionsHandler mapping'i).
+    /// </summary>
+    public void Initialize(CashTransactionDto dto)
+    {
+        IsEditMode              = true;
+        _editTargetId           = dto.Id;
+        TransactionDate         = dto.TransactionDate;
+        SelectedTransactionType = dto.TransactionTypeDisplay;
+        SelectedCurrencyType    = dto.CurrencyTypeDisplay;
+        AmountText              = dto.Amount.ToString(CultureInfo.CurrentCulture);
+        Description             = dto.Description;
+        OnPropertyChanged(nameof(WindowTitle));
     }
 
     private async Task ExecuteSaveAsync()
@@ -87,18 +114,35 @@ public class CashTransactionFormViewModel : INotifyPropertyChanged
             return;
         }
 
-        var request = new CreateCashTransactionRequest
+        if (IsEditMode)
         {
-            TransactionDate = TransactionDate,
-            TransactionType = ParseTransactionType(SelectedTransactionType),
-            CurrencyType    = ParseCurrencyType(SelectedCurrencyType),
-            Amount          = amount,
-            Description     = Description.Trim(), // opsiyonel; girilmişse boşluklar temizlenir
-            CreatedByUserId = _userContext.UserId
-        };
-
-        var result = await _handler.HandleAsync(request);
-        if (!result.Success) { ErrorMessage = result.ErrorMessage; return; }
+            var request = new UpdateCashTransactionRequest
+            {
+                Id              = _editTargetId!.Value,
+                TransactionDate = TransactionDate,
+                TransactionType = ParseTransactionType(SelectedTransactionType),
+                CurrencyType    = ParseCurrencyType(SelectedCurrencyType),
+                Amount          = amount,
+                Description     = Description.Trim(),
+                UpdatedByUserId = _userContext.UserId
+            };
+            var result = await _updateHandler.HandleAsync(request);
+            if (!result.Success) { ErrorMessage = result.ErrorMessage; return; }
+        }
+        else
+        {
+            var request = new CreateCashTransactionRequest
+            {
+                TransactionDate = TransactionDate,
+                TransactionType = ParseTransactionType(SelectedTransactionType),
+                CurrencyType    = ParseCurrencyType(SelectedCurrencyType),
+                Amount          = amount,
+                Description     = Description.Trim(),
+                CreatedByUserId = _userContext.UserId
+            };
+            var result = await _createHandler.HandleAsync(request);
+            if (!result.Success) { ErrorMessage = result.ErrorMessage; return; }
+        }
 
         SaveCompleted?.Invoke();
     }

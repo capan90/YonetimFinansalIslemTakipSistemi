@@ -28,7 +28,23 @@
 - [x] Son aktif kullanıcı silme / pasifleştirme koruması
 - [x] Uçtan uca doğrulama: tüm CRUD ve hata senaryoları başarılı
 
+- [x] IUserContext + UserContext singleton (session bağlamı)
+- [x] CashTransaction oluşturma ekranı: CashTransactionFormViewModel, CashTransactionFormWindow
+- [x] LoginViewModel → UserContext.Set() entegrasyonu
+- [x] MainWindow'a "Yeni İşlem" butonu ve kayıt sonrası liste yenileme
+- [x] Uçtan uca doğrulama: form açılıyor, kayıt DB'ye yazılıyor, liste yenileniyor
+
+- [x] CashTransaction düzenleme: UpdateCashTransactionHandler, edit-mode form, toolbar Düzenle butonu
+- [x] CashTransaction silme: DeleteCashTransactionHandler (soft-delete + audit), toolbar Sil butonu + onay
+- [x] DateTime UTC fix: CreateCashTransaction ve UpdateCashTransaction handler'larında Npgsql timestamptz uyumu
+- [x] Uçtan uca doğrulama: oluşturma, düzenleme, silme, liste yenileme — tüm senaryolar başarılı
+
 ## Sıradaki
 
-- [ ] Ana pencere iskelet ve navigasyon (UI)
-- [ ] Nakit işlem oluşturma ekranı (CreateCashTransaction UI)
+- [ ] Dialog sistemi (Info, Success, Warning, Error, Question) — CLAUDE.md'de tanımlanmış, MessageBox geçici
+- [ ] Audit log sistemi — AuditLog tablosu, service, UI
+- [ ] Yetki yönetimi
+- [ ] Rapor ekranı
+- [ ] Döviz ekranı
+- [ ] ClickOnce güncelleme sistemi
+- [ ] Logout butonu

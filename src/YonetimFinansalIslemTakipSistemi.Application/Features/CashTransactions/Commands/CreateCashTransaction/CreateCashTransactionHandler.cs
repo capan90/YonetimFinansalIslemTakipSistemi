@@ -28,7 +28,8 @@ public class CreateCashTransactionHandler
         var entity = new CashTransaction
         {
             Id = Guid.NewGuid(),
-            TransactionDate = request.TransactionDate,
+            // DatePicker Local/Unspecified döndürebilir; Npgsql timestamptz için UTC zorunlu
+            TransactionDate = DateTime.SpecifyKind(request.TransactionDate.Date, DateTimeKind.Utc),
             TransactionType = request.TransactionType,
             CurrencyType = request.CurrencyType,
             Amount = request.Amount,

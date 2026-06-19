@@ -19,7 +19,14 @@
 
         <!-- Araç çubuğu -->
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
-            <Button Content="+ Yeni İşlem" Width="110" Click="NewTransactionButton_Click"/>
+            <Button Content="+ Yeni İşlem" Width="110" Margin="0,0,6,0"
+                    Click="NewTransactionButton_Click"/>
+            <Button Content="Düzenle" Width="80" Margin="0,0,6,0"
+                    IsEnabled="{Binding HasSelectedTransaction}"
+                    Click="EditTransactionButton_Click"/>
+            <Button Content="Sil" Width="60"
+                    IsEnabled="{Binding HasSelectedTransaction}"
+                    Click="DeleteTransactionButton_Click"/>
         </StackPanel>
 
         <!-- Filtre Paneli -->
@@ -53,6 +60,7 @@
 
         <!-- İşlem Listesi -->
         <DataGrid ItemsSource="{Binding Transactions}"
+                  SelectedItem="{Binding SelectedTransaction, Mode=TwoWay}"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
                   CanUserAddRows="False"

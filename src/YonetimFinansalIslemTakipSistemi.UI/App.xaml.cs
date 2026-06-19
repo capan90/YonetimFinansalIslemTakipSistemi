@@ -2,6 +2,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Commands.CreateCashTransaction;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Commands.DeleteCashTransaction;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Commands.UpdateCashTransaction;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Queries.GetCashTransactions;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Commands.CreateUser;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Commands.DeleteUser;
@@ -39,6 +41,8 @@ public partial class App : System.Windows.Application
 
         // CashTransaction handler'lar
         services.AddScoped<CreateCashTransactionHandler>();
+        services.AddScoped<UpdateCashTransactionHandler>();
+        services.AddScoped<DeleteCashTransactionHandler>();
         services.AddScoped<GetCashTransactionsHandler>();
 
         // User handler'lar

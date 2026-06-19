@@ -12,10 +12,11 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
 {
     private readonly GetCashTransactionsHandler _handler;
 
-    private DateTime? _dateFrom;
-    private DateTime? _dateTo;
-    private string?   _selectedTransactionType;
-    private string?   _selectedCurrencyType;
+    private DateTime?           _dateFrom;
+    private DateTime?           _dateTo;
+    private string?             _selectedTransactionType;
+    private string?             _selectedCurrencyType;
+    private CashTransactionDto? _selectedTransaction;
 
     public CashTransactionListViewModel(GetCashTransactionsHandler handler)
     {
@@ -59,6 +60,22 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
 
     public IReadOnlyList<string> CurrencyTypeOptions { get; } =
         new[] { "Tümü", "TRY", "USD", "EUR" };
+
+    // --- Seçim (Düzenle / Sil butonlarını aktif eder) ---
+
+    public CashTransactionDto? SelectedTransaction
+    {
+        get => _selectedTransaction;
+        set
+        {
+            _selectedTransaction = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(HasSelectedTransaction));
+        }
+    }
+
+    /// <summary>Toolbar butonlarının IsEnabled binding'i için.</summary>
+    public bool HasSelectedTransaction => _selectedTransaction is not null;
 
     // --- DataGrid kaynağı ---
 

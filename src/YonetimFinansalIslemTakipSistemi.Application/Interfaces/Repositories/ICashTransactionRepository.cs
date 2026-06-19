@@ -1,3 +1,4 @@
+using YonetimFinansalIslemTakipSistemi.Application.Features.Reports.Queries.GetReport;
 using YonetimFinansalIslemTakipSistemi.Domain.Entities;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 
@@ -36,4 +37,13 @@ public interface ICashTransactionRepository
     Task<IReadOnlyList<CashTransaction>> GetFilteredAsync(
         DateTime? from, DateTime? to,
         TransactionType? type, CurrencyType? currency);
+
+    /// <summary>
+    /// Rapor için GROUP BY aggregate sorgusu.
+    /// Soft-delete global query filter devrede — silinmiş kayıtlar dahil edilmez.
+    /// Tarih aralığı yarı-açık: >= startUtc AND < endExclusiveUtc.
+    /// Her iki parametre null ise tüm aktif kayıtlar üzerinden aggregation yapılır.
+    /// </summary>
+    Task<List<CurrencyReportData>> GetReportDataAsync(
+        DateTime? startUtc, DateTime? endExclusiveUtc);
 }

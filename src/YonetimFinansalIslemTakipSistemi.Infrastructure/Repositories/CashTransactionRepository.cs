@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using YonetimFinansalIslemTakipSistemi.Application.Features.Reports.Queries.GetReport;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Repositories;
 using YonetimFinansalIslemTakipSistemi.Domain.Entities;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
@@ -75,6 +76,26 @@ public class CashTransactionRepository : ICashTransactionRepository
 
         return await query
             .OrderByDescending(x => x.TransactionDate)
+            .ToListAsync();
+    }
+
+    public async Task<List<CurrencyReportData>> GetReportDataAsync(
+        DateTime? startUtc, DateTime? endExclusiveUtc)
+    {
+        var query = _context.CashTransactions.AsQueryable();
+
+        // Yarı-açık aralık: >= start, < endExclusive
+        if (startUtc.HasValue)        query = query.Where(t => t.TransactionDate >= startUtc.Value);
+        if (endExclusiveUtc.HasValue) query = query.Where(t => t.TransactionDate <  endExclusiveUtc.Value);
+
+        // GROUP BY PostgreSQL'de çalışır; kayıtların tamamı belleğe çekilmez
+        return await query
+            .GroupBy(t => new { t.CurrencyType, t.TransactionType })
+            .Select(g => new CurrencyReportData(
+                g.Key.CurrencyType,
+                g.Key.TransactionType,
+                g.Sum(t => t.Amount),
+                g.Count()))
             .ToListAsync();
     }
 }

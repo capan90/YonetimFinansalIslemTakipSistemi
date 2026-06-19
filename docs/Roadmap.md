@@ -35,3 +35,17 @@
 - Audit log sistemi
 - Güncelleme sistemi
 - Döviz ekranı
+
+## Teknik Borç
+
+### Transfer İşlemi — Tek Taraflı Model (V1)
+
+V1'de Transfer işlemi tek taraflı çıkış olarak kaydedilir.
+Mevcut `CashTransaction` entity'sinde hedef kasa, banka hesabı veya çift yönlü hareket alanı bulunmamaktadır.
+
+Gerçek kasa-arası transfer modeli desteklendiğinde şunlar gerekecek:
+- Kaynak kasa / para birimi
+- Hedef kasa / para birimi
+- Opsiyonel kur bilgisi (farklı para birimleri arası)
+- Eş hareket kaydı (kaynak çıkış + hedef giriş)
+- `TransactionTypeExtensions.GetFinancialDirection()` ve rapor handler güncellenmesi

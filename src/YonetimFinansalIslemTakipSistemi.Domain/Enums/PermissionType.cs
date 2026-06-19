@@ -11,4 +11,5 @@ public enum PermissionType
     CanCreateTransaction  = 3,
     CanEditTransaction    = 4,
     CanDeleteTransaction  = 5,
+    CanViewReports        = 6,
 }

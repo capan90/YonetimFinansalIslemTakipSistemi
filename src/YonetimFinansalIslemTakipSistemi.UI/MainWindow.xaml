@@ -21,6 +21,10 @@
                 <MenuItem x:Name="MenuItemDenetim"
                           Header="Denetim Günlüğü"
                           Click="OpenAuditLog_Click"/>
+                <Separator/>
+                <MenuItem x:Name="MenuItemRaporlar"
+                          Header="Raporlar"
+                          Click="OpenReports_Click"/>
             </MenuItem>
         </Menu>
 

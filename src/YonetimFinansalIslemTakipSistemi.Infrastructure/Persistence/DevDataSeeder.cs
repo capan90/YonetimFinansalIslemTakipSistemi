@@ -6,8 +6,8 @@ namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Persistence;
 
 /// <summary>
 /// [DEV-ONLY] Geliştirme ortamı seed servisi.
-/// Boş veritabanında admin kullanıcısını ve tüm izinlerini oluşturur.
-/// Admin mevcutsa fakat izinleri eksikse izinleri tamamlar (migration sonrası upgrade senaryosu).
+/// Admin yoksa oluşturur; admin mevcutsa eksik izinleri tamamlar.
+/// PermissionType enum'una yeni değer eklendiğinde upgrade-safe çalışır — mevcut izinleri silmez.
 /// Üretim ortamında bu sınıf kaldırılacak.
 /// </summary>
 internal sealed class DevDataSeeder : IDevDataSeeder
@@ -22,10 +22,11 @@ internal sealed class DevDataSeeder : IDevDataSeeder
 
     public async Task SeedAsync()
     {
-        if (!await _context.Users.AnyAsync())
+        // 1. Admin yoksa oluştur
+        var admin = await _context.Users.FirstOrDefaultAsync(u => u.UserName == DevUserName);
+        if (admin is null)
         {
-            // Hiç kullanıcı yok → admin + tüm izinleri oluştur
-            var admin = new User
+            admin = new User
             {
                 Id           = Guid.NewGuid(),
                 UserName     = DevUserName,
@@ -37,25 +38,29 @@ internal sealed class DevDataSeeder : IDevDataSeeder
 
             await _context.Users.AddAsync(admin);
             await _context.SaveChangesAsync();
+        }
 
-            await SeedPermissionsAsync(admin.Id);
-        }
-        else
-        {
-            // Admin mevcutsa izinlerini kontrol et — permissions tablosu sonradan eklenmiş olabilir
-            var adminUser = await _context.Users.FirstOrDefaultAsync(u => u.UserName == DevUserName);
-            if (adminUser is not null && !await _context.UserPermissions.AnyAsync(p => p.UserId == adminUser.Id))
-                await SeedPermissionsAsync(adminUser.Id);
-        }
+        // 2. Admin'in eksik izinlerini tamamla
+        // Upgrade senaryosu: enum'a yeni değer (örn. CanViewReports=6) eklendiğinde
+        // mevcut izinler silinmez, yalnızca eksik olanlar eklenir.
+        await SeedMissingPermissionsAsync(admin.Id);
     }
 
-    private async Task SeedPermissionsAsync(Guid userId)
+    private async Task SeedMissingPermissionsAsync(Guid userId)
     {
-        // Admin tüm izinlerle başlar
-        var perms = Enum.GetValues<PermissionType>()
-                        .Select(p => new UserPermission { UserId = userId, Permission = p });
+        var existing = await _context.UserPermissions
+            .Where(p => p.UserId == userId)
+            .Select(p => p.Permission)
+            .ToListAsync();
 
-        await _context.UserPermissions.AddRangeAsync(perms);
+        var missing = Enum.GetValues<PermissionType>()
+                          .Except(existing)
+                          .Select(p => new UserPermission { UserId = userId, Permission = p })
+                          .ToList();
+
+        if (missing.Count == 0) return;
+
+        await _context.UserPermissions.AddRangeAsync(missing);
         await _context.SaveChangesAsync();
     }
 }

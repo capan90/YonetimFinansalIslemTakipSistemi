@@ -47,9 +47,19 @@
 ### Diyalog Sistemi
 - [x] IDialogService, DialogService: Info, Success, Warning, Error, Confirmation
 
+### Güncelleme Sistemi (ClickOnce)
+- [x] IUpdateService / UpdateService: version.json okuma, sürüm karşılaştırma
+- [x] DeploymentSettings: UNC konumu tek noktadan — env var YONETIM_UPDATE_PATH override
+- [x] MainWindow → Yardım → Güncellemeleri Denetle menüsü
+- [x] İki onay dialog akışı (Option B): güncelleme + uygulama kapatma onayı
+- [x] ClickOnce.pubxml: localhost UNC, self-signed sertifika thumbprint
+- [x] Publish-ClickOnce.ps1: dotnet-mage tabanlı CLI publish scripti
+- [x] version.json AfterTargets: her publish sonrası UNC'ye yazılır
+- Not: `dotnet publish` ClickOnce profili, Engine\Launcher.exe (VS bileşeni) gerektirdiğinden
+  `Publish-ClickOnce.ps1` ve `microsoft.dotnet.mage` aracı kullanılır.
+
 ---
 
 ## Sıradaki
 
 - [ ] Döviz ekranı (TCMB entegrasyonu veya manuel kur girişi)
-- [ ] ClickOnce güncelleme sistemi (startup kontrolü, manuel kontrol, kullanıcı onayı)

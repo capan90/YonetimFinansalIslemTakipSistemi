@@ -33,7 +33,7 @@
 ## Aşama 6 - Destek Modülleri (kısmen)
 - [x] Dialog sistemi
 - [x] Audit log sistemi
-- [ ] Güncelleme sistemi (ClickOnce)
+- [x] Güncelleme sistemi (ClickOnce)
 - [ ] Döviz ekranı
 
 ---

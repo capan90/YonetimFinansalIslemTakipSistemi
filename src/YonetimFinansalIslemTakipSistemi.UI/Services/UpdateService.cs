@@ -13,9 +13,10 @@ namespace YonetimFinansalIslemTakipSistemi.UI.Services;
 /// </summary>
 public class UpdateService : IUpdateService
 {
-    // Üretimde gerçek sunucu adıyla değiştirilecek
-    private const string VersionJsonPath    = @"\\SUNUCU\uygulamalar\yonetim\version.json";
-    private const string DeploymentFilePath = @"\\SUNUCU\uygulamalar\yonetim\YonetimFinansalIslemTakipSistemi.application";
+    // UNC konumu DeploymentSettings üzerinden tek noktadan yönetilir.
+    // Sunucu değişince yalnızca DeploymentSettings.cs ve ClickOnce.pubxml güncellenir.
+    private static string VersionJsonPath    => DeploymentSettings.VersionJsonPath;
+    private static string DeploymentFilePath => DeploymentSettings.DeploymentFilePath;
 
     // ClickOnce uygulamayı %LOCALAPPDATA%\Apps\ altına kurar.
     // System.Deployment.Application .NET 9'da mevcut değildir; konum kontrolü güvenilir alternatiftir.

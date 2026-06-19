@@ -19,6 +19,18 @@
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
   </PropertyGroup>
 
+  <!--
+    dotnet publish, SetGenerateManifests (VS-only) target'ını atlar.
+    Bu target _DeploymentGenerateLauncher koşulunu önceden true yapar.
+  -->
+  <Target Name="_ForceClickOnceManifests"
+          BeforeTargets="_DeploymentGenerateLauncher"
+          Condition="'$(PublishProtocol)' == 'ClickOnce'">
+    <PropertyGroup>
+      <GenerateClickOnceManifests>true</GenerateClickOnceManifests>
+    </PropertyGroup>
+  </Target>
+
   <!-- ClickOnce publish tamamlandıktan sonra version.json'ı UNC klasörüne yazar -->
   <Target Name="WriteVersionJson" AfterTargets="Publish"
           Condition="'$(PublishProtocol)' == 'ClickOnce' and '$(PublishUrl)' != ''">

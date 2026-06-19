@@ -5,8 +5,10 @@ namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Persistence;
 
 public class AppDbContext : DbContext
 {
-    public DbSet<CashTransaction> CashTransactions => Set<CashTransaction>();
-    public DbSet<User> Users => Set<User>();
+    public DbSet<CashTransaction> CashTransactions  => Set<CashTransaction>();
+    public DbSet<User>            Users              => Set<User>();
+    public DbSet<AuditLog>        AuditLogs          => Set<AuditLog>();
+    public DbSet<UserPermission>  UserPermissions    => Set<UserPermission>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 

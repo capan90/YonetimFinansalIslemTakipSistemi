@@ -23,6 +23,9 @@ public class DeleteUserHandler
 
     public async Task<OperationResult<bool>> HandleAsync(DeleteUserRequest request)
     {
+        if (!_userContext.HasPermission(PermissionType.CanManageUsers))
+            return OperationResult<bool>.Fail("Bu işlem için yetkiniz bulunmamaktadır.");
+
         var user = await _repository.GetByIdAsync(request.Id);
         if (user is null)
             return OperationResult<bool>.Fail("Kullanıcı bulunamadı.");

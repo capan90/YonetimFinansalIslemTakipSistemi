@@ -1,15 +1,25 @@
 using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Repositories;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
+using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 
 namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Services;
 
 public class DatabaseAuthenticationService : IAuthenticationService
 {
-    private readonly IUserRepository _userRepository;
+    private readonly IUserRepository           _userRepository;
+    private readonly IUserPermissionRepository _permissionRepository;
+    private readonly IAuditLogService          _auditLogService;
 
-    public DatabaseAuthenticationService(IUserRepository userRepository)
-        => _userRepository = userRepository;
+    public DatabaseAuthenticationService(
+        IUserRepository           userRepository,
+        IUserPermissionRepository permissionRepository,
+        IAuditLogService          auditLogService)
+    {
+        _userRepository       = userRepository;
+        _permissionRepository = permissionRepository;
+        _auditLogService      = auditLogService;
+    }
 
     public async Task<AuthResult> AuthenticateAsync(string userName, string password)
     {
@@ -27,6 +37,16 @@ public class DatabaseAuthenticationService : IAuthenticationService
         if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
             return AuthResult.Fail("Kullanıcı adı veya şifre hatalı.");
 
-        return AuthResult.Ok(user.Id, user.FullName);
+        // Giriş sonrası kullanıcı izinleri yüklenir; oturum boyunca IUserContext üzerinden okunur
+        var permissions = await _permissionRepository.GetByUserIdAsync(user.Id);
+
+        // Audit: başarılı giriş
+        await _auditLogService.WriteAsync(
+            AuditAction.UserLoggedIn,
+            user.Id,
+            user.FullName,
+            "User", user.Id);
+
+        return AuthResult.Ok(user.Id, user.FullName, permissions);
     }
 }

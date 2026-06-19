@@ -30,6 +30,10 @@ public class CreateCashTransactionHandler
     public async Task<OperationResult<CreateCashTransactionResponse>> HandleAsync(
         CreateCashTransactionRequest request)
     {
+        if (!_userContext.HasPermission(PermissionType.CanCreateTransaction))
+            return OperationResult<CreateCashTransactionResponse>.Fail(
+                "Bu işlem için yetkiniz bulunmamaktadır.");
+
         var validationError = Validate(request);
         if (validationError is not null)
             return OperationResult<CreateCashTransactionResponse>.Fail(validationError);

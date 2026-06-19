@@ -9,6 +9,8 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Que
 using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Commands.CreateUser;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Commands.DeleteUser;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Commands.UpdateUser;
+using YonetimFinansalIslemTakipSistemi.Application.Features.Permissions.Commands.UpdateUserPermissions;
+using YonetimFinansalIslemTakipSistemi.Application.Features.Permissions.Queries.GetUserPermissions;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Queries.GetUsers;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Infrastructure;
@@ -18,6 +20,7 @@ using YonetimFinansalIslemTakipSistemi.UI.Services;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.AuditLogs;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.CashTransactions;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Login;
+using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Permissions;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Users;
 
 namespace YonetimFinansalIslemTakipSistemi.UI;
@@ -64,6 +67,10 @@ public partial class App : System.Windows.Application
         // Audit log handler
         services.AddScoped<GetAuditLogsHandler>();
 
+        // Permissions handler'lar
+        services.AddScoped<GetUserPermissionsHandler>();
+        services.AddScoped<UpdateUserPermissionsHandler>();
+
         // ViewModels
         services.AddTransient<LoginViewModel>();
         services.AddTransient<CashTransactionListViewModel>();
@@ -71,6 +78,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<UserManagementViewModel>();
         services.AddTransient<UserFormViewModel>();
         services.AddTransient<AuditLogViewModel>();
+        services.AddTransient<UserPermissionViewModel>();
 
         Services = services.BuildServiceProvider();
 

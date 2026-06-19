@@ -29,6 +29,9 @@ public class DeleteCashTransactionHandler
 
     public async Task<OperationResult<bool>> HandleAsync(DeleteCashTransactionRequest request)
     {
+        if (!_userContext.HasPermission(PermissionType.CanDeleteTransaction))
+            return OperationResult<bool>.Fail("Bu işlem için yetkiniz bulunmamaktadır.");
+
         // Oturum açık kullanıcı zorunlu — audit kaydı için
         if (request.DeletedByUserId == Guid.Empty)
             return OperationResult<bool>.Fail("İşlemi yapan kullanıcı belirtilmelidir.");

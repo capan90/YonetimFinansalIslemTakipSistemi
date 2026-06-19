@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using YonetimFinansalIslemTakipSistemi.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using YonetimFinansalIslemTakipSistemi.Infrastructure.Persistence;
 namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260619070026_AddAuditLogsTable")]
+    partial class AddAuditLogsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -165,32 +168,6 @@ namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("users", (string)null);
-                });
-
-            modelBuilder.Entity("YonetimFinansalIslemTakipSistemi.Domain.Entities.UserPermission", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.Property<int>("Permission")
-                        .HasColumnType("integer")
-                        .HasColumnName("permission");
-
-                    b.HasKey("UserId", "Permission");
-
-                    b.ToTable("user_permissions", (string)null);
-                });
-
-            modelBuilder.Entity("YonetimFinansalIslemTakipSistemi.Domain.Entities.UserPermission", b =>
-                {
-                    b.HasOne("YonetimFinansalIslemTakipSistemi.Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }

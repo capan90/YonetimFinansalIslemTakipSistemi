@@ -27,6 +27,10 @@ public class CreateUserHandler
 
     public async Task<OperationResult<CreateUserResponse>> HandleAsync(CreateUserRequest request)
     {
+        if (!_userContext.HasPermission(PermissionType.CanManageUsers))
+            return OperationResult<CreateUserResponse>.Fail(
+                "Bu işlem için yetkiniz bulunmamaktadır.");
+
         var error = Validate(request);
         if (error is not null)
             return OperationResult<CreateUserResponse>.Fail(error);

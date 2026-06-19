@@ -22,9 +22,12 @@ public static class ServiceRegistration
 
         services.AddScoped<ICashTransactionRepository, CashTransactionRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+        services.AddScoped<IUserPermissionRepository, UserPermissionRepository>();
 
         services.AddScoped<IAuthenticationService, DatabaseAuthenticationService>();
         services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
+        services.AddScoped<IAuditLogService, AuditLogService>();
 
         // [DEV-ONLY] Geliştirme ortamı seed servisi
         services.AddScoped<IDevDataSeeder, DevDataSeeder>();

@@ -26,6 +26,9 @@ public class UpdateUserHandler
 
     public async Task<OperationResult<bool>> HandleAsync(UpdateUserRequest request)
     {
+        if (!_userContext.HasPermission(PermissionType.CanManageUsers))
+            return OperationResult<bool>.Fail("Bu işlem için yetkiniz bulunmamaktadır.");
+
         if (string.IsNullOrWhiteSpace(request.FullName))
             return OperationResult<bool>.Fail("Ad Soyad boş olamaz.");
 

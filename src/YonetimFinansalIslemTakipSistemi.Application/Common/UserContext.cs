@@ -1,4 +1,5 @@
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
+using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 
 namespace YonetimFinansalIslemTakipSistemi.Application.Common;
 
@@ -9,21 +10,30 @@ namespace YonetimFinansalIslemTakipSistemi.Application.Common;
 /// </summary>
 public sealed class UserContext : IUserContext, IUserSession
 {
+    private HashSet<PermissionType> _permissions = [];
+
     public Guid   UserId   { get; private set; }
     public string FullName { get; private set; } = string.Empty;
 
-    public void SetUser(Guid userId, string fullName)
+    public IReadOnlySet<PermissionType> Permissions => _permissions;
+
+    public bool HasPermission(PermissionType permission)
+        => _permissions.Contains(permission);
+
+    public void SetUser(Guid userId, string fullName, IReadOnlySet<PermissionType> permissions)
     {
-        UserId   = userId;
-        FullName = fullName;
+        UserId       = userId;
+        FullName     = fullName;
+        _permissions = new HashSet<PermissionType>(permissions);
     }
 
     /// <summary>
-    /// Logout sonrası çağrılır. Önceki kullanıcı verisi bir sonraki oturuma taşınmaz.
+    /// Logout sonrası çağrılır. Kullanıcı bilgisi ve tüm izinler temizlenir.
     /// </summary>
     public void Clear()
     {
         UserId   = Guid.Empty;
         FullName = string.Empty;
+        _permissions.Clear();
     }
 }

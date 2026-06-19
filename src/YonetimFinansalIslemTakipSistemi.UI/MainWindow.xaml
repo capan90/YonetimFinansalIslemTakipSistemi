@@ -11,8 +11,16 @@
         <!-- Menü çubuğu -->
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="Yönetim">
-                <MenuItem Header="Kullanıcılar" Click="OpenUserManagement_Click"/>
-                <MenuItem Header="Denetim Günlüğü" Click="OpenAuditLog_Click"/>
+                <!-- Visibility: UI gizlemesi; asıl koruma handler seviyesindedir -->
+                <MenuItem x:Name="MenuItemKullanicilar"
+                          Header="Kullanıcılar"
+                          Click="OpenUserManagement_Click"/>
+                <MenuItem x:Name="MenuItemYetkiler"
+                          Header="Yetkiler"
+                          Click="OpenPermissions_Click"/>
+                <MenuItem x:Name="MenuItemDenetim"
+                          Header="Denetim Günlüğü"
+                          Click="OpenAuditLog_Click"/>
             </MenuItem>
         </Menu>
 

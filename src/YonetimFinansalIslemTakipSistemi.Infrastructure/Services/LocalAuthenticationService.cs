@@ -1,5 +1,6 @@
 using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
+using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 
 namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Services;
 
@@ -16,7 +17,7 @@ public class LocalAuthenticationService : IAuthenticationService
     public Task<AuthResult> AuthenticateAsync(string userName, string password)
     {
         if (userName == AdminUserName && password == AdminPassword)
-            return Task.FromResult(AuthResult.Ok(Guid.Empty, "Yönetici"));
+            return Task.FromResult(AuthResult.Ok(Guid.Empty, "Yönetici", new HashSet<PermissionType>()));
 
         return Task.FromResult(AuthResult.Fail("Kullanıcı adı veya şifre hatalı."));
     }

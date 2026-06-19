@@ -66,8 +66,8 @@ public class LoginViewModel : INotifyPropertyChanged
 
         if (result.Success)
         {
-            // Oturum bağlamını singleton'a yaz; tüm VM'ler IUserContext üzerinden okur
-            _userSession.SetUser(result.UserId!.Value, result.FullName!);
+            // Oturum bağlamını singleton'a yaz; izinler giriş sırasında DB'den yüklenir
+            _userSession.SetUser(result.UserId!.Value, result.FullName!, result.Permissions);
             LoginCompleted?.Invoke();
         }
         else

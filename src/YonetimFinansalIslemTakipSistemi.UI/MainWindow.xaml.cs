@@ -4,8 +4,10 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Com
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.CashTransactions;
+using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.UI.Views.AuditLogs;
 using YonetimFinansalIslemTakipSistemi.UI.Views.CashTransactions;
+using YonetimFinansalIslemTakipSistemi.UI.Views.Permissions;
 using YonetimFinansalIslemTakipSistemi.UI.Views.Users;
 
 namespace YonetimFinansalIslemTakipSistemi.UI;
@@ -36,7 +38,25 @@ public partial class MainWindow : Window
             ? string.Empty
             : userContext.FullName;
 
-        Loaded += async (_, _) => await _listVm.LoadAsync();
+        Loaded += async (_, _) =>
+        {
+            await _listVm.LoadAsync();
+            RefreshMenuVisibility(userContext);
+        };
+    }
+
+    /// <summary>
+    /// Menü öğelerini oturumun iznine göre gizle/göster.
+    /// Gerçek güvenlik handler seviyesindedir; bu yalnızca UI kolaylığıdır.
+    /// </summary>
+    private void RefreshMenuVisibility(IUserContext userContext)
+    {
+        var canManage = userContext.HasPermission(PermissionType.CanManageUsers);
+        var canAudit  = userContext.HasPermission(PermissionType.CanViewAuditLog);
+
+        MenuItemKullanicilar.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemYetkiler.Visibility     = canManage ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemDenetim.Visibility      = canAudit  ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private async void NewTransactionButton_Click(object sender, RoutedEventArgs e)
@@ -106,5 +126,15 @@ public partial class MainWindow : Window
     {
         var win = new AuditLogWindow(_services) { Owner = this };
         win.ShowDialog();
+    }
+
+    private void OpenPermissions_Click(object sender, RoutedEventArgs e)
+    {
+        var win = new UserPermissionWindow(_services) { Owner = this };
+        win.ShowDialog();
+
+        // Yetkiler değişmiş olabilir — menü görünürlüğünü yenile
+        var userContext = _services.GetRequiredService<IUserContext>();
+        RefreshMenuVisibility(userContext);
     }
 }

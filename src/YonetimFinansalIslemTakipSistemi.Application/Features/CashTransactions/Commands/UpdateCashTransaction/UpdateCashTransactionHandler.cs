@@ -28,6 +28,9 @@ public class UpdateCashTransactionHandler
 
     public async Task<OperationResult<bool>> HandleAsync(UpdateCashTransactionRequest request)
     {
+        if (!_userContext.HasPermission(PermissionType.CanEditTransaction))
+            return OperationResult<bool>.Fail("Bu işlem için yetkiniz bulunmamaktadır.");
+
         var validationError = Validate(request);
         if (validationError is not null)
             return OperationResult<bool>.Fail(validationError);

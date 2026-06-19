@@ -100,9 +100,8 @@ Import-Certificate -FilePath "YonetimApp.cer" -CertStoreLocation "Cert:\LocalMac
 2. csproj <AssemblyVersion> artır (örn. 1.0.0.0 → 1.0.0.1)
    pubxml  <PublishVersion>  ile senkron tut
 
-3. dotnet publish --profile ClickOnce
-   → Uygulama dosyaları UNC'ye yazılır
-   → AfterTargets="Publish" → version.json UNC klasörüne yazılır
+3. .\Publish-ClickOnce.ps1 -Version "1.0.0.1"
+   → dotnet publish (flat output) + dotnet-mage (manifest) + version.json UNC'ye yazılır
 
 4. Smoke test: bir istemcide uygulamayı kapat ve yeniden aç
 ```
@@ -112,6 +111,12 @@ Import-Certificate -FilePath "YonetimApp.cer" -CertStoreLocation "Cert:\LocalMac
 Migration **publish öncesi** uygulanır. Uygulama startup'ta migration çalıştırmaz.
 DevDataSeeder migration runner değildir.
 
+### `dotnet publish /p:PublishProfile=ClickOnce` Neden Çalışmıyor?
+
+.NET 9 CLI'de ClickOnce publish için `GenerateLauncher` görevi `Engine\Launcher.exe` şablon
+dosyasına ihtiyaç duyar. Bu dosya Visual Studio kurulumunda bulunur; yalnızca .NET SDK kuruluysa
+eksiktir. `Publish-ClickOnce.ps1` bu görevi `microsoft.dotnet.mage` aracıyla bypass eder.
+
 ---
 
 ## IUpdateService
@@ -120,7 +125,7 @@ DevDataSeeder migration runner değildir.
 
 | Üye | Açıklama |
 |-----|----------|
-| `IsClickOnceDeployment` | ActivationArguments ile tespit |
+| `IsClickOnceDeployment` | `AppContext.BaseDirectory` → `%LOCALAPPDATA%\Apps\` kontrolü |
 | `CheckForUpdateAsync()` | version.json okur, karşılaştırır |
 | `LaunchInstaller()` | .application'ı shell ile açar |
 

@@ -29,6 +29,10 @@
                           Header="Döviz Kurları"
                           Click="OpenExchangeRates_Click"/>
             </MenuItem>
+            <MenuItem Header="Yardım">
+                <MenuItem Header="Güncellemeleri Denetle"
+                          Click="CheckForUpdates_Click"/>
+            </MenuItem>
         </Menu>
 
     <DockPanel Margin="8">

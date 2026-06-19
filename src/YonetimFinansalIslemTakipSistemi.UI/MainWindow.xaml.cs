@@ -155,4 +155,49 @@ public partial class MainWindow : Window
         var win = new ExchangeRateWindow(_services) { Owner = this };
         win.ShowDialog();
     }
+
+    private async void CheckForUpdates_Click(object sender, RoutedEventArgs e)
+    {
+        var updateService = _services.GetRequiredService<IUpdateService>();
+
+        if (!updateService.IsClickOnceDeployment)
+        {
+            _dialogService.ShowInfo("Güncelleme kontrolü yalnızca ClickOnce ile kurulu sürümde kullanılabilir.");
+            return;
+        }
+
+        var result = await updateService.CheckForUpdateAsync();
+
+        if (result.ErrorMessage == "io_error")
+        {
+            _dialogService.ShowWarning("Güncelleme sunucusuna erişilemiyor. Ağ bağlantınızı kontrol edin.");
+            return;
+        }
+
+        if (result.ErrorMessage is not null)
+        {
+            _dialogService.ShowWarning("Güncelleme kontrolü sırasında beklenmeyen bir hata oluştu.");
+            return;
+        }
+
+        if (!result.IsUpdateAvailable)
+        {
+            _dialogService.ShowInfo($"Uygulamanız güncel.\nMevcut sürüm: v{result.CurrentVersion}");
+            return;
+        }
+
+        if (!_dialogService.ShowConfirmation(
+                $"Yeni sürüm mevcut: v{result.LatestVersion}\nMevcut sürüm: v{result.CurrentVersion}\n\nŞimdi güncellemek ister misiniz?",
+                "Güncelleme Mevcut"))
+            return;
+
+        // Kullanıcının açık penceresini kaydetmesi için ikinci onay (Option B)
+        if (!_dialogService.ShowConfirmation(
+                "Güncelleme başlatılacak ve uygulama kapatılacak.\nDevam etmek istiyor musunuz?",
+                "Uygulama Kapatılıyor"))
+            return;
+
+        updateService.LaunchInstaller();
+        System.Windows.Application.Current.Shutdown();
+    }
 }

@@ -49,6 +49,9 @@ public partial class App : System.Windows.Application
         // Dialog servisi — singleton: durumsuz, her çağrıda yeni pencere nesnesi oluşturur
         services.AddSingleton<IDialogService, DialogService>();
 
+        // Güncelleme servisi — singleton: UNC dosya okuma, durumsuz
+        services.AddSingleton<IUpdateService, UpdateService>();
+
         // Oturum bağlamı — tek singleton örneği iki arayüz üzerinden açılır:
         //   IUserContext (okuma): handler'lar ve VM'ler kullanır
         //   IUserSession (yazma): LoginViewModel.SetUser(), App.xaml.cs.Clear()

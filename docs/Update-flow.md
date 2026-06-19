@@ -14,13 +14,14 @@ Manuel güncelleme kontrolü → UNC'deki `version.json` okunur, `IUpdateService
 ## Klasör Yapısı
 
 ```
-\\SUNUCU\uygulamalar\yonetim\
-├── YonetimFinansalIslemTakipSistemi.application   ← ClickOnce giriş noktası
-├── setup.exe
-├── version.json                                    ← Manuel kontrol için
+\\SUNUCU\YonetimPublish\
+├── YonetimFinansalIslemTakipSistemi.application   ← ClickOnce giriş noktası (tek kurulum dosyası)
+├── version.json                                    ← Manuel güncelleme kontrolü için
 └── Application Files\
-    └── YonetimFinansalIslemTakipSistemi_1_0_0_x\
+    └── YonetimFinansalIslemTakipSistemi.UI_1_0_0_x\
 ```
+
+> `setup.exe` üretilmez (`BootstrapperEnabled = false`). `.application` tek kurulum girişidir.
 
 ---
 
@@ -100,8 +101,15 @@ Import-Certificate -FilePath "YonetimApp.cer" -CertStoreLocation "Cert:\LocalMac
 2. csproj <AssemblyVersion> artır (örn. 1.0.0.0 → 1.0.0.1)
    pubxml  <PublishVersion>  ile senkron tut
 
-3. .\Publish-ClickOnce.ps1 -Version "1.0.0.1"
-   → dotnet publish (flat output) + dotnet-mage (manifest) + version.json UNC'ye yazılır
+3. # Lokal test
+   .\Publish-ClickOnce.ps1 -Version "1.0.0.1" -Sign $true
+
+   # Üretim (farklı UNC)
+   $env:YONETIM_UPDATE_PATH = "\\SUNUCU\YonetimPublish\"
+   .\Publish-ClickOnce.ps1 -Version "1.0.0.1" -Sign $true
+
+   → dotnet publish (flat output) + dotnet-mage (manifest + imzalama) + version.json UNC'ye yazılır
+   → ProviderURL: YONETIM_UPDATE_PATH set ise o UNC; set değilse \\localhost\YonetimPublish\
 
 4. Smoke test: bir istemcide uygulamayı kapat ve yeniden aç
 ```
@@ -131,7 +139,8 @@ eksiktir. `Publish-ClickOnce.ps1` bu görevi `microsoft.dotnet.mage` aracıyla b
 
 Implementasyon: `UI/Services/UpdateService.cs`
 
-UNC sabitleri (`VersionJsonPath`, `DeploymentFilePath`): gerçek sunucu adı netleşince güncellenir.
+UNC kaynağı `YONETIM_UPDATE_PATH` env var'dan gelir; set edilmemişse `\\localhost\YonetimPublish\` varsayılanı kullanılır.
+`VersionJsonPath` ve `DeploymentFilePath` bu UNC'den türetilir.
 
 ---
 

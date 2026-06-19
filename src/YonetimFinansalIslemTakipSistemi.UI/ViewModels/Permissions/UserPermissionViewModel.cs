@@ -66,7 +66,8 @@ public class UserPermissionViewModel : INotifyPropertyChanged
         Perms.Add(new PermissionCheckItem(PermissionType.CanCreateTransaction,  "İşlem Oluşturma"));
         Perms.Add(new PermissionCheckItem(PermissionType.CanEditTransaction,    "İşlem Düzenleme"));
         Perms.Add(new PermissionCheckItem(PermissionType.CanDeleteTransaction,  "İşlem Silme"));
-        Perms.Add(new PermissionCheckItem(PermissionType.CanViewReports,        "Raporları Görüntüleme"));
+        Perms.Add(new PermissionCheckItem(PermissionType.CanViewReports,            "Raporları Görüntüleme"));
+        Perms.Add(new PermissionCheckItem(PermissionType.CanManageExchangeRates, "Döviz Kurlarını Yönetme"));
     }
 
     public async Task LoadAsync()

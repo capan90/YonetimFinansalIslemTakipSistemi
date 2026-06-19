@@ -9,6 +9,7 @@ public class AppDbContext : DbContext
     public DbSet<User>            Users              => Set<User>();
     public DbSet<AuditLog>        AuditLogs          => Set<AuditLog>();
     public DbSet<UserPermission>  UserPermissions    => Set<UserPermission>();
+    public DbSet<ExchangeRate>    ExchangeRates      => Set<ExchangeRate>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 

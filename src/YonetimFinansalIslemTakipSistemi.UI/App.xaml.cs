@@ -12,6 +12,8 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Commands.Updat
 using YonetimFinansalIslemTakipSistemi.Application.Features.Permissions.Commands.UpdateUserPermissions;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Reports.Queries.GetReport;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Permissions.Queries.GetUserPermissions;
+using YonetimFinansalIslemTakipSistemi.Application.Features.ExchangeRates.Commands.CreateOrUpdateExchangeRate;
+using YonetimFinansalIslemTakipSistemi.Application.Features.ExchangeRates.Queries.GetExchangeRates;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Queries.GetUsers;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Infrastructure;
@@ -24,6 +26,7 @@ using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Login;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Permissions;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Reports;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Users;
+using YonetimFinansalIslemTakipSistemi.UI.ViewModels.ExchangeRates;
 
 namespace YonetimFinansalIslemTakipSistemi.UI;
 
@@ -76,6 +79,10 @@ public partial class App : System.Windows.Application
         // Report handler
         services.AddScoped<GetReportHandler>();
 
+        // ExchangeRate handler'lar
+        services.AddScoped<CreateOrUpdateExchangeRateHandler>();
+        services.AddScoped<GetExchangeRatesHandler>();
+
         // ViewModels
         services.AddTransient<LoginViewModel>();
         services.AddTransient<CashTransactionListViewModel>();
@@ -85,6 +92,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<AuditLogViewModel>();
         services.AddTransient<UserPermissionViewModel>();
         services.AddTransient<ReportViewModel>();
+        services.AddTransient<ExchangeRateViewModel>();
 
         Services = services.BuildServiceProvider();
 

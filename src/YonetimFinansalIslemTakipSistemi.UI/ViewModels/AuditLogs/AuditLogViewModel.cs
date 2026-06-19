@@ -67,7 +67,9 @@ public class AuditLogViewModel : INotifyPropertyChanged
         Actions.Add(new AuditActionOption(AuditAction.UserUpdated,        "Kullanıcı Güncellendi"));
         Actions.Add(new AuditActionOption(AuditAction.UserDeleted,        "Kullanıcı Silindi"));
         Actions.Add(new AuditActionOption(AuditAction.UserLoggedIn,       "Giriş Yapıldı"));
-        Actions.Add(new AuditActionOption(AuditAction.PermissionUpdated, "Yetki Güncellendi"));
+        Actions.Add(new AuditActionOption(AuditAction.PermissionUpdated,     "Yetki Güncellendi"));
+        Actions.Add(new AuditActionOption(AuditAction.ExchangeRateCreated, "Döviz Kuru Eklendi"));
+        Actions.Add(new AuditActionOption(AuditAction.ExchangeRateUpdated, "Döviz Kuru Güncellendi"));
         FilterAction = Actions[0];
 
         // "Tüm Kullanıcılar" constructor'da eklenir — DataContext atanmadan önce hazır olur

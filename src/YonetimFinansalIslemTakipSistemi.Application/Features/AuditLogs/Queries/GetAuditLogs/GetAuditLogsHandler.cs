@@ -50,7 +50,9 @@ public class GetAuditLogsHandler
         AuditAction.UserUpdated        => "Kullanıcı Güncellendi",
         AuditAction.UserDeleted        => "Kullanıcı Silindi",
         AuditAction.UserLoggedIn       => "Giriş Yapıldı",
-        AuditAction.PermissionUpdated  => "Yetki Güncellendi",
-        _                              => action.ToString()
+        AuditAction.PermissionUpdated    => "Yetki Güncellendi",
+        AuditAction.ExchangeRateCreated  => "Döviz Kuru Eklendi",
+        AuditAction.ExchangeRateUpdated  => "Döviz Kuru Güncellendi",
+        _                                => action.ToString()
     };
 }

@@ -25,6 +25,9 @@
                 <MenuItem x:Name="MenuItemRaporlar"
                           Header="Raporlar"
                           Click="OpenReports_Click"/>
+                <MenuItem x:Name="MenuItemDoviz"
+                          Header="Döviz Kurları"
+                          Click="OpenExchangeRates_Click"/>
             </MenuItem>
         </Menu>
 

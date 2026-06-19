@@ -9,5 +9,7 @@ public enum AuditAction
     UserUpdated,
     UserDeleted,
     UserLoggedIn,
-    PermissionUpdated
+    PermissionUpdated,
+    ExchangeRateCreated,
+    ExchangeRateUpdated
 }

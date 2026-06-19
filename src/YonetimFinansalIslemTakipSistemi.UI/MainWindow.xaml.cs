@@ -10,6 +10,7 @@ using YonetimFinansalIslemTakipSistemi.UI.Views.CashTransactions;
 using YonetimFinansalIslemTakipSistemi.UI.Views.Permissions;
 using YonetimFinansalIslemTakipSistemi.UI.Views.Reports;
 using YonetimFinansalIslemTakipSistemi.UI.Views.Users;
+using YonetimFinansalIslemTakipSistemi.UI.Views.ExchangeRates;
 
 namespace YonetimFinansalIslemTakipSistemi.UI;
 
@@ -52,14 +53,16 @@ public partial class MainWindow : Window
     /// </summary>
     private void RefreshMenuVisibility(IUserContext userContext)
     {
-        var canManage  = userContext.HasPermission(PermissionType.CanManageUsers);
-        var canAudit   = userContext.HasPermission(PermissionType.CanViewAuditLog);
-        var canReports = userContext.HasPermission(PermissionType.CanViewReports);
+        var canManage   = userContext.HasPermission(PermissionType.CanManageUsers);
+        var canAudit    = userContext.HasPermission(PermissionType.CanViewAuditLog);
+        var canReports  = userContext.HasPermission(PermissionType.CanViewReports);
+        var canExchange = userContext.HasPermission(PermissionType.CanManageExchangeRates);
 
-        MenuItemKullanicilar.Visibility = canManage  ? Visibility.Visible : Visibility.Collapsed;
-        MenuItemYetkiler.Visibility     = canManage  ? Visibility.Visible : Visibility.Collapsed;
-        MenuItemDenetim.Visibility      = canAudit   ? Visibility.Visible : Visibility.Collapsed;
-        MenuItemRaporlar.Visibility     = canReports ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemKullanicilar.Visibility = canManage   ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemYetkiler.Visibility     = canManage   ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemDenetim.Visibility      = canAudit    ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemRaporlar.Visibility     = canReports  ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemDoviz.Visibility        = canExchange ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private async void NewTransactionButton_Click(object sender, RoutedEventArgs e)
@@ -144,6 +147,12 @@ public partial class MainWindow : Window
     private void OpenReports_Click(object sender, RoutedEventArgs e)
     {
         var win = new ReportWindow(_services) { Owner = this };
+        win.ShowDialog();
+    }
+
+    private void OpenExchangeRates_Click(object sender, RoutedEventArgs e)
+    {
+        var win = new ExchangeRateWindow(_services) { Owner = this };
         win.ShowDialog();
     }
 }

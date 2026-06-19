@@ -1,0 +1,160 @@
+<Window x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.ExchangeRates.ExchangeRateWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Döviz Kurları"
+        Height="600" Width="820"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResizeWithGrip"
+        Loaded="Window_Loaded">
+
+    <DockPanel Margin="12">
+
+        <!-- Kur Giriş Formu -->
+        <GroupBox DockPanel.Dock="Top" Header="Kur Girişi" Margin="0,0,0,8" Padding="10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="140"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="90"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="110"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="110"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.Column="0" Content="Tarih:" VerticalAlignment="Center"/>
+                <DatePicker Grid.Column="1"
+                            SelectedDate="{Binding RateDate, Mode=TwoWay}"
+                            VerticalAlignment="Center" Margin="0,0,10,0"/>
+
+                <Label Grid.Column="2" Content="Para Birimi:" VerticalAlignment="Center"/>
+                <ComboBox Grid.Column="3"
+                          ItemsSource="{Binding CurrencyOptions}"
+                          SelectedItem="{Binding SelectedCurrencyDisplay, Mode=TwoWay}"
+                          VerticalAlignment="Center" Margin="0,0,10,0"/>
+
+                <Label Grid.Column="4" Content="Alış Kuru:" VerticalAlignment="Center"/>
+                <TextBox Grid.Column="5"
+                         Text="{Binding ForexBuying, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         VerticalAlignment="Center" Margin="0,0,10,0" Padding="4,3"/>
+
+                <Label Grid.Column="6" Content="Satış Kuru:" VerticalAlignment="Center"/>
+                <TextBox Grid.Column="7"
+                         Text="{Binding ForexSelling, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         VerticalAlignment="Center" Margin="0,0,10,0" Padding="4,3"/>
+
+                <StackPanel Grid.Column="9" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="Kaydet" Width="80" Margin="0,0,6,0"
+                            Command="{Binding SaveCommand}">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button Content="Temizle" Width="70"
+                            Command="{Binding ClearFormCommand}"/>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+
+        <!-- Hata / uyarı satırı -->
+        <TextBlock DockPanel.Dock="Top"
+                   Text="{Binding FormError}"
+                   Foreground="Red"
+                   Margin="0,0,0,8"
+                   TextWrapping="Wrap">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding FormError}" Value="{x:Null}">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding FormError}" Value="">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+
+        <!-- Filtre Paneli -->
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <Button DockPanel.Dock="Right"
+                    Content="Filtrele"
+                    Width="80"
+                    Command="{Binding LoadCommand}">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                <Setter Property="IsEnabled" Value="False"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Label Content="Başlangıç:" VerticalAlignment="Center"/>
+                <DatePicker SelectedDate="{Binding FilterDateFrom, Mode=TwoWay}"
+                            Width="130" Margin="0,0,12,0"/>
+                <Label Content="Bitiş:" VerticalAlignment="Center"/>
+                <DatePicker SelectedDate="{Binding FilterDateTo, Mode=TwoWay}"
+                            Width="130" Margin="0,0,12,0"/>
+                <Label Content="Para Birimi:" VerticalAlignment="Center"/>
+                <ComboBox ItemsSource="{Binding FilterCurrencyOptions}"
+                          SelectedItem="{Binding FilterCurrencyDisplay, Mode=TwoWay}"
+                          Width="90" Margin="0,0,12,0"/>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Kur Geçmişi -->
+        <GroupBox Header="Kur Geçmişi">
+            <DataGrid ItemsSource="{Binding Rates}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      CanUserAddRows="False"
+                      GridLinesVisibility="Horizontal"
+                      AlternatingRowBackground="#F5F5F5"
+                      HeadersVisibility="Column">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Tarih"
+                                        Binding="{Binding RateDate, StringFormat=dd.MM.yyyy}"
+                                        Width="100"/>
+                    <DataGridTextColumn Header="Para Birimi"
+                                        Binding="{Binding CurrencyDisplay}"
+                                        Width="90"/>
+                    <DataGridTextColumn Header="Alış Kuru"
+                                        Binding="{Binding ForexBuying, StringFormat=N4}"
+                                        Width="*">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Right"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Satış Kuru"
+                                        Binding="{Binding ForexSelling, StringFormat=N4}"
+                                        Width="*">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Right"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Güncellendi"
+                                        Binding="{Binding UpdatedAt, StringFormat=dd.MM.yyyy HH:mm}"
+                                        Width="130"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </GroupBox>
+
+    </DockPanel>
+</Window>

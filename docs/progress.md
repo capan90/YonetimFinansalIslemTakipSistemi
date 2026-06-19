@@ -58,8 +58,13 @@
 - Not: `dotnet publish` ClickOnce profili, Engine\Launcher.exe (VS bileşeni) gerektirdiğinden
   `Publish-ClickOnce.ps1` ve `microsoft.dotnet.mage` aracı kullanılır.
 
+### Döviz Ekranı
+- [x] ExchangeRate entity, IExchangeRateRepository, migration
+- [x] CreateOrUpdateExchangeRateHandler, GetExchangeRatesHandler
+- [x] ExchangeRateWindow: USD/EUR manuel kur girişi
+
 ---
 
 ## Sıradaki
 
-- [ ] Döviz ekranı (TCMB entegrasyonu veya manuel kur girişi)
+- TCMB entegrasyonu (opsiyonel V2 özelliği)

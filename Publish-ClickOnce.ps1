@@ -61,7 +61,7 @@ $AppName      = "Yönetim Finansal İşlem Takip Sistemi"
 $ExeName      = "YonetimFinansalIslemTakipSistemi.UI.exe"
 $ManifestBase = "YonetimFinansalIslemTakipSistemi.UI"
 $CertThumb    = "0136460438B6DED7F20498C00F7D3AB4C1E1B203"
-$ProviderUrl  = "${UncBase}YonetimFinansalIslemTakipSistemi.application"
+$ProviderUrl  = "${UncBase}$ManifestBase.application"
 
 # Sürüm klasörü: noktalar alt çizgiye çevrilir
 $VersionFolder = $Version -replace "\.", "_"

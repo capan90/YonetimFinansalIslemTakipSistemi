@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Reports.Queries.GetReport;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
+using YonetimFinansalIslemTakipSistemi.Domain.Extensions;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
 using YonetimFinansalIslemTakipSistemi.UI.Common;
 
@@ -18,6 +19,11 @@ public class ReportViewModel : INotifyPropertyChanged
     private DateTime? _endDate   = DateTime.Today;
     private bool      _isLoading;
     private string?   _errorMessage;
+
+    private string?   _selectedTransactionType;
+    private string?   _selectedCurrencyType;
+    private string?   _descriptionFilter;
+    private bool      _showTransactionDetails;
 
     // Son başarılı yükleme sonucu — önizleme ve export için önbellek
     public ReportDto? LastReportDto { get; private set; }
@@ -58,6 +64,41 @@ public class ReportViewModel : INotifyPropertyChanged
         set { _errorMessage = value; OnPropertyChanged(); }
     }
 
+    // ── Filtreler ──────────────────────────────────────────────────────────────
+
+    public IReadOnlyList<string> TransactionTypeOptions { get; } =
+        new[] { "Tümü", "Giriş", "Çıkış" };
+
+    public IReadOnlyList<string> CurrencyTypeOptions { get; } =
+        new[] { "Tümü", "TRY", "USD", "EUR" };
+
+    public string? SelectedTransactionType
+    {
+        get => _selectedTransactionType;
+        set { _selectedTransactionType = value; OnPropertyChanged(); }
+    }
+
+    public string? SelectedCurrencyType
+    {
+        get => _selectedCurrencyType;
+        set { _selectedCurrencyType = value; OnPropertyChanged(); }
+    }
+
+    public string? DescriptionFilter
+    {
+        get => _descriptionFilter;
+        set { _descriptionFilter = value; OnPropertyChanged(); }
+    }
+
+    /// <summary>True ise rapor detay satırları da yüklenir ve gösterilir.</summary>
+    public bool ShowTransactionDetails
+    {
+        get => _showTransactionDetails;
+        set { _showTransactionDetails = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasDetails)); }
+    }
+
+    // ── Para birimi özet kartları ──────────────────────────────────────────────
+
     public CurrencySummaryDto TrySummary
     {
         get => _trySummary;
@@ -76,11 +117,23 @@ public class ReportViewModel : INotifyPropertyChanged
         private set { _eurSummary = value; OnPropertyChanged(); }
     }
 
+    // ── İşlem türü özet tablosu ────────────────────────────────────────────────
+
     /// <summary>
     /// DataGrid için düzleştirilmiş işlem türü satırları.
-    /// Her para birimi ayrı sütun olarak gösterilir; tek rakamda birleştirilmez.
+    /// Giriş → Alacak kolonuna, Çıkış → Borç kolonuna yazılır.
     /// </summary>
     public ObservableCollection<TransactionTypeRow> TypeRows { get; } = new();
+
+    // ── Detay satırları ────────────────────────────────────────────────────────
+
+    /// <summary>ShowTransactionDetails=true ve veri varsa dolu. DataGrid kaynağı.</summary>
+    public ObservableCollection<TransactionDetailRow> DetailRows { get; } = new();
+
+    /// <summary>Detay DataGrid görünürlüğü için binding hedefi.</summary>
+    public bool HasDetails => ShowTransactionDetails && DetailRows.Count > 0;
+
+    // ── Komutlar ───────────────────────────────────────────────────────────────
 
     public ICommand LoadReportCommand { get; }
 
@@ -102,8 +155,12 @@ public class ReportViewModel : INotifyPropertyChanged
         {
             var result = await _handler.HandleAsync(new GetReportQuery
             {
-                StartDate = StartDate,
-                EndDate   = EndDate
+                StartDate              = StartDate,
+                EndDate                = EndDate,
+                TransactionType        = ParseTransactionType(SelectedTransactionType),
+                CurrencyType           = ParseCurrencyType(SelectedCurrencyType),
+                DescriptionContains    = string.IsNullOrWhiteSpace(DescriptionFilter) ? null : DescriptionFilter.Trim(),
+                ShowTransactionDetails = ShowTransactionDetails
             });
 
             if (!result.Success)
@@ -114,10 +171,10 @@ public class ReportViewModel : INotifyPropertyChanged
 
             var dto = result.Data!;
 
-            // Para birimi kartlarını güncelle
             LastReportDto = dto;
             HasReport     = true;
 
+            // Para birimi kartlarını güncelle (filtre uygulanmış veriyle)
             TrySummary = dto.CurrencySummaries.FirstOrDefault(c => c.Currency == CurrencyType.TRY)
                          ?? EmptySummary(CurrencyType.TRY, "TL");
             UsdSummary = dto.CurrencySummaries.FirstOrDefault(c => c.Currency == CurrencyType.USD)
@@ -125,7 +182,7 @@ public class ReportViewModel : INotifyPropertyChanged
             EurSummary = dto.CurrencySummaries.FirstOrDefault(c => c.Currency == CurrencyType.EUR)
                          ?? EmptySummary(CurrencyType.EUR, "EUR");
 
-            // İşlem türü tablosu — DTO'yu DataGrid için düzleştir
+            // İşlem türü özet tablosu — Giriş→Alacak, Çıkış→Borç mantığıyla düzleştir
             TypeRows.Clear();
             foreach (var ts in dto.TransactionTypeSummaries)
             {
@@ -142,12 +199,38 @@ public class ReportViewModel : INotifyPropertyChanged
                     }
                 }
 
+                // Giriş = Alacak, Çıkış = Borç
+                var isInflow = ts.TransactionType.GetFinancialDirection() == FinancialDirection.Inflow;
                 TypeRows.Add(new TransactionTypeRow(
                     ts.TypeDisplay,
-                    tryAmt, tryCnt,
-                    usdAmt, usdCnt,
-                    eurAmt, eurCnt));
+                    TryBorc:   isInflow ? 0m     : tryAmt,
+                    TryAlacak: isInflow ? tryAmt : 0m,
+                    TryCount:  tryCnt,
+                    UsdBorc:   isInflow ? 0m     : usdAmt,
+                    UsdAlacak: isInflow ? usdAmt : 0m,
+                    UsdCount:  usdCnt,
+                    EurBorc:   isInflow ? 0m     : eurAmt,
+                    EurAlacak: isInflow ? eurAmt : 0m,
+                    EurCount:  eurCnt));
             }
+
+            // Detay satırları
+            DetailRows.Clear();
+            if (dto.TransactionDetails is not null)
+            {
+                foreach (var d in dto.TransactionDetails)
+                {
+                    DetailRows.Add(new TransactionDetailRow(
+                        d.TransactionDate.ToString("dd.MM.yyyy"),
+                        d.Description,
+                        d.TypeDisplay,
+                        d.CurrencyDisplay,
+                        d.Borc,
+                        d.Alacak,
+                        d.Balance));
+                }
+            }
+            OnPropertyChanged(nameof(HasDetails));
         }
         catch
         {
@@ -162,6 +245,21 @@ public class ReportViewModel : INotifyPropertyChanged
     private static CurrencySummaryDto EmptySummary(CurrencyType currency, string display)
         => new() { Currency = currency, CurrencyDisplay = display };
 
+    private static TransactionType? ParseTransactionType(string? display) => display switch
+    {
+        "Giriş" => TransactionType.Giris,
+        "Çıkış" => TransactionType.Cikis,
+        _       => null
+    };
+
+    private static CurrencyType? ParseCurrencyType(string? display) => display switch
+    {
+        "TRY" => CurrencyType.TRY,
+        "USD" => CurrencyType.USD,
+        "EUR" => CurrencyType.EUR,
+        _     => null
+    };
+
     public event PropertyChangedEventHandler? PropertyChanged;
     private void OnPropertyChanged([CallerMemberName] string? name = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
@@ -169,10 +267,23 @@ public class ReportViewModel : INotifyPropertyChanged
 
 /// <summary>
 /// DataGrid bağlaması için düzleştirilmiş işlem türü satırı.
-/// Para birimleri sabit 3 sütuna (TL / USD / EUR) ayrılmıştır.
+/// Giriş işlemi tutarları Alacak, Çıkış işlemi tutarları Borç kolonuna yazılır.
 /// </summary>
 public record TransactionTypeRow(
     string  TypeDisplay,
-    decimal TryAmount, int TryCount,
-    decimal UsdAmount, int UsdCount,
-    decimal EurAmount, int EurCount);
+    decimal TryBorc,   decimal TryAlacak,  int TryCount,
+    decimal UsdBorc,   decimal UsdAlacak,  int UsdCount,
+    decimal EurBorc,   decimal EurAlacak,  int EurCount);
+
+/// <summary>
+/// Detay DataGrid için satır modeli.
+/// Balance = para birimi bazlı kümülatif bakiye (rapor döneminin başından itibaren).
+/// </summary>
+public record TransactionDetailRow(
+    string  Date,
+    string  Description,
+    string  TypeDisplay,
+    string  CurrencyDisplay,
+    decimal Borc,
+    decimal Alacak,
+    decimal Balance);

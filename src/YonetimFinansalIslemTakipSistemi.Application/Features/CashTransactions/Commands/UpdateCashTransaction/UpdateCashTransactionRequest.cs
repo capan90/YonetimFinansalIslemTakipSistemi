@@ -10,7 +10,7 @@ public class UpdateCashTransactionRequest
     public CurrencyType CurrencyType { get; set; }
     public decimal Amount { get; set; }
 
-    /// <summary>Açıklama opsiyonel; boş bırakılabilir.</summary>
+    /// <summary>Açıklama zorunludur.</summary>
     public string Description { get; set; } = string.Empty;
 
     /// <summary>Oturumu açık kullanıcının kimliği; audit kaydı için zorunlu.</summary>

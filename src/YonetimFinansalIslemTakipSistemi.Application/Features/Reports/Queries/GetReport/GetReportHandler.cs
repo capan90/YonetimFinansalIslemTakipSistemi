@@ -1,6 +1,7 @@
 using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Repositories;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
+using YonetimFinansalIslemTakipSistemi.Domain.Entities;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.Domain.Extensions;
 
@@ -42,24 +43,51 @@ public class GetReportHandler
             ? DateTime.SpecifyKind(query.EndDate.Value.Date.AddDays(1), DateTimeKind.Utc)
             : null;
 
-        // 4. Repository aggregate sorgusu (GROUP BY PostgreSQL'de çalışır; kayıtlar belleğe alınmaz)
-        var rawData = await _repository.GetReportDataAsync(startUtc, endExclusiveUtc);
+        var description = string.IsNullOrWhiteSpace(query.DescriptionContains)
+            ? null
+            : query.DescriptionContains.Trim();
 
-        // 5. Application katmanında FinancialDirection iş kuralına göre DTO montajı
-        var dto = BuildDto(rawData, query.StartDate, query.EndDate);
+        // 4. Repository aggregate sorgusu — filtreler dahil (GROUP BY PostgreSQL'de çalışır)
+        var rawData = await _repository.GetReportDataAsync(
+            startUtc, endExclusiveUtc,
+            query.TransactionType,
+            query.CurrencyType,
+            description);
+
+        // 5. Detay satırları — yalnızca istendiğinde sorgulanır
+        List<TransactionDetailDto>? details = null;
+        if (query.ShowTransactionDetails)
+        {
+            var rows = await _repository.GetFilteredForReportDetailAsync(
+                startUtc, endExclusiveUtc,
+                query.TransactionType,
+                query.CurrencyType,
+                description);
+
+            details = BuildDetails(rows);
+        }
+
+        // 6. Application katmanında FinancialDirection iş kuralına göre DTO montajı
+        var dto = BuildDto(rawData, details, query);
         return OperationResult<ReportDto>.Ok(dto);
     }
 
     private static ReportDto BuildDto(
-        List<CurrencyReportData> raw,
-        DateTime?                startDate,
-        DateTime?                endDate)
+        List<CurrencyReportData>    raw,
+        List<TransactionDetailDto>? details,
+        GetReportQuery              query)
     {
-        var allCurrencies = Enum.GetValues<CurrencyType>();
-        var allTypes      = Enum.GetValues<TransactionType>();
+        // Filtre koşullarına göre hangi para birimleri ve türler dahil edilecek
+        var currencies = query.CurrencyType.HasValue
+            ? new[] { query.CurrencyType.Value }
+            : Enum.GetValues<CurrencyType>();
+
+        var types = query.TransactionType.HasValue
+            ? new[] { query.TransactionType.Value }
+            : Enum.GetValues<TransactionType>();
 
         // Para birimi bazlı özet — veri olmayan para birimi sıfırlarla tamamlanır
-        var currencySummaries = allCurrencies.Select(currency =>
+        var currencySummaries = currencies.Select(currency =>
         {
             var rows    = raw.Where(r => r.Currency == currency).ToList();
             var inflow  = rows
@@ -79,10 +107,10 @@ public class GetReportHandler
             };
         }).ToList();
 
-        // İşlem türü bazlı özet — her tür için para birimi bazlı ayrıştırılmış tutarlar
-        var typeSummaries = allTypes.Select(type =>
+        // İşlem türü bazlı özet — seçilen para birimleri için ayrıştırılmış tutarlar
+        var typeSummaries = types.Select(type =>
         {
-            var amountsByCurrency = allCurrencies.Select(currency =>
+            var amountsByCurrency = currencies.Select(currency =>
             {
                 var row = raw.FirstOrDefault(r => r.TransactionType == type && r.Currency == currency);
                 return new CurrencyAmountDto
@@ -104,11 +132,48 @@ public class GetReportHandler
 
         return new ReportDto
         {
-            StartDate                = startDate,
-            EndDate                  = endDate,
+            StartDate                = query.StartDate,
+            EndDate                  = query.EndDate,
+            FilterTransactionType    = query.TransactionType,
+            FilterCurrencyType       = query.CurrencyType,
+            FilterDescription        = query.DescriptionContains,
             CurrencySummaries        = currencySummaries,
-            TransactionTypeSummaries = typeSummaries
+            TransactionTypeSummaries = typeSummaries,
+            TransactionDetails       = details
         };
+    }
+
+    private static List<TransactionDetailDto> BuildDetails(IReadOnlyList<CashTransaction> transactions)
+    {
+        // Para birimi bazlı kümülatif bakiye — rapor döneminin başından itibaren
+        var runningBalance = new Dictionary<CurrencyType, decimal>
+        {
+            [CurrencyType.TRY] = 0m,
+            [CurrencyType.USD] = 0m,
+            [CurrencyType.EUR] = 0m
+        };
+
+        var details = new List<TransactionDetailDto>(transactions.Count);
+        foreach (var t in transactions)
+        {
+            var isInflow = t.TransactionType.GetFinancialDirection() == FinancialDirection.Inflow;
+            var borc     = isInflow ? 0m    : t.Amount;
+            var alacak   = isInflow ? t.Amount : 0m;
+
+            runningBalance[t.CurrencyType] += isInflow ? t.Amount : -t.Amount;
+
+            details.Add(new TransactionDetailDto
+            {
+                TransactionDate = t.TransactionDate,
+                Description     = t.Description ?? string.Empty,
+                TypeDisplay     = DisplayType(t.TransactionType),
+                CurrencyDisplay = DisplayCurrency(t.CurrencyType),
+                Borc            = borc,
+                Alacak          = alacak,
+                Balance         = runningBalance[t.CurrencyType]
+            });
+        }
+        return details;
     }
 
     private static string DisplayCurrency(CurrencyType c) => c switch
@@ -121,11 +186,8 @@ public class GetReportHandler
 
     private static string DisplayType(TransactionType t) => t switch
     {
-        TransactionType.Tahsilat    => "Tahsilat",
-        TransactionType.Odeme       => "Ödeme",
-        TransactionType.Avans       => "Avans",
-        TransactionType.OzelHarcama => "Özel Harcama",
-        TransactionType.Transfer    => "Transfer",
-        _                           => t.ToString()
+        TransactionType.Giris => "Giriş",
+        TransactionType.Cikis => "Çıkış",
+        _                     => t.ToString()
     };
 }

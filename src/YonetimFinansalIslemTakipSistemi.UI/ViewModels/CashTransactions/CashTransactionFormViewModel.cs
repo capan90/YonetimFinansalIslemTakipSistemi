@@ -19,7 +19,7 @@ public class CashTransactionFormViewModel : INotifyPropertyChanged
 
     private Guid?    _editTargetId;
     private DateTime _transactionDate         = DateTime.Today;
-    private string   _selectedTransactionType = "Tahsilat";
+    private string   _selectedTransactionType = "Giriş";
     private string   _selectedCurrencyType    = "TRY";
     private string   _amountText              = string.Empty;
     private string   _description             = string.Empty;
@@ -36,7 +36,7 @@ public class CashTransactionFormViewModel : INotifyPropertyChanged
     }
 
     public IReadOnlyList<string> TransactionTypeOptions { get; } =
-        new[] { "Tahsilat", "Ödeme", "Avans", "Özel Harcama", "Transfer" };
+        new[] { "Giriş", "Çıkış" };
 
     public IReadOnlyList<string> CurrencyTypeOptions { get; } =
         new[] { "TRY", "USD", "EUR" };
@@ -97,7 +97,9 @@ public class CashTransactionFormViewModel : INotifyPropertyChanged
         TransactionDate         = dto.TransactionDate;
         SelectedTransactionType = dto.TransactionTypeDisplay;
         SelectedCurrencyType    = dto.CurrencyTypeDisplay;
-        AmountText              = dto.Amount.ToString(CultureInfo.CurrentCulture);
+        // Tutar: Borç veya Alacak, hangisi dolu ise onu göster
+        var amount = dto.Borc > 0 ? dto.Borc : dto.Alacak;
+        AmountText              = amount.ToString(CultureInfo.CurrentCulture);
         Description             = dto.Description;
         OnPropertyChanged(nameof(WindowTitle));
     }
@@ -105,6 +107,13 @@ public class CashTransactionFormViewModel : INotifyPropertyChanged
     private async Task ExecuteSaveAsync()
     {
         ErrorMessage = null;
+
+        // Açıklama zorunlu — UI düzeyinde de kontrol
+        if (string.IsNullOrWhiteSpace(Description))
+        {
+            ErrorMessage = "Açıklama alanı zorunludur. Lütfen işlem açıklaması giriniz.";
+            return;
+        }
 
         // Tutar parse — kullanıcı virgül veya nokta kullanabilir
         var normalized = AmountText?.Replace(',', '.') ?? string.Empty;
@@ -149,12 +158,9 @@ public class CashTransactionFormViewModel : INotifyPropertyChanged
 
     private static TransactionType ParseTransactionType(string display) => display switch
     {
-        "Tahsilat"     => TransactionType.Tahsilat,
-        "Ödeme"        => TransactionType.Odeme,
-        "Avans"        => TransactionType.Avans,
-        "Özel Harcama" => TransactionType.OzelHarcama,
-        "Transfer"     => TransactionType.Transfer,
-        _              => TransactionType.Tahsilat
+        "Giriş" => TransactionType.Giris,
+        "Çıkış" => TransactionType.Cikis,
+        _       => TransactionType.Giris
     };
 
     private static CurrencyType ParseCurrencyType(string display) => display switch

@@ -14,7 +14,7 @@ public interface ICashTransactionRepository
 
     Task<IReadOnlyList<CashTransaction>> GetAllAsync();
 
-    /// <summary>İşlem tipine göre filtrele (Tahsilat, Ödeme vb.)</summary>
+    /// <summary>İşlem tipine göre filtrele (Giriş, Çıkış)</summary>
     Task<IReadOnlyList<CashTransaction>> GetByTypeAsync(TransactionType type);
 
     /// <summary>Para birimine göre filtrele (TRY, USD, EUR)</summary>
@@ -48,9 +48,25 @@ public interface ICashTransactionRepository
     /// <summary>
     /// Rapor için GROUP BY aggregate sorgusu.
     /// Soft-delete global query filter devrede — silinmiş kayıtlar dahil edilmez.
-    /// Tarih aralığı yarı-açık: >= startUtc AND < endExclusiveUtc.
+    /// Tarih aralığı yarı-açık: >= startUtc AND &lt; endExclusiveUtc.
     /// Her iki parametre null ise tüm aktif kayıtlar üzerinden aggregation yapılır.
+    /// transactionType, currencyType ve descriptionContains null ise ilgili filtre uygulanmaz.
     /// </summary>
     Task<List<CurrencyReportData>> GetReportDataAsync(
-        DateTime? startUtc, DateTime? endExclusiveUtc);
+        DateTime?       startUtc,
+        DateTime?       endExclusiveUtc,
+        TransactionType? transactionType      = null,
+        CurrencyType?   currencyType          = null,
+        string?         descriptionContains   = null);
+
+    /// <summary>
+    /// Rapor detay görünümü için satır bazlı kayıt listesi.
+    /// Aynı filtreler uygulanır; sıralama TransactionDate ASC (bakiye hesabı için).
+    /// </summary>
+    Task<IReadOnlyList<CashTransaction>> GetFilteredForReportDetailAsync(
+        DateTime?       startUtc,
+        DateTime?       endExclusiveUtc,
+        TransactionType? transactionType,
+        CurrencyType?   currencyType,
+        string?         descriptionContains);
 }

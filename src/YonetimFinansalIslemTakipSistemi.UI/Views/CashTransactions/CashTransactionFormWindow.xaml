@@ -27,7 +27,7 @@
         <TextBox Text="{Binding AmountText, UpdateSourceTrigger=PropertyChanged}"
                  Margin="0,0,0,10"/>
 
-        <Label Content="Açıklama (opsiyonel):" Margin="0,0,0,2"/>
+        <Label Content="Açıklama:" Margin="0,0,0,2"/>
         <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
                  Margin="0,0,0,14"/>
 

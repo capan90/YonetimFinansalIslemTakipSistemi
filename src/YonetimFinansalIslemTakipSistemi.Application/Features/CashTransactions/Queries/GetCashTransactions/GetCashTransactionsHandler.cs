@@ -85,33 +85,36 @@ public class GetCashTransactionsHandler
             .ToList();
     }
 
-    private static CashTransactionDto Map(CashTransaction e, decimal tl, decimal usd, decimal eur) => new()
+    private static CashTransactionDto Map(CashTransaction e, decimal tl, decimal usd, decimal eur)
     {
-        Id                     = e.Id,
-        TransactionDate        = e.TransactionDate,
-        TransactionTypeDisplay = e.TransactionType switch
+        var isInflow = e.TransactionType.GetFinancialDirection() == FinancialDirection.Inflow;
+        return new CashTransactionDto
         {
-            TransactionType.Tahsilat    => "Tahsilat",
-            TransactionType.Odeme       => "Ödeme",
-            TransactionType.Avans       => "Avans",
-            TransactionType.OzelHarcama => "Özel Harcama",
-            TransactionType.Transfer    => "Transfer",
-            _                           => e.TransactionType.ToString()
-        },
-        CurrencyTypeDisplay = e.CurrencyType switch
-        {
-            CurrencyType.TRY => "TRY",
-            CurrencyType.USD => "USD",
-            CurrencyType.EUR => "EUR",
-            _                => e.CurrencyType.ToString()
-        },
-        Amount          = e.Amount,
-        Description     = e.Description,
-        CreatedAt       = e.CreatedAt,
-        TlBalanceAfter  = tl,
-        UsdBalanceAfter = usd,
-        EurBalanceAfter = eur,
-    };
+            Id                     = e.Id,
+            TransactionDate        = e.TransactionDate,
+            TransactionTypeDisplay = e.TransactionType switch
+            {
+                TransactionType.Giris => "Giriş",
+                TransactionType.Cikis => "Çıkış",
+                _                     => e.TransactionType.ToString()
+            },
+            CurrencyTypeDisplay = e.CurrencyType switch
+            {
+                CurrencyType.TRY => "TRY",
+                CurrencyType.USD => "USD",
+                CurrencyType.EUR => "EUR",
+                _                => e.CurrencyType.ToString()
+            },
+            // Alacak = Giriş tutarı, Borç = Çıkış tutarı; diğeri sıfır
+            Alacak          = isInflow  ? e.Amount : 0m,
+            Borc            = !isInflow ? e.Amount : 0m,
+            Description     = e.Description,
+            CreatedAt       = e.CreatedAt,
+            TlBalanceAfter  = tl,
+            UsdBalanceAfter = usd,
+            EurBalanceAfter = eur,
+        };
+    }
 
     // Balance hesabı sırasında entity + hesaplanan bakiyeleri birlikte taşır
     private sealed record TransactionWithBalance(

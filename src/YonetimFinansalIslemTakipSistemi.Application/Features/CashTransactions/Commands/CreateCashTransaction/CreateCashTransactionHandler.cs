@@ -102,6 +102,9 @@ public class CreateCashTransactionHandler
         if (!Enum.IsDefined(typeof(CurrencyType), request.CurrencyType))
             return "Geçersiz para birimi.";
 
+        if (string.IsNullOrWhiteSpace(request.Description))
+            return "Açıklama alanı zorunludur. Lütfen işlem açıklaması giriniz.";
+
         if (request.CreatedByUserId == Guid.Empty)
             return "İşlemi yapan kullanıcı belirtilmelidir.";
 

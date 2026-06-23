@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Yönetim — Nakit İşlemler" Height="600" Width="1200">
+        Title="Yönetim — Nakit İşlemler" Height="600" Width="1280">
 
     <DockPanel>
 
@@ -25,6 +25,9 @@
                 <MenuItem x:Name="MenuItemRaporlar"
                           Header="Raporlar"
                           Click="OpenReports_Click"/>
+                <MenuItem x:Name="MenuItemAnaliz"
+                          Header="Finans Analiz Merkezi"
+                          Click="OpenAnalysis_Click"/>
                 <MenuItem x:Name="MenuItemDoviz"
                           Header="Döviz Kurları"
                           Click="OpenExchangeRates_Click"/>
@@ -76,7 +79,7 @@
                 <Label Content="İşlem Türü:" VerticalAlignment="Center"/>
                 <ComboBox ItemsSource="{Binding TransactionTypeOptions}"
                           SelectedItem="{Binding SelectedTransactionType, Mode=TwoWay}"
-                          Width="130" Margin="0,0,12,0"/>
+                          Width="90" Margin="0,0,12,0"/>
 
                 <Label Content="Para Birimi:" VerticalAlignment="Center"/>
                 <ComboBox ItemsSource="{Binding CurrencyTypeOptions}"
@@ -85,7 +88,7 @@
 
                 <Label Content="Açıklama:" VerticalAlignment="Center"/>
                 <TextBox Text="{Binding DescriptionFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         Width="140" Margin="0,0,12,0" VerticalContentAlignment="Center"/>
+                         Width="160" Margin="0,0,12,0" VerticalContentAlignment="Center"/>
 
                 <Label Content="Tutar:" VerticalAlignment="Center"/>
                 <ComboBox ItemsSource="{Binding AmountOperatorOptions}"
@@ -101,8 +104,13 @@
             </WrapPanel>
         </GroupBox>
 
-        <!-- İşlem Listesi -->
-        <DataGrid ItemsSource="{Binding Transactions}"
+        <!-- İşlem Listesi
+             Kolon sırası: Tarih | Tür | Para Bir. | Açıklama | Borç | Alacak | Bakiye(ler) | Oluşturulma
+             Bakiye kolonları para birimi filtresine göre kod arkasında gizlenir/gösterilir.
+             Kolon başlığına sağ tıklayarak gizleme ve tasarım kaydetme mevcuttur.
+        -->
+        <DataGrid x:Name="TransactionDataGrid"
+                  ItemsSource="{Binding Transactions}"
                   SelectedItem="{Binding SelectedTransaction, Mode=TwoWay}"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
@@ -110,29 +118,50 @@
                   GridLinesVisibility="Horizontal"
                   AlternatingRowBackground="#F5F5F5"
                   HeadersVisibility="Column">
+
+            <!-- Sağ tıklama context menu'su kod arkasında atanır (bkz. MainWindow.xaml.cs) -->
+
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Tarih"
+                <DataGridTextColumn x:Name="ColTarih"
+                                    Header="Tarih"
                                     Binding="{Binding TransactionDate, StringFormat=dd.MM.yyyy}"
                                     Width="90"/>
-                <DataGridTextColumn Header="Tür"
+                <DataGridTextColumn x:Name="ColTur"
+                                    Header="Tür"
                                     Binding="{Binding TransactionTypeDisplay}"
-                                    Width="110"/>
-                <DataGridTextColumn Header="Para Bir."
+                                    Width="80"/>
+                <DataGridTextColumn x:Name="ColParaBir"
+                                    Header="Para Bir."
                                     Binding="{Binding CurrencyTypeDisplay}"
                                     Width="75"/>
-                <DataGridTextColumn Header="Tutar"
-                                    Binding="{Binding Amount, StringFormat=N2}"
+                <DataGridTextColumn x:Name="ColAciklama"
+                                    Header="Açıklama"
+                                    Binding="{Binding Description}"
+                                    Width="*"/>
+                <DataGridTextColumn x:Name="ColBorc"
+                                    Header="Borç"
+                                    Binding="{Binding Borc, StringFormat=N2}"
                                     Width="110">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Setter Property="HorizontalAlignment" Value="Right"/>
+                            <Setter Property="Foreground" Value="#C62828"/>
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Açıklama"
-                                    Binding="{Binding Description}"
-                                    Width="*"/>
-                <DataGridTextColumn Header="TL Bakiye"
+                <DataGridTextColumn x:Name="ColAlacak"
+                                    Header="Alacak"
+                                    Binding="{Binding Alacak, StringFormat=N2}"
+                                    Width="110">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Right"/>
+                            <Setter Property="Foreground" Value="#2E7D32"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn x:Name="ColTlBakiye"
+                                    Header="TL Bakiye"
                                     Binding="{Binding TlBalanceAfter, StringFormat=N2}"
                                     Width="100">
                     <DataGridTextColumn.ElementStyle>
@@ -141,7 +170,8 @@
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="USD Bakiye"
+                <DataGridTextColumn x:Name="ColUsdBakiye"
+                                    Header="USD Bakiye"
                                     Binding="{Binding UsdBalanceAfter, StringFormat=N2}"
                                     Width="100">
                     <DataGridTextColumn.ElementStyle>
@@ -150,7 +180,8 @@
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="EUR Bakiye"
+                <DataGridTextColumn x:Name="ColEurBakiye"
+                                    Header="EUR Bakiye"
                                     Binding="{Binding EurBalanceAfter, StringFormat=N2}"
                                     Width="100">
                     <DataGridTextColumn.ElementStyle>
@@ -159,7 +190,8 @@
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Oluşturulma"
+                <DataGridTextColumn x:Name="ColOlusturulmaT"
+                                    Header="Oluşturulma"
                                     Binding="{Binding CreatedAt, StringFormat=dd.MM.yyyy HH:mm}"
                                     Width="130"/>
             </DataGrid.Columns>

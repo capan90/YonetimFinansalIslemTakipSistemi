@@ -13,7 +13,7 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     {
         // Önce ortam değişkeninden oku; ayarlanmamışsa geliştirme varsayılanını kullan.
         var connectionString = Environment.GetEnvironmentVariable("YONETIM_DB_CONNECTION")
-            ?? "Host=localhost;Database=yonetim_db;Username=postgres;Password=postgres";
+            ?? "Host=localhost;Port=5432;Database=yonetim_db;Username=postgres;Password=postgres123";
 
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseNpgsql(connectionString)

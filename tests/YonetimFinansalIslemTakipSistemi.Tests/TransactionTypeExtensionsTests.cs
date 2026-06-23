@@ -6,36 +6,16 @@ namespace YonetimFinansalIslemTakipSistemi.Tests;
 public class TransactionTypeExtensionsTests
 {
     [Fact]
-    public void Tahsilat_ReturnsInflow()
-        => Assert.Equal(FinancialDirection.Inflow, TransactionType.Tahsilat.GetFinancialDirection());
+    public void Giris_ReturnsInflow()
+        => Assert.Equal(FinancialDirection.Inflow, TransactionType.Giris.GetFinancialDirection());
 
     [Fact]
-    public void Odeme_ReturnsOutflow()
-        => Assert.Equal(FinancialDirection.Outflow, TransactionType.Odeme.GetFinancialDirection());
-
-    [Fact]
-    public void Avans_ReturnsOutflow()
-        => Assert.Equal(FinancialDirection.Outflow, TransactionType.Avans.GetFinancialDirection());
-
-    [Fact]
-    public void OzelHarcama_ReturnsOutflow()
-        => Assert.Equal(FinancialDirection.Outflow, TransactionType.OzelHarcama.GetFinancialDirection());
-
-    /// <summary>
-    /// V1: Transfer tek taraflı çıkış olarak modellenir.
-    /// Kasalar arası gerçek çift yönlü hareket desteklendiğinde bu test güncellenecek.
-    /// Bkz. docs/roadmap.md — Transfer teknik borcu.
-    /// </summary>
-    [Fact]
-    public void Transfer_ReturnsOutflow_V1SingleSidedRule()
-        => Assert.Equal(FinancialDirection.Outflow, TransactionType.Transfer.GetFinancialDirection());
+    public void Cikis_ReturnsOutflow()
+        => Assert.Equal(FinancialDirection.Outflow, TransactionType.Cikis.GetFinancialDirection());
 
     [Theory]
-    [InlineData(TransactionType.Tahsilat,    FinancialDirection.Inflow)]
-    [InlineData(TransactionType.Odeme,       FinancialDirection.Outflow)]
-    [InlineData(TransactionType.Avans,       FinancialDirection.Outflow)]
-    [InlineData(TransactionType.OzelHarcama, FinancialDirection.Outflow)]
-    [InlineData(TransactionType.Transfer,    FinancialDirection.Outflow)]
+    [InlineData(TransactionType.Giris, FinancialDirection.Inflow)]
+    [InlineData(TransactionType.Cikis, FinancialDirection.Outflow)]
     public void AllTypes_CorrectDirection(TransactionType type, FinancialDirection expected)
         => Assert.Equal(expected, type.GetFinancialDirection());
 

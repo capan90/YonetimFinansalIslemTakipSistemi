@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Rapor"
-        Height="580" Width="800"
+        Height="720" Width="900"
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanResizeWithGrip"
         Loaded="Window_Loaded">
@@ -10,37 +10,67 @@
     <DockPanel Margin="12">
 
         <!-- Filtre Paneli -->
-        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
-            <!-- Sağ: Önizle + Yenile -->
-            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                <Button Content="Önizle"
-                        Width="80"
-                        Margin="0,0,6,0"
-                        IsEnabled="{Binding HasReport}"
-                        Click="Preview_Click"/>
-                <Button Content="Yenile"
-                        Width="80"
-                        Command="{Binding LoadReportCommand}">
-                    <Button.Style>
-                        <Style TargetType="Button">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsLoading}" Value="True">
-                                    <Setter Property="IsEnabled" Value="False"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Button.Style>
-                </Button>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <Label Content="Başlangıç:" VerticalAlignment="Center"/>
-                <DatePicker SelectedDate="{Binding StartDate, Mode=TwoWay}"
-                            Width="130" Margin="0,0,12,0"/>
-                <Label Content="Bitiş:" VerticalAlignment="Center"/>
-                <DatePicker SelectedDate="{Binding EndDate, Mode=TwoWay}"
-                            Width="130" Margin="0,0,12,0"/>
-            </StackPanel>
-        </DockPanel>
+        <GroupBox DockPanel.Dock="Top" Header="Filtrele" Margin="0,0,0,8" Padding="8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Satır 1: Tarih + Yenile/Önizle butonları -->
+                <DockPanel Grid.Row="0" Margin="0,0,0,6">
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                        <Button Content="Önizle"
+                                Width="80"
+                                Margin="0,0,6,0"
+                                IsEnabled="{Binding HasReport}"
+                                Click="Preview_Click"/>
+                        <Button Content="Yenile"
+                                Width="80"
+                                Command="{Binding LoadReportCommand}">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                            <Setter Property="IsEnabled" Value="False"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+                    <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Label Content="Başlangıç:" VerticalAlignment="Center"/>
+                        <DatePicker SelectedDate="{Binding StartDate, Mode=TwoWay}"
+                                    Width="130" Margin="0,0,12,0"/>
+                        <Label Content="Bitiş:" VerticalAlignment="Center"/>
+                        <DatePicker SelectedDate="{Binding EndDate, Mode=TwoWay}"
+                                    Width="130" Margin="0,0,12,0"/>
+                    </WrapPanel>
+                </DockPanel>
+
+                <!-- Satır 2: İşlem türü + para birimi + açıklama + detay checkbox -->
+                <WrapPanel Grid.Row="1" Orientation="Horizontal" ItemHeight="30">
+                    <Label Content="İşlem Türü:" VerticalAlignment="Center"/>
+                    <ComboBox ItemsSource="{Binding TransactionTypeOptions}"
+                              SelectedItem="{Binding SelectedTransactionType, Mode=TwoWay}"
+                              Width="80" Margin="0,0,12,0"/>
+
+                    <Label Content="Para Birimi:" VerticalAlignment="Center"/>
+                    <ComboBox ItemsSource="{Binding CurrencyTypeOptions}"
+                              SelectedItem="{Binding SelectedCurrencyType, Mode=TwoWay}"
+                              Width="75" Margin="0,0,12,0"/>
+
+                    <Label Content="Açıklama:" VerticalAlignment="Center"/>
+                    <TextBox Text="{Binding DescriptionFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             Width="160" Margin="0,0,12,0" VerticalContentAlignment="Center"/>
+
+                    <CheckBox Content="İşlem detaylarını göster"
+                              IsChecked="{Binding ShowTransactionDetails, Mode=TwoWay}"
+                              VerticalAlignment="Center" Margin="0,0,0,0"/>
+                </WrapPanel>
+            </Grid>
+        </GroupBox>
 
         <!-- Hata / bilgi satırı -->
         <TextBlock DockPanel.Dock="Top"
@@ -62,150 +92,215 @@
             </TextBlock.Style>
         </TextBlock>
 
-        <!-- Para Birimi Özet Kartları -->
-        <UniformGrid DockPanel.Dock="Top" Columns="3" Margin="0,0,0,10">
+        <!-- Scroll ile içerik -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel>
 
-            <!-- TL Kartı -->
-            <GroupBox Header="TL" Margin="0,0,6,0" Padding="8">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Toplam Giriş:"   Margin="0,2"/>
-                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding TrySummary.TotalInflow,  StringFormat=N2}" HorizontalAlignment="Right" Foreground="#2E7D32" Margin="0,2"/>
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Toplam Çıkış:"   Margin="0,2"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TrySummary.TotalOutflow, StringFormat=N2}" HorizontalAlignment="Right" Foreground="#C62828" Margin="0,2"/>
-                    <Separator Grid.Row="2" Grid.ColumnSpan="2" Margin="0,4"/>
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Net Bakiye:"     FontWeight="SemiBold" Margin="0,2"/>
-                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding TrySummary.NetBalance,   StringFormat=N2}" HorizontalAlignment="Right" FontWeight="SemiBold" Margin="0,2"/>
-                </Grid>
-            </GroupBox>
+                <!-- Para Birimi Özet Kartları -->
+                <UniformGrid Columns="3" Margin="0,0,0,10">
 
-            <!-- USD Kartı -->
-            <GroupBox Header="USD" Margin="3,0,3,0" Padding="8">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Toplam Giriş:"   Margin="0,2"/>
-                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding UsdSummary.TotalInflow,  StringFormat=N2}" HorizontalAlignment="Right" Foreground="#2E7D32" Margin="0,2"/>
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Toplam Çıkış:"   Margin="0,2"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding UsdSummary.TotalOutflow, StringFormat=N2}" HorizontalAlignment="Right" Foreground="#C62828" Margin="0,2"/>
-                    <Separator Grid.Row="2" Grid.ColumnSpan="2" Margin="0,4"/>
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Net Bakiye:"     FontWeight="SemiBold" Margin="0,2"/>
-                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding UsdSummary.NetBalance,   StringFormat=N2}" HorizontalAlignment="Right" FontWeight="SemiBold" Margin="0,2"/>
-                </Grid>
-            </GroupBox>
+                    <!-- TL Kartı -->
+                    <GroupBox Header="TL" Margin="0,0,6,0" Padding="8">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Toplam Giriş:"   Margin="0,2"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding TrySummary.TotalInflow,  StringFormat=N2}" HorizontalAlignment="Right" Foreground="#2E7D32" Margin="0,2"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Toplam Çıkış:"   Margin="0,2"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TrySummary.TotalOutflow, StringFormat=N2}" HorizontalAlignment="Right" Foreground="#C62828" Margin="0,2"/>
+                            <Separator Grid.Row="2" Grid.ColumnSpan="2" Margin="0,4"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Net Bakiye:"     FontWeight="SemiBold" Margin="0,2"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding TrySummary.NetBalance,   StringFormat=N2}" HorizontalAlignment="Right" FontWeight="SemiBold" Margin="0,2"/>
+                        </Grid>
+                    </GroupBox>
 
-            <!-- EUR Kartı -->
-            <GroupBox Header="EUR" Margin="6,0,0,0" Padding="8">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Toplam Giriş:"   Margin="0,2"/>
-                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding EurSummary.TotalInflow,  StringFormat=N2}" HorizontalAlignment="Right" Foreground="#2E7D32" Margin="0,2"/>
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Toplam Çıkış:"   Margin="0,2"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding EurSummary.TotalOutflow, StringFormat=N2}" HorizontalAlignment="Right" Foreground="#C62828" Margin="0,2"/>
-                    <Separator Grid.Row="2" Grid.ColumnSpan="2" Margin="0,4"/>
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Net Bakiye:"     FontWeight="SemiBold" Margin="0,2"/>
-                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding EurSummary.NetBalance,   StringFormat=N2}" HorizontalAlignment="Right" FontWeight="SemiBold" Margin="0,2"/>
-                </Grid>
-            </GroupBox>
+                    <!-- USD Kartı -->
+                    <GroupBox Header="USD" Margin="3,0,3,0" Padding="8">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Toplam Giriş:"   Margin="0,2"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding UsdSummary.TotalInflow,  StringFormat=N2}" HorizontalAlignment="Right" Foreground="#2E7D32" Margin="0,2"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Toplam Çıkış:"   Margin="0,2"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding UsdSummary.TotalOutflow, StringFormat=N2}" HorizontalAlignment="Right" Foreground="#C62828" Margin="0,2"/>
+                            <Separator Grid.Row="2" Grid.ColumnSpan="2" Margin="0,4"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Net Bakiye:"     FontWeight="SemiBold" Margin="0,2"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding UsdSummary.NetBalance,   StringFormat=N2}" HorizontalAlignment="Right" FontWeight="SemiBold" Margin="0,2"/>
+                        </Grid>
+                    </GroupBox>
 
-        </UniformGrid>
+                    <!-- EUR Kartı -->
+                    <GroupBox Header="EUR" Margin="6,0,0,0" Padding="8">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Toplam Giriş:"   Margin="0,2"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding EurSummary.TotalInflow,  StringFormat=N2}" HorizontalAlignment="Right" Foreground="#2E7D32" Margin="0,2"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Toplam Çıkış:"   Margin="0,2"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding EurSummary.TotalOutflow, StringFormat=N2}" HorizontalAlignment="Right" Foreground="#C62828" Margin="0,2"/>
+                            <Separator Grid.Row="2" Grid.ColumnSpan="2" Margin="0,4"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Net Bakiye:"     FontWeight="SemiBold" Margin="0,2"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding EurSummary.NetBalance,   StringFormat=N2}" HorizontalAlignment="Right" FontWeight="SemiBold" Margin="0,2"/>
+                        </Grid>
+                    </GroupBox>
 
-        <!-- İşlem Türü Tablosu -->
-        <GroupBox Header="İşlem Türü Bazında Toplam">
-            <DataGrid ItemsSource="{Binding TypeRows}"
-                      AutoGenerateColumns="False"
-                      IsReadOnly="True"
-                      CanUserAddRows="False"
-                      GridLinesVisibility="Horizontal"
-                      AlternatingRowBackground="#F5F5F5"
-                      HeadersVisibility="Column">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="İşlem Türü"
-                                        Binding="{Binding TypeDisplay}"
-                                        Width="120"/>
-                    <DataGridTextColumn Header="TL Tutar"
-                                        Binding="{Binding TryAmount, StringFormat=N2}"
-                                        Width="*">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="HorizontalAlignment" Value="Right"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
-                    <DataGridTextColumn Header="TL Adet"
-                                        Binding="{Binding TryCount}"
-                                        Width="70">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="HorizontalAlignment" Value="Right"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
-                    <DataGridTextColumn Header="USD Tutar"
-                                        Binding="{Binding UsdAmount, StringFormat=N2}"
-                                        Width="*">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="HorizontalAlignment" Value="Right"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
-                    <DataGridTextColumn Header="USD Adet"
-                                        Binding="{Binding UsdCount}"
-                                        Width="70">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="HorizontalAlignment" Value="Right"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
-                    <DataGridTextColumn Header="EUR Tutar"
-                                        Binding="{Binding EurAmount, StringFormat=N2}"
-                                        Width="*">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="HorizontalAlignment" Value="Right"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
-                    <DataGridTextColumn Header="EUR Adet"
-                                        Binding="{Binding EurCount}"
-                                        Width="70">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="HorizontalAlignment" Value="Right"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
-                </DataGrid.Columns>
-            </DataGrid>
-        </GroupBox>
+                </UniformGrid>
+
+                <!-- İşlem Türü Tablosu — Borç/Alacak mantığıyla -->
+                <GroupBox Header="İşlem Türü Bazında Toplam" Margin="0,0,0,10">
+                    <DataGrid ItemsSource="{Binding TypeRows}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              CanUserAddRows="False"
+                              GridLinesVisibility="Horizontal"
+                              AlternatingRowBackground="#F5F5F5"
+                              HeadersVisibility="Column">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="İşlem Türü" Binding="{Binding TypeDisplay}" Width="90"/>
+                            <DataGridTextColumn Header="TL Borç"    Binding="{Binding TryBorc,  StringFormat=N2}" Width="*">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                        <Setter Property="Foreground" Value="#C62828"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="TL Alacak"  Binding="{Binding TryAlacak,StringFormat=N2}" Width="*">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                        <Setter Property="Foreground" Value="#2E7D32"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="TL Adet"    Binding="{Binding TryCount}" Width="55">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock"><Setter Property="HorizontalAlignment" Value="Right"/></Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="USD Borç"   Binding="{Binding UsdBorc,  StringFormat=N2}" Width="*">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                        <Setter Property="Foreground" Value="#C62828"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="USD Alacak" Binding="{Binding UsdAlacak,StringFormat=N2}" Width="*">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                        <Setter Property="Foreground" Value="#2E7D32"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="USD Adet"   Binding="{Binding UsdCount}" Width="55">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock"><Setter Property="HorizontalAlignment" Value="Right"/></Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="EUR Borç"   Binding="{Binding EurBorc,  StringFormat=N2}" Width="*">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                        <Setter Property="Foreground" Value="#C62828"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="EUR Alacak" Binding="{Binding EurAlacak,StringFormat=N2}" Width="*">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                        <Setter Property="Foreground" Value="#2E7D32"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="EUR Adet"   Binding="{Binding EurCount}" Width="55">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock"><Setter Property="HorizontalAlignment" Value="Right"/></Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </GroupBox>
+
+                <!-- İşlem Detay Tablosu — ShowTransactionDetails=true ise görünür -->
+                <GroupBox Header="İşlem Detayları" Margin="0,0,0,0">
+                    <GroupBox.Style>
+                        <Style TargetType="GroupBox">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasDetails}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </GroupBox.Style>
+                    <DataGrid ItemsSource="{Binding DetailRows}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              CanUserAddRows="False"
+                              GridLinesVisibility="Horizontal"
+                              AlternatingRowBackground="#F5F5F5"
+                              HeadersVisibility="Column"
+                              MaxHeight="280">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Tarih"       Binding="{Binding Date}"            Width="80"/>
+                            <DataGridTextColumn Header="Açıklama"    Binding="{Binding Description}"     Width="*"/>
+                            <DataGridTextColumn Header="Tür"         Binding="{Binding TypeDisplay}"     Width="65"/>
+                            <DataGridTextColumn Header="Para Bir."   Binding="{Binding CurrencyDisplay}" Width="65"/>
+                            <DataGridTextColumn Header="Borç"        Binding="{Binding Borc,   StringFormat=N2}" Width="100">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                        <Setter Property="Foreground" Value="#C62828"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Alacak"      Binding="{Binding Alacak, StringFormat=N2}" Width="100">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                        <Setter Property="Foreground" Value="#2E7D32"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Bakiye"      Binding="{Binding Balance, StringFormat=N2}" Width="100">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </GroupBox>
+
+            </StackPanel>
+        </ScrollViewer>
 
     </DockPanel>
 </Window>

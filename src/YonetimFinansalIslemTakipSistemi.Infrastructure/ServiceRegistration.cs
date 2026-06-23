@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using QuestPDF.Infrastructure;
+using YonetimFinansalIslemTakipSistemi.Application.Features.Analysis.Queries.GetDashboard;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Repositories;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Infrastructure.Persistence;
@@ -30,11 +31,14 @@ public static class ServiceRegistration
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IUserPermissionRepository, UserPermissionRepository>();
         services.AddScoped<IExchangeRateRepository, ExchangeRateRepository>();
+        services.AddScoped<IUserGridLayoutRepository, UserGridLayoutRepository>();
 
         services.AddScoped<IAuthenticationService, DatabaseAuthenticationService>();
         services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
         services.AddScoped<IAuditLogService, AuditLogService>();
         services.AddScoped<IReportExportService, ReportExportService>();
+        services.AddScoped<IUserGridLayoutService, UserGridLayoutService>();
+        services.AddScoped<GetDashboardHandler>();
 
         // [DEV-ONLY] Geliştirme ortamı seed servisi
         services.AddScoped<IDevDataSeeder, DevDataSeeder>();

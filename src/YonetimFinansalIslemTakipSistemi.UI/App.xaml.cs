@@ -26,6 +26,7 @@ using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Login;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Permissions;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Reports;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Users;
+using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Analysis;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.ExchangeRates;
 
 namespace YonetimFinansalIslemTakipSistemi.UI;
@@ -96,6 +97,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<UserPermissionViewModel>();
         services.AddTransient<ReportViewModel>();
         services.AddTransient<ExchangeRateViewModel>();
+        services.AddTransient<AnalysisViewModel>();
 
         Services = services.BuildServiceProvider();
 

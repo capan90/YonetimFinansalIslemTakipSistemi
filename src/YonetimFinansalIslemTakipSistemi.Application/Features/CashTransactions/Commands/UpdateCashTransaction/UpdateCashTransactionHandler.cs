@@ -104,6 +104,9 @@ public class UpdateCashTransactionHandler
         if (request.UpdatedByUserId == Guid.Empty)
             return "İşlemi yapan kullanıcı belirtilmelidir.";
 
+        if (string.IsNullOrWhiteSpace(request.Description))
+            return "Açıklama alanı zorunludur. Lütfen işlem açıklaması giriniz.";
+
         if (request.Amount <= 0)
             return "Tutar sıfırdan büyük olmalıdır.";
 

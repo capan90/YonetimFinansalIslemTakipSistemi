@@ -2,12 +2,10 @@ namespace YonetimFinansalIslemTakipSistemi.Domain.Enums;
 
 /// <summary>
 /// Sistem içinde desteklenen finansal işlem tiplerini tanımlar.
+/// Giriş = Alacak (nakit girişi), Çıkış = Borç (nakit çıkışı).
 /// </summary>
 public enum TransactionType
 {
-    Tahsilat = 1,
-    Odeme = 2,
-    Avans = 3,
-    OzelHarcama = 4,
-    Transfer = 5
+    Giris = 1,
+    Cikis = 2
 }

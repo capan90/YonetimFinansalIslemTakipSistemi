@@ -10,6 +10,7 @@ public class AppDbContext : DbContext
     public DbSet<AuditLog>        AuditLogs          => Set<AuditLog>();
     public DbSet<UserPermission>  UserPermissions    => Set<UserPermission>();
     public DbSet<ExchangeRate>    ExchangeRates      => Set<ExchangeRate>();
+    public DbSet<UserGridLayout>  UserGridLayouts    => Set<UserGridLayout>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 

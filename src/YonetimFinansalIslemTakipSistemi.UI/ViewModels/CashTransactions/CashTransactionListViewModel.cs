@@ -15,11 +15,16 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
     private DateTime?           _dateFrom;
     private DateTime?           _dateTo;
     private string?             _selectedTransactionType;
-    private string?             _selectedCurrencyType;
+    private string?             _selectedCurrencyType = "TRY"; // Varsayılan: TL işlemleri göster
     private string?             _selectedAmountOperator;
     private string?             _amountValueText;
     private string?             _descriptionFilter;
     private CashTransactionDto? _selectedTransaction;
+
+    // Bakiye kolonu görünürlük bayrakları — para birimi filtresine göre güncellenir
+    private bool _showTlBalance  = true;
+    private bool _showUsdBalance = false;
+    private bool _showEurBalance = false;
 
     public CashTransactionListViewModel(GetCashTransactionsHandler handler)
     {
@@ -53,7 +58,12 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
     public string? SelectedCurrencyType
     {
         get => _selectedCurrencyType;
-        set { _selectedCurrencyType = value; OnPropertyChanged(); }
+        set
+        {
+            _selectedCurrencyType = value;
+            OnPropertyChanged();
+            UpdateBalanceColumnVisibility();
+        }
     }
 
     // Operatör seçimi; null veya boş → tutar filtresi uygulanmaz
@@ -76,10 +86,33 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
         set { _descriptionFilter = value; OnPropertyChanged(); }
     }
 
+    // --- Bakiye kolonu görünürlük özellikleri ---
+
+    /// <summary>TRY seçiliyken veya Tümü seçiliyken true.</summary>
+    public bool ShowTlBalance
+    {
+        get => _showTlBalance;
+        private set { _showTlBalance = value; OnPropertyChanged(); }
+    }
+
+    /// <summary>USD seçiliyken veya Tümü seçiliyken true.</summary>
+    public bool ShowUsdBalance
+    {
+        get => _showUsdBalance;
+        private set { _showUsdBalance = value; OnPropertyChanged(); }
+    }
+
+    /// <summary>EUR seçiliyken veya Tümü seçiliyken true.</summary>
+    public bool ShowEurBalance
+    {
+        get => _showEurBalance;
+        private set { _showEurBalance = value; OnPropertyChanged(); }
+    }
+
     // --- ComboBox kaynakları ---
 
     public IReadOnlyList<string> TransactionTypeOptions { get; } =
-        new[] { "Tümü", "Tahsilat", "Ödeme", "Avans", "Özel Harcama", "Transfer" };
+        new[] { "Tümü", "Giriş", "Çıkış" };
 
     public IReadOnlyList<string> CurrencyTypeOptions { get; } =
         new[] { "Tümü", "TRY", "USD", "EUR" };
@@ -112,7 +145,7 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
 
     public ICommand FilterCommand { get; }
 
-    /// <summary>İlk açılışta tüm kayıtları yükler.</summary>
+    /// <summary>İlk açılışta TL işlemlerini yükler (varsayılan filtre: TRY).</summary>
     public async Task LoadAsync() => await ExecuteFilterAsync();
 
     private async Task ExecuteFilterAsync()
@@ -139,15 +172,21 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
             Transactions.Add(item);
     }
 
+    private void UpdateBalanceColumnVisibility()
+    {
+        // Tümü veya null → tüm bakiye kolonları görünür
+        var isTumu = string.IsNullOrEmpty(_selectedCurrencyType) || _selectedCurrencyType == "Tümü";
+        ShowTlBalance  = isTumu || _selectedCurrencyType == "TRY";
+        ShowUsdBalance = isTumu || _selectedCurrencyType == "USD";
+        ShowEurBalance = isTumu || _selectedCurrencyType == "EUR";
+    }
+
     // "Tümü" veya null → null (filtre uygulanmaz)
     private static TransactionType? ParseTransactionType(string? display) => display switch
     {
-        "Tahsilat"     => TransactionType.Tahsilat,
-        "Ödeme"        => TransactionType.Odeme,
-        "Avans"        => TransactionType.Avans,
-        "Özel Harcama" => TransactionType.OzelHarcama,
-        "Transfer"     => TransactionType.Transfer,
-        _              => null
+        "Giriş" => TransactionType.Giris,
+        "Çıkış" => TransactionType.Cikis,
+        _       => null
     };
 
     private static CurrencyType? ParseCurrencyType(string? display) => display switch

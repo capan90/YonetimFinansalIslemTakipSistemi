@@ -87,13 +87,24 @@ public class CashTransactionRepository : ICashTransactionRepository
             .ToListAsync();
 
     public async Task<List<CurrencyReportData>> GetReportDataAsync(
-        DateTime? startUtc, DateTime? endExclusiveUtc)
+        DateTime?        startUtc,
+        DateTime?        endExclusiveUtc,
+        TransactionType? transactionType    = null,
+        CurrencyType?    currencyType       = null,
+        string?          descriptionContains = null)
     {
         var query = _context.CashTransactions.AsQueryable();
 
         // Yarı-açık aralık: >= start, < endExclusive
-        if (startUtc.HasValue)        query = query.Where(t => t.TransactionDate >= startUtc.Value);
-        if (endExclusiveUtc.HasValue) query = query.Where(t => t.TransactionDate <  endExclusiveUtc.Value);
+        if (startUtc.HasValue)         query = query.Where(t => t.TransactionDate >= startUtc.Value);
+        if (endExclusiveUtc.HasValue)  query = query.Where(t => t.TransactionDate <  endExclusiveUtc.Value);
+        if (transactionType.HasValue)  query = query.Where(t => t.TransactionType == transactionType.Value);
+        if (currencyType.HasValue)     query = query.Where(t => t.CurrencyType    == currencyType.Value);
+
+        // Açıklama filtresi — PostgreSQL'de büyük/küçük harf duyarsız içerir araması
+        if (!string.IsNullOrEmpty(descriptionContains))
+            query = query.Where(t => t.Description != null &&
+                                     t.Description.ToLower().Contains(descriptionContains.ToLower()));
 
         // GROUP BY PostgreSQL'de çalışır; kayıtların tamamı belleğe çekilmez
         return await query
@@ -103,6 +114,32 @@ public class CashTransactionRepository : ICashTransactionRepository
                 g.Key.TransactionType,
                 g.Sum(t => t.Amount),
                 g.Count()))
+            .ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<CashTransaction>> GetFilteredForReportDetailAsync(
+        DateTime?        startUtc,
+        DateTime?        endExclusiveUtc,
+        TransactionType? transactionType,
+        CurrencyType?    currencyType,
+        string?          descriptionContains)
+    {
+        var query = _context.CashTransactions.AsQueryable();
+
+        if (startUtc.HasValue)        query = query.Where(t => t.TransactionDate >= startUtc.Value);
+        if (endExclusiveUtc.HasValue) query = query.Where(t => t.TransactionDate <  endExclusiveUtc.Value);
+        if (transactionType.HasValue) query = query.Where(t => t.TransactionType == transactionType.Value);
+        if (currencyType.HasValue)    query = query.Where(t => t.CurrencyType    == currencyType.Value);
+
+        if (!string.IsNullOrEmpty(descriptionContains))
+            query = query.Where(t => t.Description != null &&
+                                     t.Description.ToLower().Contains(descriptionContains.ToLower()));
+
+        // Bakiye hesabı için artan sıra zorunludur
+        return await query
+            .OrderBy(t => t.TransactionDate)
+            .ThenBy(t => t.CreatedAt)
+            .ThenBy(t => t.Id)
             .ToListAsync();
     }
 }

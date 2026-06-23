@@ -53,8 +53,22 @@ public class UpdateService : IUpdateService
         }
     }
 
-    public void LaunchInstaller()
-        => Process.Start(new ProcessStartInfo(DeploymentFilePath) { UseShellExecute = true });
+    public bool LaunchInstaller()
+    {
+        try
+        {
+            // UseShellExecute = true: Windows Shell .application dosyasını dfshim.dll ile açar.
+            // Bu süreç uygulamadan bağımsız başladığı için Shutdown() sonrasında da devam eder.
+            var info = new ProcessStartInfo(DeploymentFilePath) { UseShellExecute = true };
+            var proc = Process.Start(info);
+            return proc is not null;
+        }
+        catch (Exception)
+        {
+            // Dosya bulunamazsa veya shell hatası olursa false döner; Shutdown() engellenir.
+            return false;
+        }
+    }
 
     private static Version CurrentVersion()
         => Assembly.GetExecutingAssembly().GetName().Version ?? new Version(1, 0, 0, 0);

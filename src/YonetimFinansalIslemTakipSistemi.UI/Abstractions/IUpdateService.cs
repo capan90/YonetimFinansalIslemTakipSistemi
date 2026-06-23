@@ -16,8 +16,10 @@ public interface IUpdateService
 
     /// <summary>
     /// .application deployment dosyasını shell ile açar; ClickOnce güncelleme sürecini başlatır.
+    /// Süreç başarıyla spawn edilirse true döner; dosya bulunamazsa veya shell hatası olursa false.
+    /// Caller false alırsa Shutdown() çağırmamalıdır.
     /// </summary>
-    void LaunchInstaller();
+    bool LaunchInstaller();
 }
 
 public record UpdateCheckResult(

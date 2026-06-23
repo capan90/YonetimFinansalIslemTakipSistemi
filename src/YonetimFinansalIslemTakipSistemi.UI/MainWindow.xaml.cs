@@ -534,7 +534,16 @@ public partial class MainWindow : Window
                 "Uygulama Kapatılıyor"))
             return;
 
-        updateService.LaunchInstaller();
+        // LaunchInstaller başarısız olursa (dosya yok, shell hatası) Shutdown çağrılmaz.
+        if (!updateService.LaunchInstaller())
+        {
+            _dialogService.ShowError(
+                "Güncelleme başlatılamadı. Güncelleme sunucusuna erişilemiyor veya kurulum dosyası bulunamadı.");
+            return;
+        }
+
+        // Yeni sürecin spawn olması için kısa bekleme; ardından eski sürüm güvenle kapanır.
+        await Task.Delay(800);
         System.Windows.Application.Current.Shutdown();
     }
 }

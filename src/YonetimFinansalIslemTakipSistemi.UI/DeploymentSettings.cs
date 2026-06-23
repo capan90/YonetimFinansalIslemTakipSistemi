@@ -18,6 +18,7 @@ internal static class DeploymentSettings
     public static string VersionJsonPath =>
         Path.Combine(UncBase, "version.json");
 
+    // Dosya adı proje adıyla (YonetimFinansalIslemTakipSistemi.UI) eşleşmeli; .application uzantısı eklenir.
     public static string DeploymentFilePath =>
-        Path.Combine(UncBase, "YonetimFinansalIslemTakipSistemi.application");
+        Path.Combine(UncBase, "YonetimFinansalIslemTakipSistemi.UI.application");
 }

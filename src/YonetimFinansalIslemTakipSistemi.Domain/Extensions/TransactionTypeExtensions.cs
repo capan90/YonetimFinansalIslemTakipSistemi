@@ -10,7 +10,8 @@ public static class TransactionTypeExtensions
 {
     /// <summary>
     /// İşlemin finansal yönünü döndürür.
-    /// Giriş → Alacak (Inflow), Çıkış → Borç (Outflow).
+    /// Giriş → Borç (Inflow), Çıkış → Alacak (Outflow).
+    /// Bakiye hesabı: Inflow +, Outflow −. Borç/Alacak kolonu ataması ayrıca yapılır.
     /// </summary>
     public static FinancialDirection GetFinancialDirection(this TransactionType type) => type switch
     {

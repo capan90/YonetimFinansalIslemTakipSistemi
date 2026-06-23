@@ -62,18 +62,18 @@ public partial class ReportPreviewWindow : Window
                 }
             }
 
-            // Giriş = Alacak, Çıkış = Borç
+            // Giriş = Borç (alan borçludur), Çıkış = Alacak (veren alacaklıdır)
             var isInflow = ts.TransactionType.GetFinancialDirection() == FinancialDirection.Inflow;
             return new TypeRow(
                 ts.TypeDisplay,
-                TryBorc:   isInflow ? 0m     : tryAmt,
-                TryAlacak: isInflow ? tryAmt : 0m,
+                TryBorc:   isInflow ? tryAmt : 0m,
+                TryAlacak: isInflow ? 0m     : tryAmt,
                 TryCount:  tryCnt,
-                UsdBorc:   isInflow ? 0m     : usdAmt,
-                UsdAlacak: isInflow ? usdAmt : 0m,
+                UsdBorc:   isInflow ? usdAmt : 0m,
+                UsdAlacak: isInflow ? 0m     : usdAmt,
                 UsdCount:  usdCnt,
-                EurBorc:   isInflow ? 0m     : eurAmt,
-                EurAlacak: isInflow ? eurAmt : 0m,
+                EurBorc:   isInflow ? eurAmt : 0m,
+                EurAlacak: isInflow ? 0m     : eurAmt,
                 EurCount:  eurCnt);
         }).ToList();
 

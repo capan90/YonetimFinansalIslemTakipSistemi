@@ -54,10 +54,11 @@ public class GetDashboardHandler
             description);
 
         // ── Üst özet kartları ──────────────────────────────────────────────────
-        var totalAlacak = aggregates
+        // Borç = Giriş (alan borçludur), Alacak = Çıkış (veren alacaklıdır)
+        var totalBorc = aggregates
             .Where(x => x.TransactionType.GetFinancialDirection() == FinancialDirection.Inflow)
             .Sum(x => x.TotalAmount);
-        var totalBorc = aggregates
+        var totalAlacak = aggregates
             .Where(x => x.TransactionType.GetFinancialDirection() == FinancialDirection.Outflow)
             .Sum(x => x.TotalAmount);
         var totalCount = aggregates.Sum(x => x.Count);
@@ -76,10 +77,10 @@ public class GetDashboardHandler
         var currencyCards = currencies.Select(currency =>
         {
             var rows    = aggregates.Where(x => x.Currency == currency).ToList();
-            var alacak  = rows.Where(x => x.TransactionType.GetFinancialDirection() == FinancialDirection.Inflow).Sum(x => x.TotalAmount);
-            var borc    = rows.Where(x => x.TransactionType.GetFinancialDirection() == FinancialDirection.Outflow).Sum(x => x.TotalAmount);
+            var borc    = rows.Where(x => x.TransactionType.GetFinancialDirection() == FinancialDirection.Inflow).Sum(x => x.TotalAmount);
+            var alacak  = rows.Where(x => x.TransactionType.GetFinancialDirection() == FinancialDirection.Outflow).Sum(x => x.TotalAmount);
             var count   = rows.Sum(x => x.Count);
-            return new DashboardCurrencyCardDto(DisplayCurrency(currency), alacak, borc, alacak - borc, count);
+            return new DashboardCurrencyCardDto(DisplayCurrency(currency), alacak, borc, borc - alacak, count);
         }).ToList();
 
         // ── Günlük trend ───────────────────────────────────────────────────────
@@ -88,13 +89,13 @@ public class GetDashboardHandler
             .OrderBy(g => g.Key)
             .Select(g =>
             {
-                var gAlacak = g.Where(x => x.TransactionType.GetFinancialDirection() == FinancialDirection.Inflow).Sum(x => x.Amount);
-                var gBorc   = g.Where(x => x.TransactionType.GetFinancialDirection() == FinancialDirection.Outflow).Sum(x => x.Amount);
+                var gBorc   = g.Where(x => x.TransactionType.GetFinancialDirection() == FinancialDirection.Inflow).Sum(x => x.Amount);
+                var gAlacak = g.Where(x => x.TransactionType.GetFinancialDirection() == FinancialDirection.Outflow).Sum(x => x.Amount);
                 return new DailyTrendDto(
                     DateDisplay: g.Key.ToString("dd.MM.yyyy"),
                     TotalAlacak: gAlacak,
                     TotalBorc:   gBorc,
-                    NetFark:     gAlacak - gBorc);
+                    NetFark:     gBorc - gAlacak);
             })
             .ToList();
 
@@ -111,8 +112,8 @@ public class GetDashboardHandler
                     Description:     x.Description ?? string.Empty,
                     TypeDisplay:     DisplayType(x.TransactionType),
                     CurrencyDisplay: DisplayCurrency(x.CurrencyType),
-                    Borc:            isInflow ? 0m       : x.Amount,
-                    Alacak:          isInflow ? x.Amount : 0m);
+                    Borc:            isInflow ? x.Amount : 0m,
+                    Alacak:          isInflow ? 0m       : x.Amount);
             })
             .ToList();
 
@@ -120,7 +121,7 @@ public class GetDashboardHandler
         {
             TotalAlacak       = totalAlacak,
             TotalBorc         = totalBorc,
-            NetFark           = totalAlacak - totalBorc,
+            NetFark           = totalBorc - totalAlacak,
             TotalCount        = totalCount,
             MaxGiris          = maxGiris,
             MaxCikis          = maxCikis,

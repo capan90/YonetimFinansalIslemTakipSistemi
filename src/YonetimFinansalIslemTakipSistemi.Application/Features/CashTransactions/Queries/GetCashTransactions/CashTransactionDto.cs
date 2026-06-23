@@ -12,9 +12,9 @@ public class CashTransactionDto
     public DateTime TransactionDate        { get; set; }
     public string   TransactionTypeDisplay { get; set; } = string.Empty;
     public string   CurrencyTypeDisplay    { get; set; } = string.Empty;
-    /// <summary>Çıkış işlemlerinde dolu, Giriş işlemlerinde 0.</summary>
-    public decimal  Borc                   { get; set; }
     /// <summary>Giriş işlemlerinde dolu, Çıkış işlemlerinde 0.</summary>
+    public decimal  Borc                   { get; set; }
+    /// <summary>Çıkış işlemlerinde dolu, Giriş işlemlerinde 0.</summary>
     public decimal  Alacak                 { get; set; }
     public string   Description            { get; set; } = string.Empty;
     public DateTime CreatedAt              { get; set; }

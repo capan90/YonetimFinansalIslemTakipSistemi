@@ -157,8 +157,8 @@ public class GetReportHandler
         foreach (var t in transactions)
         {
             var isInflow = t.TransactionType.GetFinancialDirection() == FinancialDirection.Inflow;
-            var borc     = isInflow ? 0m    : t.Amount;
-            var alacak   = isInflow ? t.Amount : 0m;
+            var borc     = isInflow ? t.Amount : 0m;
+            var alacak   = isInflow ? 0m       : t.Amount;
 
             runningBalance[t.CurrencyType] += isInflow ? t.Amount : -t.Amount;
 

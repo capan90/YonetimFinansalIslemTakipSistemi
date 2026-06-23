@@ -6,6 +6,7 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Com
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Commands.DeleteCashTransaction;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Commands.UpdateCashTransaction;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Queries.GetCashTransactions;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Queries.GetCurrentBalances;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Commands.CreateUser;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Commands.DeleteUser;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Commands.UpdateUser;
@@ -66,6 +67,7 @@ public partial class App : System.Windows.Application
         services.AddScoped<UpdateCashTransactionHandler>();
         services.AddScoped<DeleteCashTransactionHandler>();
         services.AddScoped<GetCashTransactionsHandler>();
+        services.AddScoped<GetCurrentBalancesHandler>();
 
         // User handler'lar
         services.AddScoped<CreateUserHandler>();

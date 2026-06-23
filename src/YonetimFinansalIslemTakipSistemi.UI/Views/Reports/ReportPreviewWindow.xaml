@@ -61,7 +61,7 @@
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Right"/>
-                                    <Setter Property="Foreground" Value="#C62828"/>
+                                    <Setter Property="Foreground" Value="#2E7D32"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -69,7 +69,7 @@
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Right"/>
-                                    <Setter Property="Foreground" Value="#2E7D32"/>
+                                    <Setter Property="Foreground" Value="#C62828"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -82,7 +82,7 @@
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Right"/>
-                                    <Setter Property="Foreground" Value="#C62828"/>
+                                    <Setter Property="Foreground" Value="#2E7D32"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -90,7 +90,7 @@
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Right"/>
-                                    <Setter Property="Foreground" Value="#2E7D32"/>
+                                    <Setter Property="Foreground" Value="#C62828"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -103,7 +103,7 @@
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Right"/>
-                                    <Setter Property="Foreground" Value="#C62828"/>
+                                    <Setter Property="Foreground" Value="#2E7D32"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -111,7 +111,7 @@
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Right"/>
-                                    <Setter Property="Foreground" Value="#2E7D32"/>
+                                    <Setter Property="Foreground" Value="#C62828"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -145,7 +145,7 @@
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="HorizontalAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="#C62828"/>
+                                        <Setter Property="Foreground" Value="#2E7D32"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
@@ -153,7 +153,7 @@
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="HorizontalAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="#2E7D32"/>
+                                        <Setter Property="Foreground" Value="#C62828"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>

@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Queries.GetCashTransactions;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Queries.GetCurrentBalances;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.UI.Common;
 
@@ -10,7 +11,8 @@ namespace YonetimFinansalIslemTakipSistemi.UI.ViewModels.CashTransactions;
 
 public class CashTransactionListViewModel : INotifyPropertyChanged
 {
-    private readonly GetCashTransactionsHandler _handler;
+    private readonly GetCashTransactionsHandler  _handler;
+    private readonly GetCurrentBalancesHandler   _balanceHandler;
 
     private DateTime?           _dateFrom;
     private DateTime?           _dateTo;
@@ -26,10 +28,16 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
     private bool _showUsdBalance = false;
     private bool _showEurBalance = false;
 
-    public CashTransactionListViewModel(GetCashTransactionsHandler handler)
+    // Üst bakiye barı
+    private decimal _tlBalance;
+    private decimal _usdBalance;
+    private decimal _eurBalance;
+
+    public CashTransactionListViewModel(GetCashTransactionsHandler handler, GetCurrentBalancesHandler balanceHandler)
     {
-        _handler      = handler;
-        FilterCommand = new RelayCommand(async () => await ExecuteFilterAsync());
+        _handler        = handler;
+        _balanceHandler = balanceHandler;
+        FilterCommand   = new RelayCommand(async () => await ExecuteFilterAsync());
     }
 
     // --- Filtre alanları ---
@@ -84,6 +92,26 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
     {
         get => _descriptionFilter;
         set { _descriptionFilter = value; OnPropertyChanged(); }
+    }
+
+    // --- Genel bakiye özeti (filtreden bağımsız, tüm zamanlar) ---
+
+    public decimal TlBalance
+    {
+        get => _tlBalance;
+        private set { _tlBalance = value; OnPropertyChanged(); }
+    }
+
+    public decimal UsdBalance
+    {
+        get => _usdBalance;
+        private set { _usdBalance = value; OnPropertyChanged(); }
+    }
+
+    public decimal EurBalance
+    {
+        get => _eurBalance;
+        private set { _eurBalance = value; OnPropertyChanged(); }
     }
 
     // --- Bakiye kolonu görünürlük özellikleri ---
@@ -145,8 +173,15 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
 
     public ICommand FilterCommand { get; }
 
-    /// <summary>İlk açılışta TL işlemlerini yükler (varsayılan filtre: TRY).</summary>
-    public async Task LoadAsync() => await ExecuteFilterAsync();
+    /// <summary>İşlem listesini ve genel bakiyeleri yükler (bakiye filtreden bağımsızdır).</summary>
+    public async Task LoadAsync()
+    {
+        await ExecuteFilterAsync();
+        var balances = await _balanceHandler.HandleAsync();
+        TlBalance  = balances.TlBalance;
+        UsdBalance = balances.UsdBalance;
+        EurBalance = balances.EurBalance;
+    }
 
     private async Task ExecuteFilterAsync()
     {

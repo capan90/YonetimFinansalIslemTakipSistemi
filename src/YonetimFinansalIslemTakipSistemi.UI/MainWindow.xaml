@@ -40,6 +40,27 @@
 
     <DockPanel Margin="8">
 
+        <!-- Bakiye Özeti — filtreden bağımsız, tüm zamanların kümülatif bakiyesi -->
+        <Border DockPanel.Dock="Top"
+                Background="#F0F4F8"
+                BorderBrush="#C8D6E5"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12,6"
+                Margin="0,0,0,8">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock Text="TL:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                <TextBlock Text="{Binding TlBalance, StringFormat=N2}" FontWeight="Bold"
+                           Foreground="#1A5276" VerticalAlignment="Center" Margin="0,0,24,0"/>
+                <TextBlock Text="USD:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                <TextBlock Text="{Binding UsdBalance, StringFormat=N2}" FontWeight="Bold"
+                           Foreground="#1A5276" VerticalAlignment="Center" Margin="0,0,24,0"/>
+                <TextBlock Text="EUR:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                <TextBlock Text="{Binding EurBalance, StringFormat=N2}" FontWeight="Bold"
+                           Foreground="#1A5276" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
         <!-- Araç çubuğu -->
         <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
             <!-- Sağ: kullanıcı adı + çıkış butonu — DockPanel'de önce Dock="Right" olan yerleşir -->
@@ -145,7 +166,7 @@
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Setter Property="HorizontalAlignment" Value="Right"/>
-                            <Setter Property="Foreground" Value="#C62828"/>
+                            <Setter Property="Foreground" Value="#2E7D32"/>
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
@@ -156,7 +177,7 @@
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Setter Property="HorizontalAlignment" Value="Right"/>
-                            <Setter Property="Foreground" Value="#2E7D32"/>
+                            <Setter Property="Foreground" Value="#C62828"/>
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>

@@ -12,7 +12,7 @@ namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Services;
 /// <summary>
 /// PDF → QuestPDF (Community lisans; iç kullanım aracı, ticari ürün değil)
 /// Excel → ClosedXML (MIT lisansı)
-/// Borç/Alacak mantığı: Giriş → Alacak kolonuna, Çıkış → Borç kolonuna yazılır.
+/// Borç/Alacak mantığı: Giriş → Borç kolonuna, Çıkış → Alacak kolonuna yazılır.
 /// NOT: QuestPDF'de sayfa alt toplamı (running footer) karmaşık olduğundan bu sürümde
 ///      genel toplam rapor sonunda verilmekte, sayfa alt toplamı eklenmemektedir.
 /// </summary>
@@ -127,14 +127,14 @@ public class ReportExportService : IReportExportService
                                 c.BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(4);
 
                             table.Cell().Element(Row).Text(ts.TypeDisplay).FontSize(8);
-                            table.Cell().Element(Row).AlignRight().Text(tryBorc.ToString("N2")).FontSize(8).FontColor(Colors.Red.Darken2);
-                            table.Cell().Element(Row).AlignRight().Text(tryAlacak.ToString("N2")).FontSize(8).FontColor(Colors.Green.Darken2);
+                            table.Cell().Element(Row).AlignRight().Text(tryBorc.ToString("N2")).FontSize(8).FontColor(Colors.Green.Darken2);
+                            table.Cell().Element(Row).AlignRight().Text(tryAlacak.ToString("N2")).FontSize(8).FontColor(Colors.Red.Darken2);
                             table.Cell().Element(Row).AlignRight().Text(tryCnt.ToString()).FontSize(8);
-                            table.Cell().Element(Row).AlignRight().Text(usdBorc.ToString("N2")).FontSize(8).FontColor(Colors.Red.Darken2);
-                            table.Cell().Element(Row).AlignRight().Text(usdAlacak.ToString("N2")).FontSize(8).FontColor(Colors.Green.Darken2);
+                            table.Cell().Element(Row).AlignRight().Text(usdBorc.ToString("N2")).FontSize(8).FontColor(Colors.Green.Darken2);
+                            table.Cell().Element(Row).AlignRight().Text(usdAlacak.ToString("N2")).FontSize(8).FontColor(Colors.Red.Darken2);
                             table.Cell().Element(Row).AlignRight().Text(usdCnt.ToString()).FontSize(8);
-                            table.Cell().Element(Row).AlignRight().Text(eurBorc.ToString("N2")).FontSize(8).FontColor(Colors.Red.Darken2);
-                            table.Cell().Element(Row).AlignRight().Text(eurAlacak.ToString("N2")).FontSize(8).FontColor(Colors.Green.Darken2);
+                            table.Cell().Element(Row).AlignRight().Text(eurBorc.ToString("N2")).FontSize(8).FontColor(Colors.Green.Darken2);
+                            table.Cell().Element(Row).AlignRight().Text(eurAlacak.ToString("N2")).FontSize(8).FontColor(Colors.Red.Darken2);
                             table.Cell().Element(Row).AlignRight().Text(eurCnt.ToString()).FontSize(8);
                         }
                     });
@@ -179,8 +179,8 @@ public class ReportExportService : IReportExportService
                                 table.Cell().Element(Row).Text(d.Description).FontSize(7);
                                 table.Cell().Element(Row).Text(d.TypeDisplay).FontSize(7);
                                 table.Cell().Element(Row).Text(d.CurrencyDisplay).FontSize(7);
-                                table.Cell().Element(Row).AlignRight().Text(d.Borc.ToString("N2")).FontSize(7).FontColor(Colors.Red.Darken2);
-                                table.Cell().Element(Row).AlignRight().Text(d.Alacak.ToString("N2")).FontSize(7).FontColor(Colors.Green.Darken2);
+                                table.Cell().Element(Row).AlignRight().Text(d.Borc.ToString("N2")).FontSize(7).FontColor(Colors.Green.Darken2);
+                                table.Cell().Element(Row).AlignRight().Text(d.Alacak.ToString("N2")).FontSize(7).FontColor(Colors.Red.Darken2);
                                 table.Cell().Element(Row).AlignRight().Text(d.Balance.ToString("N2")).FontSize(7);
                             }
                         });
@@ -395,15 +395,15 @@ public class ReportExportService : IReportExportService
             switch (ca.Currency)
             {
                 case CurrencyType.TRY:
-                    if (isInflow) tryAlacak = ca.TotalAmount; else tryBorc = ca.TotalAmount;
+                    if (isInflow) tryBorc = ca.TotalAmount; else tryAlacak = ca.TotalAmount;
                     tryCnt = ca.Count;
                     break;
                 case CurrencyType.USD:
-                    if (isInflow) usdAlacak = ca.TotalAmount; else usdBorc = ca.TotalAmount;
+                    if (isInflow) usdBorc = ca.TotalAmount; else usdAlacak = ca.TotalAmount;
                     usdCnt = ca.Count;
                     break;
                 case CurrencyType.EUR:
-                    if (isInflow) eurAlacak = ca.TotalAmount; else eurBorc = ca.TotalAmount;
+                    if (isInflow) eurBorc = ca.TotalAmount; else eurAlacak = ca.TotalAmount;
                     eurCnt = ca.Count;
                     break;
             }

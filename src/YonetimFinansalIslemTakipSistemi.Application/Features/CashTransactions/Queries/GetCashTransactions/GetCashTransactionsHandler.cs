@@ -105,9 +105,9 @@ public class GetCashTransactionsHandler
                 CurrencyType.EUR => "EUR",
                 _                => e.CurrencyType.ToString()
             },
-            // Alacak = Giriş tutarı, Borç = Çıkış tutarı; diğeri sıfır
-            Alacak          = isInflow  ? e.Amount : 0m,
-            Borc            = !isInflow ? e.Amount : 0m,
+            // Borç = Giriş tutarı (alan borçludur), Alacak = Çıkış tutarı (veren alacaklıdır); diğeri sıfır
+            Borc            = isInflow  ? e.Amount : 0m,
+            Alacak          = !isInflow ? e.Amount : 0m,
             Description     = e.Description,
             CreatedAt       = e.CreatedAt,
             TlBalanceAfter  = tl,

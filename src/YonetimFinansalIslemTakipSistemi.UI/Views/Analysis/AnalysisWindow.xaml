@@ -78,7 +78,7 @@
                         <StackPanel>
                             <TextBlock Text="Toplam Alacak" Foreground="#666" FontSize="11"/>
                             <TextBlock Text="{Binding TotalAlacak, StringFormat=N2}"
-                                       FontSize="16" FontWeight="Bold" Foreground="#2E7D32" Margin="0,4,0,0"/>
+                                       FontSize="16" FontWeight="Bold" Foreground="#C62828" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
 
@@ -86,7 +86,7 @@
                         <StackPanel>
                             <TextBlock Text="Toplam Borç" Foreground="#666" FontSize="11"/>
                             <TextBlock Text="{Binding TotalBorc, StringFormat=N2}"
-                                       FontSize="16" FontWeight="Bold" Foreground="#C62828" Margin="0,4,0,0"/>
+                                       FontSize="16" FontWeight="Bold" Foreground="#2E7D32" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
 
@@ -157,12 +157,12 @@
                                     <TextBlock Grid.Row="1" Grid.Column="0" Text="Toplam Alacak:" Margin="0,2"/>
                                     <TextBlock Grid.Row="1" Grid.Column="1"
                                                Text="{Binding TotalAlacak, StringFormat=N2}"
-                                               HorizontalAlignment="Right" Foreground="#2E7D32" Margin="0,2"/>
+                                               HorizontalAlignment="Right" Foreground="#C62828" Margin="0,2"/>
 
                                     <TextBlock Grid.Row="2" Grid.Column="0" Text="Toplam Borç:" Margin="0,2"/>
                                     <TextBlock Grid.Row="2" Grid.Column="1"
                                                Text="{Binding TotalBorc, StringFormat=N2}"
-                                               HorizontalAlignment="Right" Foreground="#C62828" Margin="0,2"/>
+                                               HorizontalAlignment="Right" Foreground="#2E7D32" Margin="0,2"/>
 
                                     <Separator Grid.Row="3" Grid.ColumnSpan="2" Margin="0,4"/>
 
@@ -200,7 +200,7 @@
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="HorizontalAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="#2E7D32"/>
+                                        <Setter Property="Foreground" Value="#C62828"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
@@ -208,7 +208,7 @@
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="HorizontalAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="#C62828"/>
+                                        <Setter Property="Foreground" Value="#2E7D32"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
@@ -241,7 +241,7 @@
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="HorizontalAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="#C62828"/>
+                                        <Setter Property="Foreground" Value="#2E7D32"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
@@ -249,7 +249,7 @@
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="HorizontalAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="#2E7D32"/>
+                                        <Setter Property="Foreground" Value="#C62828"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>

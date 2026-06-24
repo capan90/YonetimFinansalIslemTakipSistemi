@@ -1,0 +1,6 @@
+{
+  "AppEnvironment": "Production",
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=SERVER_IP_OR_NAME;Port=5432;Database=yonetim_db;Username=yonetim_app;Password=CHANGE_ME"
+  }
+}

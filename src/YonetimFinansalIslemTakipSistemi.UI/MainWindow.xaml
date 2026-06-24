@@ -31,6 +31,10 @@
                 <MenuItem x:Name="MenuItemDoviz"
                           Header="Döviz Kurları"
                           Click="OpenExchangeRates_Click"/>
+                <Separator/>
+                <MenuItem x:Name="MenuItemDbTest"
+                          Header="Veritabanı Bağlantısını Test Et"
+                          Click="TestDbConnection_Click"/>
             </MenuItem>
             <MenuItem Header="Yardım">
                 <MenuItem Header="Güncellemeleri Denetle"

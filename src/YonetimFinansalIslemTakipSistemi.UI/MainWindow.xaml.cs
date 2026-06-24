@@ -400,6 +400,8 @@ public partial class MainWindow : Window
         MenuItemRaporlar.Visibility     = canReports  ? Visibility.Visible : Visibility.Collapsed;
         MenuItemAnaliz.Visibility       = canReports  ? Visibility.Visible : Visibility.Collapsed;
         MenuItemDoviz.Visibility        = canExchange ? Visibility.Visible : Visibility.Collapsed;
+        // DB testi yönetici eylemidir; kullanıcı yönetimi yetkisiyle erişilebilir
+        MenuItemDbTest.Visibility       = canManage   ? Visibility.Visible : Visibility.Collapsed;
     }
 
     // ── İşlem Butonları ───────────────────────────────────────────────────────
@@ -492,6 +494,18 @@ public partial class MainWindow : Window
     private void OpenExchangeRates_Click(object sender, RoutedEventArgs e)
     {
         new ExchangeRateWindow(_services) { Owner = this }.ShowDialog();
+    }
+
+    private async void TestDbConnection_Click(object sender, RoutedEventArgs e)
+    {
+        var testService = _services.GetRequiredService<IDatabaseConnectionTestService>();
+        var canConnect = await testService.CanConnectAsync();
+
+        if (canConnect)
+            _dialogService.ShowSuccess("Veritabanı bağlantısı başarılı.");
+        else
+            _dialogService.ShowError(
+                "Veritabanı bağlantısı kurulamadı.\nLütfen ağ bağlantınızı veya sunucu erişimini kontrol edin.");
     }
 
     private async void CheckForUpdates_Click(object sender, RoutedEventArgs e)

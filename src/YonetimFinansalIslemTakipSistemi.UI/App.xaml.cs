@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using YonetimFinansalIslemTakipSistemi.Application.Common;
@@ -42,8 +43,32 @@ public partial class App : System.Windows.Application
 
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-        var connectionString = Environment.GetEnvironmentVariable("YONETIM_DB_CONNECTION")
-            ?? "Host=localhost;Port=5432;Database=yonetim_db;Username=postgres;Password=postgres123";
+        try
+        {
+            await InitializeAsync();
+        }
+        catch (Exception ex)
+        {
+            // Teknik detay log/debug'a; kullanıcıya sadece anlaşılır mesaj
+            System.Diagnostics.Debug.WriteLine($"Başlatma hatası: {ex}");
+            ShowConnectionError();
+            Shutdown();
+        }
+    }
+
+    private async Task InitializeAsync()
+    {
+        var config = BuildConfiguration();
+
+        // Öncelik: env var > appsettings.json > hata
+        var connectionString =
+            Environment.GetEnvironmentVariable("YONETIM_DB_CONNECTION")
+            ?? config.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Bağlantı dizesi yapılandırılmamış.");
+
+        // Production ortamında seed çalıştırılmaz
+        var appEnvironment = config["AppEnvironment"] ?? "Development";
+        var isDevelopment = !appEnvironment.Equals("Production", StringComparison.OrdinalIgnoreCase);
 
         var services = new ServiceCollection();
         services.AddInfrastructure(connectionString);
@@ -103,11 +128,43 @@ public partial class App : System.Windows.Application
 
         Services = services.BuildServiceProvider();
 
-        // [DEV-ONLY] Seed bir kez, kendi kısa ömürlü scope'uyla
-        using (var seedScope = Services.CreateScope())
+        // Veritabanı bağlantısını erken test et — hata varsa kullanıcı dostu mesaj göster
+        using (var testScope = Services.CreateScope())
+        {
+            var testService = testScope.ServiceProvider.GetRequiredService<IDatabaseConnectionTestService>();
+            if (!await testService.CanConnectAsync())
+                throw new InvalidOperationException("Veritabanına bağlanılamadı.");
+        }
+
+        // [DEV-ONLY] Seed yalnızca geliştirme ortamında çalışır
+        if (isDevelopment)
+        {
+            using var seedScope = Services.CreateScope();
             await seedScope.ServiceProvider.GetRequiredService<IDevDataSeeder>().SeedAsync();
+        }
 
         RunApplicationLoop();
+    }
+
+    /// <summary>
+    /// Config dosyası sırası: appsettings.json (uygulama çalışma dizininden).
+    /// Env var YONETIM_DB_CONNECTION her zaman önceliklidir (App.xaml.cs'de kontrol edilir).
+    /// </summary>
+    private static IConfiguration BuildConfiguration()
+    {
+        return new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+            .Build();
+    }
+
+    private static void ShowConnectionError()
+    {
+        MessageBox.Show(
+            "Veritabanı bağlantısı kurulamadı.\nLütfen ağ bağlantınızı veya sunucu erişimini kontrol edin.",
+            "Bağlantı Hatası",
+            MessageBoxButton.OK,
+            MessageBoxImage.Error);
     }
 
     /// <summary>

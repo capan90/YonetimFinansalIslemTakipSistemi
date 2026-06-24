@@ -17,6 +17,10 @@ obj/
 *.nupkg
 .nuget/
 
+# Üretim ortam yapılandırması — gerçek şifre içerebilir, repoya girmemeli
+appsettings.Production.json
+appsettings.*.local.json
+
 # Logs
 *.log
 

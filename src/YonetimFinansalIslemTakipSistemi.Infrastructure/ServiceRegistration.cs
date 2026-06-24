@@ -38,6 +38,7 @@ public static class ServiceRegistration
         services.AddScoped<IAuditLogService, AuditLogService>();
         services.AddScoped<IReportExportService, ReportExportService>();
         services.AddScoped<IUserGridLayoutService, UserGridLayoutService>();
+        services.AddScoped<IDatabaseConnectionTestService, DatabaseConnectionTestService>();
         services.AddScoped<GetDashboardHandler>();
 
         // [DEV-ONLY] Geliştirme ortamı seed servisi

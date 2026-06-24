@@ -15,6 +15,9 @@ internal static class DeploymentSettings
         Environment.GetEnvironmentVariable("YONETIM_UPDATE_PATH")
         ?? @"\\localhost\YonetimPublish\";
 
+    /// <summary>Yayın klasörünün temel yolu — HealthCheckService ve BackupOptions için.</summary>
+    public static string PublishPath => UncBase;
+
     public static string VersionJsonPath =>
         Path.Combine(UncBase, "version.json");
 

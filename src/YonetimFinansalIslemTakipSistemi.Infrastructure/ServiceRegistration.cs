@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using QuestPDF.Infrastructure;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Analysis.Queries.GetDashboard;
+using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Repositories;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Infrastructure.Persistence;
@@ -39,6 +40,7 @@ public static class ServiceRegistration
         services.AddScoped<IReportExportService, ReportExportService>();
         services.AddScoped<IUserGridLayoutService, UserGridLayoutService>();
         services.AddScoped<IDatabaseConnectionTestService, DatabaseConnectionTestService>();
+        services.AddScoped<IHealthCheckService, HealthCheckService>();
         services.AddSingleton<IErrorNotificationService, NullErrorNotificationService>();
         services.AddScoped<GetDashboardHandler>();
 

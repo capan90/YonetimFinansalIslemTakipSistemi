@@ -19,6 +19,7 @@ using YonetimFinansalIslemTakipSistemi.UI.Views.Users;
 using YonetimFinansalIslemTakipSistemi.UI.Views.Analysis;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Analysis;
 using YonetimFinansalIslemTakipSistemi.UI.Views.ExchangeRates;
+using YonetimFinansalIslemTakipSistemi.UI.Views.Health;
 
 namespace YonetimFinansalIslemTakipSistemi.UI;
 
@@ -402,9 +403,10 @@ public partial class MainWindow : Window
         MenuItemRaporlar.Visibility     = canReports  ? Visibility.Visible : Visibility.Collapsed;
         MenuItemAnaliz.Visibility       = canReports  ? Visibility.Visible : Visibility.Collapsed;
         MenuItemDoviz.Visibility        = canExchange ? Visibility.Visible : Visibility.Collapsed;
-        // DB testi ve log klasörü yönetici eylemleridir; kullanıcı yönetimi yetkisiyle erişilebilir
-        MenuItemDbTest.Visibility       = canManage   ? Visibility.Visible : Visibility.Collapsed;
-        MenuItemLogKlasor.Visibility    = canManage   ? Visibility.Visible : Visibility.Collapsed;
+        // DB testi, log klasörü ve sistem sağlığı yönetici eylemleridir
+        MenuItemDbTest.Visibility        = canManage ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemLogKlasor.Visibility     = canManage ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemSistemSagligi.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
     }
 
     // ── İşlem Butonları ───────────────────────────────────────────────────────
@@ -522,6 +524,11 @@ public partial class MainWindow : Window
         else
             _dialogService.ShowError(
                 "Veritabanı bağlantısı kurulamadı.\nLütfen ağ bağlantınızı veya sunucu erişimini kontrol edin.");
+    }
+
+    private void OpenSystemHealth_Click(object sender, RoutedEventArgs e)
+    {
+        new SystemHealthWindow(_services) { Owner = this }.ShowDialog();
     }
 
     private async void CheckForUpdates_Click(object sender, RoutedEventArgs e)

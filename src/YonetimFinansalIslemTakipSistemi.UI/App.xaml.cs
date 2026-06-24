@@ -105,6 +105,17 @@ public partial class App : System.Windows.Application
         var services = new ServiceCollection();
         services.AddInfrastructure(connectionString);
 
+        // HealthCheckService için ortam bilgileri — UI katmanı bu nesneyi oluşturur
+        // çünkü DeploymentSettings ve App.LogDirectory burada erişilebilir.
+        services.AddSingleton(new HealthCheckOptions
+        {
+            AppEnvironment    = appEnvironment,
+            LogDirectory      = LogDirectory,
+            BackupDirectory   = ResolveBackupDirectory(config),
+            UpdatePublishPath = DeploymentSettings.PublishPath,
+            ConnectionString  = connectionString
+        });
+
         // Serilog → Microsoft.Extensions.Logging köprüsü:
         // Infrastructure servisleri (ör. ReportExportService) ILogger<T> üzerinden yazabilir.
         services.AddLogging(lb => lb.AddSerilog(dispose: false));
@@ -229,6 +240,12 @@ public partial class App : System.Windows.Application
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
             .Build();
+    }
+
+    private static string ResolveBackupDirectory(IConfiguration config)
+    {
+        var dir = config["BackupDirectory"] ?? "Backups";
+        return Path.IsPathRooted(dir) ? dir : Path.Combine(AppContext.BaseDirectory, dir);
     }
 
     private static string ResolveLogDirectory(IConfiguration config)

@@ -11,9 +11,9 @@
         ResizeMode="CanResize">
 
     <Window.Resources>
-        <!-- Satır şablonu: Etiket | Değer | Durum -->
+        <!-- Satır şablonu: Etiket | Değer | Durum | Row tooltip -->
         <DataTemplate x:Key="RowTemplate">
-            <Grid Margin="2,4">
+            <Grid Margin="2,4" ToolTip="{Binding Tooltip}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="210"/>
                     <ColumnDefinition Width="*"/>
@@ -150,20 +150,34 @@
                         Content="Yenile"
                         Width="80"
                         DockPanel.Dock="Left"
+                        ToolTip="Sistem sağlık durumunu yeniden kontrol eder."
                         Click="Refresh_Click"/>
+                <!-- Yalnızca admin (CanManageUsers) için gösterilir; kod arkasında Visibility ayarlanır -->
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Right"
                             DockPanel.Dock="Right">
-                    <Button Content="Log Klasörü"
+                    <Button x:Name="BtnTestMail"
+                            Content="Test Maili Gönder"
+                            Width="145"
+                            Margin="0,0,10,0"
+                            ToolTip="Yapılandırılmış SMTP ayarlarını doğrulamak için test maili gönderir."
+                            Click="TestMail_Click"/>
+                    <Button x:Name="BtnOpenLog"
+                            Content="Log Klasörü"
                             Width="100"
                             Margin="0,0,6,0"
+                            ToolTip="Log dosyalarının bulunduğu klasörü Explorer'da açar."
                             Click="OpenLog_Click"/>
-                    <Button Content="Backup Klasörü"
+                    <Button x:Name="BtnOpenBackup"
+                            Content="Backup Klasörü"
                             Width="110"
                             Margin="0,0,6,0"
+                            ToolTip="Veritabanı yedeklerinin bulunduğu klasörü Explorer'da açar."
                             Click="OpenBackup_Click"/>
-                    <Button Content="Publish Klasörü"
+                    <Button x:Name="BtnOpenPublish"
+                            Content="Publish Klasörü"
                             Width="115"
+                            ToolTip="ClickOnce yayın (publish) klasörünü Explorer'da açar."
                             Click="OpenPublish_Click"/>
                 </StackPanel>
             </DockPanel>

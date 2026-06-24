@@ -12,7 +12,9 @@
         <GroupBox DockPanel.Dock="Top" Header="Filtrele" Margin="0,0,0,8" Padding="8">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Content="Yenile" Width="80" Command="{Binding LoadCommand}">
+                    <Button Content="Yenile" Width="80"
+                            ToolTip="Seçili filtrelerle analiz verilerini yeniden yükler."
+                            Command="{Binding LoadCommand}">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Style.Triggers>

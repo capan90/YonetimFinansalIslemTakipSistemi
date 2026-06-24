@@ -7,4 +7,10 @@ namespace YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 public interface IErrorNotificationService
 {
     Task NotifyAsync(string message, Exception? exception = null, NotificationContext? context = null);
+
+    /// <summary>
+    /// SMTP yapılandırmasını doğrulamak için test maili gönderir.
+    /// Başarı: (true, null). Hata: (false, açıklama). Stack trace verilmez; şifre gösterilmez.
+    /// </summary>
+    Task<(bool Success, string? Error)> SendTestAsync();
 }

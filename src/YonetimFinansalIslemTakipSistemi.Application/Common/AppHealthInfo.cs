@@ -35,10 +35,12 @@ public sealed record AppHealthInfo
     public string LatestPublishedVersion { get; init; } = string.Empty;
 
     // ── Bildirimler ─────────────────────────────────────────────────────────
-    public bool   NotificationsEnabled     { get; init; }
-    public string NotificationProvider     { get; init; } = string.Empty;
-    public bool   NotificationToConfigured { get; init; }
-    public string NotificationSmtpHost    { get; init; } = string.Empty;
+    public bool   NotificationsEnabled             { get; init; }
+    public string NotificationProvider             { get; init; } = string.Empty;
+    public bool   NotificationToConfigured         { get; init; }
+    public string NotificationSmtpHost            { get; init; } = string.Empty;
+    // Kimlik bilgisi durumu: şifre/kullanıcı adı değerleri gösterilmez, sadece ayarlı mı?
+    public bool   NotificationCredentialsConfigured { get; init; }
 
     // ── Özet ────────────────────────────────────────────────────────────────
     public HealthStatus OverallStatus { get; init; }

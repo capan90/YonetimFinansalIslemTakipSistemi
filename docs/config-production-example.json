@@ -1,9 +1,23 @@
 {
+  "_notlar": [
+    "Bu dosya yalnızca örnek yapılandırmadır. Gerçek üretim değerlerini appsettings.Production.json'a yazın.",
+    "appsettings.Production.json .gitignore'a eklidir; ASLA repoya commit etmeyin.",
+    "SMTP şifresi için tercih edilen yöntem ortam değişkenidir:",
+    "  Windows: [System.Environment]::SetEnvironmentVariable('YONETIM_SMTP_PASSWORD','gercek-sifre','Machine')",
+    "  Linux  : export YONETIM_SMTP_PASSWORD='gercek-sifre'",
+    "Kullanıcı adı için de aynı yöntem geçerlidir: YONETIM_SMTP_USERNAME",
+    "Ortam değişkenleri appsettings değerlerini geçersiz kılar.",
+    "SMTP yapılandırmasını doğrulamak için Sistem Sağlığı > 'Test Maili Gönder' butonunu kullanın (admin)."
+  ],
   "AppEnvironment": "Production",
   "ConnectionStrings": {
     "DefaultConnection": "Host=SERVER_IP_OR_NAME;Port=5432;Database=yonetim_db;Username=yonetim_app;Password=CHANGE_ME"
   },
   "ErrorNotifications": {
+    "_notlar": [
+      "Şifreyi buraya yazmayın. YONETIM_SMTP_PASSWORD ortam değişkenini kullanın.",
+      "Test için: Sistem Sağlığı ekranındaki 'Test Maili Gönder' butonu (admin)."
+    ],
     "Enabled": true,
     "Provider": "Smtp",
     "MinimumLevel": "Error",
@@ -14,7 +28,7 @@
       "Port": 587,
       "EnableSsl": true,
       "Username": "yonetim-app@sirketiniz.com",
-      "Password": "CHANGE_ME_OR_USE_ENV_VAR"
+      "Password": "CHANGE_ME_OR_USE_ENV_VAR_YONETIM_SMTP_PASSWORD"
     }
   },
   "Logging": {

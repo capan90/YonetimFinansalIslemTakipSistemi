@@ -34,16 +34,20 @@
                 <Separator/>
                 <MenuItem x:Name="MenuItemDbTest"
                           Header="Veritabanı Bağlantısını Test Et"
+                          ToolTip="Mevcut veritabanı bağlantısını hemen test eder ve sonucu gösterir."
                           Click="TestDbConnection_Click"/>
                 <MenuItem x:Name="MenuItemLogKlasor"
                           Header="Log Klasörünü Aç"
+                          ToolTip="Uygulama log dosyalarının bulunduğu klasörü Explorer'da açar."
                           Click="OpenLogDirectory_Click"/>
                 <MenuItem x:Name="MenuItemSistemSagligi"
                           Header="Sistem Sağlığı"
+                          ToolTip="Uygulama, veritabanı, log, backup ve güncelleme durumunu özetler."
                           Click="OpenSystemHealth_Click"/>
             </MenuItem>
             <MenuItem Header="Yardım">
                 <MenuItem Header="Güncellemeleri Denetle"
+                          ToolTip="Yayın klasöründeki en güncel sürümü kontrol eder; güncelleme varsa bildirir."
                           Click="CheckForUpdates_Click"/>
             </MenuItem>
         </Menu>
@@ -85,11 +89,14 @@
             <!-- Sol: işlem butonları -->
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <Button Content="+ Yeni İşlem" Width="110" Margin="0,0,6,0"
+                        ToolTip="Yeni bir nakit işlem kaydı oluşturur."
                         Click="NewTransactionButton_Click"/>
                 <Button Content="Düzenle" Width="80" Margin="0,0,6,0"
+                        ToolTip="Seçili işlemi düzenler."
                         IsEnabled="{Binding HasSelectedTransaction}"
                         Click="EditTransactionButton_Click"/>
                 <Button Content="Sil" Width="60"
+                        ToolTip="Seçili işlemi kalıcı olarak siler."
                         IsEnabled="{Binding HasSelectedTransaction}"
                         Click="DeleteTransactionButton_Click"/>
             </StackPanel>

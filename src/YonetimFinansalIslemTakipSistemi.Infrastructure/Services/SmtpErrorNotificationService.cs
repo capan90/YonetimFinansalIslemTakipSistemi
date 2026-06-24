@@ -75,6 +75,38 @@ public class SmtpErrorNotificationService : IErrorNotificationService
         return Task.CompletedTask;
     }
 
+    // ── Test gönderimi ───────────────────────────────────────────────────────
+
+    public async Task<(bool Success, string? Error)> SendTestAsync()
+    {
+        if (!_options.Enabled)
+            return (false, "Mail bildirimi devre dışı (ErrorNotifications:Enabled = false)");
+
+        if (!IsConfigValid(out var reason))
+            return (false, reason);
+
+        try
+        {
+            var subject = "[Yönetim Finansal İşlem Takip Sistemi] Test Maili";
+            var body    = $"""
+                <html><body style="font-family:Arial,sans-serif;font-size:13px;">
+                  <h3 style="color:#1B5E20;">✓ SMTP Yapılandırması Çalışıyor</h3>
+                  <p>Bu bir test mailidir. Bildirim altyapınız düzgün çalışmaktadır.</p>
+                  <p><small>Makine: {WebUtility.HtmlEncode(Environment.MachineName)} — Tarih: {DateTime.Now:dd.MM.yyyy HH:mm:ss}</small></p>
+                </body></html>
+                """;
+            await SendCoreAsync(subject, body);
+            _logger.LogInformation("Test maili gönderildi: {To}", _options.To);
+            return (true, null);
+        }
+        catch (Exception ex)
+        {
+            // Stack trace gizlenir; sadece kısa hata mesajı döner
+            _logger.LogWarning(ex, "SMTP test maili gönderilemedi");
+            return (false, ex.Message);
+        }
+    }
+
     // ── SMTP gönderim ────────────────────────────────────────────────────────
 
     private async Task SendCoreAsync(string subject, string body)

@@ -6,22 +6,33 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
+using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Health;
 
 public partial class SystemHealthWindow : Window
 {
-    private readonly IHealthCheckService _healthService;
-    private readonly IDialogService      _dialogService;
-    private AppHealthInfo?               _lastInfo;
+    private readonly IHealthCheckService       _healthService;
+    private readonly IDialogService            _dialogService;
+    private readonly IErrorNotificationService _notifier;
+    private readonly bool                      _isAdmin;
+    private AppHealthInfo?                     _lastInfo;
 
     public SystemHealthWindow(IServiceProvider services)
     {
         InitializeComponent();
         _healthService = services.GetRequiredService<IHealthCheckService>();
         _dialogService = services.GetRequiredService<IDialogService>();
-        Loaded += async (_, _) => await LoadAsync();
+        _notifier      = services.GetRequiredService<IErrorNotificationService>();
+        // Menü zaten admin-only olsa da pencere seviyesinde de kontrol ederiz (savunma derinliği)
+        _isAdmin       = services.GetRequiredService<IUserContext>().HasPermission(PermissionType.CanManageUsers);
+
+        Loaded += async (_, _) =>
+        {
+            ConfigureAdminControls();
+            await LoadAsync();
+        };
     }
 
     // ── Yükleme / Yenileme ──────────────────────────────────────────────────
@@ -73,49 +84,70 @@ public partial class SystemHealthWindow : Window
         NotifSection.ItemsSource  = BuildNotificationRows(info);
     }
 
+    // Admin kontrolü — MainWindow menüsü zaten admin-only olsa da pencere seviyesinde de uygularız
+    private void ConfigureAdminControls()
+    {
+        var vis = _isAdmin ? Visibility.Visible : Visibility.Collapsed;
+        BtnTestMail.Visibility    = vis;
+        BtnOpenLog.Visibility     = vis;
+        BtnOpenBackup.Visibility  = vis;
+        BtnOpenPublish.Visibility = vis;
+    }
+
     // ── Satır Oluşturucular ─────────────────────────────────────────────────
 
     private static List<HealthRowData> BuildAppRows(AppHealthInfo info) =>
     [
-        new("Uygulama Sürümü",     info.AppVersion,      RowStatus.None),
+        new("Uygulama Sürümü",     info.AppVersion,      RowStatus.None,
+            "Çalışan uygulama assembly/version bilgisidir."),
         new("Makine Adı",          info.MachineName,     RowStatus.None),
         new("Windows Kullanıcısı", info.WindowsUserName, RowStatus.None),
         new("Ortam",               info.AppEnvironment,
             info.AppEnvironment.Equals("Production", StringComparison.OrdinalIgnoreCase)
-                ? RowStatus.None : RowStatus.Warning)
+                ? RowStatus.None : RowStatus.Warning,
+            "Development veya Production çalışma ortamını gösterir.")
     ];
 
     private static List<HealthRowData> BuildDbRows(AppHealthInfo info) =>
     [
         new("Bağlantı",
             info.DatabaseCanConnect ? "Başarılı" : "Bağlantı kurulamadı",
-            info.DatabaseCanConnect ? RowStatus.Ok : RowStatus.Error),
-        new("Veritabanı Adı",      info.DatabaseName, RowStatus.None),
-        new("Sunucu",              info.DataSource,   RowStatus.None),
-        new("Son Migration",       Truncate(info.LastMigration, 55), RowStatus.None),
+            info.DatabaseCanConnect ? RowStatus.Ok : RowStatus.Error,
+            "Uygulamanın veritabanı sunucusuna erişip erişemediğini gösterir."),
+        new("Veritabanı Adı",      info.DatabaseName, RowStatus.None,
+            "Bağlanılan veritabanı adıdır."),
+        new("Sunucu",              info.DataSource,   RowStatus.None,
+            "Bağlanılan DB host:port bilgisidir; şifre gösterilmez."),
+        new("Son Migration",       Truncate(info.LastMigration, 55), RowStatus.None,
+            "Veritabanına uygulanmış son EF migration."),
         new("Bekleyen Migration",
             info.PendingMigrationCount == 0 ? "Yok" : $"{info.PendingMigrationCount} migration bekliyor",
-            info.PendingMigrationCount == 0 ? RowStatus.Ok : RowStatus.Warning)
+            info.PendingMigrationCount == 0 ? RowStatus.Ok : RowStatus.Warning,
+            "Kodda olup veritabanına henüz uygulanmamış migration olup olmadığını gösterir.")
     ];
 
     private static List<HealthRowData> BuildLogRows(AppHealthInfo info) =>
     [
         new("Log Klasörü",
             string.IsNullOrEmpty(info.LogDirectory) ? "Yapılandırılmamış" : info.LogDirectory,
-            info.LogDirectoryExists ? RowStatus.Ok : RowStatus.Warning),
+            info.LogDirectoryExists ? RowStatus.Ok : RowStatus.Warning,
+            "Teknik hata loglarının yazıldığı klasör."),
         new("Son Log Dosyası",
             string.IsNullOrEmpty(info.LatestLogFile) ? "Bulunamadı" : info.LatestLogFile,
-            string.IsNullOrEmpty(info.LatestLogFile) ? RowStatus.Warning : RowStatus.Ok)
+            string.IsNullOrEmpty(info.LatestLogFile) ? RowStatus.Warning : RowStatus.Ok,
+            "En son oluşan log dosyası.")
     ];
 
     private static List<HealthRowData> BuildBackupRows(AppHealthInfo info) =>
     [
         new("Backup Klasörü",
             string.IsNullOrEmpty(info.BackupDirectory) ? "Yapılandırılmamış" : info.BackupDirectory,
-            info.BackupDirectoryExists ? RowStatus.Ok : RowStatus.Warning),
+            info.BackupDirectoryExists ? RowStatus.Ok : RowStatus.Warning,
+            "Veritabanı yedeklerinin tutulacağı klasör."),
         new("Son Backup Dosyası",
-            string.IsNullOrEmpty(info.LatestBackupFile) ? "Bulunamadı" : info.LatestBackupFile,
-            string.IsNullOrEmpty(info.LatestBackupFile) ? RowStatus.Warning : RowStatus.Ok)
+            string.IsNullOrEmpty(info.LatestBackupFile) ? "Henüz backup alınmamış" : info.LatestBackupFile,
+            string.IsNullOrEmpty(info.LatestBackupFile) ? RowStatus.Warning : RowStatus.Ok,
+            "En son bulunan backup dosyası.")
     ];
 
     private static List<HealthRowData> BuildUpdateRows(AppHealthInfo info) =>
@@ -128,36 +160,69 @@ public partial class SystemHealthWindow : Window
             RowStatus.None),
         new("Version.json Durumu",
             info.VersionJsonExists ? "Mevcut" : "Bulunamadı",
-            info.VersionJsonExists ? RowStatus.Ok : RowStatus.Warning),
+            info.VersionJsonExists ? RowStatus.Ok : RowStatus.Warning,
+            "ClickOnce manuel güncelleme kontrolünde kullanılan sürüm dosyası."),
         new("Yayımlanan Sürüm",
             string.IsNullOrEmpty(info.LatestPublishedVersion) ? "Okunamadı" : info.LatestPublishedVersion,
-            string.IsNullOrEmpty(info.LatestPublishedVersion) ? RowStatus.Warning : RowStatus.None)
+            string.IsNullOrEmpty(info.LatestPublishedVersion) ? RowStatus.Warning : RowStatus.None,
+            "Publish klasöründeki version.json'daki sürüm numarasıdır.")
     ];
 
     private static List<HealthRowData> BuildNotificationRows(AppHealthInfo info) =>
     [
         new("Mail Bildirimi",
-            info.NotificationsEnabled ? "Etkin" : "Devre Dışı",
-            info.NotificationsEnabled ? RowStatus.Ok : RowStatus.None),
+            info.NotificationsEnabled ? "Aktif" : "Devre Dışı",
+            info.NotificationsEnabled ? RowStatus.Ok : RowStatus.None,
+            "Kritik hatalarda mail gönderiminin açık/kapalı olduğunu gösterir."),
         new("Sağlayıcı",
             info.NotificationsEnabled && !string.IsNullOrEmpty(info.NotificationProvider)
-                ? info.NotificationProvider : "—",
+                ? info.NotificationProvider : "Yok",
             RowStatus.None),
         new("Alıcı Adresi",
             info.NotificationToConfigured ? "Yapılandırılmış" : "Boş",
             info.NotificationToConfigured ? RowStatus.Ok
                 : info.NotificationsEnabled ? RowStatus.Warning : RowStatus.None),
-        // SMTP sunucu adı gösterilir; şifre/kullanıcı adı asla gösterilmez
         new("SMTP Sunucusu",
             string.IsNullOrEmpty(info.NotificationSmtpHost) ? "Yapılandırılmamış" : info.NotificationSmtpHost,
             string.IsNullOrEmpty(info.NotificationSmtpHost)
                 ? (info.NotificationsEnabled ? RowStatus.Warning : RowStatus.None)
-                : RowStatus.Ok)
+                : RowStatus.Ok,
+            "Mail bildirimi için yapılandırılan SMTP host bilgisidir; kullanıcı adı/şifre gösterilmez."),
+        // Kimlik bilgisi durumu: şifre/kullanıcı adı değerleri asla gösterilmez
+        new("Kimlik Bilgileri",
+            info.NotificationCredentialsConfigured ? "Yapılandırılmış" : "Eksik",
+            info.NotificationCredentialsConfigured ? RowStatus.Ok
+                : info.NotificationsEnabled ? RowStatus.Warning : RowStatus.None,
+            "SMTP kullanıcı adı ve şifresi ayarlı mı? Değerler gizlidir.")
     ];
 
     // ── Buton İşleyicileri ───────────────────────────────────────────────────
 
     private async void Refresh_Click(object sender, RoutedEventArgs e) => await LoadAsync();
+
+    private async void TestMail_Click(object sender, RoutedEventArgs e)
+    {
+        BtnTestMail.IsEnabled = false;
+        try
+        {
+            var (success, error) = await _notifier.SendTestAsync();
+
+            if (success)
+                _dialogService.ShowSuccess("Test maili başarıyla gönderildi.");
+            else
+                _dialogService.ShowError(
+                    string.IsNullOrEmpty(error) ? "Test maili gönderilemedi." : error);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Test maili gönderiminde beklenmeyen hata");
+            _dialogService.ShowError("Test maili gönderiminde beklenmeyen bir hata oluştu.");
+        }
+        finally
+        {
+            BtnTestMail.IsEnabled = true;
+        }
+    }
 
     private void OpenLog_Click(object sender, RoutedEventArgs e)
         => OpenDirectory(
@@ -200,16 +265,18 @@ internal sealed class HealthRowData
     internal static readonly SolidColorBrush ErrBrush   = CreateFrozen(0xC6, 0x28, 0x28);
     private  static readonly SolidColorBrush NoneBrush  = CreateFrozen(0x55, 0x55, 0x55);
 
-    public HealthRowData(string label, string value, RowStatus status)
+    public HealthRowData(string label, string value, RowStatus status, string? tooltip = null)
     {
-        Label  = label;
-        Value  = value;
-        Status = status;
+        Label   = label;
+        Value   = value;
+        Status  = status;
+        Tooltip = tooltip;
     }
 
-    public string    Label  { get; }
-    public string    Value  { get; }
-    public RowStatus Status { get; }
+    public string    Label   { get; }
+    public string    Value   { get; }
+    public RowStatus Status  { get; }
+    public string?   Tooltip { get; }
 
     public string StatusText => Status switch
     {

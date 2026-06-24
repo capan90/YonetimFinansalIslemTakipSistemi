@@ -117,10 +117,11 @@ public class HealthCheckService : IHealthCheckService
             VersionJsonPath       = versionJsonPath,
             VersionJsonExists     = versionJsonExists,
             LatestPublishedVersion   = latestPublishedVersion,
-            NotificationsEnabled     = _options.NotificationsEnabled,
-            NotificationProvider     = _options.NotificationProvider,
-            NotificationToConfigured = _options.NotificationToConfigured,
-            NotificationSmtpHost    = _options.NotificationSmtpHost,
+            NotificationsEnabled             = _options.NotificationsEnabled,
+            NotificationProvider             = _options.NotificationProvider,
+            NotificationToConfigured         = _options.NotificationToConfigured,
+            NotificationSmtpHost            = _options.NotificationSmtpHost,
+            NotificationCredentialsConfigured = _options.NotificationCredentialsConfigured,
             CheckedAt               = checkedAt
         };
 

@@ -127,7 +127,10 @@ public partial class App : System.Windows.Application
             NotificationsEnabled   = smtpOptions.Enabled,
             NotificationProvider   = smtpOptions.Provider,
             NotificationToConfigured = !string.IsNullOrEmpty(smtpOptions.To),
-            NotificationSmtpHost   = smtpOptions.SmtpHost
+            NotificationSmtpHost   = smtpOptions.SmtpHost,
+            // Kullanıcı adı VE şifre her ikisi de ayarlıysa true; değerler Health Check ekranında gösterilmez
+            NotificationCredentialsConfigured =
+                !string.IsNullOrEmpty(smtpOptions.SmtpUsername) && !string.IsNullOrEmpty(smtpOptions.SmtpPassword)
         });
 
         // Serilog → Microsoft.Extensions.Logging köprüsü:

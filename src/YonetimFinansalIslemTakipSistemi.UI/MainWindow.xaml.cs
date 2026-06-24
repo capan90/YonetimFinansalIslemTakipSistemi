@@ -266,7 +266,7 @@ public partial class MainWindow : Window
             var keyByCol = _columnByKey.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
             if (keyByCol.TryGetValue(clickedColumn, out var clickedKey))
             {
-                var hideItem = new MenuItem { Header = "Bu Kolonu Gizle" };
+                var hideItem = new MenuItem { Header = "Bu Kolonu Gizle", ToolTip = "Bu kolonu listeden gizler. Sağ tıklayarak tekrar gösterebilirsiniz." };
                 hideItem.Click += (_, _) =>
                 {
                     if (IsBalanceColumn(clickedKey))
@@ -361,11 +361,11 @@ public partial class MainWindow : Window
 
         cm.Items.Add(new Separator());
 
-        var saveItem = new MenuItem { Header = "Tasarımı Kaydet" };
+        var saveItem = new MenuItem { Header = "Tasarımı Kaydet", ToolTip = "Mevcut kolon düzenini (sıra, genişlik, görünürlük) kaydeder." };
         saveItem.Click += async (_, _) => await SaveGridLayoutAsync();
         cm.Items.Add(saveItem);
 
-        var resetItem = new MenuItem { Header = "Varsayılan Tasarıma Dön" };
+        var resetItem = new MenuItem { Header = "Varsayılan Tasarıma Dön", ToolTip = "Kolon düzenini fabrika varsayılanına sıfırlar." };
         resetItem.Click += async (_, _) => await ResetGridLayoutAsync();
         cm.Items.Add(resetItem);
     }

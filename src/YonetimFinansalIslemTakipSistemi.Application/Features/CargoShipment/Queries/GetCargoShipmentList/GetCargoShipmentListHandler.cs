@@ -19,12 +19,15 @@ public class GetCargoShipmentListHandler
 
     public async Task<List<CargoShipmentDto>> HandleAsync(GetCargoShipmentListQuery query)
     {
-        // Yetki: gelen/giden ayrı permission
-        var viewPermission = query.Direction == CargoShipmentDirection.Incoming
+        // Yetki: CanView veya CanManage — Manage izni View'u da kapsar
+        var viewPermission   = query.Direction == CargoShipmentDirection.Incoming
             ? PermissionType.CanViewIncomingCargo
             : PermissionType.CanViewOutgoingCargo;
+        var managePermission = query.Direction == CargoShipmentDirection.Incoming
+            ? PermissionType.CanManageIncomingCargo
+            : PermissionType.CanManageOutgoingCargo;
 
-        if (!_userContext.HasPermission(viewPermission))
+        if (!_userContext.HasPermission(viewPermission) && !_userContext.HasPermission(managePermission))
             return [];
 
         var all = await _repository.GetByDirectionAsync(query.Direction);

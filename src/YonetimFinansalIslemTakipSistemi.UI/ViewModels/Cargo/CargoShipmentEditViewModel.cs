@@ -23,6 +23,8 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
 
     private Guid? _editTargetId;
     private CargoShipmentDirection _direction;
+    // Düzenleme sırasında mevcut bildirim durumunu korur; UI'da değiştirilemiyor (Sprint 2)
+    private CargoNotificationStatus _notificationStatus = CargoNotificationStatus.NotNotified;
     private DateTime _shipmentDate = DateTime.Today;
     private string _shipmentNumber = string.Empty;
     private string _senderName    = string.Empty;
@@ -155,8 +157,9 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
         TrackingNumber = dto.TrackingNumber ?? string.Empty;
         Notes          = dto.Notes          ?? string.Empty;
 
-        SelectedShipmentType = dto.ShipmentTypeDisplay ?? "Evrak";
-        SelectedStatus       = dto.StatusDisplay;
+        SelectedShipmentType  = dto.ShipmentTypeDisplay ?? "Evrak";
+        SelectedStatus        = dto.StatusDisplay;
+        _notificationStatus   = dto.NotificationStatus;
 
         await LoadLookupsAsync();
 
@@ -203,7 +206,7 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
                 VehiclePlate       = NullIfEmpty(VehiclePlate),
                 TrackingNumber     = NullIfEmpty(TrackingNumber),
                 Status             = status,
-                NotificationStatus = CargoNotificationStatus.NotNotified,
+                NotificationStatus = _notificationStatus,
                 Notes              = NullIfEmpty(Notes),
                 UpdatedByUserId    = _userContext.UserId
             };

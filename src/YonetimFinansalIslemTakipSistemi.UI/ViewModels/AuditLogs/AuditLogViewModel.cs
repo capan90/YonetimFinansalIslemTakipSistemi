@@ -59,17 +59,27 @@ public class AuditLogViewModel : INotifyPropertyChanged
         ClearCommand  = new RelayCommand(async () => await ClearFiltersAsync());
 
         // İşlem tipi seçenekleri — constructor'da hazır, async beklemeye gerek yok
-        Actions.Add(new AuditActionOption(null,                           "Tümü"));
-        Actions.Add(new AuditActionOption(AuditAction.TransactionCreated, "İşlem Oluşturuldu"));
-        Actions.Add(new AuditActionOption(AuditAction.TransactionUpdated, "İşlem Güncellendi"));
-        Actions.Add(new AuditActionOption(AuditAction.TransactionDeleted, "İşlem Silindi"));
-        Actions.Add(new AuditActionOption(AuditAction.UserCreated,        "Kullanıcı Oluşturuldu"));
-        Actions.Add(new AuditActionOption(AuditAction.UserUpdated,        "Kullanıcı Güncellendi"));
-        Actions.Add(new AuditActionOption(AuditAction.UserDeleted,        "Kullanıcı Silindi"));
-        Actions.Add(new AuditActionOption(AuditAction.UserLoggedIn,       "Giriş Yapıldı"));
-        Actions.Add(new AuditActionOption(AuditAction.PermissionUpdated,     "Yetki Güncellendi"));
+        Actions.Add(new AuditActionOption(null,                            "Tümü"));
+        Actions.Add(new AuditActionOption(AuditAction.TransactionCreated,  "İşlem Oluşturuldu"));
+        Actions.Add(new AuditActionOption(AuditAction.TransactionUpdated,  "İşlem Güncellendi"));
+        Actions.Add(new AuditActionOption(AuditAction.TransactionDeleted,  "İşlem Silindi"));
+        Actions.Add(new AuditActionOption(AuditAction.UserCreated,         "Kullanıcı Oluşturuldu"));
+        Actions.Add(new AuditActionOption(AuditAction.UserUpdated,         "Kullanıcı Güncellendi"));
+        Actions.Add(new AuditActionOption(AuditAction.UserDeleted,         "Kullanıcı Silindi"));
+        Actions.Add(new AuditActionOption(AuditAction.UserLoggedIn,        "Giriş Yapıldı"));
+        Actions.Add(new AuditActionOption(AuditAction.PermissionUpdated,   "Yetki Güncellendi"));
         Actions.Add(new AuditActionOption(AuditAction.ExchangeRateCreated, "Döviz Kuru Eklendi"));
         Actions.Add(new AuditActionOption(AuditAction.ExchangeRateUpdated, "Döviz Kuru Güncellendi"));
+        // Kargo Katip modülü
+        Actions.Add(new AuditActionOption(AuditAction.CompanyDirectoryCreated, "Firma Rehberi Kaydı Oluşturuldu"));
+        Actions.Add(new AuditActionOption(AuditAction.CompanyDirectoryUpdated, "Firma Rehberi Kaydı Güncellendi"));
+        Actions.Add(new AuditActionOption(AuditAction.CompanyDirectoryDeleted, "Firma Rehberi Kaydı Silindi"));
+        Actions.Add(new AuditActionOption(AuditAction.CargoCompanyCreated,     "Kargo Firması Oluşturuldu"));
+        Actions.Add(new AuditActionOption(AuditAction.CargoCompanyUpdated,     "Kargo Firması Güncellendi"));
+        Actions.Add(new AuditActionOption(AuditAction.CargoCompanyDeleted,     "Kargo Firması Silindi"));
+        Actions.Add(new AuditActionOption(AuditAction.CargoShipmentCreated,    "Kargo Kaydı Oluşturuldu"));
+        Actions.Add(new AuditActionOption(AuditAction.CargoShipmentUpdated,    "Kargo Kaydı Güncellendi"));
+        Actions.Add(new AuditActionOption(AuditAction.CargoShipmentDeleted,    "Kargo Kaydı Silindi"));
         FilterAction = Actions[0];
 
         // "Tüm Kullanıcılar" constructor'da eklenir — DataContext atanmadan önce hazır olur

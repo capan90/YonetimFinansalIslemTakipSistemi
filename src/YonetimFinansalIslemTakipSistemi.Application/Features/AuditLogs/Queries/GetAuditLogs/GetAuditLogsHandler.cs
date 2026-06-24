@@ -50,9 +50,19 @@ public class GetAuditLogsHandler
         AuditAction.UserUpdated        => "Kullanıcı Güncellendi",
         AuditAction.UserDeleted        => "Kullanıcı Silindi",
         AuditAction.UserLoggedIn       => "Giriş Yapıldı",
-        AuditAction.PermissionUpdated    => "Yetki Güncellendi",
-        AuditAction.ExchangeRateCreated  => "Döviz Kuru Eklendi",
-        AuditAction.ExchangeRateUpdated  => "Döviz Kuru Güncellendi",
-        _                                => action.ToString()
+        AuditAction.PermissionUpdated  => "Yetki Güncellendi",
+        AuditAction.ExchangeRateCreated => "Döviz Kuru Eklendi",
+        AuditAction.ExchangeRateUpdated => "Döviz Kuru Güncellendi",
+        // Kargo Katip modülü
+        AuditAction.CompanyDirectoryCreated => "Firma Rehberi Kaydı Oluşturuldu",
+        AuditAction.CompanyDirectoryUpdated => "Firma Rehberi Kaydı Güncellendi",
+        AuditAction.CompanyDirectoryDeleted => "Firma Rehberi Kaydı Silindi",
+        AuditAction.CargoCompanyCreated     => "Kargo Firması Oluşturuldu",
+        AuditAction.CargoCompanyUpdated     => "Kargo Firması Güncellendi",
+        AuditAction.CargoCompanyDeleted     => "Kargo Firması Silindi",
+        AuditAction.CargoShipmentCreated    => "Kargo Kaydı Oluşturuldu",
+        AuditAction.CargoShipmentUpdated    => "Kargo Kaydı Güncellendi",
+        AuditAction.CargoShipmentDeleted    => "Kargo Kaydı Silindi",
+        _                                   => action.ToString()
     };
 }

@@ -61,13 +61,23 @@ public class UserPermissionViewModel : INotifyPropertyChanged
 
     private void InitPermCheckItems()
     {
-        Perms.Add(new PermissionCheckItem(PermissionType.CanManageUsers,       "Kullanıcı Yönetimi"));
-        Perms.Add(new PermissionCheckItem(PermissionType.CanViewAuditLog,      "Denetim Günlüğü Görüntüleme"));
-        Perms.Add(new PermissionCheckItem(PermissionType.CanCreateTransaction,  "İşlem Oluşturma"));
-        Perms.Add(new PermissionCheckItem(PermissionType.CanEditTransaction,    "İşlem Düzenleme"));
-        Perms.Add(new PermissionCheckItem(PermissionType.CanDeleteTransaction,  "İşlem Silme"));
-        Perms.Add(new PermissionCheckItem(PermissionType.CanViewReports,            "Raporları Görüntüleme"));
-        Perms.Add(new PermissionCheckItem(PermissionType.CanManageExchangeRates, "Döviz Kurlarını Yönetme"));
+        // Yönetim & Finans
+        Perms.Add(new PermissionCheckItem(PermissionType.CanManageUsers,          "Kullanıcı Yönetimi"));
+        Perms.Add(new PermissionCheckItem(PermissionType.CanViewAuditLog,         "Denetim Günlüğü Görüntüleme"));
+        Perms.Add(new PermissionCheckItem(PermissionType.CanCreateTransaction,    "İşlem Oluşturma"));
+        Perms.Add(new PermissionCheckItem(PermissionType.CanEditTransaction,      "İşlem Düzenleme"));
+        Perms.Add(new PermissionCheckItem(PermissionType.CanDeleteTransaction,    "İşlem Silme"));
+        Perms.Add(new PermissionCheckItem(PermissionType.CanViewReports,          "Raporları Görüntüleme"));
+        Perms.Add(new PermissionCheckItem(PermissionType.CanManageExchangeRates,  "Döviz Kurlarını Yönetme"));
+
+        // Kargo Katip modülü
+        Perms.Add(new PermissionCheckItem(PermissionType.CanViewCargoModule,        "Kargo Modülünü Görüntüleme"));
+        Perms.Add(new PermissionCheckItem(PermissionType.CanManageCargoCompanies,   "Kargo Firmalarını Yönetme"));
+        Perms.Add(new PermissionCheckItem(PermissionType.CanManageCompanyDirectory, "Firma Rehberini Yönetme"));
+        Perms.Add(new PermissionCheckItem(PermissionType.CanViewIncomingCargo,      "Gelen Kargoları Görüntüleme"));
+        Perms.Add(new PermissionCheckItem(PermissionType.CanManageIncomingCargo,    "Gelen Kargoları Yönetme"));
+        Perms.Add(new PermissionCheckItem(PermissionType.CanViewOutgoingCargo,      "Giden Kargoları Görüntüleme"));
+        Perms.Add(new PermissionCheckItem(PermissionType.CanManageOutgoingCargo,    "Giden Kargoları Yönetme"));
     }
 
     public async Task LoadAsync()

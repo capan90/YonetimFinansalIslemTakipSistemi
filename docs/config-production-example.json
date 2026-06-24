@@ -2,5 +2,24 @@
   "AppEnvironment": "Production",
   "ConnectionStrings": {
     "DefaultConnection": "Host=SERVER_IP_OR_NAME;Port=5432;Database=yonetim_db;Username=yonetim_app;Password=CHANGE_ME"
-  }
+  },
+  "ErrorNotifications": {
+    "Enabled": true,
+    "Provider": "Smtp",
+    "MinimumLevel": "Error",
+    "To": "admin@sirketiniz.com",
+    "From": "yonetim-app@sirketiniz.com",
+    "Smtp": {
+      "Host": "mail.sirketiniz.com",
+      "Port": 587,
+      "EnableSsl": true,
+      "Username": "yonetim-app@sirketiniz.com",
+      "Password": "CHANGE_ME_OR_USE_ENV_VAR"
+    }
+  },
+  "Logging": {
+    "MinimumLevel": "Information",
+    "LogDirectory": "C:\\YonetimLogs"
+  },
+  "BackupDirectory": "C:\\YonetimBackups"
 }

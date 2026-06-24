@@ -130,6 +130,13 @@
                                   ItemTemplate="{StaticResource RowTemplate}"/>
                 </GroupBox>
 
+                <!-- Bildirimler -->
+                <GroupBox Header="Bildirimler" Style="{StaticResource SectionBox}">
+                    <ItemsControl x:Name="NotifSection"
+                                  Style="{StaticResource SectionItems}"
+                                  ItemTemplate="{StaticResource RowTemplate}"/>
+                </GroupBox>
+
             </StackPanel>
         </ScrollViewer>
 

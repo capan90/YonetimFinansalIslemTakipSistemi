@@ -34,6 +34,12 @@ public sealed record AppHealthInfo
     public bool   VersionJsonExists      { get; init; }
     public string LatestPublishedVersion { get; init; } = string.Empty;
 
+    // ── Bildirimler ─────────────────────────────────────────────────────────
+    public bool   NotificationsEnabled     { get; init; }
+    public string NotificationProvider     { get; init; } = string.Empty;
+    public bool   NotificationToConfigured { get; init; }
+    public string NotificationSmtpHost    { get; init; } = string.Empty;
+
     // ── Özet ────────────────────────────────────────────────────────────────
     public HealthStatus OverallStatus { get; init; }
     public DateTime     CheckedAt     { get; init; }

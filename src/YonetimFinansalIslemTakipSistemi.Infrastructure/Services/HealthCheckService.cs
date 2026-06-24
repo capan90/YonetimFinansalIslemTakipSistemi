@@ -116,8 +116,12 @@ public class HealthCheckService : IHealthCheckService
             UpdatePublishPath     = publishPath,
             VersionJsonPath       = versionJsonPath,
             VersionJsonExists     = versionJsonExists,
-            LatestPublishedVersion = latestPublishedVersion,
-            CheckedAt             = checkedAt
+            LatestPublishedVersion   = latestPublishedVersion,
+            NotificationsEnabled     = _options.NotificationsEnabled,
+            NotificationProvider     = _options.NotificationProvider,
+            NotificationToConfigured = _options.NotificationToConfigured,
+            NotificationSmtpHost    = _options.NotificationSmtpHost,
+            CheckedAt               = checkedAt
         };
 
         return info with { OverallStatus = CalculateOverallStatus(info) };

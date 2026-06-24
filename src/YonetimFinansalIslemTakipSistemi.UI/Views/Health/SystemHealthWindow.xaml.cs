@@ -70,6 +70,7 @@ public partial class SystemHealthWindow : Window
         LogSection.ItemsSource    = BuildLogRows(info);
         BackupSection.ItemsSource = BuildBackupRows(info);
         UpdateSection.ItemsSource = BuildUpdateRows(info);
+        NotifSection.ItemsSource  = BuildNotificationRows(info);
     }
 
     // ── Satır Oluşturucular ─────────────────────────────────────────────────
@@ -131,6 +132,27 @@ public partial class SystemHealthWindow : Window
         new("Yayımlanan Sürüm",
             string.IsNullOrEmpty(info.LatestPublishedVersion) ? "Okunamadı" : info.LatestPublishedVersion,
             string.IsNullOrEmpty(info.LatestPublishedVersion) ? RowStatus.Warning : RowStatus.None)
+    ];
+
+    private static List<HealthRowData> BuildNotificationRows(AppHealthInfo info) =>
+    [
+        new("Mail Bildirimi",
+            info.NotificationsEnabled ? "Etkin" : "Devre Dışı",
+            info.NotificationsEnabled ? RowStatus.Ok : RowStatus.None),
+        new("Sağlayıcı",
+            info.NotificationsEnabled && !string.IsNullOrEmpty(info.NotificationProvider)
+                ? info.NotificationProvider : "—",
+            RowStatus.None),
+        new("Alıcı Adresi",
+            info.NotificationToConfigured ? "Yapılandırılmış" : "Boş",
+            info.NotificationToConfigured ? RowStatus.Ok
+                : info.NotificationsEnabled ? RowStatus.Warning : RowStatus.None),
+        // SMTP sunucu adı gösterilir; şifre/kullanıcı adı asla gösterilmez
+        new("SMTP Sunucusu",
+            string.IsNullOrEmpty(info.NotificationSmtpHost) ? "Yapılandırılmamış" : info.NotificationSmtpHost,
+            string.IsNullOrEmpty(info.NotificationSmtpHost)
+                ? (info.NotificationsEnabled ? RowStatus.Warning : RowStatus.None)
+                : RowStatus.Ok)
     ];
 
     // ── Buton İşleyicileri ───────────────────────────────────────────────────

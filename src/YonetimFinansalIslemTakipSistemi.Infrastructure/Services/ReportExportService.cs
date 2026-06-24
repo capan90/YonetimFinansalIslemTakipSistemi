@@ -21,9 +21,13 @@ public class ReportExportService : IReportExportService
 {
     private const string AppTitle = "Yönetim Finansal İşlem Takip Sistemi";
     private readonly ILogger<ReportExportService> _logger;
+    private readonly IErrorNotificationService    _notifier;
 
-    public ReportExportService(ILogger<ReportExportService> logger)
-        => _logger = logger;
+    public ReportExportService(ILogger<ReportExportService> logger, IErrorNotificationService notifier)
+    {
+        _logger   = logger;
+        _notifier = notifier;
+    }
 
     public void ExportToPdf(ReportDto report, string filePath)
     {
@@ -34,6 +38,8 @@ public class ReportExportService : IReportExportService
         catch (Exception ex)
         {
             _logger.LogError(ex, "PDF raporu oluşturulurken hata: {FilePath}", filePath);
+            _ = _notifier.NotifyAsync($"PDF raporu oluşturulamadı: {filePath}", ex,
+                new NotificationContext { Level = "Error", Screen = "Rapor Dışa Aktarma" });
             throw;
         }
     }
@@ -242,6 +248,8 @@ public class ReportExportService : IReportExportService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Excel raporu oluşturulurken hata: {FilePath}", filePath);
+            _ = _notifier.NotifyAsync($"Excel raporu oluşturulamadı: {filePath}", ex,
+                new NotificationContext { Level = "Error", Screen = "Rapor Dışa Aktarma" });
             throw;
         }
     }

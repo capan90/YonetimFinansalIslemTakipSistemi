@@ -26,6 +26,7 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Queries.GetUse
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Infrastructure;
 using YonetimFinansalIslemTakipSistemi.Infrastructure.Persistence;
+using YonetimFinansalIslemTakipSistemi.Infrastructure.Services;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
 using YonetimFinansalIslemTakipSistemi.UI.Services;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.AuditLogs;
@@ -66,6 +67,9 @@ public partial class App : System.Windows.Application
         catch (Exception ex)
         {
             Log.Fatal(ex, "Uygulama başlatılamadı");
+            // Services henüz hazır olabilir (DB testi sonrası) — bildirimi dene
+            try { GetNotifier()?.NotifyAsync("Uygulama başlatılamadı — veritabanı bağlantısı kurulamadı", ex,
+                      new NotificationContext { Level = "Fatal", Screen = "Başlangıç" }); } catch { }
             Log.CloseAndFlush();
             ShowConnectionError();
             Shutdown();
@@ -105,15 +109,25 @@ public partial class App : System.Windows.Application
         var services = new ServiceCollection();
         services.AddInfrastructure(connectionString);
 
+        // SMTP bildirimi: env var YONETIM_SMTP_PASSWORD / YONETIM_SMTP_USERNAME şifre güvenliği sağlar
+        var smtpOptions = BuildSmtpNotificationOptions(config);
+        services.AddSingleton(smtpOptions);
+        // Son kayıt önceliklidir — AddInfrastructure'daki NullErrorNotificationService'in üzerine yazar
+        services.AddSingleton<IErrorNotificationService, SmtpErrorNotificationService>();
+
         // HealthCheckService için ortam bilgileri — UI katmanı bu nesneyi oluşturur
         // çünkü DeploymentSettings ve App.LogDirectory burada erişilebilir.
         services.AddSingleton(new HealthCheckOptions
         {
-            AppEnvironment    = appEnvironment,
-            LogDirectory      = LogDirectory,
-            BackupDirectory   = ResolveBackupDirectory(config),
-            UpdatePublishPath = DeploymentSettings.PublishPath,
-            ConnectionString  = connectionString
+            AppEnvironment         = appEnvironment,
+            LogDirectory           = LogDirectory,
+            BackupDirectory        = ResolveBackupDirectory(config),
+            UpdatePublishPath      = DeploymentSettings.PublishPath,
+            ConnectionString       = connectionString,
+            NotificationsEnabled   = smtpOptions.Enabled,
+            NotificationProvider   = smtpOptions.Provider,
+            NotificationToConfigured = !string.IsNullOrEmpty(smtpOptions.To),
+            NotificationSmtpHost   = smtpOptions.SmtpHost
         });
 
         // Serilog → Microsoft.Extensions.Logging köprüsü:
@@ -205,6 +219,8 @@ public partial class App : System.Windows.Application
     {
         var ex = e.ExceptionObject as Exception;
         Log.Fatal(ex, "Yakalanmamış uygulama istisnası (AppDomain). Kapanıyor: {IsTerminating}", e.IsTerminating);
+        try { GetNotifier()?.NotifyAsync("Yakalanmamış AppDomain istisnası", ex,
+                  new NotificationContext { Level = "Fatal", Screen = "AppDomain" }); } catch { }
         Log.CloseAndFlush();
 
         if (e.IsTerminating)
@@ -217,6 +233,8 @@ public partial class App : System.Windows.Application
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
         Log.Error(e.Exception, "Yakalanmamış UI (Dispatcher) istisnası");
+        _ = GetNotifier()?.NotifyAsync("Yakalanmamış UI istisnası", e.Exception,
+                new NotificationContext { Level = "Error", Screen = "UI (Dispatcher)" });
         ShowUnexpectedError();
         e.Handled = true; // uygulamanın kapanmasını engelle
     }
@@ -225,7 +243,16 @@ public partial class App : System.Windows.Application
     {
         // Task istisnası: gözlemlenmiş olarak işaretle, log'a yaz, uygulamayı kapatma
         Log.Warning(e.Exception, "Gözlemlenmeyen Task istisnası");
+        _ = GetNotifier()?.NotifyAsync("Gözlemlenmeyen Task istisnası", e.Exception,
+                new NotificationContext { Level = "Warning", Screen = "Background Task" });
         e.SetObserved();
+    }
+
+    // Services null ise (başlatma öncesi hata) null döner; caller ?. operatörüyle güvenle kullanır
+    private static IErrorNotificationService? GetNotifier()
+    {
+        try { return Services?.GetService<IErrorNotificationService>(); }
+        catch { return null; }
     }
 
     // ── Config & Logging ─────────────────────────────────────────────────────
@@ -246,6 +273,29 @@ public partial class App : System.Windows.Application
     {
         var dir = config["BackupDirectory"] ?? "Backups";
         return Path.IsPathRooted(dir) ? dir : Path.Combine(AppContext.BaseDirectory, dir);
+    }
+
+    private static SmtpNotificationOptions BuildSmtpNotificationOptions(IConfiguration config)
+    {
+        // Şifre/kullanıcı env var'dan okunur — appsettings.Production.json'a şifre yazılmaz
+        var password = Environment.GetEnvironmentVariable("YONETIM_SMTP_PASSWORD")
+                       ?? config["ErrorNotifications:Smtp:Password"] ?? "";
+        var username = Environment.GetEnvironmentVariable("YONETIM_SMTP_USERNAME")
+                       ?? config["ErrorNotifications:Smtp:Username"] ?? "";
+
+        return new SmtpNotificationOptions
+        {
+            Enabled       = "true".Equals(config["ErrorNotifications:Enabled"],     StringComparison.OrdinalIgnoreCase),
+            Provider      = config["ErrorNotifications:Provider"]      ?? "Smtp",
+            MinimumLevel  = config["ErrorNotifications:MinimumLevel"]  ?? "Error",
+            To            = config["ErrorNotifications:To"]            ?? "",
+            From          = config["ErrorNotifications:From"]          ?? "",
+            SmtpHost      = config["ErrorNotifications:Smtp:Host"]     ?? "",
+            SmtpPort      = int.TryParse(config["ErrorNotifications:Smtp:Port"], out var p) ? p : 587,
+            SmtpEnableSsl = !"false".Equals(config["ErrorNotifications:Smtp:EnableSsl"], StringComparison.OrdinalIgnoreCase),
+            SmtpUsername  = username,
+            SmtpPassword  = password
+        };
     }
 
     private static string ResolveLogDirectory(IConfiguration config)

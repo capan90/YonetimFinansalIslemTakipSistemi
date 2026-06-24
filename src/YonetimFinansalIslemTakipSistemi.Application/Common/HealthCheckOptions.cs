@@ -12,4 +12,10 @@ public sealed record HealthCheckOptions
     public string BackupDirectory   { get; init; } = "";
     public string UpdatePublishPath { get; init; } = "";
     public string ConnectionString  { get; init; } = "";
+
+    // Bildirim durumu — Health Check ekranına gösterilir
+    public bool   NotificationsEnabled     { get; init; }
+    public string NotificationProvider     { get; init; } = "";
+    public bool   NotificationToConfigured { get; init; }
+    public string NotificationSmtpHost    { get; init; } = "";
 }

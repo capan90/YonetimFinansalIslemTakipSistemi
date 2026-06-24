@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Text.Json;
 using Serilog;
+using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Services;
@@ -18,6 +19,11 @@ public class UpdateService : IUpdateService
     // Sunucu değişince yalnızca DeploymentSettings.cs ve ClickOnce.pubxml güncellenir.
     private static string VersionJsonPath    => DeploymentSettings.VersionJsonPath;
     private static string DeploymentFilePath => DeploymentSettings.DeploymentFilePath;
+
+    private readonly IErrorNotificationService _notifier;
+
+    public UpdateService(IErrorNotificationService notifier)
+        => _notifier = notifier;
 
     // ClickOnce uygulamayı %LOCALAPPDATA%\Apps\ altına kurar.
     // System.Deployment.Application .NET 9'da mevcut değildir; konum kontrolü güvenilir alternatiftir.
@@ -69,6 +75,8 @@ public class UpdateService : IUpdateService
         catch (Exception ex)
         {
             Log.Error(ex, "Güncelleme kurucusu başlatılamadı: {Path}", DeploymentFilePath);
+            _ = _notifier.NotifyAsync("Güncelleme kurucusu başlatılamadı", ex,
+                new NotificationContext { Level = "Error", Screen = "Güncelleme" });
             return false;
         }
     }

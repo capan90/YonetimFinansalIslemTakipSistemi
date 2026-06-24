@@ -1,0 +1,40 @@
+<Window x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.Cargo.CargoCompanyListWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Kargo Firmaları" Height="440" Width="800"
+        WindowStartupLocation="CenterOwner">
+
+    <DockPanel Margin="8">
+
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <!-- Visibility: UI gizlemesi; asıl koruma handler seviyesindedir -->
+                <Button x:Name="NewButton" Content="+ Yeni" Width="70" Margin="0,0,6,0" Click="NewButton_Click"/>
+                <Button x:Name="EditButton" Content="Düzenle" Width="75" Margin="0,0,6,0"
+                        IsEnabled="{Binding HasSelected}" Click="EditButton_Click"/>
+                <Button x:Name="DeleteButton" Content="Sil" Width="60"
+                        IsEnabled="{Binding HasSelected}" Click="DeleteButton_Click"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBox Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}"
+                         Width="200" Margin="0,0,6,0" KeyDown="SearchBox_KeyDown"/>
+                <Button Content="Ara" Width="60" Command="{Binding SearchCommand}"/>
+            </StackPanel>
+        </DockPanel>
+
+        <DataGrid x:Name="MainGrid"
+                  ItemsSource="{Binding Items}"
+                  SelectedItem="{Binding Selected, Mode=TwoWay}"
+                  AutoGenerateColumns="False" IsReadOnly="True"
+                  SelectionMode="Single" CanUserAddRows="False"
+                  MouseDoubleClick="MainGrid_MouseDoubleClick">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Firma Adı"      Binding="{Binding Name}"    Width="200"/>
+                <DataGridTextColumn Header="Telefon"        Binding="{Binding Phone}"   Width="120"/>
+                <DataGridTextColumn Header="Website"        Binding="{Binding Website}" Width="200"/>
+                <DataGridCheckBoxColumn Header="Aktif"      Binding="{Binding IsActive}" Width="60"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+    </DockPanel>
+</Window>

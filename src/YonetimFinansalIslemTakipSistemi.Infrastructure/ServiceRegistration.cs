@@ -34,6 +34,11 @@ public static class ServiceRegistration
         services.AddScoped<IExchangeRateRepository, ExchangeRateRepository>();
         services.AddScoped<IUserGridLayoutRepository, UserGridLayoutRepository>();
 
+        // Kargo Katip modülü repository'leri
+        services.AddScoped<ICompanyDirectoryRepository, CompanyDirectoryRepository>();
+        services.AddScoped<ICargoCompanyRepository, CargoCompanyRepository>();
+        services.AddScoped<ICargoShipmentRepository, CargoShipmentRepository>();
+
         services.AddScoped<IAuthenticationService, DatabaseAuthenticationService>();
         services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
         services.AddScoped<IAuditLogService, AuditLogService>();

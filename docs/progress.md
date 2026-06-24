@@ -70,6 +70,30 @@
 - [x] DTO: TlBalanceAfter, UsdBalanceAfter, EurBalanceAfter
 - [x] MainWindow DataGrid: TL Bakiye / USD Bakiye / EUR Bakiye kolonları (sağa hizalı, N2)
 
+### Kargo Katip — Sprint 1.1 Stabilizasyon (2026-06-24)
+- [x] Migration AddCargoClerkModule DB'ye uygulandı
+- [x] DevDataSeeder — upgrade-safe; yeni 7 izin otomatik seeded
+- [x] CargoShipmentListWindow: yön bazında manage izni → Yeni/Düzenle/Sil visibility
+- [x] CompanyDirectoryListWindow: CanManageCompanyDirectory → buton visibility
+- [x] CargoCompanyListWindow: CanManageCargoCompanies → buton visibility
+- [x] Build: 0 hata, 0 uyarı
+
+### Kargo Katip — Sprint 1 (2026-06-24)
+
+- [x] Domain: CompanyDirectory, CargoCompany, CargoShipment entity'leri (BaseEntity, soft delete)
+- [x] Domain: 4 enum — CargoShipmentDirection, CargoShipmentType, CargoShipmentStatus, CargoNotificationStatus
+- [x] PermissionType: 7 yeni izin (CanViewCargoModule=8 … CanManageOutgoingCargo=14)
+- [x] AuditAction: 9 yeni aksiyon (CompanyDirectory/CargoCompany/CargoShipment Create/Update/Delete)
+- [x] Application: ICompanyDirectoryRepository, ICargoCompanyRepository, ICargoShipmentRepository
+- [x] Application: 15 handler (Create/Update/Delete/GetList her entity için), permission + audit
+- [x] Infrastructure: 3 EF konfigürasyon (soft delete filter, FK ilişkileri, snake_case tablolar)
+- [x] Infrastructure: 3 repository, AppDbContext güncellendi, ServiceRegistration güncellendi
+- [x] Migration: AddCargoClerkModule (cargo_companies, company_directories, cargo_shipments)
+- [x] UI: CompanyDirectoryList/Edit, CargoCompanyList/Edit, CargoShipmentList/Edit ViewModels + Views
+- [x] UI: MainWindow "Kargo Katip" menüsü, permission-based visibility
+- [x] UI: App.xaml.cs DI kayıtları (12 handler + 5 ViewModel)
+- [x] Build: 0 hata, 0 uyarı
+
 ---
 
 ## Sıradaki (V2)

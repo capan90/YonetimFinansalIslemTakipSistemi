@@ -1,0 +1,130 @@
+<Window x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.Cargo.CargoShipmentEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding WindowTitle}"
+        SizeToContent="Height" Width="480"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+
+    <StackPanel Margin="16">
+
+        <Grid Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0">
+                <Label Content="Tarih *:" Margin="0,0,0,2"/>
+                <DatePicker SelectedDate="{Binding ShipmentDate, Mode=TwoWay}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+                <Label Content="Kargo No:" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding ShipmentNumber, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0">
+                <Label Content="Kargo Türü:" Margin="0,0,0,2"/>
+                <ComboBox ItemsSource="{Binding ShipmentTypeOptions}"
+                          SelectedItem="{Binding SelectedShipmentType, Mode=TwoWay}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+                <Label Content="Durum:" Margin="0,0,0,2"/>
+                <ComboBox ItemsSource="{Binding StatusOptions}"
+                          SelectedItem="{Binding SelectedStatus, Mode=TwoWay}"/>
+            </StackPanel>
+        </Grid>
+
+        <Label Content="Kargo Firması:" Margin="0,0,0,2"/>
+        <ComboBox ItemsSource="{Binding CargoCompanies}"
+                  SelectedItem="{Binding SelectedCargoCompany, Mode=TwoWay}"
+                  DisplayMemberPath="Name"
+                  Margin="0,0,0,8"/>
+
+        <Label Content="Firma Rehberi (Karşı Taraf):" Margin="0,0,0,2"/>
+        <ComboBox ItemsSource="{Binding CompanyDirectories}"
+                  SelectedItem="{Binding SelectedCompanyDirectory, Mode=TwoWay}"
+                  DisplayMemberPath="CompanyName"
+                  ToolTip="Giden kargoda firma seçilince alıcı adı otomatik dolar."
+                  Margin="0,0,0,8"/>
+
+        <Grid Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0">
+                <Label Content="Gönderen:" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding SenderName, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+                <Label Content="Alıcı:" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding ReceiverName, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0">
+                <Label Content="Teslim Eden:" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding DeliveredBy, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+                <Label Content="Teslim Alan:" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding ReceivedBy, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0">
+                <Label Content="Takip No:" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding TrackingNumber, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+                <Label Content="Araç Plakası:" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding VehiclePlate, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+        </Grid>
+
+        <Label Content="Notlar:" Margin="0,0,0,2"/>
+        <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}"
+                 Height="48" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                 Margin="0,0,0,12"/>
+
+        <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" TextWrapping="Wrap" Margin="0,0,0,8">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Visibility" Value="Visible"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ErrorMessage}" Value="{x:Null}">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Kaydet" Command="{Binding SaveCommand}" IsDefault="True" Width="80" Margin="0,0,8,0"/>
+            <Button Content="İptal"  IsCancel="True" Width="80" Click="CancelButton_Click"/>
+        </StackPanel>
+
+    </StackPanel>
+</Window>

@@ -1,5 +1,47 @@
 # Oturum Özeti
 
+## Oturum 4b — 2026-06-24 — Kargo Katip Sprint 1.1 Stabilizasyon
+
+### Yapılanlar
+- **DevDataSeeder** — değiştirilmedi; upgrade-safe `Enum.GetValues<PermissionType>().Except(existing)` pattern'i 7 yeni izni otomatik seed eder.
+- **Kargo listesi butonları**: Yeni/Düzenle/Sil → manage izni yoksa `Visibility.Collapsed` (CargoShipmentList + CompanyDirectoryList + CargoCompanyList).
+- **Migration** `AddCargoClerkModule` DB'ye uygulandı.
+- **Build**: 0 hata, 0 uyarı.
+
+## Oturum 4 — 2026-06-24 — Kargo Katip Sprint 1
+
+### Yapılanlar
+
+**Domain:**
+- `CompanyDirectory`, `CargoCompany`, `CargoShipment` entity'leri eklendi (BaseEntity kalıtımı, soft delete).
+- 4 yeni enum: `CargoShipmentDirection`, `CargoShipmentType`, `CargoShipmentStatus`, `CargoNotificationStatus`.
+- `PermissionType` enum'una 7 yeni izin eklendi (8–14).
+- `AuditAction` enum'una 9 yeni aksiyon eklendi.
+
+**Application:**
+- 3 repository interface: `ICompanyDirectoryRepository`, `ICargoCompanyRepository`, `ICargoShipmentRepository`.
+- 15 handler: CompanyDirectory (5), CargoCompany (5), CargoShipment (5) — Create/Update/Delete/GetList/GetById.
+- Tüm handler'lar mevcut pattern'e uygun: permission check → validation → entity → persist → audit.
+- `CargoShipmentListHandler`: gelen/giden ayrı permission ile korunur, navigation property'ler include edilir.
+
+**Infrastructure:**
+- 3 EF konfigürasyon: `company_directories`, `cargo_companies`, `cargo_shipments` (soft delete filter, FK ilişkileri).
+- 3 repository: `CompanyDirectoryRepository`, `CargoCompanyRepository`, `CargoShipmentRepository`.
+- `AppDbContext`'e 3 yeni `DbSet` eklendi.
+- `ServiceRegistration`'a repository kayıtları eklendi.
+- Migration oluşturuldu: `AddCargoClerkModule` (2026-06-24).
+
+**UI:**
+- 4 ViewModel: `CompanyDirectoryList/Edit`, `CargoCompanyList/Edit`.
+- 1 ortak list VM: `CargoShipmentListViewModel` (direction parametresiyle çalışır).
+- 1 edit VM: `CargoShipmentEditViewModel` (giden kargoda firma seçince alıcı otomatik dolar).
+- 8 View: XAML + code-behind (list + edit ekranları her modül için).
+- `MainWindow.xaml`'a "Kargo Katip" menüsü eklendi.
+- `MainWindow.xaml.cs`'e 4 click handler ve permission-based visibility eklendi.
+- `App.xaml.cs`'e 12 handler + 5 ViewModel DI kaydı eklendi.
+
+**Build:** 0 hata, 0 uyarı.
+
 ## Oturum 3 — 2026-06-18
 
 ### Yapılanlar

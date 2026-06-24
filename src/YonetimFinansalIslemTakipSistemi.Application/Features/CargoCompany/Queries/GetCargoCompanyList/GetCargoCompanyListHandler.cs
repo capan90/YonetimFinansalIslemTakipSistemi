@@ -1,0 +1,56 @@
+using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Repositories;
+using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
+using YonetimFinansalIslemTakipSistemi.Domain.Enums;
+
+namespace YonetimFinansalIslemTakipSistemi.Application.Features.CargoCompany.Queries.GetCargoCompanyList;
+
+public class GetCargoCompanyListHandler
+{
+    private readonly ICargoCompanyRepository _repository;
+    private readonly IUserContext _userContext;
+
+    public GetCargoCompanyListHandler(
+        ICargoCompanyRepository repository,
+        IUserContext userContext)
+    {
+        _repository  = repository;
+        _userContext = userContext;
+    }
+
+    public async Task<List<CargoCompanyDto>> HandleAsync(GetCargoCompanyListQuery query)
+    {
+        if (!_userContext.HasPermission(PermissionType.CanViewCargoModule) &&
+            !_userContext.HasPermission(PermissionType.CanManageCargoCompanies))
+            return [];
+
+        var all = await _repository.GetAllAsync();
+
+        IEnumerable<Domain.Entities.CargoCompany> filtered = all;
+
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var kw = query.Keyword.Trim();
+            filtered = filtered.Where(x =>
+                x.Name.Contains(kw, StringComparison.OrdinalIgnoreCase) ||
+                (x.Phone != null && x.Phone.Contains(kw, StringComparison.OrdinalIgnoreCase)));
+        }
+
+        if (query.IsActive.HasValue)
+            filtered = filtered.Where(x => x.IsActive == query.IsActive.Value);
+
+        return filtered
+            .OrderBy(x => x.Name)
+            .Select(x => new CargoCompanyDto
+            {
+                Id                  = x.Id,
+                Name                = x.Name,
+                TrackingUrlTemplate = x.TrackingUrlTemplate,
+                Phone               = x.Phone,
+                Website             = x.Website,
+                Notes               = x.Notes,
+                IsActive            = x.IsActive,
+                CreatedAt           = x.CreatedAt
+            })
+            .ToList();
+    }
+}

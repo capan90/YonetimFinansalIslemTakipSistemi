@@ -11,5 +11,16 @@ public enum AuditAction
     UserLoggedIn,
     PermissionUpdated,
     ExchangeRateCreated,
-    ExchangeRateUpdated
+    ExchangeRateUpdated,
+
+    // Kargo Katip modülü
+    CompanyDirectoryCreated,
+    CompanyDirectoryUpdated,
+    CompanyDirectoryDeleted,
+    CargoCompanyCreated,
+    CargoCompanyUpdated,
+    CargoCompanyDeleted,
+    CargoShipmentCreated,
+    CargoShipmentUpdated,
+    CargoShipmentDeleted
 }

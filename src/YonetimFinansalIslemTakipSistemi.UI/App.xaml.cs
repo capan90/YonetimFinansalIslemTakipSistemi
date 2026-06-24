@@ -37,6 +37,19 @@ using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Reports;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Users;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Analysis;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.ExchangeRates;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CompanyDirectory.Commands.CreateCompanyDirectory;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CompanyDirectory.Commands.UpdateCompanyDirectory;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CompanyDirectory.Commands.DeleteCompanyDirectory;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CompanyDirectory.Queries.GetCompanyDirectoryList;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CargoCompany.Commands.CreateCargoCompany;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CargoCompany.Commands.UpdateCargoCompany;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CargoCompany.Commands.DeleteCargoCompany;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CargoCompany.Queries.GetCargoCompanyList;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.CreateCargoShipment;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.UpdateCargoShipment;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.DeleteCargoShipment;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Queries.GetCargoShipmentList;
+using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Cargo;
 
 namespace YonetimFinansalIslemTakipSistemi.UI;
 
@@ -178,6 +191,20 @@ public partial class App : System.Windows.Application
         services.AddScoped<CreateOrUpdateExchangeRateHandler>();
         services.AddScoped<GetExchangeRatesHandler>();
 
+        // Kargo Katip handler'lar
+        services.AddScoped<CreateCompanyDirectoryHandler>();
+        services.AddScoped<UpdateCompanyDirectoryHandler>();
+        services.AddScoped<DeleteCompanyDirectoryHandler>();
+        services.AddScoped<GetCompanyDirectoryListHandler>();
+        services.AddScoped<CreateCargoCompanyHandler>();
+        services.AddScoped<UpdateCargoCompanyHandler>();
+        services.AddScoped<DeleteCargoCompanyHandler>();
+        services.AddScoped<GetCargoCompanyListHandler>();
+        services.AddScoped<CreateCargoShipmentHandler>();
+        services.AddScoped<UpdateCargoShipmentHandler>();
+        services.AddScoped<DeleteCargoShipmentHandler>();
+        services.AddScoped<GetCargoShipmentListHandler>();
+
         // ViewModels
         services.AddTransient<LoginViewModel>();
         services.AddTransient<CashTransactionListViewModel>();
@@ -189,6 +216,13 @@ public partial class App : System.Windows.Application
         services.AddTransient<ReportViewModel>();
         services.AddTransient<ExchangeRateViewModel>();
         services.AddTransient<AnalysisViewModel>();
+
+        // Kargo Katip ViewModels
+        services.AddTransient<CompanyDirectoryListViewModel>();
+        services.AddTransient<CompanyDirectoryEditViewModel>();
+        services.AddTransient<CargoCompanyListViewModel>();
+        services.AddTransient<CargoCompanyEditViewModel>();
+        services.AddTransient<CargoShipmentEditViewModel>();
 
         Services = services.BuildServiceProvider();
 

@@ -20,6 +20,7 @@ using YonetimFinansalIslemTakipSistemi.UI.Views.Analysis;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Analysis;
 using YonetimFinansalIslemTakipSistemi.UI.Views.ExchangeRates;
 using YonetimFinansalIslemTakipSistemi.UI.Views.Health;
+using YonetimFinansalIslemTakipSistemi.UI.Views.Cargo;
 
 namespace YonetimFinansalIslemTakipSistemi.UI;
 
@@ -407,6 +408,29 @@ public partial class MainWindow : Window
         MenuItemDbTest.Visibility        = canManage ? Visibility.Visible : Visibility.Collapsed;
         MenuItemLogKlasor.Visibility     = canManage ? Visibility.Visible : Visibility.Collapsed;
         MenuItemSistemSagligi.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
+
+        // Kargo Katip modülü — UI gizlemesi; asıl koruma handler seviyesindedir
+        var canViewCargo     = userContext.HasPermission(PermissionType.CanViewCargoModule)
+                            || userContext.HasPermission(PermissionType.CanViewIncomingCargo)
+                            || userContext.HasPermission(PermissionType.CanViewOutgoingCargo)
+                            || userContext.HasPermission(PermissionType.CanManageIncomingCargo)
+                            || userContext.HasPermission(PermissionType.CanManageOutgoingCargo)
+                            || userContext.HasPermission(PermissionType.CanManageCompanyDirectory)
+                            || userContext.HasPermission(PermissionType.CanManageCargoCompanies);
+
+        MenuItemKargoKatip.Visibility   = canViewCargo ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemGelenKargolar.Visibility = userContext.HasPermission(PermissionType.CanViewIncomingCargo)
+                                        || userContext.HasPermission(PermissionType.CanManageIncomingCargo)
+            ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemGidenKargolar.Visibility = userContext.HasPermission(PermissionType.CanViewOutgoingCargo)
+                                        || userContext.HasPermission(PermissionType.CanManageOutgoingCargo)
+            ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemFirmaRehberi.Visibility  = userContext.HasPermission(PermissionType.CanManageCompanyDirectory)
+                                        || userContext.HasPermission(PermissionType.CanViewCargoModule)
+            ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemKargoFirmalari.Visibility = userContext.HasPermission(PermissionType.CanManageCargoCompanies)
+                                         || userContext.HasPermission(PermissionType.CanViewCargoModule)
+            ? Visibility.Visible : Visibility.Collapsed;
     }
 
     // ── İşlem Butonları ───────────────────────────────────────────────────────
@@ -529,6 +553,28 @@ public partial class MainWindow : Window
     private void OpenSystemHealth_Click(object sender, RoutedEventArgs e)
     {
         new SystemHealthWindow(_services) { Owner = this }.ShowDialog();
+    }
+
+    // ── Kargo Katip Menü Tıklamaları ─────────────────────────────────────────
+
+    private void OpenIncomingCargo_Click(object sender, RoutedEventArgs e)
+    {
+        new CargoShipmentListWindow(_services, CargoShipmentDirection.Incoming) { Owner = this }.ShowDialog();
+    }
+
+    private void OpenOutgoingCargo_Click(object sender, RoutedEventArgs e)
+    {
+        new CargoShipmentListWindow(_services, CargoShipmentDirection.Outgoing) { Owner = this }.ShowDialog();
+    }
+
+    private void OpenCompanyDirectory_Click(object sender, RoutedEventArgs e)
+    {
+        new CompanyDirectoryListWindow(_services) { Owner = this }.ShowDialog();
+    }
+
+    private void OpenCargoCompanies_Click(object sender, RoutedEventArgs e)
+    {
+        new CargoCompanyListWindow(_services) { Owner = this }.ShowDialog();
     }
 
     private async void CheckForUpdates_Click(object sender, RoutedEventArgs e)

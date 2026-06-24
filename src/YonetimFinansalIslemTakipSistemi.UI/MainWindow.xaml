@@ -45,6 +45,22 @@
                           ToolTip="Uygulama, veritabanı, log, backup ve güncelleme durumunu özetler."
                           Click="OpenSystemHealth_Click"/>
             </MenuItem>
+            <!-- Kargo Katip modülü -->
+            <MenuItem x:Name="MenuItemKargoKatip" Header="Kargo Katip">
+                <MenuItem x:Name="MenuItemGelenKargolar"
+                          Header="Gelen Kargolar"
+                          Click="OpenIncomingCargo_Click"/>
+                <MenuItem x:Name="MenuItemGidenKargolar"
+                          Header="Giden Kargolar"
+                          Click="OpenOutgoingCargo_Click"/>
+                <Separator/>
+                <MenuItem x:Name="MenuItemFirmaRehberi"
+                          Header="Firma Rehberi"
+                          Click="OpenCompanyDirectory_Click"/>
+                <MenuItem x:Name="MenuItemKargoFirmalari"
+                          Header="Kargo Firmaları"
+                          Click="OpenCargoCompanies_Click"/>
+            </MenuItem>
             <MenuItem Header="Yardım">
                 <MenuItem Header="Güncellemeleri Denetle"
                           ToolTip="Yayın klasöründeki en güncel sürümü kontrol eder; güncelleme varsa bildirir."

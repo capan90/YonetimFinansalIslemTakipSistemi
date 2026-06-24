@@ -1,0 +1,53 @@
+<Window x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.Cargo.CargoShipmentListWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Kargo Listesi" Height="520" Width="1050"
+        WindowStartupLocation="CenterOwner">
+
+    <DockPanel Margin="8">
+
+        <!-- Başlık satırı -->
+        <TextBlock x:Name="TitleBlock" DockPanel.Dock="Top"
+                   FontSize="14" FontWeight="SemiBold"
+                   Margin="0,0,0,8"/>
+
+        <!-- Araç çubuğu -->
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <!-- Visibility: UI gizlemesi; asıl koruma handler seviyesindedir -->
+                <Button x:Name="NewButton" Content="+ Yeni" Width="70" Margin="0,0,6,0" Click="NewButton_Click"/>
+                <Button x:Name="EditButton" Content="Düzenle" Width="75" Margin="0,0,6,0"
+                        IsEnabled="{Binding HasSelected}" Click="EditButton_Click"/>
+                <Button x:Name="DeleteButton" Content="Sil" Width="60"
+                        IsEnabled="{Binding HasSelected}" Click="DeleteButton_Click"/>
+                <Button Content="Yenile" Width="65" Margin="6,0,0,0" Click="RefreshButton_Click"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBox Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}"
+                         Width="220" Margin="0,0,6,0" KeyDown="SearchBox_KeyDown"
+                         ToolTip="Kargo no, takip no, gönderen, alıcı veya firma adında ara"/>
+                <Button Content="Ara" Width="60" Command="{Binding SearchCommand}"/>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Liste -->
+        <DataGrid x:Name="MainGrid"
+                  ItemsSource="{Binding Items}"
+                  SelectedItem="{Binding Selected, Mode=TwoWay}"
+                  AutoGenerateColumns="False" IsReadOnly="True"
+                  SelectionMode="Single" CanUserAddRows="False"
+                  MouseDoubleClick="MainGrid_MouseDoubleClick">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Tarih"        Binding="{Binding ShipmentDate, StringFormat=dd.MM.yyyy}" Width="90"/>
+                <DataGridTextColumn Header="Kargo No"     Binding="{Binding ShipmentNumber}"  Width="110"/>
+                <DataGridTextColumn Header="Kargo Türü"   Binding="{Binding ShipmentTypeDisplay}" Width="90"/>
+                <DataGridTextColumn Header="Kargo Firması" Binding="{Binding CargoCompanyName}"  Width="130"/>
+                <DataGridTextColumn Header="Gönderen"     Binding="{Binding SenderName}"     Width="140"/>
+                <DataGridTextColumn Header="Alıcı"        Binding="{Binding ReceiverName}"   Width="140"/>
+                <DataGridTextColumn Header="Takip No"     Binding="{Binding TrackingNumber}" Width="120"/>
+                <DataGridTextColumn Header="Durum"        Binding="{Binding StatusDisplay}"  Width="100"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+    </DockPanel>
+</Window>

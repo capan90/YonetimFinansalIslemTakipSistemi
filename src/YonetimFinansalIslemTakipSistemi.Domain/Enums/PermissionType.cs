@@ -13,4 +13,13 @@ public enum PermissionType
     CanDeleteTransaction  = 5,
     CanViewReports            = 6,
     CanManageExchangeRates    = 7,
+
+    // Kargo Katip modülü yetkileri
+    CanViewCargoModule         = 8,
+    CanManageCargoCompanies    = 9,
+    CanManageCompanyDirectory  = 10,
+    CanViewIncomingCargo       = 11,
+    CanManageIncomingCargo     = 12,
+    CanViewOutgoingCargo       = 13,
+    CanManageOutgoingCargo     = 14,
 }

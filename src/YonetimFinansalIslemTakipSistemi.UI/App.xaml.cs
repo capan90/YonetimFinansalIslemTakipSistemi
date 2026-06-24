@@ -1,6 +1,12 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Serilog;
+using Serilog.Events;
+using System.IO;
+using System.Reflection;
 using System.Windows;
+using System.Windows.Threading;
 using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Features.AuditLogs.Queries.GetAuditLogs;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Commands.CreateCashTransaction;
@@ -37,11 +43,21 @@ public partial class App : System.Windows.Application
 {
     public static IServiceProvider Services { get; private set; } = null!;
 
+    /// <summary>
+    /// Çözümlenmiş log klasörü — MainWindow "Log Klasörünü Aç" için kullanır.
+    /// </summary>
+    public static string LogDirectory { get; private set; } = string.Empty;
+
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
+        // Global handler'lar logger kurulmadan önce kaydedilir.
+        // Logger henüz hazır değilse Serilog'un varsayılan sessiz logger'ı devreye girer.
+        AppDomain.CurrentDomain.UnhandledException  += OnUnhandledException;
+        Current.DispatcherUnhandledException        += OnDispatcherUnhandledException;
+        TaskScheduler.UnobservedTaskException       += OnUnobservedTaskException;
 
         try
         {
@@ -49,16 +65,31 @@ public partial class App : System.Windows.Application
         }
         catch (Exception ex)
         {
-            // Teknik detay log/debug'a; kullanıcıya sadece anlaşılır mesaj
-            System.Diagnostics.Debug.WriteLine($"Başlatma hatası: {ex}");
+            Log.Fatal(ex, "Uygulama başlatılamadı");
+            Log.CloseAndFlush();
             ShowConnectionError();
             Shutdown();
         }
     }
 
+    protected override void OnExit(ExitEventArgs e)
+    {
+        Log.Information("Uygulama kapatılıyor");
+        Log.CloseAndFlush();
+        base.OnExit(e);
+    }
+
     private async Task InitializeAsync()
     {
         var config = BuildConfiguration();
+
+        // Logger'ı bağlantı testi ve hata mesajlarından önce kur
+        LogDirectory = ResolveLogDirectory(config);
+        Log.Logger   = CreateLogger(config, LogDirectory);
+
+        var appVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown";
+        Log.Information("Uygulama başlatılıyor. Sürüm: {AppVersion}, Makine: {MachineName}",
+            appVersion, Environment.MachineName);
 
         // Öncelik: env var > appsettings.json > hata
         var connectionString =
@@ -66,12 +97,17 @@ public partial class App : System.Windows.Application
             ?? config.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Bağlantı dizesi yapılandırılmamış.");
 
-        // Production ortamında seed çalıştırılmaz
         var appEnvironment = config["AppEnvironment"] ?? "Development";
-        var isDevelopment = !appEnvironment.Equals("Production", StringComparison.OrdinalIgnoreCase);
+        var isDevelopment  = !appEnvironment.Equals("Production", StringComparison.OrdinalIgnoreCase);
+
+        Log.Debug("Ortam: {AppEnvironment}", appEnvironment);
 
         var services = new ServiceCollection();
         services.AddInfrastructure(connectionString);
+
+        // Serilog → Microsoft.Extensions.Logging köprüsü:
+        // Infrastructure servisleri (ör. ReportExportService) ILogger<T> üzerinden yazabilir.
+        services.AddLogging(lb => lb.AddSerilog(dispose: false));
 
         // Dialog servisi — singleton: durumsuz, her çağrıda yeni pencere nesnesi oluşturur
         services.AddSingleton<IDialogService, DialogService>();
@@ -133,8 +169,13 @@ public partial class App : System.Windows.Application
         {
             var testService = testScope.ServiceProvider.GetRequiredService<IDatabaseConnectionTestService>();
             if (!await testService.CanConnectAsync())
+            {
+                Log.Error("Veritabanına bağlanılamadı — startup iptal ediliyor");
                 throw new InvalidOperationException("Veritabanına bağlanılamadı.");
+            }
         }
+
+        Log.Information("Veritabanı bağlantısı doğrulandı");
 
         // [DEV-ONLY] Seed yalnızca geliştirme ortamında çalışır
         if (isDevelopment)
@@ -143,12 +184,44 @@ public partial class App : System.Windows.Application
             await seedScope.ServiceProvider.GetRequiredService<IDevDataSeeder>().SeedAsync();
         }
 
+        Log.Information("Uygulama başlatıldı, oturum döngüsü başlıyor");
         RunApplicationLoop();
     }
 
+    // ── Global Exception Handlers ────────────────────────────────────────────
+
+    private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        var ex = e.ExceptionObject as Exception;
+        Log.Fatal(ex, "Yakalanmamış uygulama istisnası (AppDomain). Kapanıyor: {IsTerminating}", e.IsTerminating);
+        Log.CloseAndFlush();
+
+        if (e.IsTerminating)
+        {
+            // Uygulama kapanmak üzere; MessageBox göstermeye çalış
+            try { Dispatcher.Invoke(ShowUnexpectedError); } catch { }
+        }
+    }
+
+    private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        Log.Error(e.Exception, "Yakalanmamış UI (Dispatcher) istisnası");
+        ShowUnexpectedError();
+        e.Handled = true; // uygulamanın kapanmasını engelle
+    }
+
+    private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        // Task istisnası: gözlemlenmiş olarak işaretle, log'a yaz, uygulamayı kapatma
+        Log.Warning(e.Exception, "Gözlemlenmeyen Task istisnası");
+        e.SetObserved();
+    }
+
+    // ── Config & Logging ─────────────────────────────────────────────────────
+
     /// <summary>
-    /// Config dosyası sırası: appsettings.json (uygulama çalışma dizininden).
-    /// Env var YONETIM_DB_CONNECTION her zaman önceliklidir (App.xaml.cs'de kontrol edilir).
+    /// appsettings.json'dan IConfiguration oluşturur.
+    /// Env var YONETIM_DB_CONNECTION bağlantı dizesi için her zaman önceliklidir.
     /// </summary>
     private static IConfiguration BuildConfiguration()
     {
@@ -158,6 +231,44 @@ public partial class App : System.Windows.Application
             .Build();
     }
 
+    private static string ResolveLogDirectory(IConfiguration config)
+    {
+        var logDir = config["Logging:LogDirectory"] ?? "logs";
+        // Göreli yol → AppContext.BaseDirectory altında oluşturulur; mutlak yol olduğu gibi kullanılır
+        return Path.IsPathRooted(logDir)
+            ? logDir
+            : Path.Combine(AppContext.BaseDirectory, logDir);
+    }
+
+    private static Serilog.Core.Logger CreateLogger(IConfiguration config, string logDirectory)
+    {
+        var appVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown";
+        var logPath    = Path.Combine(logDirectory, "app-.log");
+
+        return new LoggerConfiguration()
+            .MinimumLevel.Is(ParseMinimumLevel(config["Logging:MinimumLevel"]))
+            .Enrich.FromLogContext()
+            .Enrich.WithMachineName()
+            .Enrich.WithProperty("AppVersion", appVersion)
+            .WriteTo.File(
+                path: logPath,
+                rollingInterval: RollingInterval.Day,
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] [{MachineName}] [v{AppVersion}] {Message:lj}{NewLine}{Exception}",
+                retainedFileCountLimit: 30,
+                encoding: System.Text.Encoding.UTF8)
+            .CreateLogger();
+    }
+
+    private static LogEventLevel ParseMinimumLevel(string? level) => level?.ToLowerInvariant() switch
+    {
+        "verbose" => LogEventLevel.Verbose,
+        "debug"   => LogEventLevel.Debug,
+        "warning" => LogEventLevel.Warning,
+        "error"   => LogEventLevel.Error,
+        "fatal"   => LogEventLevel.Fatal,
+        _         => LogEventLevel.Information
+    };
+
     private static void ShowConnectionError()
     {
         MessageBox.Show(
@@ -166,6 +277,21 @@ public partial class App : System.Windows.Application
             MessageBoxButton.OK,
             MessageBoxImage.Error);
     }
+
+    private static void ShowUnexpectedError()
+    {
+        try
+        {
+            MessageBox.Show(
+                "Beklenmeyen bir hata oluştu. Lütfen sistem yöneticisine başvurun.",
+                "Beklenmeyen Hata",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+        catch { }
+    }
+
+    // ── Session Loop ─────────────────────────────────────────────────────────
 
     /// <summary>
     /// Her oturum yeni bir IServiceScope alır → ayrı DbContext örneği → oturumlar arası veri karışmaz.

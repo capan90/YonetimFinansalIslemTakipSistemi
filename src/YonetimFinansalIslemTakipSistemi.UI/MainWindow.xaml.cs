@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics;
+using System.IO;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
@@ -400,8 +402,9 @@ public partial class MainWindow : Window
         MenuItemRaporlar.Visibility     = canReports  ? Visibility.Visible : Visibility.Collapsed;
         MenuItemAnaliz.Visibility       = canReports  ? Visibility.Visible : Visibility.Collapsed;
         MenuItemDoviz.Visibility        = canExchange ? Visibility.Visible : Visibility.Collapsed;
-        // DB testi yönetici eylemidir; kullanıcı yönetimi yetkisiyle erişilebilir
+        // DB testi ve log klasörü yönetici eylemleridir; kullanıcı yönetimi yetkisiyle erişilebilir
         MenuItemDbTest.Visibility       = canManage   ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemLogKlasor.Visibility    = canManage   ? Visibility.Visible : Visibility.Collapsed;
     }
 
     // ── İşlem Butonları ───────────────────────────────────────────────────────
@@ -494,6 +497,19 @@ public partial class MainWindow : Window
     private void OpenExchangeRates_Click(object sender, RoutedEventArgs e)
     {
         new ExchangeRateWindow(_services) { Owner = this }.ShowDialog();
+    }
+
+    private void OpenLogDirectory_Click(object sender, RoutedEventArgs e)
+    {
+        var logDir = App.LogDirectory;
+
+        if (string.IsNullOrEmpty(logDir) || !Directory.Exists(logDir))
+        {
+            _dialogService.ShowWarning("Log klasörü henüz oluşturulmadı. Uygulama log yazmaya başladığında klasör otomatik oluşturulur.");
+            return;
+        }
+
+        Process.Start(new ProcessStartInfo("explorer.exe", logDir) { UseShellExecute = true });
     }
 
     private async void TestDbConnection_Click(object sender, RoutedEventArgs e)

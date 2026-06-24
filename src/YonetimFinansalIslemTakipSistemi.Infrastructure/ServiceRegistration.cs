@@ -39,6 +39,7 @@ public static class ServiceRegistration
         services.AddScoped<IReportExportService, ReportExportService>();
         services.AddScoped<IUserGridLayoutService, UserGridLayoutService>();
         services.AddScoped<IDatabaseConnectionTestService, DatabaseConnectionTestService>();
+        services.AddSingleton<IErrorNotificationService, NullErrorNotificationService>();
         services.AddScoped<GetDashboardHandler>();
 
         // [DEV-ONLY] Geliştirme ortamı seed servisi

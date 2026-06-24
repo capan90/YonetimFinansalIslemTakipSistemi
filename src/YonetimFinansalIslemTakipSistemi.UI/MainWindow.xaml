@@ -35,6 +35,9 @@
                 <MenuItem x:Name="MenuItemDbTest"
                           Header="Veritabanı Bağlantısını Test Et"
                           Click="TestDbConnection_Click"/>
+                <MenuItem x:Name="MenuItemLogKlasor"
+                          Header="Log Klasörünü Aç"
+                          Click="OpenLogDirectory_Click"/>
             </MenuItem>
             <MenuItem Header="Yardım">
                 <MenuItem Header="Güncellemeleri Denetle"

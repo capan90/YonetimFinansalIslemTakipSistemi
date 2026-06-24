@@ -1,4 +1,5 @@
 using ClosedXML.Excel;
+using Microsoft.Extensions.Logging;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -19,8 +20,25 @@ namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Services;
 public class ReportExportService : IReportExportService
 {
     private const string AppTitle = "Yönetim Finansal İşlem Takip Sistemi";
+    private readonly ILogger<ReportExportService> _logger;
+
+    public ReportExportService(ILogger<ReportExportService> logger)
+        => _logger = logger;
 
     public void ExportToPdf(ReportDto report, string filePath)
+    {
+        try
+        {
+            ExportToPdfCore(report, filePath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "PDF raporu oluşturulurken hata: {FilePath}", filePath);
+            throw;
+        }
+    }
+
+    private void ExportToPdfCore(ReportDto report, string filePath)
     {
         var dateRange = FormatDateRange(report);
         var filterNote = BuildFilterNote(report);
@@ -216,6 +234,19 @@ public class ReportExportService : IReportExportService
     }
 
     public void ExportToExcel(ReportDto report, string filePath)
+    {
+        try
+        {
+            ExportToExcelCore(report, filePath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Excel raporu oluşturulurken hata: {FilePath}", filePath);
+            throw;
+        }
+    }
+
+    private void ExportToExcelCore(ReportDto report, string filePath)
     {
         using var wb = new XLWorkbook();
         var ws  = wb.Worksheets.Add("Rapor");

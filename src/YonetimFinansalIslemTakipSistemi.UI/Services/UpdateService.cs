@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
+using Serilog;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Services;
@@ -43,12 +44,14 @@ public class UpdateService : IUpdateService
 
             return new UpdateCheckResult(latest > current, latest, current, null);
         }
-        catch (IOException)
+        catch (IOException ex)
         {
+            Log.Warning(ex, "Güncelleme sunucusuna erişilemedi: {Path}", VersionJsonPath);
             return new UpdateCheckResult(false, null, current, "io_error");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Log.Error(ex, "Güncelleme kontrolü sırasında beklenmeyen hata");
             return new UpdateCheckResult(false, null, current, "unknown_error");
         }
     }
@@ -63,9 +66,9 @@ public class UpdateService : IUpdateService
             var proc = Process.Start(info);
             return proc is not null;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Dosya bulunamazsa veya shell hatası olursa false döner; Shutdown() engellenir.
+            Log.Error(ex, "Güncelleme kurucusu başlatılamadı: {Path}", DeploymentFilePath);
             return false;
         }
     }

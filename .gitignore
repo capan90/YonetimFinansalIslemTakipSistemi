@@ -21,6 +21,12 @@ obj/
 appsettings.Production.json
 appsettings.*.local.json
 
+# Backup dosyaları — gerçek veri içerebilir, repoya girmemeli
+Backups/
+backups/
+*.backup
+*.dump
+
 # Logs
 *.log
 

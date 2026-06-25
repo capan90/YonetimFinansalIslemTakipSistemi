@@ -80,6 +80,8 @@ public class AuditLogViewModel : INotifyPropertyChanged
         Actions.Add(new AuditActionOption(AuditAction.CargoShipmentCreated,    "Kargo Kaydı Oluşturuldu"));
         Actions.Add(new AuditActionOption(AuditAction.CargoShipmentUpdated,    "Kargo Kaydı Güncellendi"));
         Actions.Add(new AuditActionOption(AuditAction.CargoShipmentDeleted,    "Kargo Kaydı Silindi"));
+        Actions.Add(new AuditActionOption(AuditAction.CargoLabelPrinted,       "Kargo Etiketi Yazdırıldı"));
+        Actions.Add(new AuditActionOption(AuditAction.CargoWhatsAppPrepared,   "WhatsApp Mesajı Hazırlandı"));
         FilterAction = Actions[0];
 
         // "Tüm Kullanıcılar" constructor'da eklenir — DataContext atanmadan önce hazır olur

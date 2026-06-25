@@ -8,6 +8,7 @@ using System.Windows.Navigation;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.DeleteCargoShipment;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.QuickUpdateCargoStatus;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Label.GenerateCargoLabel;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Notification.GenerateCargoNotification;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Queries.GetCargoShipmentList;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
@@ -43,10 +44,11 @@ public partial class CargoShipmentListWindow : Window
             : PermissionType.CanManageOutgoingCargo;
         var manageVisibility = userContext.HasPermission(managePermission)
             ? Visibility.Visible : Visibility.Collapsed;
-        NewButton.Visibility    = manageVisibility;
-        CopyButton.Visibility   = manageVisibility;
-        EditButton.Visibility   = manageVisibility;
-        DeleteButton.Visibility = manageVisibility;
+        NewButton.Visibility     = manageVisibility;
+        CopyButton.Visibility    = manageVisibility;
+        EditButton.Visibility    = manageVisibility;
+        DeleteButton.Visibility  = manageVisibility;
+        WhatsAppButton.Visibility = manageVisibility;
 
         Loaded += async (_, _) => await _vm.LoadAsync();
     }
@@ -158,6 +160,36 @@ public partial class CargoShipmentListWindow : Window
         var tempPath = Path.Combine(Path.GetTempPath(), $"kargo-etiketi-{safeName}.pdf");
         await File.WriteAllBytesAsync(tempPath, result.Data!);
         Process.Start(new ProcessStartInfo(tempPath) { UseShellExecute = true });
+    }
+
+    /// <summary>
+    /// Seçili kargo için WhatsApp mesajı üretir ve önizleme penceresini açar.
+    /// Kullanıcı "Hazırlandı Olarak İşaretle" basarsa bildirim durumu güncellenir ve liste yenilenir.
+    /// </summary>
+    private async void WhatsAppButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_vm.Selected is null) return;
+
+        var handler = _services.GetRequiredService<GenerateCargoNotificationHandler>();
+        var result  = await handler.HandleAsync(new GenerateCargoNotificationRequest
+        {
+            CargoShipmentId  = _vm.Selected.Id,
+            Direction        = _vm.Direction,
+            NotificationType = Domain.Enums.NotificationType.WhatsApp
+        });
+
+        if (!result.Success)
+        {
+            _dialogService.ShowError(result.ErrorMessage ?? "Bildirim hazırlanamadı.");
+            return;
+        }
+
+        var preview = new CargoNotificationPreviewWindow(_services, _vm.Direction) { Owner = this };
+        preview.Initialize(result.Data!);
+        preview.ShowDialog();
+
+        if (preview.WasMarkedPrepared)
+            await _vm.LoadAsync();
     }
 
     /// <summary>Seçili kargonun TrackingUrl'ini default tarayıcıda açar.</summary>

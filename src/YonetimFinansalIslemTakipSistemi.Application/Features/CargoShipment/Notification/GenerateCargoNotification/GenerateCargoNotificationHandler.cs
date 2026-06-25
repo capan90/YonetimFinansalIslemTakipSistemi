@@ -1,0 +1,56 @@
+using YonetimFinansalIslemTakipSistemi.Application.Common;
+using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Repositories;
+using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
+using YonetimFinansalIslemTakipSistemi.Application.Services;
+using YonetimFinansalIslemTakipSistemi.Domain.Enums;
+
+namespace YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Notification.GenerateCargoNotification;
+
+/// <summary>
+/// Kargo bildirimi için mesaj modeli üretir.
+/// Preview için audit yazılmaz; durum değişmez.
+/// Durum güncellemesi ve audit: MarkCargoNotificationPreparedHandler.
+/// V1: yalnızca WhatsApp desteklenir.
+/// </summary>
+public class GenerateCargoNotificationHandler
+{
+    private readonly ICargoShipmentRepository    _repository;
+    private readonly WhatsAppNotificationComposer _whatsAppComposer;
+    private readonly IUserContext                 _userContext;
+
+    public GenerateCargoNotificationHandler(
+        ICargoShipmentRepository repository,
+        WhatsAppNotificationComposer whatsAppComposer,
+        IUserContext userContext)
+    {
+        _repository       = repository;
+        _whatsAppComposer = whatsAppComposer;
+        _userContext      = userContext;
+    }
+
+    public async Task<OperationResult<CargoNotificationModel>> HandleAsync(
+        GenerateCargoNotificationRequest request)
+    {
+        var requiredPermission = request.Direction == CargoShipmentDirection.Incoming
+            ? PermissionType.CanManageIncomingCargo
+            : PermissionType.CanManageOutgoingCargo;
+
+        if (!_userContext.HasPermission(requiredPermission))
+            return OperationResult<CargoNotificationModel>.Fail(
+                "Bu işlem için yetkiniz bulunmamaktadır.");
+
+        if (request.NotificationType != NotificationType.WhatsApp)
+            return OperationResult<CargoNotificationModel>.Fail(
+                "Bu bildirim türü henüz desteklenmiyor.");
+
+        // WithIncludes: CargoCompany.Name navigasyon property'si yüklü gelir
+        var shipment = await _repository.GetByIdWithIncludesAsync(request.CargoShipmentId);
+        if (shipment is null)
+            return OperationResult<CargoNotificationModel>.Fail("Kargo kaydı bulunamadı.");
+
+        var model = CargoNotificationBuilder.Build(shipment);
+        model.MessageBody = _whatsAppComposer.Compose(model);
+
+        return OperationResult<CargoNotificationModel>.Ok(model);
+    }
+}

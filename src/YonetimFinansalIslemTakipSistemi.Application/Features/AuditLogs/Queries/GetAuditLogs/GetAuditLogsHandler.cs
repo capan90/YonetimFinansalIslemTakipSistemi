@@ -63,6 +63,9 @@ public class GetAuditLogsHandler
         AuditAction.CargoShipmentCreated    => "Kargo Kaydı Oluşturuldu",
         AuditAction.CargoShipmentUpdated    => "Kargo Kaydı Güncellendi",
         AuditAction.CargoShipmentDeleted    => "Kargo Kaydı Silindi",
+        AuditAction.CargoLabelPrinted       => "Kargo Etiketi Yazdırıldı",
+        AuditAction.CargoWhatsAppPrepared   => "WhatsApp Mesajı Hazırlandı",
+        AuditAction.CargoMailPrepared       => "Mail Mesajı Hazırlandı",
         _                                   => action.ToString()
     };
 }

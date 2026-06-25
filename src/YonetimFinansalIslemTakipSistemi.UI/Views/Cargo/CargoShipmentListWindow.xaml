@@ -60,9 +60,10 @@
                     IsEnabled="{Binding HasSelected}"
                     Click="LabelButton_Click"
                     ToolTip="Seçili kargo için A6 PDF etiketi oluşturur ve önizleme açar"/>
-            <Button Content="WhatsApp Hazırla" Width="120" Margin="0,0,6,0"
-                    IsEnabled="False"
-                    ToolTip="Bu özellik sonraki Sprint'te aktif olacaktır."/>
+            <Button x:Name="WhatsAppButton" Content="WhatsApp Hazırla" Width="120" Margin="0,0,6,0"
+                    IsEnabled="{Binding HasSelected}"
+                    Click="WhatsAppButton_Click"
+                    ToolTip="Seçili kargo için WhatsApp mesajı hazırlar ve önizleme açar"/>
             <Button Content="Mail Hazırla" Width="100"
                     IsEnabled="False"
                     ToolTip="Bu özellik sonraki Sprint'te aktif olacaktır."/>

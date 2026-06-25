@@ -51,6 +51,9 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Comman
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.QuickUpdateCargoStatus;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Queries.GetCargoShipmentList;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Label.GenerateCargoLabel;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Notification.GenerateCargoNotification;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Notification.MarkCargoNotificationPrepared;
+using YonetimFinansalIslemTakipSistemi.Application.Services;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Cargo;
 
 namespace YonetimFinansalIslemTakipSistemi.UI;
@@ -212,6 +215,11 @@ public partial class App : System.Windows.Application
         services.AddSingleton<ILabelRenderer, QuestPdfLabelRenderer>();
         // ICompanyInfoProvider — AppSettings'ten gönderici firma bilgisi; ileride Company Settings modülüyle değiştirilebilir
         services.AddSingleton<ICompanyInfoProvider>(new AppSettingsCompanyInfoProvider(config));
+
+        // Bildirim — Sprint 3.3 (WhatsApp önizleme; Mail mimarisi hazır)
+        services.AddSingleton<WhatsAppNotificationComposer>();
+        services.AddScoped<GenerateCargoNotificationHandler>();
+        services.AddScoped<MarkCargoNotificationPreparedHandler>();
 
         // ViewModels
         services.AddTransient<LoginViewModel>();

@@ -11,6 +11,8 @@ public class CargoShipmentDto
     public TimeSpan? ShipmentTime { get; set; }
     public CargoShipmentType? ShipmentType { get; set; }
     public string? ShipmentTypeDisplay { get; set; }
+    public CargoShipmentPriority Priority { get; set; }
+    public string PriorityDisplay { get; set; } = string.Empty;
     public Guid? CargoCompanyId { get; set; }
     public string? CargoCompanyName { get; set; }
     public Guid? CompanyDirectoryId { get; set; }
@@ -25,6 +27,13 @@ public class CargoShipmentDto
     public CargoShipmentStatus Status { get; set; }
     public string StatusDisplay { get; set; } = string.Empty;
     public CargoNotificationStatus NotificationStatus { get; set; }
+    public string NotificationStatusDisplay { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Görüntülenecek karşı taraf: Firma Rehberi adı varsa o; yoksa Gönderen / Alıcı.
+    /// </summary>
+    public string DisplayParty { get; set; } = string.Empty;
+
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; }
 }

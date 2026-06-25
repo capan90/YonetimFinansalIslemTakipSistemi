@@ -11,23 +11,39 @@ public class CargoShipment : BaseEntity
     /// <summary>Referans/iç kargo numarası. Otomatik veya manuel girilebilir.</summary>
     public string? ShipmentNumber { get; set; }
 
-    /// <summary>Gelen mi giden mi olduğunu belirtir.</summary>
     public CargoShipmentDirection Direction { get; set; }
-
     public DateTime ShipmentDate { get; set; }
-
-    /// <summary>Kargo saati. Opsiyonel; girilmezse null bırakılır.</summary>
     public TimeSpan? ShipmentTime { get; set; }
-
     public CargoShipmentType? ShipmentType { get; set; }
+
+    /// <summary>Operasyonel öncelik. Listelemede renk kodu ve Dashboard filtresi için kullanılır.</summary>
+    public CargoShipmentPriority Priority { get; set; } = CargoShipmentPriority.Normal;
+
+    /// <summary>Kaydın hangi kanaldan oluşturulduğunu belirtir. Şimdilik hep Manual; ileride ExcelImport/Api genişler.</summary>
+    public CargoShipmentCreatedFrom CreatedFrom { get; set; } = CargoShipmentCreatedFrom.Manual;
 
     /// <summary>Kargo firması opsiyonel — gelen kargoda firma bilinmeyebilir.</summary>
     public Guid? CargoCompanyId { get; set; }
     public CargoCompany? CargoCompany { get; set; }
 
-    /// <summary>Firma rehberinden seçilen karşı taraf. Opsiyonel; manuel giriş de yapılabilir.</summary>
+    /// <summary>Firma rehberinden seçilen karşı taraf. FK referans için tutulur; operasyon verisi Snapshot'ta.</summary>
     public Guid? CompanyDirectoryId { get; set; }
     public CompanyDirectory? CompanyDirectory { get; set; }
+
+    // ── Alıcı Firma Snapshot Alanları ──────────────────────────────────────────
+    // Kargo oluşturulurken CompanyDirectory'den bir kez kopyalanır.
+    // Sonradan firma adresi değişse bile kargo kaydı oluşturma anındaki verileri korur.
+    // Etiket, WhatsApp ve mail şablonları bu alanları kullanır.
+
+    public string? ReceiverCompanyNameSnapshot { get; set; }
+    public string? ReceiverAddressSnapshot     { get; set; }
+    public string? ReceiverAttentionSnapshot   { get; set; }
+    public string? ReceiverCitySnapshot        { get; set; }
+    public string? ReceiverDistrictSnapshot    { get; set; }
+    public string? ReceiverPhoneSnapshot       { get; set; }
+    public string? ReceiverEmailSnapshot       { get; set; }
+
+    // ── Operasyon Alanları ────────────────────────────────────────────────────
 
     public string? SenderName   { get; set; }
     public string? ReceiverName { get; set; }
@@ -40,7 +56,6 @@ public class CargoShipment : BaseEntity
 
     public string? VehiclePlate { get; set; }
 
-    /// <summary>Manuel girilen takip numarası.</summary>
     public string? TrackingNumber { get; set; }
 
     /// <summary>

@@ -11,13 +11,19 @@
         <Label Content="Firma Adı *:" Margin="0,0,0,2"/>
         <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
-        <Label Content="Takip URL Şablonu:" Margin="0,0,0,2"/>
+        <Label Content="Takip Linki Şablonu:" Margin="0,0,0,2"/>
         <TextBox Text="{Binding TrackingUrlTemplate, UpdateSourceTrigger=PropertyChanged}"
-                 ToolTip="Örnek: https://kargo.aras.com.tr/?code={0} — {0} yerine takip numarası eklenir"
-                 Margin="0,0,0,8"/>
+                 ToolTip="Takip numarasının geleceği yere {0} yazılır. Örn: https://kargo.com/takip/{0}"
+                 Margin="0,0,0,2"/>
+        <TextBlock Text="Takip numarasının geleceği yere {0} yazılır. Örn: https://kargo.com/takip/{0}"
+                   FontSize="10" Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,8"/>
 
         <Label Content="Telefon:" Margin="0,0,0,2"/>
-        <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+        <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}"
+                 MaxLength="20"
+                 PreviewTextInput="PhoneTextBox_PreviewTextInput"
+                 ToolTip="Rakam, boşluk ve +, -, (, ) karakterleri; en fazla 20 karakter"
+                 Margin="0,0,0,8"/>
 
         <Label Content="Website:" Margin="0,0,0,2"/>
         <TextBox Text="{Binding Website, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>

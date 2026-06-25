@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoCompany.Queries.GetCargoCompanyList;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CompanyDirectory.Queries.GetCompanyDirectoryList;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.CreateCargoShipment;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.UpdateCargoShipment;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Queries.GetCargoShipmentList;
@@ -23,8 +24,9 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
 
     private Guid? _editTargetId;
     private CargoShipmentDirection _direction;
-    // Düzenleme sırasında mevcut bildirim durumunu korur; UI'da değiştirilemiyor (Sprint 2)
-    private CargoNotificationStatus _notificationStatus = CargoNotificationStatus.NotNotified;
+    // Düzenleme sırasında mevcut entity durumu — geçiş kontrolü için tutulur
+    private CargoShipmentStatus _currentEntityStatus = CargoShipmentStatus.Draft;
+
     private DateTime _shipmentDate = DateTime.Today;
     private string _shipmentNumber = string.Empty;
     private string _senderName    = string.Empty;
@@ -33,11 +35,14 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
     private string _receivedBy    = string.Empty;
     private string _vehiclePlate  = string.Empty;
     private string _trackingNumber = string.Empty;
+    private string _trackingUrl    = string.Empty;
     private string _notes          = string.Empty;
     private CargoCompanyDto? _selectedCargoCompany;
     private CompanyDirectoryDto? _selectedCompanyDirectory;
-    private string _selectedShipmentType  = "Evrak";
-    private string _selectedStatus        = "Taslak";
+    private string _selectedShipmentType        = "Evrak";
+    private string _selectedStatus              = "Taslak";
+    private string _selectedNotificationStatus  = "Bildirilmedi";
+    private string _selectedPriority            = "Normal";
     private string? _errorMessage;
 
     public bool IsEditMode { get; private set; }
@@ -52,14 +57,36 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
     public string ReceiverName    { get => _receiverName;   set { _receiverName  = value; OnPropertyChanged(); } }
     public string DeliveredBy     { get => _deliveredBy;    set { _deliveredBy   = value; OnPropertyChanged(); } }
     public string ReceivedBy      { get => _receivedBy;     set { _receivedBy    = value; OnPropertyChanged(); } }
-    public string VehiclePlate    { get => _vehiclePlate;   set { _vehiclePlate  = value; OnPropertyChanged(); } }
-    public string TrackingNumber  { get => _trackingNumber; set { _trackingNumber = value; OnPropertyChanged(); } }
-    public string Notes           { get => _notes;          set { _notes          = value; OnPropertyChanged(); } }
+    public string VehiclePlate   { get => _vehiclePlate;   set { _vehiclePlate  = (value ?? string.Empty).ToUpperInvariant(); OnPropertyChanged(); } }
+    public string TrackingNumber
+    {
+        get => _trackingNumber;
+        set
+        {
+            _trackingNumber = value;
+            OnPropertyChanged();
+            // TrackingUrl boşsa otomatik üret; kullanıcı manuel girmişse dokunma
+            if (string.IsNullOrWhiteSpace(TrackingUrl))
+                TryAutoFillTrackingUrl();
+        }
+    }
+    public string TrackingUrl
+    {
+        get => _trackingUrl;
+        set { _trackingUrl = value; OnPropertyChanged(); }
+    }
+    public string Notes  { get => _notes; set { _notes = value; OnPropertyChanged(); } }
 
     public CargoCompanyDto? SelectedCargoCompany
     {
         get => _selectedCargoCompany;
-        set { _selectedCargoCompany = value; OnPropertyChanged(); }
+        set
+        {
+            _selectedCargoCompany = value;
+            OnPropertyChanged();
+            if (string.IsNullOrWhiteSpace(TrackingUrl))
+                TryAutoFillTrackingUrl();
+        }
     }
 
     public CompanyDirectoryDto? SelectedCompanyDirectory
@@ -69,9 +96,32 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
         {
             _selectedCompanyDirectory = value;
             OnPropertyChanged();
-            // Giden kargoda firma seçilince adres/iletişim bilgileri otomatik dolar
+            OnPropertyChanged(nameof(HasDirectoryDetails));
+            OnPropertyChanged(nameof(DirectoryDetailSummary));
+            // Giden kargoda firma seçilince alıcı adı otomatik dolar
             if (value is not null && _direction == CargoShipmentDirection.Outgoing)
                 FillFromDirectory(value);
+        }
+    }
+
+    /// <summary>Firma seçildiğinde özet paneli gösterilir.</summary>
+    public bool HasDirectoryDetails => _selectedCompanyDirectory is not null;
+
+    /// <summary>Firma özet panelinde gösterilecek adres ve iletişim bilgisi.</summary>
+    public string DirectoryDetailSummary
+    {
+        get
+        {
+            var d = _selectedCompanyDirectory;
+            if (d is null) return string.Empty;
+            var parts = new List<string>();
+            if (!string.IsNullOrWhiteSpace(d.AttentionTo))      parts.Add($"Muhatabı: {d.AttentionTo}");
+            if (!string.IsNullOrWhiteSpace(d.AddressLine))      parts.Add($"Adres: {d.AddressLine}");
+            if (!string.IsNullOrWhiteSpace(d.District) || !string.IsNullOrWhiteSpace(d.City))
+                parts.Add(string.Join(", ", new[] { d.District, d.City }.Where(s => !string.IsNullOrWhiteSpace(s))));
+            if (!string.IsNullOrWhiteSpace(d.Phone))            parts.Add($"Tel: {d.Phone}");
+            if (!string.IsNullOrWhiteSpace(d.Email))            parts.Add($"E-posta: {d.Email}");
+            return string.Join("\n", parts);
         }
     }
 
@@ -81,10 +131,22 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
         set { _selectedShipmentType = value; OnPropertyChanged(); }
     }
 
+    public string SelectedPriority
+    {
+        get => _selectedPriority;
+        set { _selectedPriority = value; OnPropertyChanged(); }
+    }
+
     public string SelectedStatus
     {
         get => _selectedStatus;
         set { _selectedStatus = value; OnPropertyChanged(); }
+    }
+
+    public string SelectedNotificationStatus
+    {
+        get => _selectedNotificationStatus;
+        set { _selectedNotificationStatus = value; OnPropertyChanged(); }
     }
 
     public string? ErrorMessage
@@ -99,7 +161,30 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
     public IReadOnlyList<string> ShipmentTypeOptions { get; } =
         ["Evrak", "Numune", "Fatura", "Sözleşme", "Yedek Parça", "Diğer"];
 
-    public IReadOnlyList<string> StatusOptions { get; } =
+    public IReadOnlyList<string> PriorityOptions { get; } =
+        ["Normal", "Orta", "Acil", "Çok Acil"];
+
+    /// <summary>
+    /// Yeni kayıtta tüm durumlar sunulur; düzenlemede sadece geçerli geçişler listelenir.
+    /// </summary>
+    public IReadOnlyList<string> AllowedStatusOptions
+    {
+        get
+        {
+            if (!IsEditMode)
+                return _allStatusLabels;
+
+            return CargoStatusTransitions
+                .GetAllowedNext(_currentEntityStatus)
+                .Select(DisplayStatus)
+                .ToList();
+        }
+    }
+
+    public IReadOnlyList<string> NotificationStatusOptions { get; } =
+        ["Bildirilmedi", "WhatsApp Hazır", "Mail Hazır", "Bildirildi"];
+
+    private static readonly IReadOnlyList<string> _allStatusLabels =
         ["Taslak", "Hazırlandı", "Gönderildi", "Alındı", "Teslim Edildi", "İptal"];
 
     public Action? SaveCompleted { get; set; }
@@ -112,12 +197,12 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
         GetCompanyDirectoryListHandler directoryListHandler,
         IUserContext userContext)
     {
-        _createHandler          = createHandler;
-        _updateHandler          = updateHandler;
+        _createHandler           = createHandler;
+        _updateHandler           = updateHandler;
         _cargoCompanyListHandler = cargoCompanyListHandler;
-        _directoryListHandler   = directoryListHandler;
-        _userContext            = userContext;
-        SaveCommand             = new RelayCommand(async () => await ExecuteSaveAsync());
+        _directoryListHandler    = directoryListHandler;
+        _userContext             = userContext;
+        SaveCommand              = new RelayCommand(async () => await ExecuteSaveAsync());
     }
 
     public void SetDirection(CargoShipmentDirection direction)
@@ -144,22 +229,27 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
 
     public async Task InitializeAsync(CargoShipmentDto dto)
     {
-        IsEditMode     = true;
-        _editTargetId  = dto.Id;
-        _direction     = dto.Direction;
-        ShipmentDate   = dto.ShipmentDate;
-        ShipmentNumber = dto.ShipmentNumber ?? string.Empty;
-        SenderName     = dto.SenderName     ?? string.Empty;
-        ReceiverName   = dto.ReceiverName   ?? string.Empty;
-        DeliveredBy    = dto.DeliveredBy    ?? string.Empty;
-        ReceivedBy     = dto.ReceivedBy     ?? string.Empty;
-        VehiclePlate   = dto.VehiclePlate   ?? string.Empty;
-        TrackingNumber = dto.TrackingNumber ?? string.Empty;
-        Notes          = dto.Notes          ?? string.Empty;
+        IsEditMode             = true;
+        _editTargetId          = dto.Id;
+        _direction             = dto.Direction;
+        _currentEntityStatus   = dto.Status;
+        ShipmentDate           = dto.ShipmentDate;
+        ShipmentNumber         = dto.ShipmentNumber ?? string.Empty;
+        SenderName             = dto.SenderName     ?? string.Empty;
+        ReceiverName           = dto.ReceiverName   ?? string.Empty;
+        DeliveredBy            = dto.DeliveredBy    ?? string.Empty;
+        ReceivedBy             = dto.ReceivedBy     ?? string.Empty;
+        VehiclePlate           = dto.VehiclePlate   ?? string.Empty;
+        _trackingNumber        = dto.TrackingNumber ?? string.Empty; // backing field: TrackingUrl auto-fill tetiklenmesin
+        TrackingUrl            = dto.TrackingUrl    ?? string.Empty;
+        OnPropertyChanged(nameof(TrackingNumber));
+        Notes                  = dto.Notes          ?? string.Empty;
+        SelectedShipmentType        = dto.ShipmentTypeDisplay ?? "Evrak";
+        SelectedPriority            = dto.PriorityDisplay;
+        SelectedStatus              = dto.StatusDisplay;
+        SelectedNotificationStatus  = DisplayNotificationStatus(dto.NotificationStatus);
 
-        SelectedShipmentType  = dto.ShipmentTypeDisplay ?? "Evrak";
-        SelectedStatus        = dto.StatusDisplay;
-        _notificationStatus   = dto.NotificationStatus;
+        OnPropertyChanged(nameof(AllowedStatusOptions));
 
         await LoadLookupsAsync();
 
@@ -174,6 +264,45 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(IsEditMode));
     }
 
+    /// <summary>
+    /// Kopyala: ID/ShipmentNumber/audit/TrackingNumber/TrackingUrl/Status/NotificationStatus sıfırlanır,
+    /// geri kalan operasyonel alanlar kaynak kayıttan doldurulur.
+    /// </summary>
+    public async Task InitializeForCopyAsync(CargoShipmentDto source)
+    {
+        IsEditMode  = false;
+        _direction  = source.Direction;
+        ShipmentDate       = DateTime.Today;
+        ShipmentNumber     = string.Empty; // handler yeni numara üretir
+        SenderName         = source.SenderName   ?? string.Empty;
+        ReceiverName       = source.ReceiverName ?? string.Empty;
+        DeliveredBy        = string.Empty;
+        ReceivedBy         = string.Empty;
+        VehiclePlate       = source.VehiclePlate ?? string.Empty;
+        _trackingNumber    = string.Empty; // TrackingUrl auto-fill tetiklenmesin
+        TrackingUrl        = string.Empty;
+        OnPropertyChanged(nameof(TrackingNumber));
+        Notes              = source.Notes ?? string.Empty;
+        SelectedShipmentType       = source.ShipmentTypeDisplay ?? "Evrak";
+        SelectedPriority           = source.PriorityDisplay;
+        SelectedStatus             = "Taslak";
+        SelectedNotificationStatus = "Bildirilmedi";
+
+        OnPropertyChanged(nameof(AllowedStatusOptions));
+        OnPropertyChanged(nameof(WindowTitle));
+        OnPropertyChanged(nameof(IsEditMode));
+
+        await LoadLookupsAsync();
+
+        SelectedCargoCompany = source.CargoCompanyId.HasValue
+            ? CargoCompanies.FirstOrDefault(x => x.Id == source.CargoCompanyId.Value)
+            : null;
+        // CompanyDirectory seçimi: ID ile bul, setter snapshot bildirimlerini tetikler
+        SelectedCompanyDirectory = source.CompanyDirectoryId.HasValue
+            ? CompanyDirectories.FirstOrDefault(x => x.Id == source.CompanyDirectoryId.Value)
+            : null;
+    }
+
     private void FillFromDirectory(CompanyDirectoryDto d)
     {
         // Otomatik doldurma: kullanıcı override edebilir
@@ -181,12 +310,22 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
             ReceiverName = d.CompanyName;
     }
 
+    private void TryAutoFillTrackingUrl()
+    {
+        if (_selectedCargoCompany is null) return;
+        if (string.IsNullOrWhiteSpace(_selectedCargoCompany.TrackingUrlTemplate)) return;
+        if (string.IsNullOrWhiteSpace(_trackingNumber)) return;
+        TrackingUrl = string.Format(_selectedCargoCompany.TrackingUrlTemplate, _trackingNumber.Trim());
+    }
+
     private async Task ExecuteSaveAsync()
     {
         ErrorMessage = null;
 
-        var shipmentType = ParseShipmentType(SelectedShipmentType);
-        var status       = ParseStatus(SelectedStatus);
+        var shipmentType       = ParseShipmentType(SelectedShipmentType);
+        var priority           = ParsePriority(SelectedPriority);
+        var status             = ParseStatus(SelectedStatus);
+        var notificationStatus = ParseNotificationStatus(SelectedNotificationStatus);
 
         if (IsEditMode)
         {
@@ -197,6 +336,7 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
                 Direction          = _direction,
                 ShipmentDate       = ShipmentDate,
                 ShipmentType       = shipmentType,
+                Priority           = priority,
                 CargoCompanyId     = SelectedCargoCompany?.Id,
                 CompanyDirectoryId = SelectedCompanyDirectory?.Id,
                 SenderName         = NullIfEmpty(SenderName),
@@ -205,8 +345,9 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
                 ReceivedBy         = NullIfEmpty(ReceivedBy),
                 VehiclePlate       = NullIfEmpty(VehiclePlate),
                 TrackingNumber     = NullIfEmpty(TrackingNumber),
+                TrackingUrl        = NullIfEmpty(TrackingUrl),
                 Status             = status,
-                NotificationStatus = _notificationStatus,
+                NotificationStatus = notificationStatus,
                 Notes              = NullIfEmpty(Notes),
                 UpdatedByUserId    = _userContext.UserId
             };
@@ -215,20 +356,33 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
         }
         else
         {
+            var dir = _selectedCompanyDirectory;
             var req = new CreateCargoShipmentRequest
             {
                 ShipmentNumber     = NullIfEmpty(ShipmentNumber),
                 Direction          = _direction,
                 ShipmentDate       = ShipmentDate,
                 ShipmentType       = shipmentType,
+                Priority           = priority,
                 CargoCompanyId     = SelectedCargoCompany?.Id,
-                CompanyDirectoryId = SelectedCompanyDirectory?.Id,
+                CompanyDirectoryId = dir?.Id,
+
+                // Firma seçilmişse snapshot alınır — adres ileriden değişse bile kargo kaydı korunur
+                ReceiverCompanyNameSnapshot = dir?.CompanyName,
+                ReceiverAddressSnapshot     = dir?.AddressLine,
+                ReceiverAttentionSnapshot   = dir?.AttentionTo,
+                ReceiverCitySnapshot        = dir?.City,
+                ReceiverDistrictSnapshot    = dir?.District,
+                ReceiverPhoneSnapshot       = dir?.Phone,
+                ReceiverEmailSnapshot       = dir?.Email,
+
                 SenderName         = NullIfEmpty(SenderName),
                 ReceiverName       = NullIfEmpty(ReceiverName),
                 DeliveredBy        = NullIfEmpty(DeliveredBy),
                 ReceivedBy         = NullIfEmpty(ReceivedBy),
                 VehiclePlate       = NullIfEmpty(VehiclePlate),
                 TrackingNumber     = NullIfEmpty(TrackingNumber),
+                TrackingUrl        = NullIfEmpty(TrackingUrl),
                 Status             = status,
                 Notes              = NullIfEmpty(Notes),
                 CreatedByUserId    = _userContext.UserId
@@ -239,6 +393,14 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
 
         SaveCompleted?.Invoke();
     }
+
+    private static CargoShipmentPriority ParsePriority(string display) => display switch
+    {
+        "Orta"     => CargoShipmentPriority.Medium,
+        "Acil"     => CargoShipmentPriority.Urgent,
+        "Çok Acil" => CargoShipmentPriority.Critical,
+        _          => CargoShipmentPriority.Normal
+    };
 
     private static CargoShipmentType? ParseShipmentType(string display) => display switch
     {
@@ -259,6 +421,33 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
         "Teslim Edildi" => CargoShipmentStatus.Delivered,
         "İptal"         => CargoShipmentStatus.Cancelled,
         _               => CargoShipmentStatus.Draft
+    };
+
+    private static CargoNotificationStatus ParseNotificationStatus(string display) => display switch
+    {
+        "WhatsApp Hazır" => CargoNotificationStatus.WhatsAppPrepared,
+        "Mail Hazır"     => CargoNotificationStatus.MailPrepared,
+        "Bildirildi"     => CargoNotificationStatus.Notified,
+        _                => CargoNotificationStatus.NotNotified
+    };
+
+    private static string DisplayStatus(CargoShipmentStatus s) => s switch
+    {
+        CargoShipmentStatus.Draft     => "Taslak",
+        CargoShipmentStatus.Prepared  => "Hazırlandı",
+        CargoShipmentStatus.Shipped   => "Gönderildi",
+        CargoShipmentStatus.Received  => "Alındı",
+        CargoShipmentStatus.Delivered => "Teslim Edildi",
+        CargoShipmentStatus.Cancelled => "İptal",
+        _                             => s.ToString()
+    };
+
+    private static string DisplayNotificationStatus(CargoNotificationStatus ns) => ns switch
+    {
+        CargoNotificationStatus.WhatsAppPrepared => "WhatsApp Hazır",
+        CargoNotificationStatus.MailPrepared     => "Mail Hazır",
+        CargoNotificationStatus.Notified         => "Bildirildi",
+        _                                        => "Bildirilmedi"
     };
 
     private static string? NullIfEmpty(string s) =>

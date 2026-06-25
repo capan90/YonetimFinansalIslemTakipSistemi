@@ -40,16 +40,19 @@ public class GetCargoShipmentListHandler
             filtered = filtered.Where(x => x.ShipmentDate <= query.DateTo.Value.Date);
         if (query.Status.HasValue)
             filtered = filtered.Where(x => x.Status == query.Status.Value);
+        if (query.Priority.HasValue)
+            filtered = filtered.Where(x => x.Priority == query.Priority.Value);
 
         if (!string.IsNullOrWhiteSpace(query.Keyword))
         {
             var kw = query.Keyword.Trim();
             filtered = filtered.Where(x =>
-                (x.ShipmentNumber != null && x.ShipmentNumber.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
-                (x.TrackingNumber != null && x.TrackingNumber.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
-                (x.SenderName   != null && x.SenderName.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
-                (x.ReceiverName != null && x.ReceiverName.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
-                (x.CargoCompany  != null && x.CargoCompany.Name.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
+                (x.ShipmentNumber   != null && x.ShipmentNumber.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
+                (x.TrackingNumber   != null && x.TrackingNumber.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
+                (x.VehiclePlate     != null && x.VehiclePlate.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
+                (x.SenderName       != null && x.SenderName.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
+                (x.ReceiverName     != null && x.ReceiverName.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
+                (x.CargoCompany     != null && x.CargoCompany.Name.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
                 (x.CompanyDirectory != null && x.CompanyDirectory.CompanyName.Contains(kw, StringComparison.OrdinalIgnoreCase)));
         }
 
@@ -65,6 +68,8 @@ public class GetCargoShipmentListHandler
                 ShipmentTime         = x.ShipmentTime,
                 ShipmentType         = x.ShipmentType,
                 ShipmentTypeDisplay  = DisplayShipmentType(x.ShipmentType),
+                Priority             = x.Priority,
+                PriorityDisplay      = DisplayPriority(x.Priority),
                 CargoCompanyId       = x.CargoCompanyId,
                 CargoCompanyName     = x.CargoCompany?.Name,
                 CompanyDirectoryId   = x.CompanyDirectoryId,
@@ -76,11 +81,13 @@ public class GetCargoShipmentListHandler
                 VehiclePlate         = x.VehiclePlate,
                 TrackingNumber       = x.TrackingNumber,
                 TrackingUrl          = x.TrackingUrl,
-                Status               = x.Status,
-                StatusDisplay        = DisplayStatus(x.Status),
-                NotificationStatus   = x.NotificationStatus,
-                Notes                = x.Notes,
-                CreatedAt            = x.CreatedAt
+                Status                    = x.Status,
+                StatusDisplay             = DisplayStatus(x.Status),
+                NotificationStatus        = x.NotificationStatus,
+                NotificationStatusDisplay = DisplayNotificationStatus(x.NotificationStatus),
+                DisplayParty              = BuildDisplayParty(x),
+                Notes                     = x.Notes,
+                CreatedAt                 = x.CreatedAt
             })
             .ToList();
     }
@@ -94,6 +101,33 @@ public class GetCargoShipmentListHandler
         CargoShipmentStatus.Delivered => "Teslim Edildi",
         CargoShipmentStatus.Cancelled => "İptal",
         _                             => s.ToString()
+    };
+
+    private static string DisplayNotificationStatus(CargoNotificationStatus ns) => ns switch
+    {
+        CargoNotificationStatus.NotNotified      => "Bildirilmedi",
+        CargoNotificationStatus.WhatsAppPrepared => "WhatsApp Hazır",
+        CargoNotificationStatus.MailPrepared     => "Mail Hazır",
+        CargoNotificationStatus.Notified         => "Bildirildi",
+        _                                        => ns.ToString()
+    };
+
+    private static string BuildDisplayParty(Domain.Entities.CargoShipment x)
+    {
+        if (!string.IsNullOrWhiteSpace(x.CompanyDirectory?.CompanyName))
+            return x.CompanyDirectory.CompanyName;
+
+        var parts = new[] { x.SenderName, x.ReceiverName }
+            .Where(s => !string.IsNullOrWhiteSpace(s));
+        return string.Join(" / ", parts);
+    }
+
+    private static string DisplayPriority(CargoShipmentPriority p) => p switch
+    {
+        CargoShipmentPriority.Medium   => "Orta",
+        CargoShipmentPriority.Urgent   => "Acil",
+        CargoShipmentPriority.Critical => "Çok Acil",
+        _                              => "Normal"
     };
 
     private static string? DisplayShipmentType(CargoShipmentType? t) => t switch

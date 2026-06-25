@@ -2,6 +2,7 @@ using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Repositories;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
+using static YonetimFinansalIslemTakipSistemi.Application.Common.TextNormalizer;
 
 namespace YonetimFinansalIslemTakipSistemi.Application.Features.CompanyDirectory.Commands.CreateCompanyDirectory;
 
@@ -35,15 +36,15 @@ public class CreateCompanyDirectoryHandler
         var entity = new Domain.Entities.CompanyDirectory
         {
             Id            = Guid.NewGuid(),
-            CompanyName   = request.CompanyName.Trim(),
-            ContactPerson = request.ContactPerson?.Trim(),
-            AttentionTo   = request.AttentionTo?.Trim(),
-            AddressLine   = request.AddressLine.Trim(),
-            District      = request.District?.Trim(),
-            City          = request.City?.Trim(),
+            CompanyName   = TitleCase(request.CompanyName),
+            ContactPerson = TitleCaseOrNull(request.ContactPerson),
+            AttentionTo   = TitleCaseOrNull(request.AttentionTo),
+            AddressLine   = CollapseSpaces(request.AddressLine),
+            District      = TitleCaseOrNull(request.District),
+            City          = TitleCaseOrNull(request.City),
             PostalCode    = request.PostalCode?.Trim(),
             Phone         = request.Phone?.Trim(),
-            Email         = request.Email?.Trim(),
+            Email         = request.Email?.Trim()?.ToLowerInvariant(),
             Notes         = request.Notes?.Trim(),
             IsActive      = request.IsActive,
             CreatedByUserId = request.CreatedByUserId,
@@ -74,6 +75,8 @@ public class CreateCompanyDirectoryHandler
             return "Firma adı zorunludur.";
         if (string.IsNullOrWhiteSpace(r.AddressLine))
             return "Adres zorunludur.";
+        if (!string.IsNullOrWhiteSpace(r.Phone) && r.Phone.Trim().Length > 20)
+            return "Telefon numarası en fazla 20 karakter olabilir.";
         return null;
     }
 

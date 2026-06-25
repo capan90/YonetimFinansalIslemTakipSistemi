@@ -10,6 +10,8 @@ public class UpdateCargoShipmentRequest
     public DateTime ShipmentDate { get; set; }
     public TimeSpan? ShipmentTime { get; set; }
     public CargoShipmentType? ShipmentType { get; set; }
+    // Snapshot alanları Update'te yer almaz — kargo oluşturulurken bir kez alınır, sonradan değişmez
+    public CargoShipmentPriority Priority { get; set; }
     public Guid? CargoCompanyId { get; set; }
     public Guid? CompanyDirectoryId { get; set; }
     public string? SenderName   { get; set; }
@@ -18,6 +20,8 @@ public class UpdateCargoShipmentRequest
     public string? ReceivedBy   { get; set; }
     public string? VehiclePlate { get; set; }
     public string? TrackingNumber { get; set; }
+    /// <summary>Manuel girilmişse kullanılır; boşsa handler şablondan üretir.</summary>
+    public string? TrackingUrl { get; set; }
     public CargoShipmentStatus Status { get; set; }
     public CargoNotificationStatus NotificationStatus { get; set; }
     public string? Notes { get; set; }

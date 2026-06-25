@@ -2,6 +2,7 @@ using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Repositories;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
+using static YonetimFinansalIslemTakipSistemi.Application.Common.TextNormalizer;
 
 namespace YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.CreateCargoShipment;
 
@@ -39,9 +40,14 @@ public class CreateCargoShipmentHandler
         if (request.ShipmentDate == default)
             return OperationResult<CreateCargoShipmentResponse>.Fail("Kargo tarihi zorunludur.");
 
-        // TrackingUrl: şablon + takip numarası varsa üretilir
-        string? trackingUrl = null;
-        if (request.CargoCompanyId.HasValue && !string.IsNullOrWhiteSpace(request.TrackingNumber))
+        // ShipmentNumber: boş bırakılırsa yön ve yıla göre otomatik üretilir (G/C-YYYY-0001)
+        var shipmentNumber = string.IsNullOrWhiteSpace(request.ShipmentNumber)
+            ? await _repository.GetNextShipmentNumberAsync(request.Direction, request.ShipmentDate.Year)
+            : request.ShipmentNumber.Trim();
+
+        // Manuel URL varsa doğrudan kullan; boşsa şablon + takip numarasından üret
+        string? trackingUrl = string.IsNullOrWhiteSpace(request.TrackingUrl) ? null : request.TrackingUrl.Trim();
+        if (trackingUrl is null && request.CargoCompanyId.HasValue && !string.IsNullOrWhiteSpace(request.TrackingNumber))
         {
             var company = await _cargoCompanyRepository.GetByIdAsync(request.CargoCompanyId.Value);
             if (company is not null && !string.IsNullOrWhiteSpace(company.TrackingUrlTemplate))
@@ -51,18 +57,30 @@ public class CreateCargoShipmentHandler
         var entity = new Domain.Entities.CargoShipment
         {
             Id                  = Guid.NewGuid(),
-            ShipmentNumber      = request.ShipmentNumber?.Trim(),
+            ShipmentNumber      = shipmentNumber,
             Direction           = request.Direction,
             ShipmentDate        = DateTime.SpecifyKind(request.ShipmentDate.Date, DateTimeKind.Utc),
             ShipmentTime        = request.ShipmentTime,
             ShipmentType        = request.ShipmentType,
+            Priority            = request.Priority,
+            CreatedFrom         = request.CreatedFrom,
             CargoCompanyId      = request.CargoCompanyId,
             CompanyDirectoryId  = request.CompanyDirectoryId,
-            SenderName          = request.SenderName?.Trim(),
-            ReceiverName        = request.ReceiverName?.Trim(),
-            DeliveredBy         = request.DeliveredBy?.Trim(),
-            ReceivedBy          = request.ReceivedBy?.Trim(),
-            VehiclePlate        = request.VehiclePlate?.Trim(),
+
+            // Snapshot: oluşturma anındaki firma bilgileri kalıcı olarak saklanır
+            ReceiverCompanyNameSnapshot = request.ReceiverCompanyNameSnapshot?.Trim(),
+            ReceiverAddressSnapshot     = request.ReceiverAddressSnapshot?.Trim(),
+            ReceiverAttentionSnapshot   = request.ReceiverAttentionSnapshot?.Trim(),
+            ReceiverCitySnapshot        = request.ReceiverCitySnapshot?.Trim(),
+            ReceiverDistrictSnapshot    = request.ReceiverDistrictSnapshot?.Trim(),
+            ReceiverPhoneSnapshot       = request.ReceiverPhoneSnapshot?.Trim(),
+            ReceiverEmailSnapshot       = request.ReceiverEmailSnapshot?.Trim(),
+
+            SenderName          = TitleCaseOrNull(request.SenderName),
+            ReceiverName        = TitleCaseOrNull(request.ReceiverName),
+            DeliveredBy         = TitleCaseOrNull(request.DeliveredBy),
+            ReceivedBy          = TitleCaseOrNull(request.ReceivedBy),
+            VehiclePlate        = UpperOrNull(request.VehiclePlate),
             TrackingNumber      = request.TrackingNumber?.Trim(),
             TrackingUrl         = trackingUrl,
             Status              = request.Status,
@@ -81,7 +99,7 @@ public class CreateCargoShipmentHandler
             _userContext.UserId,
             _userContext.FullName,
             "CargoShipment", entity.Id,
-            null, $"Yön: {direction} | Tarih: {entity.ShipmentDate:dd.MM.yyyy}");
+            null, $"Yön: {direction} | No: {shipmentNumber} | Tarih: {entity.ShipmentDate:dd.MM.yyyy}");
 
         return OperationResult<CreateCargoShipmentResponse>.Ok(new CreateCargoShipmentResponse
         {

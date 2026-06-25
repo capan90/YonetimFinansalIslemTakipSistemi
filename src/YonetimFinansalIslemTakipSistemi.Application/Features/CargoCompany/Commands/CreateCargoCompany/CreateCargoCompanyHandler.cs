@@ -30,6 +30,8 @@ public class CreateCargoCompanyHandler
 
         if (string.IsNullOrWhiteSpace(request.Name))
             return OperationResult<CreateCargoCompanyResponse>.Fail("Kargo firması adı zorunludur.");
+        if (!string.IsNullOrWhiteSpace(request.Phone) && request.Phone.Trim().Length > 20)
+            return OperationResult<CreateCargoCompanyResponse>.Fail("Telefon numarası en fazla 20 karakter olabilir.");
 
         var entity = new Domain.Entities.CargoCompany
         {

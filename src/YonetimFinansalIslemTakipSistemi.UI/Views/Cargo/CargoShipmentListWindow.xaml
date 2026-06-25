@@ -1,7 +1,7 @@
 <Window x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.Cargo.CargoShipmentListWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Kargo Listesi" Height="520" Width="1050"
+        Title="Kargo Listesi" Height="600" Width="1360"
         WindowStartupLocation="CenterOwner">
 
     <DockPanel Margin="8">
@@ -9,26 +9,63 @@
         <!-- Başlık satırı -->
         <TextBlock x:Name="TitleBlock" DockPanel.Dock="Top"
                    FontSize="14" FontWeight="SemiBold"
-                   Margin="0,0,0,8"/>
+                   Margin="0,0,0,6"/>
 
-        <!-- Araç çubuğu -->
-        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+        <!-- Araç çubuğu — 1. satır: CRUD + Arama + Filtreler -->
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4">
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                 <!-- Visibility: UI gizlemesi; asıl koruma handler seviyesindedir -->
-                <Button x:Name="NewButton" Content="+ Yeni" Width="70" Margin="0,0,6,0" Click="NewButton_Click"/>
-                <Button x:Name="EditButton" Content="Düzenle" Width="75" Margin="0,0,6,0"
+                <Button x:Name="NewButton"    Content="+ Yeni"  Width="70"  Margin="0,0,6,0" Click="NewButton_Click"/>
+                <Button x:Name="CopyButton"   Content="Kopyala" Width="75"  Margin="0,0,6,0"
+                        IsEnabled="{Binding HasSelected}" Click="CopyButton_Click"
+                        ToolTip="Seçili kaydı şablon olarak kullanarak yeni kargo formu açar"/>
+                <Button x:Name="EditButton"   Content="Düzenle" Width="75"  Margin="0,0,6,0"
                         IsEnabled="{Binding HasSelected}" Click="EditButton_Click"/>
-                <Button x:Name="DeleteButton" Content="Sil" Width="60"
+                <Button x:Name="DeleteButton" Content="Sil"     Width="60"
                         IsEnabled="{Binding HasSelected}" Click="DeleteButton_Click"/>
                 <Button Content="Yenile" Width="65" Margin="6,0,0,0" Click="RefreshButton_Click"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBox Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}"
-                         Width="220" Margin="0,0,6,0" KeyDown="SearchBox_KeyDown"
+                         Width="200" Margin="0,0,6,0" KeyDown="SearchBox_KeyDown"
                          ToolTip="Kargo no, takip no, gönderen, alıcı veya firma adında ara"/>
-                <Button Content="Ara" Width="60" Command="{Binding SearchCommand}"/>
+                <Button Content="Ara" Width="55" Margin="0,0,12,0" Command="{Binding SearchCommand}"/>
+                <ComboBox ItemsSource="{Binding StatusFilterOptions}"
+                          SelectedItem="{Binding SelectedStatusFilter, Mode=TwoWay}"
+                          Width="130" Margin="0,0,6,0"
+                          SelectionChanged="StatusFilter_SelectionChanged"
+                          ToolTip="Duruma göre filtrele"/>
+                <ComboBox ItemsSource="{Binding PriorityFilterOptions}"
+                          SelectedItem="{Binding SelectedPriorityFilter, Mode=TwoWay}"
+                          Width="110"
+                          SelectionChanged="PriorityFilter_SelectionChanged"
+                          ToolTip="Önceliğe göre filtrele"/>
             </StackPanel>
         </DockPanel>
+
+        <!-- Araç çubuğu — 2. satır: Operasyon butonları -->
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,6">
+            <!-- Takip Et: seçili kargoyu tarayıcıda açar -->
+            <Button x:Name="TrackButton" Content="Takip Et" Width="90" Margin="0,0,6,0"
+                    IsEnabled="{Binding HasSelected}"
+                    Click="TrackButton_Click"/>
+
+            <!-- Durum Değiştir: QuickUpdateStatusDialog açar -->
+            <Button x:Name="QuickStatusButton" Content="Durum Değiştir" Width="110" Margin="0,0,6,0"
+                    IsEnabled="{Binding HasSelected}"
+                    Click="QuickStatusButton_Click"/>
+
+            <!-- Sprint 3.2–3.4: görünür ama devre dışı -->
+            <Button Content="Etiket Yazdır" Width="100" Margin="0,0,6,0"
+                    IsEnabled="False"
+                    ToolTip="Bu özellik sonraki Sprint'te aktif olacaktır."/>
+            <Button Content="WhatsApp Hazırla" Width="120" Margin="0,0,6,0"
+                    IsEnabled="False"
+                    ToolTip="Bu özellik sonraki Sprint'te aktif olacaktır."/>
+            <Button Content="Mail Hazırla" Width="100"
+                    IsEnabled="False"
+                    ToolTip="Bu özellik sonraki Sprint'te aktif olacaktır."/>
+        </StackPanel>
 
         <!-- Liste -->
         <DataGrid x:Name="MainGrid"
@@ -38,14 +75,86 @@
                   SelectionMode="Single" CanUserAddRows="False"
                   MouseDoubleClick="MainGrid_MouseDoubleClick">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Tarih"        Binding="{Binding ShipmentDate, StringFormat=dd.MM.yyyy}" Width="90"/>
-                <DataGridTextColumn Header="Kargo No"     Binding="{Binding ShipmentNumber}"  Width="110"/>
-                <DataGridTextColumn Header="Kargo Türü"   Binding="{Binding ShipmentTypeDisplay}" Width="90"/>
-                <DataGridTextColumn Header="Kargo Firması" Binding="{Binding CargoCompanyName}"  Width="130"/>
-                <DataGridTextColumn Header="Gönderen"     Binding="{Binding SenderName}"     Width="140"/>
-                <DataGridTextColumn Header="Alıcı"        Binding="{Binding ReceiverName}"   Width="140"/>
-                <DataGridTextColumn Header="Takip No"     Binding="{Binding TrackingNumber}" Width="120"/>
-                <DataGridTextColumn Header="Durum"        Binding="{Binding StatusDisplay}"  Width="100"/>
+                <!-- Öncelik: renkli badge -->
+                <DataGridTemplateColumn Header="Öncelik" Width="75">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Border CornerRadius="3" Padding="4,1">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="#BBBBBB"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding PriorityDisplay}" Value="Orta">
+                                                <Setter Property="Background" Value="#4A90D9"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding PriorityDisplay}" Value="Acil">
+                                                <Setter Property="Background" Value="#E07830"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding PriorityDisplay}" Value="Çok Acil">
+                                                <Setter Property="Background" Value="#CC2222"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <TextBlock Text="{Binding PriorityDisplay}"
+                                           Foreground="White" FontSize="11"
+                                           HorizontalAlignment="Center"/>
+                            </Border>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTextColumn Header="Kargo No"
+                                    Binding="{Binding ShipmentNumber}"
+                                    Width="120"/>
+                <DataGridTextColumn Header="Tarih"
+                                    Binding="{Binding ShipmentDate, StringFormat=dd.MM.yyyy}"
+                                    Width="85"/>
+                <DataGridTextColumn Header="Kargo Firması"
+                                    Binding="{Binding CargoCompanyName}"
+                                    Width="120"/>
+                <DataGridTextColumn Header="Karşı Taraf"
+                                    Binding="{Binding DisplayParty}"
+                                    Width="150"/>
+                <DataGridTextColumn Header="Takip No"
+                                    Binding="{Binding TrackingNumber}"
+                                    Width="110"/>
+                <DataGridTextColumn Header="Araç Plaka"
+                                    Binding="{Binding VehiclePlate}"
+                                    Width="90"/>
+
+                <!-- TrackingUrl tıklanabilir bağlantı olarak gösterilir -->
+                <DataGridTemplateColumn Header="Takip Linki" Width="80">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock>
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding TrackingUrl}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding TrackingUrl}" Value="">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                                <Hyperlink NavigateUri="{Binding TrackingUrl}"
+                                           RequestNavigate="TrackingUrl_RequestNavigate">
+                                    Takip Et
+                                </Hyperlink>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTextColumn Header="Durum"
+                                    Binding="{Binding StatusDisplay}"
+                                    Width="100"/>
+                <DataGridTextColumn Header="Bildirim"
+                                    Binding="{Binding NotificationStatusDisplay}"
+                                    Width="100"/>
             </DataGrid.Columns>
         </DataGrid>
 

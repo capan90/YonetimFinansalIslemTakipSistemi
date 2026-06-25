@@ -28,6 +28,8 @@ public class UpdateCargoCompanyHandler
 
         if (string.IsNullOrWhiteSpace(request.Name))
             return OperationResult<bool>.Fail("Kargo firması adı zorunludur.");
+        if (!string.IsNullOrWhiteSpace(request.Phone) && request.Phone.Trim().Length > 20)
+            return OperationResult<bool>.Fail("Telefon numarası en fazla 20 karakter olabilir.");
 
         var entity = await _repository.GetByIdWithTrackingAsync(request.Id);
         if (entity is null)

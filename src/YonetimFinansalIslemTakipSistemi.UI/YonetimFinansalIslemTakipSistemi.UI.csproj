@@ -6,6 +6,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.1">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.1" />
     <PackageReference Include="Serilog" Version="4.*" />
@@ -36,25 +40,19 @@
     dotnet publish, SetGenerateManifests (VS-only) target'ını atlar.
     Bu target _DeploymentGenerateLauncher koşulunu önceden true yapar.
   -->
-  <Target Name="_ForceClickOnceManifests"
-          BeforeTargets="_DeploymentGenerateLauncher"
-          Condition="'$(PublishProtocol)' == 'ClickOnce'">
+  <Target Name="_ForceClickOnceManifests" BeforeTargets="_DeploymentGenerateLauncher" Condition="'$(PublishProtocol)' == 'ClickOnce'">
     <PropertyGroup>
       <GenerateClickOnceManifests>true</GenerateClickOnceManifests>
     </PropertyGroup>
   </Target>
 
   <!-- ClickOnce publish tamamlandıktan sonra version.json'ı UNC klasörüne yazar -->
-  <Target Name="WriteVersionJson" AfterTargets="Publish"
-          Condition="'$(PublishProtocol)' == 'ClickOnce' and '$(PublishUrl)' != ''">
+  <Target Name="WriteVersionJson" AfterTargets="Publish" Condition="'$(PublishProtocol)' == 'ClickOnce' and '$(PublishUrl)' != ''">
     <PropertyGroup>
       <_VersionJsonContent>{"version":"$(AssemblyVersion)"}</_VersionJsonContent>
     </PropertyGroup>
-    <Message Text="version.json yazılıyor: $(PublishUrl)version.json" Importance="high"/>
-    <WriteLinesToFile
-        File="$(PublishUrl)version.json"
-        Lines="$(_VersionJsonContent)"
-        Overwrite="true"/>
+    <Message Text="version.json yazılıyor: $(PublishUrl)version.json" Importance="high" />
+    <WriteLinesToFile File="$(PublishUrl)version.json" Lines="$(_VersionJsonContent)" Overwrite="true" />
   </Target>
 
 </Project>

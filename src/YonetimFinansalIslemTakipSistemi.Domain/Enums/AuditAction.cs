@@ -22,5 +22,10 @@ public enum AuditAction
     CargoCompanyDeleted,
     CargoShipmentCreated,
     CargoShipmentUpdated,
-    CargoShipmentDeleted
+    CargoShipmentDeleted,
+
+    // Kargo operasyon aksiyonları — Sprint 3.2/3.3/3.4'te handler'lar tarafından kullanılır
+    CargoLabelPrinted,
+    CargoWhatsAppPrepared,
+    CargoMailPrepared
 }

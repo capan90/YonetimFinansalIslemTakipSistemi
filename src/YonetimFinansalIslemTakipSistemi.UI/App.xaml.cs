@@ -48,6 +48,7 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.CargoCompany.Queries
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.CreateCargoShipment;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.UpdateCargoShipment;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.DeleteCargoShipment;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.QuickUpdateCargoStatus;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Queries.GetCargoShipmentList;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Cargo;
 
@@ -203,6 +204,7 @@ public partial class App : System.Windows.Application
         services.AddScoped<CreateCargoShipmentHandler>();
         services.AddScoped<UpdateCargoShipmentHandler>();
         services.AddScoped<DeleteCargoShipmentHandler>();
+        services.AddScoped<QuickUpdateCargoStatusHandler>();
         services.AddScoped<GetCargoShipmentListHandler>();
 
         // ViewModels

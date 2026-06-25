@@ -2,6 +2,7 @@ using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Repositories;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
+using static YonetimFinansalIslemTakipSistemi.Application.Common.TextNormalizer;
 
 namespace YonetimFinansalIslemTakipSistemi.Application.Features.CompanyDirectory.Commands.UpdateCompanyDirectory;
 
@@ -36,15 +37,15 @@ public class UpdateCompanyDirectoryHandler
 
         var oldValues = Format(entity.CompanyName, entity.AddressLine);
 
-        entity.CompanyName   = request.CompanyName.Trim();
-        entity.ContactPerson = request.ContactPerson?.Trim();
-        entity.AttentionTo   = request.AttentionTo?.Trim();
-        entity.AddressLine   = request.AddressLine.Trim();
-        entity.District      = request.District?.Trim();
-        entity.City          = request.City?.Trim();
+        entity.CompanyName   = TitleCase(request.CompanyName);
+        entity.ContactPerson = TitleCaseOrNull(request.ContactPerson);
+        entity.AttentionTo   = TitleCaseOrNull(request.AttentionTo);
+        entity.AddressLine   = CollapseSpaces(request.AddressLine);
+        entity.District      = TitleCaseOrNull(request.District);
+        entity.City          = TitleCaseOrNull(request.City);
         entity.PostalCode    = request.PostalCode?.Trim();
         entity.Phone         = request.Phone?.Trim();
-        entity.Email         = request.Email?.Trim();
+        entity.Email         = request.Email?.Trim()?.ToLowerInvariant();
         entity.Notes         = request.Notes?.Trim();
         entity.IsActive      = request.IsActive;
         entity.UpdatedByUserId = request.UpdatedByUserId;
@@ -68,6 +69,8 @@ public class UpdateCompanyDirectoryHandler
             return "Firma adı zorunludur.";
         if (string.IsNullOrWhiteSpace(r.AddressLine))
             return "Adres zorunludur.";
+        if (!string.IsNullOrWhiteSpace(r.Phone) && r.Phone.Trim().Length > 20)
+            return "Telefon numarası en fazla 20 karakter olabilir.";
         return null;
     }
 

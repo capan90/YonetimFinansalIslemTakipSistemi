@@ -55,10 +55,11 @@
                     IsEnabled="{Binding HasSelected}"
                     Click="QuickStatusButton_Click"/>
 
-            <!-- Sprint 3.2–3.4: görünür ama devre dışı -->
+            <!-- Etiket Yazdır: PDF önizleme açar; gerçek baskı kullanıcının PDF görüntüleyicisinden yapılır -->
             <Button Content="Etiket Yazdır" Width="100" Margin="0,0,6,0"
-                    IsEnabled="False"
-                    ToolTip="Bu özellik sonraki Sprint'te aktif olacaktır."/>
+                    IsEnabled="{Binding HasSelected}"
+                    Click="LabelButton_Click"
+                    ToolTip="Seçili kargo için A6 PDF etiketi oluşturur ve önizleme açar"/>
             <Button Content="WhatsApp Hazırla" Width="120" Margin="0,0,6,0"
                     IsEnabled="False"
                     ToolTip="Bu özellik sonraki Sprint'te aktif olacaktır."/>

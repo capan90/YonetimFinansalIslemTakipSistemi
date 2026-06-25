@@ -1,11 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Navigation;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.DeleteCargoShipment;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.QuickUpdateCargoStatus;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Label.GenerateCargoLabel;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Queries.GetCargoShipmentList;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
@@ -127,6 +129,35 @@ public partial class CargoShipmentListWindow : Window
     {
         if (!IsLoaded) return;
         await _vm.LoadAsync();
+    }
+
+    /// <summary>
+    /// Seçili kargo için A6 PDF etiketi üretir ve sistem varsayılan PDF görüntüleyicisinde açar.
+    /// Preview audit edilmez; gerçek baskı (PrintCargoLabel) Sprint 3.3+'ta eklenecek.
+    /// </summary>
+    private async void LabelButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_vm.Selected is null) return;
+
+        var handler = _services.GetRequiredService<GenerateCargoLabelHandler>();
+        var result  = await handler.HandleAsync(new GenerateCargoLabelRequest
+        {
+            Id        = _vm.Selected.Id,
+            Direction = _vm.Direction
+        });
+
+        if (!result.Success)
+        {
+            _dialogService.ShowError(result.ErrorMessage ?? "Etiket oluşturulamadı.");
+            return;
+        }
+
+        // Geçici dosyaya yaz ve sistem PDF görüntüleyicisinde aç
+        var safeName = (_vm.Selected.ShipmentNumber ?? _vm.Selected.Id.ToString()[..8])
+            .Replace('/', '-').Replace('\\', '-');
+        var tempPath = Path.Combine(Path.GetTempPath(), $"kargo-etiketi-{safeName}.pdf");
+        await File.WriteAllBytesAsync(tempPath, result.Data!);
+        Process.Start(new ProcessStartInfo(tempPath) { UseShellExecute = true });
     }
 
     /// <summary>Seçili kargonun TrackingUrl'ini default tarayıcıda açar.</summary>

@@ -26,6 +26,10 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <Resource Include="Assets\AppIcon.ico" />
+  </ItemGroup>
+
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net9.0-windows</TargetFramework>
@@ -34,6 +38,7 @@
     <UseWPF>true</UseWPF>
     <!-- Her release öncesi artırılır; pubxml PublishVersion ve version.json ile senkron tutulmalıdır -->
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <!--

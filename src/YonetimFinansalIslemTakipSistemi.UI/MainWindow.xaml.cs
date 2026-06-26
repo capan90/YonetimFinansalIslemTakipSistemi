@@ -439,6 +439,10 @@ public partial class MainWindow : Window
         var canSettings = userContext.HasPermission(PermissionType.CanManageMailSettings);
         MenuItemAyarlar.Visibility    = canSettings ? Visibility.Visible : Visibility.Collapsed;
         MenuItemMailAyarlari.Visibility = canSettings ? Visibility.Visible : Visibility.Collapsed;
+
+        // İşlem kopyalama — create yetkisi gerekir
+        var canCreate = userContext.HasPermission(PermissionType.CanCreateTransaction);
+        CopyTransactionButton.Visibility = canCreate ? Visibility.Visible : Visibility.Collapsed;
     }
 
     // ── İşlem Butonları ───────────────────────────────────────────────────────
@@ -459,6 +463,24 @@ public partial class MainWindow : Window
         form.InitializeForEdit(selected);
         if (form.ShowDialog() == true)
             await _listVm.LoadAsync();
+    }
+
+    private async void CopyTransactionButton_Click(object sender, RoutedEventArgs e)
+    {
+        var selected = _listVm.SelectedTransaction;
+        if (selected is null)
+        {
+            _dialogService.ShowWarning("Kopyalamak için listeden bir işlem seçin.", "İşlem Seç");
+            return;
+        }
+
+        var form = new CashTransactionFormWindow(_services) { Owner = this };
+        form.InitializeForCopy(selected);
+        if (form.ShowDialog() == true)
+        {
+            _dialogService.ShowSuccess("İşlem kopyalanarak yeni kayıt oluşturuldu.", "Kopyalama Başarılı");
+            await _listVm.LoadAsync();
+        }
     }
 
     private async void DeleteTransactionButton_Click(object sender, RoutedEventArgs e)

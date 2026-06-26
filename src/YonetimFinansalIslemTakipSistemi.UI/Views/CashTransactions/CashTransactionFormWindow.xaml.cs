@@ -22,6 +22,12 @@ public partial class CashTransactionFormWindow : Window
     /// </summary>
     public void InitializeForEdit(CashTransactionDto dto) => _vm.Initialize(dto);
 
+    /// <summary>
+    /// Kopyalama modunda açmak için ShowDialog() öncesi çağrılır.
+    /// Mevcut kayıt değişmez; kaydet tıklandığında yeni kayıt oluşturulur.
+    /// </summary>
+    public void InitializeForCopy(CashTransactionDto dto) => _vm.InitializeForCopy(dto);
+
     private void CancelButton_Click(object sender, RoutedEventArgs e)
         => DialogResult = false;
 }

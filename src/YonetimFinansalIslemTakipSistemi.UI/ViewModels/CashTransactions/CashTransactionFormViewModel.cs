@@ -26,8 +26,11 @@ public class CashTransactionFormViewModel : INotifyPropertyChanged
     private string?  _errorMessage;
 
     public bool IsEditMode { get; private set; }
+    public bool IsCopyMode { get; private set; }
 
-    public string WindowTitle => IsEditMode ? "İşlemi Düzenle" : "Yeni Nakit İşlem";
+    public string WindowTitle => IsEditMode ? "İşlemi Düzenle"
+                               : IsCopyMode ? "Yeni İşlem (Kopyadan)"
+                               : "Yeni Nakit İşlem";
 
     public DateTime TransactionDate
     {
@@ -98,6 +101,22 @@ public class CashTransactionFormViewModel : INotifyPropertyChanged
         SelectedTransactionType = dto.TransactionTypeDisplay;
         SelectedCurrencyType    = dto.CurrencyTypeDisplay;
         // Tutar: Borç veya Alacak, hangisi dolu ise onu göster
+        var amount = dto.Borc > 0 ? dto.Borc : dto.Alacak;
+        AmountText              = amount.ToString(CultureInfo.CurrentCulture);
+        Description             = dto.Description;
+        OnPropertyChanged(nameof(WindowTitle));
+    }
+
+    /// <summary>
+    /// Kopyalama modunda formu doldurur — Id/audit alanları kopyalanmaz, form create modunda açılır.
+    /// </summary>
+    public void InitializeForCopy(CashTransactionDto dto)
+    {
+        // IsEditMode=false kalır → Save, CreateHandler'ı çağırır
+        IsCopyMode              = true;
+        TransactionDate         = dto.TransactionDate;
+        SelectedTransactionType = dto.TransactionTypeDisplay;
+        SelectedCurrencyType    = dto.CurrencyTypeDisplay;
         var amount = dto.Borc > 0 ? dto.Borc : dto.Alacak;
         AmountText              = amount.ToString(CultureInfo.CurrentCulture);
         Description             = dto.Description;

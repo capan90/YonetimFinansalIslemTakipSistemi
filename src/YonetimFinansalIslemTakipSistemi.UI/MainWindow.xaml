@@ -4,7 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Yönetim — Nakit İşlemler" Height="600" Width="1280">
+        Title="Yönetim — Nakit İşlemler" Height="600" Width="1280"
+        Icon="Assets/AppIcon.ico">
 
     <DockPanel>
 
@@ -45,8 +46,8 @@
                           ToolTip="Uygulama, veritabanı, log, backup ve güncelleme durumunu özetler."
                           Click="OpenSystemHealth_Click"/>
             </MenuItem>
-            <!-- Kargo Katip modülü -->
-            <MenuItem x:Name="MenuItemKargoKatip" Header="Kargo Katip">
+            <!-- Kargo Takip modülü -->
+            <MenuItem x:Name="MenuItemKargoKatip" Header="Kargo Takip">
                 <MenuItem x:Name="MenuItemKargoDashboard"
                           Header="Dashboard"
                           Click="OpenCargoDashboard_Click"/>
@@ -121,6 +122,10 @@
                         ToolTip="Seçili işlemi düzenler."
                         IsEnabled="{Binding HasSelectedTransaction}"
                         Click="EditTransactionButton_Click"/>
+                <Button x:Name="CopyTransactionButton" Content="Kopyala" Width="80" Margin="0,0,6,0"
+                        ToolTip="Seçili işlemin bilgileriyle yeni işlem formu açar."
+                        IsEnabled="{Binding HasSelectedTransaction}"
+                        Click="CopyTransactionButton_Click"/>
                 <Button Content="Sil" Width="60"
                         ToolTip="Seçili işlemi kalıcı olarak siler."
                         IsEnabled="{Binding HasSelectedTransaction}"

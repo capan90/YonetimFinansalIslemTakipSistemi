@@ -34,6 +34,7 @@ public partial class CargoDashboardWindow : Window
         {
             try
             {
+                ApplyNavBarVisibility();
                 PopulateFilterCombos();
                 await LoadCargoCompaniesAsync();
                 await LoadDashboardAsync();
@@ -326,6 +327,43 @@ public partial class CargoDashboardWindow : Window
             "Gelen Kargolar veya Giden Kargolar listesinden ilgili kaydı çift tıklayın.",
             "Operasyon Merkezi");
     }
+
+    // ── Navigasyon — cargo-only modda diğer ekranlara erişim ─────────────────
+
+    private void ApplyNavBarVisibility()
+    {
+        var ctx = _services.GetRequiredService<IUserContext>();
+
+        var canGelen    = ctx.HasPermission(PermissionType.CanViewIncomingCargo)
+                       || ctx.HasPermission(PermissionType.CanManageIncomingCargo);
+        var canGiden    = ctx.HasPermission(PermissionType.CanViewOutgoingCargo)
+                       || ctx.HasPermission(PermissionType.CanManageOutgoingCargo);
+        var canRehber   = ctx.HasPermission(PermissionType.CanManageCompanyDirectory)
+                       || ctx.HasPermission(PermissionType.CanViewCargoModule);
+        var canFirmalar = ctx.HasPermission(PermissionType.CanManageCargoCompanies)
+                       || ctx.HasPermission(PermissionType.CanViewCargoModule);
+
+        NavGelenButton.Visibility          = canGelen    ? Visibility.Visible : Visibility.Collapsed;
+        NavGidenButton.Visibility          = canGiden    ? Visibility.Visible : Visibility.Collapsed;
+        NavFirmaRehberiButton.Visibility   = canRehber   ? Visibility.Visible : Visibility.Collapsed;
+        NavKargoFirmalariButton.Visibility = canFirmalar ? Visibility.Visible : Visibility.Collapsed;
+
+        // Hiç gösterilecek buton yoksa çubuğu tamamen gizle
+        NavBar.Visibility = (canGelen || canGiden || canRehber || canFirmalar)
+            ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void NavGelenButton_Click(object sender, RoutedEventArgs e)
+        => new CargoShipmentListWindow(_services, CargoShipmentDirection.Incoming) { Owner = this }.ShowDialog();
+
+    private void NavGidenButton_Click(object sender, RoutedEventArgs e)
+        => new CargoShipmentListWindow(_services, CargoShipmentDirection.Outgoing) { Owner = this }.ShowDialog();
+
+    private void NavFirmaRehberiButton_Click(object sender, RoutedEventArgs e)
+        => new CompanyDirectoryListWindow(_services) { Owner = this }.ShowDialog();
+
+    private void NavKargoFirmalariButton_Click(object sender, RoutedEventArgs e)
+        => new CargoCompanyListWindow(_services) { Owner = this }.ShowDialog();
 
     // ── Pencere Kapat ─────────────────────────────────────────────────────
 

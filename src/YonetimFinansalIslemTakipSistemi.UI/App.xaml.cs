@@ -57,7 +57,9 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Querie
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Queries.GetCargoReport;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Settings.MailSettings;
 using YonetimFinansalIslemTakipSistemi.Application.Services;
+using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Cargo;
+using YonetimFinansalIslemTakipSistemi.UI.Views.Cargo;
 
 namespace YonetimFinansalIslemTakipSistemi.UI;
 
@@ -473,11 +475,34 @@ public partial class App : System.Windows.Application
                     return;
                 }
 
-                var mainWindow = new MainWindow(scope.ServiceProvider);
-                Current.MainWindow = mainWindow;
-                mainWindow.ShowDialog(); // MainWindow kapanana kadar bloke eder
+                var userContext   = scope.ServiceProvider.GetRequiredService<IUserContext>();
+                var dialogService = scope.ServiceProvider.GetRequiredService<IDialogService>();
+                var startupMode   = ResolveStartupMode(userContext);
 
-                isLogout = mainWindow.IsLogoutRequested;
+                if (startupMode == "none")
+                {
+                    // Kayıtlı yetki olmayan kullanıcı — login sonrası uyarı + logout
+                    dialogService.ShowWarning(
+                        "Bu kullanıcı için tanımlı bir başlangıç ekranı bulunamadı.\nLütfen yöneticinizle iletişime geçin.",
+                        "Erişim Yok");
+                    isLogout = true;
+                }
+                else if (startupMode == "cargo")
+                {
+                    // Sadece kargo yetkisi var — finans ekranı gösterilmez
+                    var cargoWindow = new CargoDashboardWindow(scope.ServiceProvider);
+                    Current.MainWindow = cargoWindow;
+                    cargoWindow.ShowDialog();
+                    isLogout = true; // kargo penceresi kapandığında login ekranına dön
+                }
+                else
+                {
+                    // Finans yetkisi var — mevcut davranış
+                    var mainWindow = new MainWindow(scope.ServiceProvider);
+                    Current.MainWindow = mainWindow;
+                    mainWindow.ShowDialog();
+                    isLogout = mainWindow.IsLogoutRequested;
+                }
             }
             finally
             {
@@ -496,5 +521,32 @@ public partial class App : System.Windows.Application
             Services.GetRequiredService<IUserSession>().Clear();
             // Döngü devam eder: yeni scope, yeni LoginWindow
         }
+    }
+
+    /// <summary>
+    /// Kullanıcı yetkisine göre giriş sonrası ekranı belirler.
+    /// Finans yetkisi varsa "finance", sadece kargo yetkisi varsa "cargo", ikisi de yoksa "none".
+    /// </summary>
+    private static string ResolveStartupMode(IUserContext userContext)
+    {
+        bool hasFinance = userContext.HasPermission(PermissionType.CanCreateTransaction)
+                       || userContext.HasPermission(PermissionType.CanEditTransaction)
+                       || userContext.HasPermission(PermissionType.CanDeleteTransaction)
+                       || userContext.HasPermission(PermissionType.CanViewReports)
+                       || userContext.HasPermission(PermissionType.CanManageUsers)
+                       || userContext.HasPermission(PermissionType.CanViewAuditLog)
+                       || userContext.HasPermission(PermissionType.CanManageExchangeRates);
+
+        if (hasFinance) return "finance";
+
+        bool hasCargo = userContext.HasPermission(PermissionType.CanViewCargoModule)
+                     || userContext.HasPermission(PermissionType.CanViewIncomingCargo)
+                     || userContext.HasPermission(PermissionType.CanViewOutgoingCargo)
+                     || userContext.HasPermission(PermissionType.CanManageIncomingCargo)
+                     || userContext.HasPermission(PermissionType.CanManageOutgoingCargo)
+                     || userContext.HasPermission(PermissionType.CanManageCompanyDirectory)
+                     || userContext.HasPermission(PermissionType.CanManageCargoCompanies);
+
+        return hasCargo ? "cargo" : "none";
     }
 }

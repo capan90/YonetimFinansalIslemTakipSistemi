@@ -44,11 +44,12 @@ public partial class CargoShipmentListWindow : Window
             : PermissionType.CanManageOutgoingCargo;
         var manageVisibility = userContext.HasPermission(managePermission)
             ? Visibility.Visible : Visibility.Collapsed;
-        NewButton.Visibility     = manageVisibility;
-        CopyButton.Visibility    = manageVisibility;
-        EditButton.Visibility    = manageVisibility;
-        DeleteButton.Visibility  = manageVisibility;
+        NewButton.Visibility      = manageVisibility;
+        CopyButton.Visibility     = manageVisibility;
+        EditButton.Visibility     = manageVisibility;
+        DeleteButton.Visibility   = manageVisibility;
         WhatsAppButton.Visibility = manageVisibility;
+        MailButton.Visibility     = manageVisibility;
 
         Loaded += async (_, _) => await _vm.LoadAsync();
     }
@@ -167,6 +168,16 @@ public partial class CargoShipmentListWindow : Window
     /// Kullanıcı "Hazırlandı Olarak İşaretle" basarsa bildirim durumu güncellenir ve liste yenilenir.
     /// </summary>
     private async void WhatsAppButton_Click(object sender, RoutedEventArgs e)
+        => await OpenNotificationPreviewAsync(Domain.Enums.NotificationType.WhatsApp);
+
+    /// <summary>
+    /// Seçili kargo için mail mesajı üretir ve önizleme penceresini açar.
+    /// Kullanıcı "Hazırlandı Olarak İşaretle" basarsa bildirim durumu MailPrepared yapılır ve liste yenilenir.
+    /// </summary>
+    private async void MailButton_Click(object sender, RoutedEventArgs e)
+        => await OpenNotificationPreviewAsync(Domain.Enums.NotificationType.Mail);
+
+    private async Task OpenNotificationPreviewAsync(Domain.Enums.NotificationType notificationType)
     {
         if (_vm.Selected is null) return;
 
@@ -175,7 +186,7 @@ public partial class CargoShipmentListWindow : Window
         {
             CargoShipmentId  = _vm.Selected.Id,
             Direction        = _vm.Direction,
-            NotificationType = Domain.Enums.NotificationType.WhatsApp
+            NotificationType = notificationType
         });
 
         if (!result.Success)
@@ -184,7 +195,10 @@ public partial class CargoShipmentListWindow : Window
             return;
         }
 
-        var preview = new CargoNotificationPreviewWindow(_services, _vm.Direction) { Owner = this };
+        var preview = new CargoNotificationPreviewWindow(_services, _vm.Direction, notificationType)
+        {
+            Owner = this
+        };
         preview.Initialize(result.Data!);
         preview.ShowDialog();
 

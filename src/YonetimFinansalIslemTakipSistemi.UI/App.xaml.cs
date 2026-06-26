@@ -216,8 +216,9 @@ public partial class App : System.Windows.Application
         // ICompanyInfoProvider — AppSettings'ten gönderici firma bilgisi; ileride Company Settings modülüyle değiştirilebilir
         services.AddSingleton<ICompanyInfoProvider>(new AppSettingsCompanyInfoProvider(config));
 
-        // Bildirim — Sprint 3.3 (WhatsApp önizleme; Mail mimarisi hazır)
+        // Bildirim — Sprint 3.4 (WhatsApp + Mail önizleme)
         services.AddSingleton<WhatsAppNotificationComposer>();
+        services.AddSingleton<MailNotificationComposer>();
         services.AddScoped<GenerateCargoNotificationHandler>();
         services.AddScoped<MarkCargoNotificationPreparedHandler>();
 

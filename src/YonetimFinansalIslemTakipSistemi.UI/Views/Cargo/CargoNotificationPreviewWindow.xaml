@@ -1,15 +1,15 @@
 <Window x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.Cargo.CargoNotificationPreviewWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="WhatsApp Mesajı Hazırla" Width="540" Height="560"
+        Title="Bildirim Hazırla" Width="540" Height="600"
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanMinimize">
 
     <DockPanel Margin="14">
 
-        <!-- Başlık -->
-        <TextBlock DockPanel.Dock="Top"
-                   Text="WhatsApp Mesajı Hazırla"
+        <!-- Başlık — code-behind tarafından mode'a göre güncellenir -->
+        <TextBlock x:Name="TitleBlock"
+                   DockPanel.Dock="Top"
                    FontSize="14" FontWeight="SemiBold"
                    Margin="0,0,0,10"/>
 
@@ -27,8 +27,10 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
+                <!-- Satır 0: Kargo No | Alıcı Firma — her iki modda görünür -->
                 <TextBlock Grid.Row="0" Grid.Column="0"
                            Text="Kargo No:" FontWeight="SemiBold" Margin="0,0,6,4"/>
                 <TextBlock Grid.Row="0" Grid.Column="1"
@@ -40,10 +42,25 @@
                            x:Name="ReceiverBlock" Margin="0,0,0,4"
                            TextTrimming="CharacterEllipsis"/>
 
+                <!-- Satır 1: WhatsApp → Telefon / Mail → Kime (e-posta) -->
                 <TextBlock Grid.Row="1" Grid.Column="0"
-                           Text="Telefon:" FontWeight="SemiBold" Margin="0,0,6,0"/>
+                           x:Name="Row1LabelBlock"
+                           FontWeight="SemiBold" Margin="0,0,6,4"/>
                 <TextBlock Grid.Row="1" Grid.Column="1"
-                           x:Name="PhoneBlock" Grid.ColumnSpan="3"/>
+                           x:Name="Row1ValueBlock"
+                           Grid.ColumnSpan="3" Margin="0,0,0,4"
+                           TextTrimming="CharacterEllipsis"/>
+
+                <!-- Satır 2: Konu — yalnızca mail modunda görünür -->
+                <TextBlock Grid.Row="2" Grid.Column="0"
+                           x:Name="SubjectLabelBlock"
+                           Text="Konu:" FontWeight="SemiBold" Margin="0,0,6,0"
+                           Visibility="Collapsed"/>
+                <TextBlock Grid.Row="2" Grid.Column="1"
+                           x:Name="SubjectBlock"
+                           Grid.ColumnSpan="3"
+                           TextTrimming="CharacterEllipsis"
+                           Visibility="Collapsed"/>
             </Grid>
         </Border>
 
@@ -54,14 +71,24 @@
                     Content="Kopyala" Width="90" Margin="0,0,8,0"
                     Click="CopyButton_Click"
                     ToolTip="Mesajı panoya kopyalar"/>
+
+            <!-- WhatsApp modunda görünür -->
             <Button x:Name="WhatsAppWebButton"
                     Content="WhatsApp Web'de Aç" Width="150" Margin="0,0,8,0"
                     Click="WhatsAppWebButton_Click"
-                    ToolTip="Telefon numarasıyla WhatsApp Web sayfasını açar"/>
+                    ToolTip="Telefon numarasıyla WhatsApp Web sayfasını açar"
+                    Visibility="Collapsed"/>
+
+            <!-- Mail modunda görünür; SMTP gönderimi sonraki sprintte aktif edilecek -->
+            <Button x:Name="MailSendButton"
+                    Content="Mail Gönder" Width="110" Margin="0,0,8,0"
+                    IsEnabled="False"
+                    ToolTip="SMTP gönderimi sonraki sprintte aktif edilecek."
+                    Visibility="Collapsed"/>
+
             <Button x:Name="MarkPreparedButton"
                     Content="Hazırlandı Olarak İşaretle" Width="190" Margin="0,0,8,0"
-                    Click="MarkPreparedButton_Click"
-                    ToolTip="Bildirim durumunu 'WhatsApp Hazır' yapar ve audit kaydı oluşturur"/>
+                    Click="MarkPreparedButton_Click"/>
             <Button Content="Kapat" Width="75"
                     IsCancel="True" Click="CloseButton_Click"/>
         </StackPanel>

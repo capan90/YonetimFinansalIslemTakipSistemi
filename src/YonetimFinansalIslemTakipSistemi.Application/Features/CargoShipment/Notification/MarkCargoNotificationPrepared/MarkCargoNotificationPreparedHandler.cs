@@ -6,9 +6,8 @@ using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 namespace YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Notification.MarkCargoNotificationPrepared;
 
 /// <summary>
-/// Kullanıcı mesajı kopyaladıktan / WhatsApp Web'i açtıktan sonra
-/// bildirim durumunu WhatsAppPrepared'a yükseltir ve audit yazar.
-/// Bir sonraki mail sprinti için Mail dalı kolayca eklenebilir.
+/// Kullanıcı "Hazırlandı Olarak İşaretle" butonuna bastığında bildirim durumunu günceller.
+/// WhatsApp → WhatsAppPrepared; Mail → MailPrepared.
 /// </summary>
 public class MarkCargoNotificationPreparedHandler
 {
@@ -36,27 +35,43 @@ public class MarkCargoNotificationPreparedHandler
         if (!_userContext.HasPermission(requiredPermission))
             return OperationResult<bool>.Fail("Bu işlem için yetkiniz bulunmamaktadır.");
 
-        if (request.NotificationType != NotificationType.WhatsApp)
-            return OperationResult<bool>.Fail("Bu bildirim türü henüz desteklenmiyor.");
-
         var entity = await _repository.GetByIdAsync(request.CargoShipmentId);
         if (entity is null)
             return OperationResult<bool>.Fail("Kargo kaydı bulunamadı.");
 
-        entity.NotificationStatus = CargoNotificationStatus.WhatsAppPrepared;
-        entity.UpdatedByUserId    = _userContext.UserId;
-        entity.UpdatedAt          = DateTime.UtcNow;
+        entity.UpdatedByUserId = _userContext.UserId;
+        entity.UpdatedAt       = DateTime.UtcNow;
 
-        await _repository.UpdateAsync(entity);
+        if (request.NotificationType == NotificationType.WhatsApp)
+        {
+            entity.NotificationStatus = CargoNotificationStatus.WhatsAppPrepared;
+            await _repository.UpdateAsync(entity);
 
-        // Audit: hangi kargo için, kim tarafından, ne zaman WhatsApp hazırlandı
-        await _auditLogService.WriteAsync(
-            AuditAction.CargoWhatsAppPrepared,
-            _userContext.UserId,
-            _userContext.FullName,
-            "CargoShipment",
-            entity.Id,
-            newValues: $"WhatsApp mesajı hazırlandı | Kargo No: {entity.ShipmentNumber}");
+            await _auditLogService.WriteAsync(
+                AuditAction.CargoWhatsAppPrepared,
+                _userContext.UserId,
+                _userContext.FullName,
+                "CargoShipment",
+                entity.Id,
+                newValues: $"WhatsApp mesajı hazırlandı | Kargo No: {entity.ShipmentNumber}");
+        }
+        else if (request.NotificationType == NotificationType.Mail)
+        {
+            entity.NotificationStatus = CargoNotificationStatus.MailPrepared;
+            await _repository.UpdateAsync(entity);
+
+            await _auditLogService.WriteAsync(
+                AuditAction.CargoMailPrepared,
+                _userContext.UserId,
+                _userContext.FullName,
+                "CargoShipment",
+                entity.Id,
+                newValues: $"Mail mesajı hazırlandı | Kargo No: {entity.ShipmentNumber}");
+        }
+        else
+        {
+            return OperationResult<bool>.Fail("Bu bildirim türü henüz desteklenmiyor.");
+        }
 
         return OperationResult<bool>.Ok(true);
     }

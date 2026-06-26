@@ -64,9 +64,10 @@
                     IsEnabled="{Binding HasSelected}"
                     Click="WhatsAppButton_Click"
                     ToolTip="Seçili kargo için WhatsApp mesajı hazırlar ve önizleme açar"/>
-            <Button Content="Mail Hazırla" Width="100"
-                    IsEnabled="False"
-                    ToolTip="Bu özellik sonraki Sprint'te aktif olacaktır."/>
+            <Button x:Name="MailButton" Content="Mail Hazırla" Width="100"
+                    IsEnabled="{Binding HasSelected}"
+                    Click="MailButton_Click"
+                    ToolTip="Seçili kargo için mail mesajı hazırlar ve önizleme açar"/>
         </StackPanel>
 
         <!-- Liste -->

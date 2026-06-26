@@ -25,5 +25,9 @@ public class CargoNotificationModel
     public string    Priority       { get; set; } = "Normal";
 
     // ── Composer tarafından doldurulur ───────────────────────────────────
-    public string MessageBody { get; set; } = string.Empty;
+    public string  MessageBody  { get; set; } = string.Empty;
+
+    // ── Mail kanalı alanları (MailNotificationComposer doldurur) ─────────
+    public string? TargetEmail  { get; set; }
+    public string? Subject      { get; set; }
 }

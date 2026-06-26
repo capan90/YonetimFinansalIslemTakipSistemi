@@ -20,6 +20,7 @@ public static class CargoNotificationBuilder
             ReceiverCompany = shipment.ReceiverCompanyNameSnapshot,
             Attention       = shipment.ReceiverAttentionSnapshot,
             TargetPhone     = shipment.ReceiverPhoneSnapshot,
+            TargetEmail     = shipment.ReceiverEmailSnapshot,
 
             // Kargo firması: navigasyon (etiket mimarisiyle tutarlı)
             CargoCompany    = shipment.CargoCompany?.Name,

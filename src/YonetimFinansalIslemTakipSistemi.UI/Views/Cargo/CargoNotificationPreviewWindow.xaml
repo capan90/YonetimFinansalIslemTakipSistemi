@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Bildirim Hazırla" Width="580" Height="660"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="CanMinimize">
+        ResizeMode="CanMinimize"
+        Icon="pack://application:,,,/Assets/AppIcon.ico">
 
     <DockPanel Margin="14">
 
@@ -116,12 +117,14 @@
                     HorizontalAlignment="Right" Margin="0,8,0,0">
             <Button x:Name="CopyButton"
                     Content="📋 Kopyala" Width="100" Margin="0,0,8,0"
+                    Style="{StaticResource SecondaryButton}"
                     Click="CopyButton_Click"
                     ToolTip="Mesaj metnini panoya kopyalar"/>
 
             <!-- WhatsApp Web butonu: link açılınca durum otomatik güncellenir -->
             <Button x:Name="WhatsAppWebButton"
                     Content="🌐 WhatsApp Web" Width="130" Margin="0,0,8,0"
+                    Style="{StaticResource PrimaryButton}"
                     Click="WhatsAppWebButton_Click"
                     ToolTip="WhatsApp Web'i açar; başarılı olunca bildirim durumu otomatik güncellenir"
                     Visibility="Collapsed"/>
@@ -129,11 +132,13 @@
             <!-- Mail Gönder butonu: SMTP gönderi başarılıysa durum otomatik güncellenir -->
             <Button x:Name="MailSendButton"
                     Content="📧 Mail Gönder" Width="110" Margin="0,0,8,0"
+                    Style="{StaticResource PrimaryButton}"
                     Click="MailSendButton_Click"
                     ToolTip="Mail gönderir; başarılı olunca bildirim durumu otomatik güncellenir"
                     Visibility="Collapsed"/>
 
             <Button Content="✕ Kapat" Width="85"
+                    Style="{StaticResource SecondaryButton}"
                     IsCancel="True" Click="CloseButton_Click"/>
         </StackPanel>
 

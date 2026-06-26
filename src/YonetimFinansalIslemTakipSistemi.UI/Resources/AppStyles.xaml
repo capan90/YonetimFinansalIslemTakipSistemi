@@ -5,6 +5,21 @@
     <!-- ── Converter ─────────────────────────────────────────────────────────── -->
     <converters:DecimalToColorConverter x:Key="BalanceToColor"/>
 
+    <!-- ── Sistem Seçim Renkleri ─────────────────────────────────────────────── -->
+    <!-- WPF DataGrid hücre şablonu HighlightBrushKey / HighlightTextBrushKey'i
+         DynamicResource olarak kullanır. Buradaki override, şablonun iç Border'ına
+         doğrudan yansır; hem odakta hem odak dışında (InactiveSelection) etkilidir.
+         TargetName setter'ları Style trigger'ı ile geçersiz kılınamadığı için
+         sistem kaynaklarının override'ı en güvenilir çözümdür. -->
+    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
+                     Color="#DBEAFE"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}"
+                     Color="#1A202C"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}"
+                     Color="#EFF6FF"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}"
+                     Color="#334155"/>
+
     <!-- ── Renk Fırçaları ────────────────────────────────────────────────────── -->
     <SolidColorBrush x:Key="Brush.Primary"       Color="#1E3A5F"/>
     <SolidColorBrush x:Key="Brush.Success"       Color="#2E7D32"/>
@@ -146,6 +161,13 @@
     </Style>
 
     <!-- ── DataGrid ───────────────────────────────────────────────────────────── -->
+    <!-- HeadersVisibility="Column": satır başlığı sütununu kaldırır (sol kenardaki
+         küçük seçim oku/göstergesi). Seçim tüm satır rengiyle gösterilir.
+         Finance DataGrid'leri zaten yerel değer set ettiği için etkilenmez. -->
+    <Style TargetType="{x:Type DataGrid}">
+        <Setter Property="HeadersVisibility" Value="Column"/>
+    </Style>
+
     <Style TargetType="{x:Type DataGridColumnHeader}">
         <Setter Property="Background"                 Value="#F1F5F9"/>
         <Setter Property="Foreground"                 Value="#1E3A5F"/>
@@ -161,10 +183,12 @@
     <Style TargetType="{x:Type DataGridRow}">
         <Setter Property="BorderThickness" Value="0"/>
         <Style.Triggers>
+            <!-- Seçili satır: arka plan açık mavi, metin koyu (sistem renk override ile tutarlı) -->
             <Trigger Property="IsSelected" Value="True">
                 <Setter Property="Background" Value="#DBEAFE"/>
-                <Setter Property="Foreground" Value="#1E3A5F"/>
+                <Setter Property="Foreground" Value="#1A202C"/>
             </Trigger>
+            <!-- Hover (seçili olmayan): çok hafif mavi, alternating ile kontrast yeterli -->
             <MultiTrigger>
                 <MultiTrigger.Conditions>
                     <Condition Property="IsMouseOver" Value="True"/>
@@ -181,9 +205,12 @@
         <Setter Property="BorderThickness"  Value="0"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Style.Triggers>
+            <!-- Ek güvence: sistem renk override (#DBEAFE/#1A202C) birincil mekanizmadır.
+                 Buradaki Transparent + Foreground ek güvencedir (Style trigger önceliği için). -->
             <Trigger Property="IsSelected" Value="True">
                 <Setter Property="Background"  Value="Transparent"/>
                 <Setter Property="BorderBrush" Value="Transparent"/>
+                <Setter Property="Foreground"  Value="#1A202C"/>
             </Trigger>
         </Style.Triggers>
     </Style>

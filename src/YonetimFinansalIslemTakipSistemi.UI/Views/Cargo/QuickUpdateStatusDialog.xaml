@@ -4,7 +4,8 @@
         Title="Durum Değiştir"
         SizeToContent="Height" Width="320"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize">
+        ResizeMode="NoResize"
+        Icon="pack://application:,,,/Assets/AppIcon.ico">
 
     <StackPanel Margin="16">
         <TextBlock Text="Mevcut Durum:" FontWeight="SemiBold" Margin="0,0,0,2"/>
@@ -18,8 +19,10 @@
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Content="Güncelle" IsDefault="True" Width="80" Margin="0,0,8,0"
+                    Style="{StaticResource PrimaryButton}"
                     Click="UpdateButton_Click"/>
-            <Button Content="İptal" IsCancel="True" Width="80"/>
+            <Button Content="İptal" IsCancel="True" Width="80"
+                    Style="{StaticResource SecondaryButton}"/>
         </StackPanel>
     </StackPanel>
 </Window>

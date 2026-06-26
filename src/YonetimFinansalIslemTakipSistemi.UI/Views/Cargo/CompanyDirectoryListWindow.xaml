@@ -2,7 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Firma Rehberi" Height="520" Width="900"
-        WindowStartupLocation="CenterOwner">
+        WindowStartupLocation="CenterOwner"
+        Icon="pack://application:,,,/Assets/AppIcon.ico">
 
     <DockPanel Margin="8">
 
@@ -11,11 +12,14 @@
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                 <!-- Visibility: UI gizlemesi; asıl koruma handler seviyesindedir -->
                 <Button x:Name="NewButton" Content="+ Yeni" Width="70" Margin="0,0,6,0"
+                        Style="{StaticResource PrimaryButton}"
                         Click="NewButton_Click"/>
                 <Button x:Name="EditButton" Content="Düzenle" Width="75" Margin="0,0,6,0"
+                        Style="{StaticResource SecondaryButton}"
                         IsEnabled="{Binding HasSelected}"
                         Click="EditButton_Click"/>
                 <Button x:Name="DeleteButton" Content="Sil" Width="60"
+                        Style="{StaticResource DangerButton}"
                         IsEnabled="{Binding HasSelected}"
                         Click="DeleteButton_Click"/>
             </StackPanel>
@@ -24,6 +28,7 @@
                          Width="220" Margin="0,0,6,0"
                          KeyDown="SearchBox_KeyDown"/>
                 <Button Content="Ara" Width="60"
+                        Style="{StaticResource PrimaryButton}"
                         Command="{Binding SearchCommand}"/>
             </StackPanel>
         </DockPanel>
@@ -36,6 +41,12 @@
                   IsReadOnly="True"
                   SelectionMode="Single"
                   CanUserAddRows="False"
+                  GridLinesVisibility="Horizontal"
+                  HorizontalGridLinesBrush="#E2E8F0"
+                  AlternatingRowBackground="#F8FAFC"
+                  RowBackground="White"
+                  BorderBrush="#E2E8F0" BorderThickness="1"
+                  RowHeight="30"
                   MouseDoubleClick="MainGrid_MouseDoubleClick">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Firma Adı"    Binding="{Binding CompanyName}"   Width="200"/>

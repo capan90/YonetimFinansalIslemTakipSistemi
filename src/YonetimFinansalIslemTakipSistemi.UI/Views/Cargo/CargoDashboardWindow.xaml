@@ -5,7 +5,8 @@
         Width="1100" Height="800"
         MinWidth="900" MinHeight="600"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="CanResize">
+        ResizeMode="CanResize"
+        Icon="pack://application:,,,/Assets/AppIcon.ico">
 
     <DockPanel>
 
@@ -52,6 +53,7 @@
                     Content="Kapat"
                     Width="90" Height="30"
                     HorizontalAlignment="Right"
+                    Style="{StaticResource SecondaryButton}"
                     Click="CloseButton_Click"/>
         </Border>
 
@@ -70,6 +72,7 @@
                             Content="Yenile"
                             Width="70" Height="26"
                             HorizontalAlignment="Right"
+                            Style="{StaticResource SecondaryButton}"
                             Click="RefreshDashboardButton_Click"/>
                     <TextBlock DockPanel.Dock="Right"
                                x:Name="DashboardDateBlock"
@@ -372,12 +375,13 @@
                             <Button x:Name="FilterButton"
                                     Content="Raporu Getir"
                                     Width="110" Height="28"
-                                    Background="#2E5984" Foreground="White"
+                                    Style="{StaticResource PrimaryButton}"
                                     Click="FilterButton_Click"
                                     Margin="0,0,8,0"/>
                             <Button x:Name="ClearFilterButton"
                                     Content="Filtreleri Temizle"
                                     Width="120" Height="28"
+                                    Style="{StaticResource SecondaryButton}"
                                     Click="ClearFilterButton_Click"/>
                         </StackPanel>
                     </StackPanel>
@@ -393,7 +397,7 @@
                                 x:Name="ExportPdfButton"
                                 Content="PDF İndir"
                                 Width="90" Height="26"
-                                Background="#1A3354" Foreground="White"
+                                Style="{StaticResource SecondaryButton}"
                                 Click="ExportPdfButton_Click"
                                 Margin="8,0,0,0"/>
                         <TextBlock x:Name="ReportSummaryBlock"

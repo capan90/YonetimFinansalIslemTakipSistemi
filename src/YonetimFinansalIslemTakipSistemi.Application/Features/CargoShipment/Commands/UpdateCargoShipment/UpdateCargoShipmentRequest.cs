@@ -10,7 +10,6 @@ public class UpdateCargoShipmentRequest
     public DateTime ShipmentDate { get; set; }
     public TimeSpan? ShipmentTime { get; set; }
     public CargoShipmentType? ShipmentType { get; set; }
-    // Snapshot alanları Update'te yer almaz — kargo oluşturulurken bir kez alınır, sonradan değişmez
     public CargoShipmentPriority Priority { get; set; }
     public Guid? CargoCompanyId { get; set; }
     public Guid? CompanyDirectoryId { get; set; }
@@ -26,4 +25,15 @@ public class UpdateCargoShipmentRequest
     public CargoNotificationStatus NotificationStatus { get; set; }
     public string? Notes { get; set; }
     public Guid UpdatedByUserId { get; set; }
+
+    // Firma snapshot güncelleme: varsayılan false.
+    // Yalnızca kullanıcı "Firma Bilgilerini Yenile" butonuna bastığında true olur.
+    public bool    UpdateSnapshot      { get; set; }
+    public string? SnapshotCompanyName { get; set; }
+    public string? SnapshotAddress     { get; set; }
+    public string? SnapshotAttention   { get; set; }
+    public string? SnapshotCity        { get; set; }
+    public string? SnapshotDistrict    { get; set; }
+    public string? SnapshotPhone       { get; set; }
+    public string? SnapshotEmail       { get; set; }
 }

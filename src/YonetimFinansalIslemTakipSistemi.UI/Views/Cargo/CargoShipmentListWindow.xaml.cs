@@ -1,14 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
-using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Navigation;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.DeleteCargoShipment;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.QuickUpdateCargoStatus;
-using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Label.GenerateCargoLabel;
-using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Notification.GenerateCargoNotification;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Queries.GetCargoShipmentList;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
@@ -44,12 +41,10 @@ public partial class CargoShipmentListWindow : Window
             : PermissionType.CanManageOutgoingCargo;
         var manageVisibility = userContext.HasPermission(managePermission)
             ? Visibility.Visible : Visibility.Collapsed;
-        NewButton.Visibility      = manageVisibility;
-        CopyButton.Visibility     = manageVisibility;
-        EditButton.Visibility     = manageVisibility;
-        DeleteButton.Visibility   = manageVisibility;
-        WhatsAppButton.Visibility = manageVisibility;
-        MailButton.Visibility     = manageVisibility;
+        NewButton.Visibility    = manageVisibility;
+        CopyButton.Visibility   = manageVisibility;
+        EditButton.Visibility   = manageVisibility;
+        DeleteButton.Visibility = manageVisibility;
 
         Loaded += async (_, _) => await _vm.LoadAsync();
     }
@@ -135,108 +130,19 @@ public partial class CargoShipmentListWindow : Window
     }
 
     /// <summary>
-    /// Seçili kargo için A6 PDF etiketi üretir ve sistem varsayılan PDF görüntüleyicisinde açar.
-    /// Preview audit edilmez; gerçek baskı (PrintCargoLabel) Sprint 3.3+'ta eklenecek.
+    /// Seçili kargo için Operasyon Merkezini açar.
+    /// Etiket, WhatsApp, Mail, Takip, Durum Değiştir işlemleri buradan yapılır.
+    /// Pencere kapanınca WasModified true ise liste yenilenir.
     /// </summary>
-    private async void LabelButton_Click(object sender, RoutedEventArgs e)
+    private async void OperationButton_Click(object sender, RoutedEventArgs e)
     {
         if (_vm.Selected is null) return;
-
-        var handler = _services.GetRequiredService<GenerateCargoLabelHandler>();
-        var result  = await handler.HandleAsync(new GenerateCargoLabelRequest
-        {
-            Id        = _vm.Selected.Id,
-            Direction = _vm.Direction
-        });
-
-        if (!result.Success)
-        {
-            _dialogService.ShowError(result.ErrorMessage ?? "Etiket oluşturulamadı.");
-            return;
-        }
-
-        // Geçici dosyaya yaz ve sistem PDF görüntüleyicisinde aç
-        var safeName = (_vm.Selected.ShipmentNumber ?? _vm.Selected.Id.ToString()[..8])
-            .Replace('/', '-').Replace('\\', '-');
-        var tempPath = Path.Combine(Path.GetTempPath(), $"kargo-etiketi-{safeName}.pdf");
-        await File.WriteAllBytesAsync(tempPath, result.Data!);
-        Process.Start(new ProcessStartInfo(tempPath) { UseShellExecute = true });
-    }
-
-    /// <summary>
-    /// Seçili kargo için WhatsApp mesajı üretir ve önizleme penceresini açar.
-    /// Kullanıcı "Hazırlandı Olarak İşaretle" basarsa bildirim durumu güncellenir ve liste yenilenir.
-    /// </summary>
-    private async void WhatsAppButton_Click(object sender, RoutedEventArgs e)
-        => await OpenNotificationPreviewAsync(Domain.Enums.NotificationType.WhatsApp);
-
-    /// <summary>
-    /// Seçili kargo için mail mesajı üretir ve önizleme penceresini açar.
-    /// Kullanıcı "Hazırlandı Olarak İşaretle" basarsa bildirim durumu MailPrepared yapılır ve liste yenilenir.
-    /// </summary>
-    private async void MailButton_Click(object sender, RoutedEventArgs e)
-        => await OpenNotificationPreviewAsync(Domain.Enums.NotificationType.Mail);
-
-    private async Task OpenNotificationPreviewAsync(Domain.Enums.NotificationType notificationType)
-    {
-        if (_vm.Selected is null) return;
-
-        var handler = _services.GetRequiredService<GenerateCargoNotificationHandler>();
-        var result  = await handler.HandleAsync(new GenerateCargoNotificationRequest
-        {
-            CargoShipmentId  = _vm.Selected.Id,
-            Direction        = _vm.Direction,
-            NotificationType = notificationType
-        });
-
-        if (!result.Success)
-        {
-            _dialogService.ShowError(result.ErrorMessage ?? "Bildirim hazırlanamadı.");
-            return;
-        }
-
-        var preview = new CargoNotificationPreviewWindow(_services, _vm.Direction, notificationType)
+        var opCenter = new CargoOperationCenterWindow(_services, _vm.Selected)
         {
             Owner = this
         };
-        preview.Initialize(result.Data!);
-        preview.ShowDialog();
-
-        if (preview.WasMarkedPrepared)
-            await _vm.LoadAsync();
-    }
-
-    /// <summary>Seçili kargonun TrackingUrl'ini default tarayıcıda açar.</summary>
-    private void TrackButton_Click(object sender, RoutedEventArgs e)
-    {
-        var url = _vm.Selected?.TrackingUrl;
-        if (string.IsNullOrWhiteSpace(url))
-        {
-            _dialogService.ShowWarning("Bu kargo için takip linki bulunmamaktadır.", "Takip Et");
-            return;
-        }
-        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-    }
-
-    /// <summary>QuickUpdateStatusDialog ile durum değiştirme.</summary>
-    private async void QuickStatusButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (_vm.Selected is null) return;
-        var dto = _vm.Selected;
-
-        var dialog = new QuickUpdateStatusDialog(dto.StatusDisplay, dto.Status)
-        {
-            Owner = this
-        };
-        if (dialog.ShowDialog() != true || dialog.SelectedStatus is null) return;
-
-        var userContext = _services.GetRequiredService<IUserContext>();
-        var (success, error) = await _vm.QuickUpdateStatusAsync(
-            dto.Id, dialog.SelectedStatus.Value, userContext.UserId);
-
-        if (!success)
-            _dialogService.ShowError(error ?? "Beklenmeyen bir hata oluştu.");
-        else
+        opCenter.ShowDialog();
+        if (opCenter.WasModified)
             await _vm.LoadAsync();
     }
 

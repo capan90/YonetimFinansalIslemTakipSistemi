@@ -8,12 +8,16 @@ public partial class QuickUpdateStatusDialog : Window
 {
     public CargoShipmentStatus? SelectedStatus { get; private set; }
 
-    public QuickUpdateStatusDialog(string currentStatusDisplay, CargoShipmentStatus currentStatus)
+    public QuickUpdateStatusDialog(
+        string currentStatusDisplay,
+        CargoShipmentStatus currentStatus,
+        CargoShipmentDirection direction = CargoShipmentDirection.Outgoing)
     {
         InitializeComponent();
         CurrentStatusText.Text = currentStatusDisplay;
 
-        var allowed = CargoStatusTransitions.GetAllowedNext(currentStatus);
+        // Gelen kargoda Hazırlandı/Gönderildi geçişleri gösterilmez
+        var allowed = CargoStatusTransitions.GetAllowedNext(currentStatus, direction);
         NewStatusCombo.ItemsSource = allowed
             .Select(s => new { Display = DisplayStatus(s), Value = s })
             .ToList();

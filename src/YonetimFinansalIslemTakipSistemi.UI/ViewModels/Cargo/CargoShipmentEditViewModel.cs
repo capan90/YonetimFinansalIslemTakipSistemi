@@ -24,8 +24,9 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
 
     private Guid? _editTargetId;
     private CargoShipmentDirection _direction;
-    // Düzenleme sırasında mevcut entity durumu — geçiş kontrolü için tutulur
     private CargoShipmentStatus _currentEntityStatus = CargoShipmentStatus.Draft;
+    // Kullanıcı "Firma Bilgilerini Yenile" bastıysa true; kayıtta snapshot request'e dahil edilir
+    private bool _snapshotRefreshed;
 
     private DateTime _shipmentDate = DateTime.Today;
     private string _shipmentNumber = string.Empty;
@@ -97,32 +98,49 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
             _selectedCompanyDirectory = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(HasDirectoryDetails));
-            OnPropertyChanged(nameof(DirectoryDetailSummary));
+            OnPropertyChanged(nameof(DirectoryFirma));
+            OnPropertyChanged(nameof(DirectoryContact));
+            OnPropertyChanged(nameof(DirectoryAddress));
+            OnPropertyChanged(nameof(DirectoryPhone));
+            OnPropertyChanged(nameof(DirectoryEmail));
+            OnPropertyChanged(nameof(HasDirectoryContact));
+            OnPropertyChanged(nameof(HasDirectoryAddress));
+            OnPropertyChanged(nameof(HasDirectoryPhone));
+            OnPropertyChanged(nameof(HasDirectoryEmail));
+            OnPropertyChanged(nameof(HasRefreshableSnapshot));
             // Giden kargoda firma seçilince alıcı adı otomatik dolar
             if (value is not null && _direction == CargoShipmentDirection.Outgoing)
                 FillFromDirectory(value);
         }
     }
 
-    /// <summary>Firma seçildiğinde özet paneli gösterilir.</summary>
+    /// <summary>Firma seçildiğinde kart paneli gösterilir.</summary>
     public bool HasDirectoryDetails => _selectedCompanyDirectory is not null;
 
-    /// <summary>Firma özet panelinde gösterilecek adres ve iletişim bilgisi.</summary>
-    public string DirectoryDetailSummary
+    /// <summary>Düzenleme modunda ve firma seçiliyse "Firma Bilgilerini Yenile" butonu görünür.</summary>
+    public bool HasRefreshableSnapshot => IsEditMode && _selectedCompanyDirectory is not null;
+
+    // ── Firma Kart Alanları — her biri INPC tetikler ─────────────────────
+    public string? DirectoryFirma   => _selectedCompanyDirectory?.CompanyName;
+    public string? DirectoryContact => _selectedCompanyDirectory?.AttentionTo;
+    public string? DirectoryAddress => BuildDirectoryAddress(_selectedCompanyDirectory);
+    public string? DirectoryPhone   => _selectedCompanyDirectory?.Phone;
+    public string? DirectoryEmail   => _selectedCompanyDirectory?.Email;
+
+    public bool HasDirectoryContact => !string.IsNullOrWhiteSpace(DirectoryContact);
+    public bool HasDirectoryAddress => !string.IsNullOrWhiteSpace(DirectoryAddress);
+    public bool HasDirectoryPhone   => !string.IsNullOrWhiteSpace(DirectoryPhone);
+    public bool HasDirectoryEmail   => !string.IsNullOrWhiteSpace(DirectoryEmail);
+
+    private static string? BuildDirectoryAddress(CompanyDirectoryDto? d)
     {
-        get
-        {
-            var d = _selectedCompanyDirectory;
-            if (d is null) return string.Empty;
-            var parts = new List<string>();
-            if (!string.IsNullOrWhiteSpace(d.AttentionTo))      parts.Add($"Muhatabı: {d.AttentionTo}");
-            if (!string.IsNullOrWhiteSpace(d.AddressLine))      parts.Add($"Adres: {d.AddressLine}");
-            if (!string.IsNullOrWhiteSpace(d.District) || !string.IsNullOrWhiteSpace(d.City))
-                parts.Add(string.Join(", ", new[] { d.District, d.City }.Where(s => !string.IsNullOrWhiteSpace(s))));
-            if (!string.IsNullOrWhiteSpace(d.Phone))            parts.Add($"Tel: {d.Phone}");
-            if (!string.IsNullOrWhiteSpace(d.Email))            parts.Add($"E-posta: {d.Email}");
-            return string.Join("\n", parts);
-        }
+        if (d is null) return null;
+        var parts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(d.AddressLine)) parts.Add(d.AddressLine);
+        var loc = string.Join(" / ", new[] { d.District, d.City }
+            .Where(s => !string.IsNullOrWhiteSpace(s)));
+        if (!string.IsNullOrWhiteSpace(loc)) parts.Add(loc);
+        return parts.Count > 0 ? string.Join(", ", parts) : null;
     }
 
     public string SelectedShipmentType
@@ -165,17 +183,20 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
         ["Normal", "Orta", "Acil", "Çok Acil"];
 
     /// <summary>
-    /// Yeni kayıtta tüm durumlar sunulur; düzenlemede sadece geçerli geçişler listelenir.
+    /// Yeni kayıtta yöne göre uygun durumlar sunulur; düzenlemede sadece geçerli geçişler listelenir.
+    /// Gelen kargoda Hazırlandı ve Gönderildi gösterilmez.
     /// </summary>
     public IReadOnlyList<string> AllowedStatusOptions
     {
         get
         {
             if (!IsEditMode)
-                return _allStatusLabels;
+                return _direction == CargoShipmentDirection.Incoming
+                    ? _incomingStatusLabels
+                    : _allStatusLabels;
 
             return CargoStatusTransitions
-                .GetAllowedNext(_currentEntityStatus)
+                .GetAllowedNext(_currentEntityStatus, _direction)
                 .Select(DisplayStatus)
                 .ToList();
         }
@@ -186,6 +207,10 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
 
     private static readonly IReadOnlyList<string> _allStatusLabels =
         ["Taslak", "Hazırlandı", "Gönderildi", "Alındı", "Teslim Edildi", "İptal"];
+
+    // Gelen kargoda Hazırlandı/Gönderildi anlamlı değil
+    private static readonly IReadOnlyList<string> _incomingStatusLabels =
+        ["Taslak", "Alındı", "Teslim Edildi", "İptal"];
 
     public Action? SaveCompleted { get; set; }
     public ICommand SaveCommand { get; }
@@ -262,6 +287,7 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
 
         OnPropertyChanged(nameof(WindowTitle));
         OnPropertyChanged(nameof(IsEditMode));
+        OnPropertyChanged(nameof(HasRefreshableSnapshot));
     }
 
     /// <summary>
@@ -301,6 +327,17 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
         SelectedCompanyDirectory = source.CompanyDirectoryId.HasValue
             ? CompanyDirectories.FirstOrDefault(x => x.Id == source.CompanyDirectoryId.Value)
             : null;
+    }
+
+    /// <summary>
+    /// Seçili firma rehberi verilerinden alıcı snapshot'ını tazeler.
+    /// Yalnızca kullanıcı bilinçli "Firma Bilgilerini Yenile" butonuna bastığında çağrılır.
+    /// DB'ye yazılmaz; kaydetme akışı snapshot'ı request'e dahil eder.
+    /// </summary>
+    public void RefreshSnapshotFromDirectory()
+    {
+        if (_selectedCompanyDirectory is null || !IsEditMode) return;
+        _snapshotRefreshed = true;
     }
 
     private void FillFromDirectory(CompanyDirectoryDto d)
@@ -349,7 +386,17 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
                 Status             = status,
                 NotificationStatus = notificationStatus,
                 Notes              = NullIfEmpty(Notes),
-                UpdatedByUserId    = _userContext.UserId
+                UpdatedByUserId    = _userContext.UserId,
+
+                // Kullanıcı "Firma Bilgilerini Yenile" bastıysa seçili firma verilerinden snapshot güncellenir
+                UpdateSnapshot      = _snapshotRefreshed,
+                SnapshotCompanyName = _snapshotRefreshed ? _selectedCompanyDirectory?.CompanyName : null,
+                SnapshotAddress     = _snapshotRefreshed ? _selectedCompanyDirectory?.AddressLine  : null,
+                SnapshotAttention   = _snapshotRefreshed ? _selectedCompanyDirectory?.AttentionTo  : null,
+                SnapshotCity        = _snapshotRefreshed ? _selectedCompanyDirectory?.City         : null,
+                SnapshotDistrict    = _snapshotRefreshed ? _selectedCompanyDirectory?.District     : null,
+                SnapshotPhone       = _snapshotRefreshed ? _selectedCompanyDirectory?.Phone        : null,
+                SnapshotEmail       = _snapshotRefreshed ? _selectedCompanyDirectory?.Email        : null,
             };
             var result = await _updateHandler.HandleAsync(req);
             if (!result.Success) { ErrorMessage = result.ErrorMessage; return; }

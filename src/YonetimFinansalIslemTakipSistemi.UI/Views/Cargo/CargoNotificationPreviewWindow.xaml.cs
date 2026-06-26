@@ -1,8 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
 using System.Windows;
+using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Notification;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Notification.MarkCargoNotificationPrepared;
+using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
 
@@ -17,8 +19,8 @@ public partial class CargoNotificationPreviewWindow : Window
     private          CargoNotificationModel _model = null!;
 
     /// <summary>
-    /// Kullanıcı "Hazırlandı Olarak İşaretle" butonuna bastıysa true.
-    /// Liste ekranı bu değere göre yenileme kararı verir.
+    /// WhatsApp Web açıldı veya mail başarıyla gönderildiyse true.
+    /// Operation Center bu değere göre bildirim durumunu günceller.
     /// </summary>
     public bool WasMarkedPrepared { get; private set; }
 
@@ -34,7 +36,7 @@ public partial class CargoNotificationPreviewWindow : Window
         _dialogService    = services.GetRequiredService<IDialogService>();
     }
 
-    /// <summary>Handler sonucundaki modeli ekrana yansıtır.</summary>
+    /// <summary>Handler tarafından üretilen modeli ekrana yansıtır; mode'a göre alanları ayarlar.</summary>
     public void Initialize(CargoNotificationModel model)
     {
         _model = model;
@@ -44,44 +46,45 @@ public partial class CargoNotificationPreviewWindow : Window
         MessageBodyBox.Text      = model.MessageBody;
 
         if (_notificationType == NotificationType.Mail)
-        {
-            Title                    = "Mail Hazırla";
-            TitleBlock.Text          = "Mail Hazırla";
-
-            // Satır 1: Kime (e-posta)
-            Row1LabelBlock.Text      = "Kime:";
-            Row1ValueBlock.Text      = string.IsNullOrWhiteSpace(model.TargetEmail)
-                ? "E-posta bilgisi girilmemiş"
-                : model.TargetEmail;
-
-            // Satır 2: Konu
-            SubjectLabelBlock.Visibility = Visibility.Visible;
-            SubjectBlock.Visibility      = Visibility.Visible;
-            SubjectBlock.Text            = model.Subject ?? "—";
-
-            // Butonlar: WhatsApp gizli, Mail Gönder görünür (disabled)
-            WhatsAppWebButton.Visibility = Visibility.Collapsed;
-            MailSendButton.Visibility    = Visibility.Visible;
-
-            MarkPreparedButton.ToolTip   = "Bildirim durumunu 'Mail Hazır' yapar ve audit kaydı oluşturur";
-        }
+            InitializeMailMode(model);
         else
-        {
-            Title                    = "WhatsApp Mesajı Hazırla";
-            TitleBlock.Text          = "WhatsApp Mesajı Hazırla";
+            InitializeWhatsAppMode(model);
+    }
 
-            // Satır 1: Telefon
-            Row1LabelBlock.Text      = "Telefon:";
-            Row1ValueBlock.Text      = string.IsNullOrWhiteSpace(model.TargetPhone)
-                ? "Telefon bilgisi girilmemiş"
-                : model.TargetPhone;
+    private void InitializeMailMode(CargoNotificationModel model)
+    {
+        Title           = "Mail Hazırla";
+        TitleBlock.Text = "✉ Mail Hazırla";
 
-            // Butonlar: WhatsApp görünür, Mail Gönder gizli
-            WhatsAppWebButton.Visibility = Visibility.Visible;
-            MailSendButton.Visibility    = Visibility.Collapsed;
+        // Gönderici adresi: CargoNotificationOptions → SmtpNotificationOptions.From → SmtpUsername
+        var cargoOpts = _services.GetRequiredService<CargoNotificationOptions>();
+        var smtpOpts  = _services.GetRequiredService<SmtpNotificationOptions>();
+        var fromEmail  = !string.IsNullOrWhiteSpace(cargoOpts.FromEmail) ? cargoOpts.FromEmail
+                        : !string.IsNullOrWhiteSpace(smtpOpts.From)       ? smtpOpts.From
+                        : smtpOpts.SmtpUsername;
 
-            MarkPreparedButton.ToolTip   = "Bildirim durumunu 'WhatsApp Hazır' yapar ve audit kaydı oluşturur";
-        }
+        FromBlock.Text      = fromEmail;
+        ToTextBox.Text      = model.TargetEmail ?? string.Empty;
+        SubjectTextBox.Text = model.Subject ?? $"Kargo Bilgilendirme - {model.ShipmentNumber}";
+
+        MailFieldsPanel.Visibility = Visibility.Visible;
+        MailSendButton.Visibility  = Visibility.Visible;
+
+        // Alıcı alanı boşsa gönder butonu devre dışı; kullanıcı manuel doldurabilir
+        MailSendButton.IsEnabled = !string.IsNullOrWhiteSpace(ToTextBox.Text);
+    }
+
+    private void InitializeWhatsAppMode(CargoNotificationModel model)
+    {
+        Title           = "WhatsApp Mesajı Hazırla";
+        TitleBlock.Text = "💬 WhatsApp Mesajı Hazırla";
+
+        PhoneLabelBlock.Visibility = Visibility.Visible;
+        PhoneValueBlock.Visibility = Visibility.Visible;
+        PhoneValueBlock.Text = !string.IsNullOrWhiteSpace(model.TargetPhone)
+            ? model.TargetPhone : "Telefon bilgisi girilmemiş";
+
+        WhatsAppWebButton.Visibility = Visibility.Visible;
     }
 
     // ── Kopyala ──────────────────────────────────────────────────────────
@@ -95,14 +98,14 @@ public partial class CargoNotificationPreviewWindow : Window
 
     // ── WhatsApp Web ──────────────────────────────────────────────────────
 
-    private void WhatsAppWebButton_Click(object sender, RoutedEventArgs e)
+    private async void WhatsAppWebButton_Click(object sender, RoutedEventArgs e)
     {
-        var encodedMessage = Uri.EscapeDataString(_model?.MessageBody ?? string.Empty);
-        var phone          = NormalizePhone(_model?.TargetPhone);
+        var phone   = NormalizePhone(_model?.TargetPhone);
+        var encoded = Uri.EscapeDataString(_model?.MessageBody ?? string.Empty);
 
         var url = string.IsNullOrWhiteSpace(phone)
-            ? $"https://wa.me/?text={encodedMessage}"
-            : $"https://wa.me/{phone}?text={encodedMessage}";
+            ? $"https://wa.me/?text={encoded}"
+            : $"https://wa.me/{phone}?text={encoded}";
 
         try
         {
@@ -111,16 +114,52 @@ public partial class CargoNotificationPreviewWindow : Window
         catch (Exception ex)
         {
             _dialogService.ShowError($"WhatsApp Web açılamadı: {ex.Message}");
+            return;
         }
+
+        // Tarayıcı başarıyla açıldı → bildirim durumunu otomatik güncelle
+        WhatsAppWebButton.IsEnabled = false;
+        await MarkPreparedAsync();
+        Close();
     }
 
-    // ── Hazırlandı Olarak İşaretle ────────────────────────────────────────
+    // ── Mail Gönder ───────────────────────────────────────────────────────
 
-    private async void MarkPreparedButton_Click(object sender, RoutedEventArgs e)
+    private async void MailSendButton_Click(object sender, RoutedEventArgs e)
+    {
+        var to = ToTextBox.Text.Trim();
+        if (string.IsNullOrWhiteSpace(to))
+        {
+            _dialogService.ShowWarning("Alıcı e-posta adresi girilmemiş.", "Mail Gönderilemedi");
+            return;
+        }
+
+        MailSendButton.IsEnabled = false;
+
+        var mailSender       = _services.GetRequiredService<ICargoMailSenderService>();
+        var cc               = string.IsNullOrWhiteSpace(CcTextBox.Text) ? null : CcTextBox.Text.Trim();
+        var subject          = SubjectTextBox.Text.Trim();
+        var (success, error) = await mailSender.SendAsync(to, cc, subject, _model.MessageBody);
+
+        if (!success)
+        {
+            MailSendButton.IsEnabled = true;
+            // Teknik detay log dosyasına yazılır; kullanıcıya kısa ve anlaşılır mesaj gösterilir
+            _dialogService.ShowError(BuildMailErrorMessage(error), "Mail Gönderilemedi");
+            return;
+        }
+
+        // Başarılı gönderim → bildirim durumunu otomatik güncelle
+        await MarkPreparedAsync();
+        Close();
+    }
+
+    // ── Ortak: durumu güncelle ────────────────────────────────────────────
+
+    private async Task MarkPreparedAsync()
     {
         var handler = _services.GetRequiredService<MarkCargoNotificationPreparedHandler>();
-
-        var result = await handler.HandleAsync(new MarkCargoNotificationPreparedRequest
+        var result  = await handler.HandleAsync(new MarkCargoNotificationPreparedRequest
         {
             CargoShipmentId  = _model.ShipmentId,
             Direction        = _direction,
@@ -129,27 +168,50 @@ public partial class CargoNotificationPreviewWindow : Window
 
         if (!result.Success)
         {
-            _dialogService.ShowError(result.ErrorMessage ?? "Beklenmeyen bir hata oluştu.");
+            _dialogService.ShowError(result.ErrorMessage ?? "Bildirim durumu güncellenemedi.");
             return;
         }
 
-        WasMarkedPrepared            = true;
-        MarkPreparedButton.IsEnabled = false; // çift işaretlemeyi önle
-
-        var durum = _notificationType == NotificationType.Mail ? "Mail Hazır" : "WhatsApp Hazır";
-        _dialogService.ShowSuccess(
-            $"'{_model.ShipmentNumber}' için bildirim durumu '{durum}' olarak güncellendi.",
-            "Hazırlandı");
+        WasMarkedPrepared = true;
     }
 
-    private void CloseButton_Click(object sender, RoutedEventArgs e)
-        => Close();
+    private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
+
+    // ── Kullanıcı dostu SMTP hata mesajı ─────────────────────────────────
+
+    private static string BuildMailErrorMessage(string? error)
+    {
+        if (string.IsNullOrWhiteSpace(error))
+            return "Mail gönderilemedi. Beklenmeyen bir hata oluştu.";
+
+        // Gönderici adresi yetkisi yoksa (SendAsDenied / not allowed to send as)
+        if (error.Contains("SendAs", StringComparison.OrdinalIgnoreCase)
+            || error.Contains("send as", StringComparison.OrdinalIgnoreCase)
+            || error.Contains("not allowed to send", StringComparison.OrdinalIgnoreCase))
+            return "Mail gönderilemedi.\n\n" +
+                   "Gönderici adres, SMTP hesabı adına mail gönderme yetkisine sahip değil.\n" +
+                   "appsettings.json → CargoNotifications:FromEmail değerini SMTP kullanıcı adresiyle aynı yapın\n" +
+                   "veya Exchange/Outlook tarafında 'Send As' yetkisi verin.";
+
+        // Kimlik doğrulama hatası
+        if (error.Contains("535", StringComparison.OrdinalIgnoreCase)
+            || error.Contains("auth", StringComparison.OrdinalIgnoreCase)
+            || error.Contains("credentials", StringComparison.OrdinalIgnoreCase))
+            return "Mail gönderilemedi.\n\nSMTP kimlik doğrulama hatası. Kullanıcı adı veya şifre yanlış olabilir.";
+
+        // Bağlantı / zaman aşımı
+        if (error.Contains("timeout", StringComparison.OrdinalIgnoreCase)
+            || error.Contains("SocketException", StringComparison.OrdinalIgnoreCase)
+            || error.Contains("ConnectFailure", StringComparison.OrdinalIgnoreCase))
+            return "Mail gönderilemedi.\n\nSMTP sunucusuna bağlanılamadı. İnternet bağlantısını veya SMTP sunucu adresini kontrol edin.";
+
+        return $"Mail gönderilemedi.\n\n{error}";
+    }
 
     // ── Telefon normalleştirme ─────────────────────────────────────────────
 
     /// <summary>
-    /// wa.me URL'i için sadece rakam içeren uluslararası format döner.
-    /// Türkiye numarası: 0532... → 90532..., 532... → 90532...
+    /// wa.me URL'i için uluslararası format: 0532..., +90 532..., 00905..., (0532)1234567 → 905321234567
     /// </summary>
     private static string? NormalizePhone(string? phone)
     {
@@ -158,12 +220,19 @@ public partial class CargoNotificationPreviewWindow : Window
         var digits = new string(phone.Where(char.IsDigit).ToArray());
         if (string.IsNullOrEmpty(digits)) return null;
 
-        if (digits.Length == 11 && digits.StartsWith("0"))
+        // 00 ile başlıyorsa (00905...) → çift sıfır öncekini kaldır
+        if (digits.StartsWith("00"))
+            digits = digits[2..];
+
+        // Zaten +90 / 90 formatında
+        if (digits.StartsWith("90"))
+            return digits;
+
+        // Yerel Türkiye (0532...) → 90 + yerel
+        if (digits.StartsWith("0"))
             return "90" + digits[1..];
 
-        if (digits.Length == 10)
-            return "90" + digits;
-
-        return digits;
+        // Sade 10 haneli (5321234567) → 90 ekle
+        return "90" + digits;
     }
 }

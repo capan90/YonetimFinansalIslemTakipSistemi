@@ -88,7 +88,7 @@ public class QuestPdfLabelRenderer : ILabelRenderer
                     .FontSize(8).FontColor(AccentBlue);
                });
 
-               // Öncelik badge (sağ) — korundu
+               // Öncelik badge (sağ)
                row.AutoItem()
                   .AlignMiddle()
                   .Background(PriorityBadgeColor(model.Priority))
@@ -122,7 +122,7 @@ public class QuestPdfLabelRenderer : ILabelRenderer
                    if (!string.IsNullOrWhiteSpace(model.SenderCompanyAddress))
                        c.Item()
                         .Text(model.SenderCompanyAddress)
-                        .FontSize(8);
+                        .FontSize(8).FontColor(SubText);
 
                    var senderLoc = BuildLocation(
                        model.SenderCompanyDistrict, model.SenderCompanyCity);
@@ -136,7 +136,6 @@ public class QuestPdfLabelRenderer : ILabelRenderer
                         .Text($"Tel: {model.SenderCompanyPhone}")
                         .FontSize(8).FontColor(SubText);
 
-                   // Ayırıcı
                    c.Item().PaddingTop(2);
 
                    if (!string.IsNullOrWhiteSpace(model.Sender))
@@ -156,22 +155,25 @@ public class QuestPdfLabelRenderer : ILabelRenderer
 
                row.ConstantItem(4);
 
-               // QR Placeholder (sağ) — ileride TrackingUrl'den gerçek QR üretilecek
-               row.ConstantItem(20, Unit.Millimetre)
+               // QR Placeholder — ileride TrackingUrl'den gerçek QR üretilecek
+               row.ConstantItem(22, Unit.Millimetre)
                   .AlignTop()
                   .Border(1).BorderColor(BorderGrey)
                   .Background("#F8FAFC")
-                  .Height(20, Unit.Millimetre)
+                  .Height(22, Unit.Millimetre)
                   .Padding(2)
                   .Column(qr =>
                   {
-                      qr.Spacing(2);
+                      qr.Spacing(1);
                       qr.Item().AlignCenter()
-                               .Text("QR")
-                               .FontSize(11).Bold().FontColor(SubText);
+                               .Text("▦▦▦")
+                               .FontSize(9).Bold().FontColor(SubText);
+                      qr.Item().AlignCenter()
+                               .Text("QR KOD")
+                               .FontSize(6).Bold().FontColor(SubText);
                       qr.Item().AlignCenter()
                                .Text("(Yakında)")
-                               .FontSize(5.5f).FontColor(SubText);
+                               .FontSize(5).FontColor(BorderGrey);
                   });
            });
     }
@@ -184,50 +186,54 @@ public class QuestPdfLabelRenderer : ILabelRenderer
 
         col.Item()
            .BorderBottom(1).BorderColor(BorderGrey)
-           .PaddingHorizontal(5).PaddingVertical(4)
+           .PaddingHorizontal(5).PaddingVertical(5)
            .Column(c =>
            {
-               c.Spacing(2);
+               c.Spacing(2.5f);
 
                // Firma adı: büyük + kalın
                if (!string.IsNullOrWhiteSpace(model.ReceiverCompany))
                    c.Item()
                     .Text(model.ReceiverCompany.ToUpperInvariant())
-                    .FontSize(10.5f).Bold();
+                    .FontSize(11).Bold();
 
-               // Dikkatine: BOLD label, normal font value — görsel ayrım
+               // Dikkatine: daha büyük ve belirgin
                if (!string.IsNullOrWhiteSpace(model.Attention))
+               {
+                   c.Item().PaddingTop(1);
                    c.Item().Row(r =>
                    {
                        r.AutoItem()
                         .Text("Dikkatine: ")
-                        .Bold().FontSize(8.5f);
+                        .Bold().FontSize(10.5f);
                        r.RelativeItem()
                         .Text(model.Attention)
-                        .FontSize(8.5f);
+                        .FontSize(10.5f);
                    });
+                   c.Item().PaddingBottom(1);
+               }
 
                // Adres — RelativeItem ile otomatik satır kaydırma
                if (!string.IsNullOrWhiteSpace(model.Address))
                    c.Item().Row(r =>
                    {
-                       r.AutoItem().Text("Adres: ").FontColor(SubText);
-                       r.RelativeItem().Text(model.Address);
+                       r.AutoItem().Text("Adres: ").FontColor(SubText).FontSize(8);
+                       r.RelativeItem().Text(model.Address).FontSize(8);
                    });
 
                var location = BuildLocation(model.District, model.City);
                if (!string.IsNullOrWhiteSpace(location))
                    c.Item().Row(r =>
                    {
-                       r.AutoItem().Text("İlçe/Şehir: ").FontColor(SubText);
-                       r.RelativeItem().Text(location);
+                       r.AutoItem().Text("İlçe/Şehir: ").FontColor(SubText).FontSize(8);
+                       r.RelativeItem().Text(location).FontSize(8);
                    });
 
                if (!string.IsNullOrWhiteSpace(model.Phone))
                    c.Item().Row(r =>
                    {
-                       r.AutoItem().Text("Tel: ").FontColor(SubText);
-                       r.RelativeItem().Text(model.Phone);
+                       r.AutoItem().Text("Tel: ").FontColor(SubText).FontSize(8);
+                       r.RelativeItem().Text(model.Phone).FontSize(8);
                    });
            });
     }
@@ -253,31 +259,36 @@ public class QuestPdfLabelRenderer : ILabelRenderer
                        if (hasTracking)
                            r.RelativeItem().Column(c =>
                            {
-                               c.Item().Text("Takip No").FontSize(6.5f).FontColor(SubText);
-                               c.Item().Text(model.TrackingNumber!).FontSize(8.5f).Bold();
+                               c.Item().Text("TAKİP NO").FontSize(7).FontColor(SubText).Bold();
+                               // Takip No daha büyük ve belirgin
+                               c.Item().Text(model.TrackingNumber!).FontSize(11).Bold();
                            });
 
                        if (hasPlate)
                            r.AutoItem().Column(c =>
                            {
-                               c.Item().Text("Araç Plaka").FontSize(6.5f).FontColor(SubText);
+                               c.Item().Text("ARAÇ PLAKA").FontSize(7).FontColor(SubText).Bold();
                                c.Item().Text(model.VehiclePlate!).FontSize(9).Bold();
                            });
                    });
 
-               // Barkod alanı — ShipmentNumber büyük monospace gösterimi
+               // Barkod alanı — ShipmentNumber büyük monospace gösterimi + placeholder
                if (!string.IsNullOrWhiteSpace(model.ShipmentNumber))
                    f.Item()
                     .Border(1).BorderColor(BorderGrey)
                     .Background(Colors.White)
-                    .PaddingHorizontal(5).PaddingVertical(3)
+                    .PaddingHorizontal(6).PaddingVertical(4)
                     .Column(bc =>
                     {
+                        // Simüle barkod çizgileri (monospace şeritler)
+                        bc.Item().AlignCenter()
+                                 .Text("| || ||| || | ||| || | ||| || |")
+                                 .FontSize(7).FontColor(BorderGrey);
                         bc.Item().AlignCenter()
                                  .Text(model.ShipmentNumber)
                                  .FontSize(13).Bold();
                         bc.Item().AlignCenter()
-                                 .Text("B A R K O D")
+                                 .Text("KARGO BARKODU")
                                  .FontSize(6).FontColor(SubText);
                     });
            });

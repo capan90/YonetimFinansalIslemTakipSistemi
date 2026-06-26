@@ -74,5 +74,26 @@ public partial class CargoShipmentEditWindow : Window
         }
     }
 
+    private void RefreshSnapshotButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialogService = _services.GetRequiredService<IDialogService>();
+
+        // Onay al: snapshot mevcut kargonun alıcı bilgilerini değiştirir
+        var confirmed = dialogService.ShowConfirmation(
+            "Bu işlem mevcut kargonun alıcı firma, adres, telefon ve e-posta snapshot bilgilerini\n" +
+            "firma rehberindeki güncel verilerle değiştirecek.\n\n" +
+            "Devam edilsin mi?",
+            "Firma Bilgilerini Yenile");
+
+        if (!confirmed) return;
+
+        _vm.RefreshSnapshotFromDirectory();
+
+        dialogService.ShowSuccess(
+            "Firma snapshot bilgileri güncellendi.\n" +
+            "Kaydet butonuna basarak değişiklikleri kalıcı hale getirin.",
+            "Yenilendi");
+    }
+
     private void CancelButton_Click(object sender, RoutedEventArgs e) => Close();
 }

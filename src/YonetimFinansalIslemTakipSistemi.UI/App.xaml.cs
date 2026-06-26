@@ -216,7 +216,15 @@ public partial class App : System.Windows.Application
         // ICompanyInfoProvider — AppSettings'ten gönderici firma bilgisi; ileride Company Settings modülüyle değiştirilebilir
         services.AddSingleton<ICompanyInfoProvider>(new AppSettingsCompanyInfoProvider(config));
 
-        // Bildirim — Sprint 3.4 (WhatsApp + Mail önizleme)
+        // Kargo mail gönderimi — mevcut SMTP altyapısını kullanır
+        var cargoNotifOptions = new CargoNotificationOptions
+        {
+            FromEmail = config["CargoNotifications:FromEmail"] ?? ""
+        };
+        services.AddSingleton(cargoNotifOptions);
+        services.AddSingleton<ICargoMailSenderService, CargoSmtpMailSenderService>();
+
+        // Bildirim — Sprint 3.4/3.5 (WhatsApp + SMTP Mail)
         services.AddSingleton<WhatsAppNotificationComposer>();
         services.AddSingleton<MailNotificationComposer>();
         services.AddScoped<GenerateCargoNotificationHandler>();

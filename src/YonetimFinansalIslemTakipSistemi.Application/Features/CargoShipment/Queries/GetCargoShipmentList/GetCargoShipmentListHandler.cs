@@ -46,14 +46,27 @@ public class GetCargoShipmentListHandler
         if (!string.IsNullOrWhiteSpace(query.Keyword))
         {
             var kw = query.Keyword.Trim();
-            filtered = filtered.Where(x =>
-                (x.ShipmentNumber   != null && x.ShipmentNumber.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
-                (x.TrackingNumber   != null && x.TrackingNumber.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
-                (x.VehiclePlate     != null && x.VehiclePlate.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
-                (x.SenderName       != null && x.SenderName.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
-                (x.ReceiverName     != null && x.ReceiverName.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
-                (x.CargoCompany     != null && x.CargoCompany.Name.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
-                (x.CompanyDirectory != null && x.CompanyDirectory.CompanyName.Contains(kw, StringComparison.OrdinalIgnoreCase)));
+            filtered = query.SearchType switch
+            {
+                "Firma"        => filtered.Where(x =>
+                    (x.CargoCompany     != null && x.CargoCompany.Name.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
+                    (x.CompanyDirectory != null && x.CompanyDirectory.CompanyName.Contains(kw, StringComparison.OrdinalIgnoreCase))),
+                "Kargo No"     => filtered.Where(x =>
+                    x.ShipmentNumber != null && x.ShipmentNumber.Contains(kw, StringComparison.OrdinalIgnoreCase)),
+                "Takip No"     => filtered.Where(x =>
+                    x.TrackingNumber != null && x.TrackingNumber.Contains(kw, StringComparison.OrdinalIgnoreCase)),
+                "Araç Plakası" => filtered.Where(x =>
+                    x.VehiclePlate != null && x.VehiclePlate.Contains(kw, StringComparison.OrdinalIgnoreCase)),
+                // null veya "Genel" — tüm alanlarda arama
+                _ => filtered.Where(x =>
+                    (x.ShipmentNumber   != null && x.ShipmentNumber.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
+                    (x.TrackingNumber   != null && x.TrackingNumber.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
+                    (x.VehiclePlate     != null && x.VehiclePlate.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
+                    (x.SenderName       != null && x.SenderName.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
+                    (x.ReceiverName     != null && x.ReceiverName.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
+                    (x.CargoCompany     != null && x.CargoCompany.Name.Contains(kw, StringComparison.OrdinalIgnoreCase)) ||
+                    (x.CompanyDirectory != null && x.CompanyDirectory.CompanyName.Contains(kw, StringComparison.OrdinalIgnoreCase)))
+            };
         }
 
         return filtered

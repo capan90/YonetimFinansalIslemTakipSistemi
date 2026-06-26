@@ -17,7 +17,8 @@ public class CargoShipmentListViewModel : INotifyPropertyChanged
     private readonly GetCargoShipmentListHandler _listHandler;
     private readonly QuickUpdateCargoStatusHandler _quickStatusHandler;
 
-    private string _keyword = string.Empty;
+    private string _keyword             = string.Empty;
+    private string _selectedSearchType  = "Genel";
     private string _selectedStatusFilter   = "(Tümü)";
     private string _selectedPriorityFilter = "(Tümü)";
     private CargoShipmentDto? _selected;
@@ -30,6 +31,15 @@ public class CargoShipmentListViewModel : INotifyPropertyChanged
         get => _keyword;
         set { _keyword = value; OnPropertyChanged(); }
     }
+
+    public string SelectedSearchType
+    {
+        get => _selectedSearchType;
+        set { _selectedSearchType = value; OnPropertyChanged(); }
+    }
+
+    public IReadOnlyList<string> SearchTypeOptions { get; } =
+        ["Genel", "Firma", "Kargo No", "Takip No", "Araç Plakası"];
 
     public string SelectedStatusFilter
     {
@@ -80,10 +90,11 @@ public class CargoShipmentListViewModel : INotifyPropertyChanged
     {
         var result = await _listHandler.HandleAsync(new GetCargoShipmentListQuery
         {
-            Direction = Direction,
-            Keyword   = string.IsNullOrWhiteSpace(Keyword) ? null : Keyword,
-            Status    = ParseStatusFilter(SelectedStatusFilter),
-            Priority  = ParsePriorityFilter(SelectedPriorityFilter)
+            Direction  = Direction,
+            Keyword    = string.IsNullOrWhiteSpace(Keyword) ? null : Keyword,
+            SearchType = SelectedSearchType == "Genel" ? null : SelectedSearchType,
+            Status     = ParseStatusFilter(SelectedStatusFilter),
+            Priority   = ParsePriorityFilter(SelectedPriorityFilter)
         });
 
         Items = new ObservableCollection<CargoShipmentDto>(result);

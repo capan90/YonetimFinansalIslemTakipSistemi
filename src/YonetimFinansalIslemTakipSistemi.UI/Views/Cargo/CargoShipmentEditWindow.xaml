@@ -2,12 +2,18 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{Binding WindowTitle}"
-        SizeToContent="Height" Width="520"
+        SizeToContent="Height" Width="540"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
 
+    <!-- Ctrl+S = Kaydet -->
+    <Window.InputBindings>
+        <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding SaveCommand}"/>
+    </Window.InputBindings>
+
     <StackPanel Margin="16">
 
+        <!-- Tarih + Kargo No -->
         <Grid Margin="0,0,0,8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -22,10 +28,11 @@
                 <Label Content="Kargo No:" Margin="0,0,0,2"
                        ToolTip="Boş bırakılırsa otomatik üretilir (örn. G-2026-0001)"/>
                 <TextBox Text="{Binding ShipmentNumber, UpdateSourceTrigger=PropertyChanged}"
-                         ToolTip="Boş bırakılırsa otomatik üretilir"/>
+                         ToolTip="Boş bırakılırsa sistem G-YYYY-NNNN formatında otomatik numara atar"/>
             </StackPanel>
         </Grid>
 
+        <!-- Kargo Türü + Öncelik -->
         <Grid Margin="0,0,0,8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -35,16 +42,18 @@
             <StackPanel Grid.Column="0">
                 <Label Content="Kargo Türü:" Margin="0,0,0,2"/>
                 <ComboBox ItemsSource="{Binding ShipmentTypeOptions}"
-                          SelectedItem="{Binding SelectedShipmentType, Mode=TwoWay}"/>
+                          SelectedItem="{Binding SelectedShipmentType, Mode=TwoWay}"
+                          ToolTip="Gönderi içeriğinin türü: Evrak, Numune, Koli, Palet vb."/>
             </StackPanel>
             <StackPanel Grid.Column="2">
                 <Label Content="Öncelik:" Margin="0,0,0,2"/>
                 <ComboBox ItemsSource="{Binding PriorityOptions}"
                           SelectedItem="{Binding SelectedPriority, Mode=TwoWay}"
-                          ToolTip="Normal=gri, Orta=mavi, Acil=turuncu, Çok Acil=kırmızı"/>
+                          ToolTip="Normal=gri | Orta=mavi | Acil=turuncu | Çok Acil=kırmızı. Liste ekranında renk badge olarak görünür."/>
             </StackPanel>
         </Grid>
 
+        <!-- Durum + Bildirim Durumu -->
         <Grid Margin="0,0,0,8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -52,16 +61,18 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Column="0">
+                <Label Content="Durum:" Margin="0,0,0,2"
+                       ToolTip="Düzenleme modunda yalnızca geçerli geçişler gösterilir"/>
                 <!-- AllowedStatusOptions: düzenleme modunda sadece geçerli geçişler listelenir -->
-                <Label Content="Durum:" Margin="0,0,0,2"/>
                 <ComboBox ItemsSource="{Binding AllowedStatusOptions}"
                           SelectedItem="{Binding SelectedStatus, Mode=TwoWay}"/>
             </StackPanel>
             <StackPanel Grid.Column="2">
-                <Label Content="Bildirim Durumu:" Margin="0,0,0,2"/>
+                <Label Content="Bildirim Durumu:" Margin="0,0,0,2"
+                       ToolTip="WhatsApp veya mail mesajının hazırlanıp hazırlanmadığını gösterir. Operasyon Merkezi üzerinden otomatik güncellenir."/>
                 <ComboBox ItemsSource="{Binding NotificationStatusOptions}"
                           SelectedItem="{Binding SelectedNotificationStatus, Mode=TwoWay}"
-                          ToolTip="Gerçek WhatsApp/mail gönderimi yapılmaz; sadece durum kaydedilir."/>
+                          ToolTip="Gerçek WhatsApp/mail gönderimi yapılmaz; yalnızca durum kaydedilir."/>
             </StackPanel>
         </Grid>
 
@@ -76,7 +87,8 @@
             <ComboBox Grid.Column="0"
                       ItemsSource="{Binding CargoCompanies}"
                       SelectedItem="{Binding SelectedCargoCompany, Mode=TwoWay}"
-                      DisplayMemberPath="Name"/>
+                      DisplayMemberPath="Name"
+                      ToolTip="Seçilen firmanın takip URL şablonu otomatik takip linki üretmek için kullanılır"/>
             <Button x:Name="AddCargoCompanyButton" Grid.Column="2"
                     Content="+" Width="26" Height="22"
                     VerticalAlignment="Center"
@@ -96,7 +108,7 @@
                       ItemsSource="{Binding CompanyDirectories}"
                       SelectedItem="{Binding SelectedCompanyDirectory, Mode=TwoWay}"
                       DisplayMemberPath="CompanyName"
-                      ToolTip="Giden kargoda firma seçilince alıcı adı otomatik dolar."/>
+                      ToolTip="Giden kargoda seçilen firmanın adres/iletişim bilgileri otomatik doldurulur."/>
             <Button x:Name="AddDirectoryButton" Grid.Column="2"
                     Content="+" Width="26" Height="22"
                     VerticalAlignment="Center"
@@ -104,8 +116,9 @@
                     Click="AddDirectoryButton_Click"/>
         </Grid>
 
-        <!-- Firma seçildiğinde adres/iletişim özeti: salt okunur bilgi paneli -->
-        <Border Margin="0,0,0,8" Padding="8" Background="#F0F4FF" BorderBrush="#B0C4F0" BorderThickness="1" CornerRadius="4">
+        <!-- Firma Özeti Kartı — firma seçildiğinde gösterilir -->
+        <Border Margin="0,0,0,8" Padding="10,8" Background="#F0F4FF"
+                BorderBrush="#B0C4F0" BorderThickness="1" CornerRadius="4">
             <Border.Style>
                 <Style TargetType="Border">
                     <Setter Property="Visibility" Value="Visible"/>
@@ -116,27 +129,238 @@
                     </Style.Triggers>
                 </Style>
             </Border.Style>
-            <TextBlock Text="{Binding DirectoryDetailSummary}"
-                       TextWrapping="Wrap" FontSize="11"
-                       Foreground="#334477"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="18"/>  <!-- ikon -->
+                    <ColumnDefinition Width="65"/>  <!-- etiket -->
+                    <ColumnDefinition Width="*"/>   <!-- değer -->
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Firma adı -->
+                <TextBlock Grid.Row="0" Grid.Column="0"
+                           Text="🏢" FontSize="11" VerticalAlignment="Center" Margin="0,0,4,3"/>
+                <TextBlock Grid.Row="0" Grid.Column="1"
+                           Text="Firma:" FontWeight="SemiBold" FontSize="11" Margin="0,0,4,3"/>
+                <TextBlock Grid.Row="0" Grid.Column="2"
+                           Text="{Binding DirectoryFirma}"
+                           FontSize="11" FontWeight="SemiBold" Foreground="#1A3354" Margin="0,0,0,3"/>
+
+                <!-- Dikkatine -->
+                <TextBlock Grid.Row="1" Grid.Column="0"
+                           Text="👤" FontSize="10" VerticalAlignment="Center" Margin="0,0,4,3">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasDirectoryContact}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <TextBlock Grid.Row="1" Grid.Column="1"
+                           Text="Dikkatine:" FontSize="11" Margin="0,0,4,3">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasDirectoryContact}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <TextBlock Grid.Row="1" Grid.Column="2"
+                           Text="{Binding DirectoryContact}" FontSize="11" Margin="0,0,0,3">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasDirectoryContact}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <!-- Adres -->
+                <TextBlock Grid.Row="2" Grid.Column="0"
+                           Text="📍" FontSize="10" VerticalAlignment="Top" Margin="0,0,4,3">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasDirectoryAddress}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <TextBlock Grid.Row="2" Grid.Column="1"
+                           Text="Adres:" FontSize="11" Margin="0,0,4,3">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasDirectoryAddress}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <TextBlock Grid.Row="2" Grid.Column="2"
+                           Text="{Binding DirectoryAddress}"
+                           FontSize="11" TextWrapping="Wrap" Margin="0,0,0,3">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasDirectoryAddress}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <!-- Telefon -->
+                <TextBlock Grid.Row="3" Grid.Column="0"
+                           Text="📞" FontSize="10" VerticalAlignment="Center" Margin="0,0,4,3">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasDirectoryPhone}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <TextBlock Grid.Row="3" Grid.Column="1"
+                           Text="Telefon:" FontSize="11" Margin="0,0,4,3">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasDirectoryPhone}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <TextBlock Grid.Row="3" Grid.Column="2"
+                           Text="{Binding DirectoryPhone}" FontSize="11" Margin="0,0,0,3">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasDirectoryPhone}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <!-- E-posta -->
+                <TextBlock Grid.Row="4" Grid.Column="0"
+                           Text="✉" FontSize="10" VerticalAlignment="Center" Margin="0,0,4,0">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasDirectoryEmail}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <TextBlock Grid.Row="4" Grid.Column="1"
+                           Text="E-posta:" FontSize="11" Margin="0,0,4,0">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasDirectoryEmail}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <TextBlock Grid.Row="4" Grid.Column="2"
+                           Text="{Binding DirectoryEmail}" FontSize="11" Foreground="#1565C0">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasDirectoryEmail}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Grid>
         </Border>
 
+        <!-- Firma snapshot yenileme — yalnızca düzenleme modunda ve firma seçiliyse görünür -->
+        <Button x:Name="RefreshSnapshotButton"
+                Content="🔄 Firma Bilgilerini Yenile"
+                HorizontalAlignment="Left"
+                Margin="0,0,0,8" Padding="6,3"
+                FontSize="11"
+                Click="RefreshSnapshotButton_Click"
+                ToolTip="Seçili firma rehberinden alıcı telefon, e-posta ve adres snapshot bilgilerini günceller. Kaydetmeden DB'ye yazılmaz.">
+            <Button.Style>
+                <Style TargetType="Button">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding HasRefreshableSnapshot}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button>
+
+        <!-- Gönderi Bilgileri + Teslim Bilgileri — GroupBox olarak ayrılmış -->
         <Grid Margin="0,0,0,8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="8"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <StackPanel Grid.Column="0">
-                <Label Content="Gönderen:" Margin="0,0,0,2"/>
-                <TextBox Text="{Binding SenderName, UpdateSourceTrigger=PropertyChanged}"/>
-            </StackPanel>
-            <StackPanel Grid.Column="2">
-                <Label Content="Alıcı:" Margin="0,0,0,2"/>
-                <TextBox Text="{Binding ReceiverName, UpdateSourceTrigger=PropertyChanged}"/>
-            </StackPanel>
+
+            <GroupBox Grid.Column="0" Header="Gönderi Bilgileri"
+                      FontWeight="SemiBold" Padding="6,6,6,6">
+                <StackPanel>
+                    <Label Content="Gönderen:" FontWeight="Normal" Margin="0,0,0,2"/>
+                    <TextBox Text="{Binding SenderName, UpdateSourceTrigger=PropertyChanged}"
+                             FontWeight="Normal" Margin="0,0,0,6"/>
+                    <Label Content="Teslim Eden:" FontWeight="Normal" Margin="0,0,0,2"/>
+                    <TextBox Text="{Binding DeliveredBy, UpdateSourceTrigger=PropertyChanged}"
+                             FontWeight="Normal"/>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Grid.Column="2" Header="Teslim Bilgileri"
+                      FontWeight="SemiBold" Padding="6,6,6,6">
+                <StackPanel>
+                    <Label Content="Alıcı:" FontWeight="Normal" Margin="0,0,0,2"/>
+                    <TextBox Text="{Binding ReceiverName, UpdateSourceTrigger=PropertyChanged}"
+                             FontWeight="Normal" Margin="0,0,0,6"/>
+                    <Label Content="Teslim Alan:" FontWeight="Normal" Margin="0,0,0,2"/>
+                    <TextBox Text="{Binding ReceivedBy, UpdateSourceTrigger=PropertyChanged}"
+                             FontWeight="Normal"/>
+                </StackPanel>
+            </GroupBox>
         </Grid>
 
+        <!-- Takip No + Araç Plakası -->
         <Grid Margin="0,0,0,8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -144,32 +368,19 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Column="0">
-                <Label Content="Teslim Eden:" Margin="0,0,0,2"/>
-                <TextBox Text="{Binding DeliveredBy, UpdateSourceTrigger=PropertyChanged}"/>
-            </StackPanel>
-            <StackPanel Grid.Column="2">
-                <Label Content="Teslim Alan:" Margin="0,0,0,2"/>
-                <TextBox Text="{Binding ReceivedBy, UpdateSourceTrigger=PropertyChanged}"/>
-            </StackPanel>
-        </Grid>
-
-        <Grid Margin="0,0,0,8">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="8"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <StackPanel Grid.Column="0">
-                <Label Content="Takip No:" Margin="0,0,0,2"/>
+                <Label Content="Takip No:" Margin="0,0,0,2"
+                       ToolTip="Kargo firmasının verdiği takip numarası. Firma şablonu + bu numara ile Takip Linki otomatik oluşturulur."/>
                 <TextBox Text="{Binding TrackingNumber, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Grid.Column="2">
-                <Label Content="Araç Plakası:" Margin="0,0,0,2"/>
+                <Label Content="Araç Plakası:" Margin="0,0,0,2"
+                       ToolTip="Teslimatı gerçekleştiren araç plakası. Kargo etiketinde de gösterilir."/>
                 <TextBox Text="{Binding VehiclePlate, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
         </Grid>
 
-        <Label Content="Takip Linki:" Margin="0,0,0,2"/>
+        <Label Content="Takip Linki:" Margin="0,0,0,2"
+               ToolTip="Kargo firmasının URL şablonu varsa Takip No ile otomatik doldurulur. Boşsa manuel giriniz."/>
         <TextBox Text="{Binding TrackingUrl, UpdateSourceTrigger=PropertyChanged}"
                  Margin="0,0,0,8"
                  Foreground="#1565C0"
@@ -195,8 +406,12 @@
         </TextBlock>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button Content="Kaydet" Command="{Binding SaveCommand}" IsDefault="True" Width="80" Margin="0,0,8,0"/>
-            <Button Content="İptal"  IsCancel="True" Width="80" Click="CancelButton_Click"/>
+            <Button Content="Kaydet" Command="{Binding SaveCommand}" IsDefault="True"
+                    Width="80" Margin="0,0,8,0"
+                    ToolTip="Kaydet (Ctrl+S veya Enter)"/>
+            <Button Content="İptal" IsCancel="True" Width="80"
+                    Click="CancelButton_Click"
+                    ToolTip="İptal (Esc)"/>
         </StackPanel>
 
     </StackPanel>

@@ -66,7 +66,7 @@ public class MarkCargoNotificationPreparedHandler
                 _userContext.FullName,
                 "CargoShipment",
                 entity.Id,
-                newValues: $"Mail mesajı hazırlandı | Kargo No: {entity.ShipmentNumber}");
+                newValues: $"Mail gönderildi | Kargo No: {entity.ShipmentNumber}");
         }
         else
         {

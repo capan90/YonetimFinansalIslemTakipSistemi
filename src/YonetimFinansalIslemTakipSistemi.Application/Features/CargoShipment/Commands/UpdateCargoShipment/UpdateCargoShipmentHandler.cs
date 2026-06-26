@@ -80,7 +80,18 @@ public class UpdateCargoShipmentHandler
         entity.Notes              = request.Notes?.Trim();
         entity.UpdatedByUserId    = request.UpdatedByUserId;
         entity.UpdatedAt          = DateTime.UtcNow;
-        // Snapshot alanları kasıtlı olarak güncellenmez — oluşturma anındaki veriler korunur
+
+        // Kullanıcı bilinçli olarak "Firma Bilgilerini Yenile" bastıysa snapshot güncellenir
+        if (request.UpdateSnapshot)
+        {
+            entity.ReceiverCompanyNameSnapshot = request.SnapshotCompanyName;
+            entity.ReceiverAddressSnapshot     = request.SnapshotAddress;
+            entity.ReceiverAttentionSnapshot   = request.SnapshotAttention;
+            entity.ReceiverCitySnapshot        = request.SnapshotCity;
+            entity.ReceiverDistrictSnapshot    = request.SnapshotDistrict;
+            entity.ReceiverPhoneSnapshot       = request.SnapshotPhone;
+            entity.ReceiverEmailSnapshot       = request.SnapshotEmail;
+        }
 
         await _repository.UpdateAsync(entity);
 
@@ -121,6 +132,9 @@ public class UpdateCargoShipmentHandler
             oldParts.Add($"Öncelik: {DisplayPriority(entity.Priority)}");
             newParts.Add($"Öncelik: {DisplayPriority(request.Priority)}");
         }
+
+        if (request.UpdateSnapshot)
+            newParts.Add("Firma snapshot güncellendi");
 
         var old = oldParts.Count > 0 ? string.Join(" | ", oldParts) : "Kargo güncellendi";
         var @new = newParts.Count > 0 ? string.Join(" | ", newParts) : "Kargo güncellendi";

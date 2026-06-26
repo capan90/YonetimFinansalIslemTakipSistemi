@@ -1,0 +1,175 @@
+<Window x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.Cargo.CargoOperationCenterWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Operasyon Merkezi"
+        SizeToContent="Height" Width="490"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+
+    <Window.Resources>
+        <!-- Operasyon kartı stili: büyük, tıklanabilir, hover efektli -->
+        <Style x:Key="OpCard" TargetType="Button">
+            <Setter Property="Width"           Value="130"/>
+            <Setter Property="Height"          Value="80"/>
+            <Setter Property="Margin"          Value="4"/>
+            <Setter Property="Background"      Value="#F8FAFC"/>
+            <Setter Property="BorderBrush"     Value="#CBD5E1"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+            <Setter Property="FontFamily"      Value="Segoe UI"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#EEF4FF"/>
+                    <Setter Property="BorderBrush" Value="#7BA7D9"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#DCE9FA"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="#F0F0F0"/>
+                    <Setter Property="Foreground" Value="#AAAAAA"/>
+                    <Setter Property="BorderBrush" Value="#DDDDDD"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <DockPanel Margin="14">
+
+        <!-- Başlık -->
+        <TextBlock DockPanel.Dock="Top"
+                   Text="Operasyon Merkezi"
+                   FontSize="14" FontWeight="SemiBold"
+                   Margin="0,0,0,10"/>
+
+        <!-- Alt: Kapat -->
+        <Button DockPanel.Dock="Bottom"
+                Content="Kapat" Width="80"
+                HorizontalAlignment="Right"
+                IsCancel="True"
+                Margin="0,10,0,0"
+                Click="CloseButton_Click"/>
+
+        <!-- Kargo bilgi kartı -->
+        <Border DockPanel.Dock="Top"
+                Background="#F0F4FF" BorderBrush="#B0C4F0" BorderThickness="1"
+                CornerRadius="4" Padding="12,10" Margin="0,0,0,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0"
+                           Text="Kargo No:" FontWeight="SemiBold" Margin="0,0,6,4"/>
+                <TextBlock Grid.Row="0" Grid.Column="1"
+                           x:Name="ShipmentNumberBlock" FontWeight="SemiBold"
+                           Foreground="#1A3354" Margin="0,0,12,4"/>
+
+                <TextBlock Grid.Row="0" Grid.Column="2"
+                           Text="Karşı Taraf:" FontWeight="SemiBold" Margin="0,0,6,4"/>
+                <TextBlock Grid.Row="0" Grid.Column="3"
+                           x:Name="PartyBlock" Margin="0,0,0,4"
+                           TextTrimming="CharacterEllipsis"/>
+
+                <TextBlock Grid.Row="1" Grid.Column="0"
+                           Text="Öncelik:" FontWeight="SemiBold" Margin="0,0,6,4"/>
+                <TextBlock Grid.Row="1" Grid.Column="1"
+                           x:Name="PriorityBlock" Margin="0,0,12,4"/>
+
+                <TextBlock Grid.Row="1" Grid.Column="2"
+                           Text="Durum:" FontWeight="SemiBold" Margin="0,0,6,4"/>
+                <TextBlock Grid.Row="1" Grid.Column="3"
+                           x:Name="StatusBlock" Margin="0,0,0,4"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="0"
+                           Text="Bildirim:" FontWeight="SemiBold" Margin="0,0,6,0"
+                           ToolTip="WhatsApp veya mail hazırlama durumu"/>
+                <TextBlock Grid.Row="2" Grid.Column="1"
+                           x:Name="NotificationBlock" Grid.ColumnSpan="3"/>
+            </Grid>
+        </Border>
+
+        <!-- Operasyon kartları başlığı -->
+        <TextBlock DockPanel.Dock="Top"
+                   Text="İşlemler"
+                   FontSize="11" Foreground="#64748B"
+                   Margin="0,0,0,6"/>
+
+        <!-- Operasyon kartları (WrapPanel: 5 kart) -->
+        <WrapPanel DockPanel.Dock="Top"
+                   Orientation="Horizontal"
+                   HorizontalAlignment="Left">
+
+            <!-- Etiket Önizle -->
+            <Button x:Name="LabelButton"
+                    Style="{StaticResource OpCard}"
+                    Click="LabelButton_Click"
+                    ToolTip="Seçili kargo için A6 PDF etiketi oluşturur ve PDF görüntüleyicide açar">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="🏷" FontSize="22" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Etiket Önizle" FontSize="11"
+                               HorizontalAlignment="Center" TextAlignment="Center"
+                               TextWrapping="Wrap" MaxWidth="110"/>
+                </StackPanel>
+            </Button>
+
+            <!-- WhatsApp Hazırla -->
+            <Button x:Name="WhatsAppButton"
+                    Style="{StaticResource OpCard}"
+                    Click="WhatsAppButton_Click"
+                    ToolTip="Seçili kargo için WhatsApp mesajı hazırlar ve önizleme açar">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="💬" FontSize="22" HorizontalAlignment="Center"/>
+                    <TextBlock Text="WhatsApp&#x0a;Hazırla" FontSize="11"
+                               HorizontalAlignment="Center" TextAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <!-- Mail Hazırla -->
+            <Button x:Name="MailButton"
+                    Style="{StaticResource OpCard}"
+                    Click="MailButton_Click"
+                    ToolTip="Seçili kargo için mail mesajı hazırlar ve önizleme açar">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="✉" FontSize="22" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Mail Hazırla" FontSize="11"
+                               HorizontalAlignment="Center" TextAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <!-- Takip Linkini Aç -->
+            <Button x:Name="TrackButton"
+                    Style="{StaticResource OpCard}"
+                    Click="TrackButton_Click"
+                    ToolTip="Kargo firmasının takip sayfasını tarayıcıda açar">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="🔗" FontSize="22" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Takip&#x0a;Linkini Aç" FontSize="11"
+                               HorizontalAlignment="Center" TextAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <!-- Durum Değiştir -->
+            <Button x:Name="StatusButton"
+                    Style="{StaticResource OpCard}"
+                    Click="StatusButton_Click"
+                    ToolTip="Kargo durumunu değiştirir (izin verilen geçişler gösterilir)">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="⚡" FontSize="22" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Durum&#x0a;Değiştir" FontSize="11"
+                               HorizontalAlignment="Center" TextAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+        </WrapPanel>
+
+    </DockPanel>
+</Window>

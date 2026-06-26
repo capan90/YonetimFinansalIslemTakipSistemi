@@ -1,7 +1,7 @@
 <Window x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.Cargo.CargoNotificationPreviewWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Bildirim Hazırla" Width="540" Height="600"
+        Title="Bildirim Hazırla" Width="580" Height="660"
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanMinimize">
 
@@ -13,10 +13,10 @@
                    FontSize="14" FontWeight="SemiBold"
                    Margin="0,0,0,10"/>
 
-        <!-- Kargo bilgi alanı -->
+        <!-- Kargo özet bilgisi: her iki modda görünür -->
         <Border DockPanel.Dock="Top"
                 Background="#F0FFF0" BorderBrush="#A8D8A8" BorderThickness="1"
-                CornerRadius="4" Padding="10,8" Margin="0,0,0,10">
+                CornerRadius="4" Padding="10,8" Margin="0,0,0,8">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="75"/>
@@ -27,73 +27,117 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Satır 0: Kargo No | Alıcı Firma — her iki modda görünür -->
+                <!-- Kargo No | Alıcı Firma -->
                 <TextBlock Grid.Row="0" Grid.Column="0"
                            Text="Kargo No:" FontWeight="SemiBold" Margin="0,0,6,4"/>
                 <TextBlock Grid.Row="0" Grid.Column="1"
                            x:Name="ShipmentNumberBlock" Margin="0,0,12,4"/>
-
                 <TextBlock Grid.Row="0" Grid.Column="2"
                            Text="Alıcı Firma:" FontWeight="SemiBold" Margin="0,0,6,4"/>
                 <TextBlock Grid.Row="0" Grid.Column="3"
                            x:Name="ReceiverBlock" Margin="0,0,0,4"
                            TextTrimming="CharacterEllipsis"/>
 
-                <!-- Satır 1: WhatsApp → Telefon / Mail → Kime (e-posta) -->
+                <!-- Telefon — yalnızca WhatsApp modunda görünür -->
                 <TextBlock Grid.Row="1" Grid.Column="0"
-                           x:Name="Row1LabelBlock"
-                           FontWeight="SemiBold" Margin="0,0,6,4"/>
-                <TextBlock Grid.Row="1" Grid.Column="1"
-                           x:Name="Row1ValueBlock"
-                           Grid.ColumnSpan="3" Margin="0,0,0,4"
-                           TextTrimming="CharacterEllipsis"/>
-
-                <!-- Satır 2: Konu — yalnızca mail modunda görünür -->
-                <TextBlock Grid.Row="2" Grid.Column="0"
-                           x:Name="SubjectLabelBlock"
-                           Text="Konu:" FontWeight="SemiBold" Margin="0,0,6,0"
+                           x:Name="PhoneLabelBlock"
+                           Text="Telefon:" FontWeight="SemiBold" Margin="0,0,6,0"
                            Visibility="Collapsed"/>
-                <TextBlock Grid.Row="2" Grid.Column="1"
-                           x:Name="SubjectBlock"
-                           Grid.ColumnSpan="3"
+                <TextBlock Grid.Row="1" Grid.Column="1"
+                           x:Name="PhoneValueBlock"
+                           Grid.ColumnSpan="3" Margin="0,0,0,0"
                            TextTrimming="CharacterEllipsis"
                            Visibility="Collapsed"/>
             </Grid>
         </Border>
 
+        <!-- Mail alanları paneli — yalnızca mail modunda görünür -->
+        <Border x:Name="MailFieldsPanel"
+                DockPanel.Dock="Top"
+                Background="#F8F9FA" BorderBrush="#CBD5E1" BorderThickness="1"
+                CornerRadius="4" Padding="10,8" Margin="0,0,0,8"
+                Visibility="Collapsed">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="75"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Gönderici (salt okunur) -->
+                <TextBlock Grid.Row="0" Grid.Column="0"
+                           Text="Gönderici:" FontWeight="SemiBold"
+                           VerticalAlignment="Center" Margin="0,0,6,5"/>
+                <TextBlock Grid.Row="0" Grid.Column="1"
+                           x:Name="FromBlock"
+                           FontStyle="Italic" Foreground="#555"
+                           VerticalAlignment="Center" Margin="0,0,0,5"/>
+
+                <!-- Alıcı — düzenlenebilir: yalnızca o gönderim için kullanılır, DB'ye yazılmaz -->
+                <TextBlock Grid.Row="1" Grid.Column="0"
+                           Text="Alıcı:" FontWeight="SemiBold"
+                           VerticalAlignment="Center" Margin="0,0,6,5"/>
+                <TextBox   Grid.Row="1" Grid.Column="1"
+                           x:Name="ToTextBox"
+                           Padding="4,3" Margin="0,0,0,5"
+                           BorderThickness="1" BorderBrush="#CBD5E1"
+                           ToolTip="Alıcı adresi yalnızca bu gönderim için kullanılır — DB'ye kaydedilmez"/>
+
+                <!-- CC (düzenlenebilir, DB'ye kaydedilmez) -->
+                <TextBlock Grid.Row="2" Grid.Column="0"
+                           Text="CC:" FontWeight="SemiBold"
+                           VerticalAlignment="Center" Margin="0,0,6,5"/>
+                <TextBox   Grid.Row="2" Grid.Column="1"
+                           x:Name="CcTextBox"
+                           Padding="4,3" Margin="0,0,0,5"
+                           BorderThickness="1" BorderBrush="#CBD5E1"
+                           ToolTip="İsteğe bağlı — birden fazla adres için noktalı virgül kullanın"/>
+
+                <!-- Konu (düzenlenebilir, önceden dolu) -->
+                <TextBlock Grid.Row="3" Grid.Column="0"
+                           Text="Konu:" FontWeight="SemiBold"
+                           VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <TextBox   Grid.Row="3" Grid.Column="1"
+                           x:Name="SubjectTextBox"
+                           Padding="4,3"
+                           BorderThickness="1" BorderBrush="#CBD5E1"/>
+            </Grid>
+        </Border>
+
         <!-- Alt butonlar -->
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
-                    HorizontalAlignment="Right" Margin="0,10,0,0">
+                    HorizontalAlignment="Right" Margin="0,8,0,0">
             <Button x:Name="CopyButton"
-                    Content="Kopyala" Width="90" Margin="0,0,8,0"
+                    Content="📋 Kopyala" Width="100" Margin="0,0,8,0"
                     Click="CopyButton_Click"
-                    ToolTip="Mesajı panoya kopyalar"/>
+                    ToolTip="Mesaj metnini panoya kopyalar"/>
 
-            <!-- WhatsApp modunda görünür -->
+            <!-- WhatsApp Web butonu: link açılınca durum otomatik güncellenir -->
             <Button x:Name="WhatsAppWebButton"
-                    Content="WhatsApp Web'de Aç" Width="150" Margin="0,0,8,0"
+                    Content="🌐 WhatsApp Web" Width="130" Margin="0,0,8,0"
                     Click="WhatsAppWebButton_Click"
-                    ToolTip="Telefon numarasıyla WhatsApp Web sayfasını açar"
+                    ToolTip="WhatsApp Web'i açar; başarılı olunca bildirim durumu otomatik güncellenir"
                     Visibility="Collapsed"/>
 
-            <!-- Mail modunda görünür; SMTP gönderimi sonraki sprintte aktif edilecek -->
+            <!-- Mail Gönder butonu: SMTP gönderi başarılıysa durum otomatik güncellenir -->
             <Button x:Name="MailSendButton"
-                    Content="Mail Gönder" Width="110" Margin="0,0,8,0"
-                    IsEnabled="False"
-                    ToolTip="SMTP gönderimi sonraki sprintte aktif edilecek."
+                    Content="📧 Mail Gönder" Width="110" Margin="0,0,8,0"
+                    Click="MailSendButton_Click"
+                    ToolTip="Mail gönderir; başarılı olunca bildirim durumu otomatik güncellenir"
                     Visibility="Collapsed"/>
 
-            <Button x:Name="MarkPreparedButton"
-                    Content="Hazırlandı Olarak İşaretle" Width="190" Margin="0,0,8,0"
-                    Click="MarkPreparedButton_Click"/>
-            <Button Content="Kapat" Width="75"
+            <Button Content="✕ Kapat" Width="85"
                     IsCancel="True" Click="CloseButton_Click"/>
         </StackPanel>
 
-        <!-- Mesaj metni -->
+        <!-- Mesaj metni — her iki modda salt okunur -->
         <TextBox x:Name="MessageBodyBox"
                  IsReadOnly="True" AcceptsReturn="True"
                  TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"

@@ -26,15 +26,20 @@
                 <Button Content="Yenile" Width="65" Margin="6,0,0,0" Click="RefreshButton_Click"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
+                <!-- Arama türü seçici -->
+                <ComboBox ItemsSource="{Binding SearchTypeOptions}"
+                          SelectedItem="{Binding SelectedSearchType, Mode=TwoWay}"
+                          Width="110" Margin="0,0,4,0"
+                          ToolTip="Arama yapılacak alanı seçin"/>
                 <TextBox Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}"
-                         Width="200" Margin="0,0,6,0" KeyDown="SearchBox_KeyDown"
-                         ToolTip="Kargo no, takip no, gönderen, alıcı veya firma adında ara"/>
+                         Width="180" Margin="0,0,6,0" KeyDown="SearchBox_KeyDown"
+                         ToolTip="Seçili arama türünde ara — Enter veya Ara butonu ile"/>
                 <Button Content="Ara" Width="55" Margin="0,0,12,0" Command="{Binding SearchCommand}"/>
                 <ComboBox ItemsSource="{Binding StatusFilterOptions}"
                           SelectedItem="{Binding SelectedStatusFilter, Mode=TwoWay}"
                           Width="130" Margin="0,0,6,0"
                           SelectionChanged="StatusFilter_SelectionChanged"
-                          ToolTip="Duruma göre filtrele"/>
+                          ToolTip="Kargo durumuna göre filtrele"/>
                 <ComboBox ItemsSource="{Binding PriorityFilterOptions}"
                           SelectedItem="{Binding SelectedPriorityFilter, Mode=TwoWay}"
                           Width="110"
@@ -43,31 +48,13 @@
             </StackPanel>
         </DockPanel>
 
-        <!-- Araç çubuğu — 2. satır: Operasyon butonları -->
+        <!-- Araç çubuğu — 2. satır: Tek Operasyon butonu -->
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,6">
-            <!-- Takip Et: seçili kargoyu tarayıcıda açar -->
-            <Button x:Name="TrackButton" Content="Takip Et" Width="90" Margin="0,0,6,0"
+            <Button x:Name="OperationButton"
+                    Content="⚡ Operasyon" Width="120" Margin="0,0,0,0"
                     IsEnabled="{Binding HasSelected}"
-                    Click="TrackButton_Click"/>
-
-            <!-- Durum Değiştir: QuickUpdateStatusDialog açar -->
-            <Button x:Name="QuickStatusButton" Content="Durum Değiştir" Width="110" Margin="0,0,6,0"
-                    IsEnabled="{Binding HasSelected}"
-                    Click="QuickStatusButton_Click"/>
-
-            <!-- Etiket Yazdır: PDF önizleme açar; gerçek baskı kullanıcının PDF görüntüleyicisinden yapılır -->
-            <Button Content="Etiket Yazdır" Width="100" Margin="0,0,6,0"
-                    IsEnabled="{Binding HasSelected}"
-                    Click="LabelButton_Click"
-                    ToolTip="Seçili kargo için A6 PDF etiketi oluşturur ve önizleme açar"/>
-            <Button x:Name="WhatsAppButton" Content="WhatsApp Hazırla" Width="120" Margin="0,0,6,0"
-                    IsEnabled="{Binding HasSelected}"
-                    Click="WhatsAppButton_Click"
-                    ToolTip="Seçili kargo için WhatsApp mesajı hazırlar ve önizleme açar"/>
-            <Button x:Name="MailButton" Content="Mail Hazırla" Width="100"
-                    IsEnabled="{Binding HasSelected}"
-                    Click="MailButton_Click"
-                    ToolTip="Seçili kargo için mail mesajı hazırlar ve önizleme açar"/>
+                    Click="OperationButton_Click"
+                    ToolTip="Seçili kargo için operasyon merkezini açar: Etiket, WhatsApp, Mail, Takip, Durum Değiştir"/>
         </StackPanel>
 
         <!-- Liste -->
@@ -155,9 +142,9 @@
                 <DataGridTextColumn Header="Durum"
                                     Binding="{Binding StatusDisplay}"
                                     Width="100"/>
-                <DataGridTextColumn Header="Bildirim"
+                <DataGridTextColumn Header="Bildirim Durumu"
                                     Binding="{Binding NotificationStatusDisplay}"
-                                    Width="100"/>
+                                    Width="110"/>
             </DataGrid.Columns>
         </DataGrid>
 

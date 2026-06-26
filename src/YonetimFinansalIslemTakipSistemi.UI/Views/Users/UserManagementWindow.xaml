@@ -5,6 +5,7 @@
         Height="480" Width="680"
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanResizeWithGrip"
+        Icon="pack://application:,,,/Assets/AppIcon.ico"
         Loaded="Window_Loaded">
 
     <DockPanel Margin="10">

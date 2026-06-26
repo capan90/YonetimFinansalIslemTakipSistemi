@@ -8,6 +8,7 @@
         Width="720" Height="660"
         MinWidth="580" MinHeight="500"
         WindowStartupLocation="CenterOwner"
+        Icon="pack://application:,,,/Assets/AppIcon.ico"
         ResizeMode="CanResize">
 
     <Window.Resources>

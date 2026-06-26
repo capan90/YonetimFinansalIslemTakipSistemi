@@ -5,6 +5,7 @@
         Height="720" Width="900"
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanResizeWithGrip"
+        Icon="pack://application:,,,/Assets/AppIcon.ico"
         Loaded="Window_Loaded">
 
     <DockPanel Margin="12">
@@ -23,6 +24,7 @@
                         <Button Content="Önizle"
                                 Width="80"
                                 Margin="0,0,6,0"
+                                Style="{StaticResource SecondaryButton}"
                                 IsEnabled="{Binding HasReport}"
                                 ToolTip="Raporu önizleme penceresinde gösterir; PDF ve Excel kaydetme seçeneği sunar."
                                 Click="Preview_Click"/>
@@ -31,7 +33,7 @@
                                 ToolTip="Seçili filtreler ile raporu yeniden yükler."
                                 Command="{Binding LoadReportCommand}">
                             <Button.Style>
-                                <Style TargetType="Button">
+                                <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsLoading}" Value="True">
                                             <Setter Property="IsEnabled" Value="False"/>

@@ -3,61 +3,74 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{Binding WindowTitle}"
         SizeToContent="Height"
-        Width="380"
+        Width="420"
+        MinWidth="360"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize">
+        ResizeMode="NoResize"
+        Icon="pack://application:,,,/Assets/AppIcon.ico">
 
-    <StackPanel Margin="20">
+    <Border Background="White" Padding="24,20">
+        <StackPanel>
 
-        <Label Content="İşlem Tarihi:" Margin="0,0,0,2"/>
-        <DatePicker SelectedDate="{Binding TransactionDate, Mode=TwoWay}"
-                    Margin="0,0,0,10"/>
+            <!-- Form alanları -->
+            <TextBlock Text="İşlem Tarihi" FontSize="12" Foreground="#475569" Margin="0,0,0,3"/>
+            <DatePicker SelectedDate="{Binding TransactionDate, Mode=TwoWay}"
+                        Margin="0,0,0,14"/>
 
-        <Label Content="İşlem Türü:" Margin="0,0,0,2"/>
-        <ComboBox ItemsSource="{Binding TransactionTypeOptions}"
-                  SelectedItem="{Binding SelectedTransactionType, Mode=TwoWay}"
-                  Margin="0,0,0,10"/>
+            <TextBlock Text="İşlem Türü" FontSize="12" Foreground="#475569" Margin="0,0,0,3"/>
+            <ComboBox ItemsSource="{Binding TransactionTypeOptions}"
+                      SelectedItem="{Binding SelectedTransactionType, Mode=TwoWay}"
+                      Height="30" Margin="0,0,0,14"/>
 
-        <Label Content="Para Birimi:" Margin="0,0,0,2"/>
-        <ComboBox ItemsSource="{Binding CurrencyTypeOptions}"
-                  SelectedItem="{Binding SelectedCurrencyType, Mode=TwoWay}"
-                  Margin="0,0,0,10"/>
+            <TextBlock Text="Para Birimi" FontSize="12" Foreground="#475569" Margin="0,0,0,3"/>
+            <ComboBox ItemsSource="{Binding CurrencyTypeOptions}"
+                      SelectedItem="{Binding SelectedCurrencyType, Mode=TwoWay}"
+                      Height="30" Margin="0,0,0,14"/>
 
-        <Label Content="Tutar:" Margin="0,0,0,2"/>
-        <TextBox Text="{Binding AmountText, UpdateSourceTrigger=PropertyChanged}"
-                 Margin="0,0,0,10"/>
+            <TextBlock Text="Tutar" FontSize="12" Foreground="#475569" Margin="0,0,0,3"/>
+            <TextBox Text="{Binding AmountText, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,0,14"/>
 
-        <Label Content="Açıklama:" Margin="0,0,0,2"/>
-        <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
-                 Margin="0,0,0,14"/>
+            <TextBlock Text="Açıklama" FontSize="12" Foreground="#475569" Margin="0,0,0,3"/>
+            <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,0,16"/>
 
-        <!-- Hata mesajı -->
-        <TextBlock Text="{Binding ErrorMessage}"
-                   Foreground="Red"
-                   TextWrapping="Wrap"
-                   Margin="0,0,0,10">
-            <TextBlock.Style>
-                <Style TargetType="TextBlock">
-                    <Setter Property="Visibility" Value="Visible"/>
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding ErrorMessage}" Value="{x:Null}">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </TextBlock.Style>
-        </TextBlock>
+            <!-- Hata mesajı -->
+            <Border Background="#FFF5F5" BorderBrush="#FCA5A5" BorderThickness="1"
+                    CornerRadius="4" Padding="10,7" Margin="0,0,0,12">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Visibility" Value="Visible"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ErrorMessage}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding ErrorMessage}" Value="">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <TextBlock Text="{Binding ErrorMessage}"
+                           Foreground="#C62828"
+                           TextWrapping="Wrap"
+                           FontSize="12"/>
+            </Border>
 
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button Content="Kaydet"
-                    Command="{Binding SaveCommand}"
-                    IsDefault="True"
-                    Width="80" Margin="0,0,8,0"/>
-            <Button Content="İptal"
-                    IsCancel="True"
-                    Width="80"
-                    Click="CancelButton_Click"/>
+            <!-- Butonlar sağ altta -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="İptal"
+                        Width="80" Margin="0,0,8,0"
+                        Style="{StaticResource SecondaryButton}"
+                        IsCancel="True"
+                        Click="CancelButton_Click"/>
+                <Button Content="Kaydet"
+                        Width="80"
+                        Style="{StaticResource PrimaryButton}"
+                        IsDefault="True"
+                        Command="{Binding SaveCommand}"/>
+            </StackPanel>
+
         </StackPanel>
-
-    </StackPanel>
+    </Border>
 </Window>

@@ -4,7 +4,8 @@
         Title="Rapor Önizleme"
         Height="720" Width="920"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="CanResizeWithGrip">
+        ResizeMode="CanResizeWithGrip"
+        Icon="pack://application:,,,/Assets/AppIcon.ico">
 
     <DockPanel Margin="16">
 

@@ -4,7 +4,8 @@
         Title="Giriş Yap"
         Height="300" Width="380"
         ResizeMode="NoResize"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        Icon="pack://application:,,,/Assets/AppIcon.ico">
 
     <StackPanel Margin="32,24">
 

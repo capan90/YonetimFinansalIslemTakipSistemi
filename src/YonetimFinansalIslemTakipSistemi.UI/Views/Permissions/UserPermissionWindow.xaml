@@ -4,6 +4,7 @@
         Title="Yetki Yönetimi"
         Height="580" Width="480"
         WindowStartupLocation="CenterOwner"
+        Icon="pack://application:,,,/Assets/AppIcon.ico"
         ResizeMode="CanResizeWithGrip"
         Loaded="Window_Loaded">
 

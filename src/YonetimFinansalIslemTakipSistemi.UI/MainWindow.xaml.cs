@@ -404,7 +404,7 @@ public partial class MainWindow : Window
         MenuItemRaporlar.Visibility     = canReports  ? Visibility.Visible : Visibility.Collapsed;
         MenuItemAnaliz.Visibility       = canReports  ? Visibility.Visible : Visibility.Collapsed;
         MenuItemDoviz.Visibility        = canExchange ? Visibility.Visible : Visibility.Collapsed;
-        // DB testi, log klasörü ve sistem sağlığı yönetici eylemleridir
+        // DB testi, log klasörü ve sistem sağlığı — Ayarlar menüsüne taşındı, yönetici yetkisi gerekir
         MenuItemDbTest.Visibility        = canManage ? Visibility.Visible : Visibility.Collapsed;
         MenuItemLogKlasor.Visibility     = canManage ? Visibility.Visible : Visibility.Collapsed;
         MenuItemSistemSagligi.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
@@ -435,10 +435,10 @@ public partial class MainWindow : Window
         MenuItemKargoDashboard.Visibility = userContext.HasPermission(PermissionType.CanViewCargoModule)
             ? Visibility.Visible : Visibility.Collapsed;
 
-        // Ayarlar menüsü
+        // Ayarlar menüsü: mail ayarları VEYA teknik/operasyonel işlemler yetkisi varsa göster
         var canSettings = userContext.HasPermission(PermissionType.CanManageMailSettings);
-        MenuItemAyarlar.Visibility    = canSettings ? Visibility.Visible : Visibility.Collapsed;
-        MenuItemMailAyarlari.Visibility = canSettings ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemAyarlar.Visibility      = canSettings || canManage ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemMailAyarlari.Visibility  = canSettings ? Visibility.Visible : Visibility.Collapsed;
 
         // İşlem kopyalama — create yetkisi gerekir
         var canCreate = userContext.HasPermission(PermissionType.CanCreateTransaction);

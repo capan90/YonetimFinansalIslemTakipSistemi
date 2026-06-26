@@ -5,7 +5,8 @@
         SizeToContent="Height"
         Width="380"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize">
+        ResizeMode="NoResize"
+        Icon="pack://application:,,,/Assets/AppIcon.ico">
 
     <StackPanel Margin="20">
 

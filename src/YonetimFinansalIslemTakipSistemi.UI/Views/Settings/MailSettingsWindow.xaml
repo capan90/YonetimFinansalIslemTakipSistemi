@@ -5,6 +5,7 @@
         Width="520" SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
+        Icon="pack://application:,,,/Assets/AppIcon.ico"
         Background="#F5F6FA">
 
     <Window.Resources>

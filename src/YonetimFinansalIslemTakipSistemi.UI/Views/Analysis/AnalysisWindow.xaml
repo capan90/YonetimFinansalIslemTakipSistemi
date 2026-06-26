@@ -4,7 +4,8 @@
         Title="Finans Analiz Merkezi"
         Height="780" Width="1100"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="CanResizeWithGrip">
+        ResizeMode="CanResizeWithGrip"
+        Icon="pack://application:,,,/Assets/AppIcon.ico">
 
     <DockPanel Margin="12">
 
@@ -16,7 +17,7 @@
                             ToolTip="Seçili filtrelerle analiz verilerini yeniden yükler."
                             Command="{Binding LoadCommand}">
                         <Button.Style>
-                            <Style TargetType="Button">
+                            <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsLoading}" Value="True">
                                         <Setter Property="IsEnabled" Value="False"/>

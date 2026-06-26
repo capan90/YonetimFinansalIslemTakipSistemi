@@ -63,4 +63,62 @@ public class CargoShipmentRepository : ICargoShipmentRepository
 
         return $"{prefix}-{year}-{(maxSeq + 1):D4}";
     }
+
+    public async Task<IReadOnlyList<CargoShipment>> GetAllActiveAsync()
+        => await _context.CargoShipments
+            .AsNoTracking()
+            .Include(x => x.CargoCompany)
+            .Include(x => x.CompanyDirectory)
+            .ToListAsync();
+
+    public async Task<IReadOnlyList<CargoShipment>> GetRecentAsync(int count)
+        => await _context.CargoShipments
+            .AsNoTracking()
+            .Include(x => x.CargoCompany)
+            .Include(x => x.CompanyDirectory)
+            .OrderByDescending(x => x.CreatedAt)
+            .Take(count)
+            .ToListAsync();
+
+    public async Task<IReadOnlyList<CargoShipment>> GetFilteredReportAsync(
+        DateTime?                dateFrom,
+        DateTime?                dateTo,
+        CargoShipmentDirection?  direction,
+        Guid?                    cargoCompanyId,
+        CargoShipmentStatus?     status,
+        CargoNotificationStatus? notificationStatus,
+        CargoShipmentPriority?   priority)
+    {
+        var query = _context.CargoShipments
+            .AsNoTracking()
+            .Include(x => x.CargoCompany)
+            .Include(x => x.CompanyDirectory)
+            .AsQueryable();
+
+        if (dateFrom.HasValue)
+            query = query.Where(x => x.ShipmentDate >= dateFrom.Value.Date);
+
+        if (dateTo.HasValue)
+            query = query.Where(x => x.ShipmentDate <= dateTo.Value.Date);
+
+        if (direction.HasValue)
+            query = query.Where(x => x.Direction == direction.Value);
+
+        if (cargoCompanyId.HasValue)
+            query = query.Where(x => x.CargoCompanyId == cargoCompanyId.Value);
+
+        if (status.HasValue)
+            query = query.Where(x => x.Status == status.Value);
+
+        if (notificationStatus.HasValue)
+            query = query.Where(x => x.NotificationStatus == notificationStatus.Value);
+
+        if (priority.HasValue)
+            query = query.Where(x => x.Priority == priority.Value);
+
+        return await query
+            .OrderByDescending(x => x.ShipmentDate)
+            .ThenByDescending(x => x.CreatedAt)
+            .ToListAsync();
+    }
 }

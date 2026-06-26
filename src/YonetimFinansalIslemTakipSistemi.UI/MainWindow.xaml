@@ -47,6 +47,10 @@
             </MenuItem>
             <!-- Kargo Katip modülü -->
             <MenuItem x:Name="MenuItemKargoKatip" Header="Kargo Katip">
+                <MenuItem x:Name="MenuItemKargoDashboard"
+                          Header="Dashboard"
+                          Click="OpenCargoDashboard_Click"/>
+                <Separator/>
                 <MenuItem x:Name="MenuItemGelenKargolar"
                           Header="Gelen Kargolar"
                           Click="OpenIncomingCargo_Click"/>

@@ -1,0 +1,407 @@
+<Window x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.Cargo.CargoDashboardWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Kargo Dashboard"
+        Width="1100" Height="800"
+        MinWidth="900" MinHeight="600"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize">
+
+    <DockPanel>
+
+        <!-- Alt: Kapat butonu -->
+        <Border DockPanel.Dock="Bottom"
+                Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0,1,0,0"
+                Padding="12,8">
+            <Button x:Name="CloseButton"
+                    Content="Kapat"
+                    Width="90" Height="30"
+                    HorizontalAlignment="Right"
+                    Click="CloseButton_Click"/>
+        </Border>
+
+        <!-- Ana içerik -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+            <StackPanel Margin="14,10,14,10">
+
+                <!-- ── Bölüm başlığı: Dashboard ─────────────────── -->
+                <DockPanel Margin="0,0,0,8">
+                    <TextBlock DockPanel.Dock="Left"
+                               Text="Kargo Dashboard"
+                               FontSize="16" FontWeight="Bold" Foreground="#1A3354"
+                               VerticalAlignment="Center"/>
+                    <Button DockPanel.Dock="Right"
+                            x:Name="RefreshDashboardButton"
+                            Content="Yenile"
+                            Width="70" Height="26"
+                            HorizontalAlignment="Right"
+                            Click="RefreshDashboardButton_Click"/>
+                    <TextBlock DockPanel.Dock="Right"
+                               x:Name="DashboardDateBlock"
+                               Foreground="#64748B" FontSize="11"
+                               VerticalAlignment="Center" Margin="0,0,8,0"
+                               HorizontalAlignment="Right"/>
+                </DockPanel>
+
+                <!-- ── 6 Kart ─────────────────────────────────────── -->
+                <WrapPanel x:Name="CardsPanel"
+                           Orientation="Horizontal"
+                           Margin="0,0,0,12">
+
+                    <!-- Bugün Gelen -->
+                    <Border x:Name="CardTodayIncoming"
+                            Width="160" Height="80" Margin="0,0,10,10"
+                            Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1"
+                            CornerRadius="6" Padding="12,8">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="CardTodayIncomingVal"
+                                       Text="—" FontSize="26" FontWeight="Bold"
+                                       Foreground="#1D4ED8"/>
+                            <TextBlock Text="Bugün Gelen"
+                                       FontSize="11" Foreground="#3B82F6"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Bugün Giden -->
+                    <Border Width="160" Height="80" Margin="0,0,10,10"
+                            Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1"
+                            CornerRadius="6" Padding="12,8">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="CardTodayOutgoingVal"
+                                       Text="—" FontSize="26" FontWeight="Bold"
+                                       Foreground="#15803D"/>
+                            <TextBlock Text="Bugün Giden"
+                                       FontSize="11" Foreground="#22C55E"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Toplam Bekleyen -->
+                    <Border Width="160" Height="80" Margin="0,0,10,10"
+                            Background="#FFF7ED" BorderBrush="#FED7AA" BorderThickness="1"
+                            CornerRadius="6" Padding="12,8">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="CardPendingVal"
+                                       Text="—" FontSize="26" FontWeight="Bold"
+                                       Foreground="#C2410C"/>
+                            <TextBlock Text="Toplam Bekleyen"
+                                       FontSize="11" Foreground="#F97316"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Bildirim Bekleyen -->
+                    <Border Width="160" Height="80" Margin="0,0,10,10"
+                            Background="#F5F3FF" BorderBrush="#DDD6FE" BorderThickness="1"
+                            CornerRadius="6" Padding="12,8">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="CardNotifPendingVal"
+                                       Text="—" FontSize="26" FontWeight="Bold"
+                                       Foreground="#7C3AED"/>
+                            <TextBlock Text="Bildirim Bekleyen"
+                                       FontSize="11" Foreground="#8B5CF6"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Acil Bekleyen -->
+                    <Border Width="160" Height="80" Margin="0,0,10,10"
+                            Background="#FFF1F2" BorderBrush="#FECDD3" BorderThickness="1"
+                            CornerRadius="6" Padding="12,8">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="CardUrgentVal"
+                                       Text="—" FontSize="26" FontWeight="Bold"
+                                       Foreground="#BE123C"/>
+                            <TextBlock Text="Acil Bekleyen"
+                                       FontSize="11" Foreground="#F43F5E"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Bugün Teslim -->
+                    <Border Width="160" Height="80" Margin="0,0,10,10"
+                            Background="#F0FDF4" BorderBrush="#86EFAC" BorderThickness="1"
+                            CornerRadius="6" Padding="12,8">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="CardTodayDeliveredVal"
+                                       Text="—" FontSize="26" FontWeight="Bold"
+                                       Foreground="#166534"/>
+                            <TextBlock Text="Bugün Teslim"
+                                       FontSize="11" Foreground="#16A34A"/>
+                        </StackPanel>
+                    </Border>
+
+                </WrapPanel>
+
+                <!-- ── Grafik satırı ─────────────────────────────── -->
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Grafik 1: Gelen/Giden -->
+                    <Border Grid.Column="0"
+                            BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="4" Padding="10">
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,6">
+                                <TextBlock DockPanel.Dock="Left"
+                                           Text="Gelen / Giden (son 30 gün)"
+                                           FontWeight="SemiBold" FontSize="11" Foreground="#1A3354"/>
+                            </DockPanel>
+                            <ItemsControl x:Name="DirectionChart">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="30"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding Label}"
+                                                       FontSize="10" VerticalAlignment="Center"/>
+                                            <Border Grid.Column="1"
+                                                    Height="18" CornerRadius="2"
+                                                    HorizontalAlignment="Left"
+                                                    MinWidth="4"
+                                                    Width="{Binding BarWidth}"
+                                                    Background="{Binding Color}"
+                                                    Margin="0,0,4,0"/>
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{Binding Value}"
+                                                       FontSize="10" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Grafik 2: Durum Dağılımı -->
+                    <Border Grid.Column="2"
+                            BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="4" Padding="10">
+                        <StackPanel>
+                            <TextBlock Text="Durum Dağılımı"
+                                       FontWeight="SemiBold" FontSize="11" Foreground="#1A3354"
+                                       Margin="0,0,0,6"/>
+                            <ItemsControl x:Name="StatusChart">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="30"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding Label}"
+                                                       FontSize="10" VerticalAlignment="Center"/>
+                                            <Border Grid.Column="1"
+                                                    Height="18" CornerRadius="2"
+                                                    HorizontalAlignment="Left"
+                                                    MinWidth="4"
+                                                    Width="{Binding BarWidth}"
+                                                    Background="{Binding Color}"
+                                                    Margin="0,0,4,0"/>
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{Binding Value}"
+                                                       FontSize="10" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Grafik 3: Top 5 Kargo Firması -->
+                    <Border Grid.Column="4"
+                            BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="4" Padding="10">
+                        <StackPanel>
+                            <TextBlock Text="Top 5 Kargo Firması"
+                                       FontWeight="SemiBold" FontSize="11" Foreground="#1A3354"
+                                       Margin="0,0,0,6"/>
+                            <ItemsControl x:Name="CompanyChart">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="30"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding Label}"
+                                                       FontSize="10" VerticalAlignment="Center"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <Border Grid.Column="1"
+                                                    Height="18" CornerRadius="2"
+                                                    HorizontalAlignment="Left"
+                                                    MinWidth="4"
+                                                    Width="{Binding BarWidth}"
+                                                    Background="{Binding Color}"
+                                                    Margin="0,0,4,0"/>
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{Binding Value}"
+                                                       FontSize="10" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- ── Son 10 Hareket ────────────────────────────── -->
+                <TextBlock Text="Son 10 Hareket"
+                           FontSize="13" FontWeight="Bold" Foreground="#1A3354"
+                           Margin="0,0,0,4"/>
+                <DataGrid x:Name="RecentGrid"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False"
+                          SelectionMode="Single"
+                          Height="180"
+                          Margin="0,0,0,14"
+                          GridLinesVisibility="Horizontal"
+                          AlternatingRowBackground="#F8FAFC">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Kargo No"      Binding="{Binding ShipmentNumber}"            Width="100"/>
+                        <DataGridTextColumn Header="Yön"            Binding="{Binding DirectionDisplay}"          Width="60"/>
+                        <DataGridTextColumn Header="Tarih"          Binding="{Binding ShipmentDate, StringFormat=dd.MM.yyyy}" Width="80"/>
+                        <DataGridTextColumn Header="Firma/Karşı Taraf" Binding="{Binding Party}"                 Width="*"/>
+                        <DataGridTextColumn Header="Kargo Firması"  Binding="{Binding CargoCompanyName}"         Width="120"/>
+                        <DataGridTextColumn Header="Durum"          Binding="{Binding StatusDisplay}"            Width="100"/>
+                        <DataGridTextColumn Header="Bildirim"       Binding="{Binding NotificationStatusDisplay}" Width="100"/>
+                        <DataGridTextColumn Header="Öncelik"        Binding="{Binding PriorityDisplay}"          Width="70"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <Separator Margin="0,0,0,10"/>
+
+                <!-- ── Rapor Filtreleri ──────────────────────────── -->
+                <TextBlock Text="Filtrelenebilir Rapor"
+                           FontSize="13" FontWeight="Bold" Foreground="#1A3354"
+                           Margin="0,0,0,6"/>
+
+                <GroupBox Header="Filtreler" Padding="8,4,8,8" Margin="0,0,0,8">
+                    <StackPanel>
+                        <!-- Satır 1: tarih, yön, karşı taraf, kargo firması -->
+                        <WrapPanel Orientation="Horizontal" ItemHeight="28" Margin="0,4,0,4">
+
+                            <TextBlock Text="Başlangıç:" VerticalAlignment="Center" Margin="0,0,4,0" Width="62"/>
+                            <DatePicker x:Name="DateFromPicker" Width="120" VerticalAlignment="Center" Margin="0,0,12,0"/>
+
+                            <TextBlock Text="Bitiş:" VerticalAlignment="Center" Margin="0,0,4,0" Width="38"/>
+                            <DatePicker x:Name="DateToPicker" Width="120" VerticalAlignment="Center" Margin="0,0,12,0"/>
+
+                            <TextBlock Text="Yön:" VerticalAlignment="Center" Margin="0,0,4,0" Width="32"/>
+                            <ComboBox x:Name="DirectionCombo" Width="90" VerticalAlignment="Center" Margin="0,0,12,0"/>
+
+                            <TextBlock Text="Karşı Taraf:" VerticalAlignment="Center" Margin="0,0,4,0" Width="68"/>
+                            <TextBox x:Name="KeywordBox" Width="130" VerticalAlignment="Center" Margin="0,0,12,0"
+                                     Padding="3,2"/>
+
+                            <TextBlock Text="Kargo Firması:" VerticalAlignment="Center" Margin="0,0,4,0" Width="78"/>
+                            <ComboBox x:Name="CargoCompanyCombo" Width="140" VerticalAlignment="Center"/>
+                        </WrapPanel>
+
+                        <!-- Satır 2: durum, bildirim, öncelik, araç, takip, kargo no -->
+                        <WrapPanel Orientation="Horizontal" ItemHeight="28" Margin="0,0,0,4">
+
+                            <TextBlock Text="Durum:" VerticalAlignment="Center" Margin="0,0,4,0" Width="44"/>
+                            <ComboBox x:Name="StatusCombo" Width="110" VerticalAlignment="Center" Margin="0,0,12,0"/>
+
+                            <TextBlock Text="Bildirim:" VerticalAlignment="Center" Margin="0,0,4,0" Width="52"/>
+                            <ComboBox x:Name="NotifStatusCombo" Width="110" VerticalAlignment="Center" Margin="0,0,12,0"/>
+
+                            <TextBlock Text="Öncelik:" VerticalAlignment="Center" Margin="0,0,4,0" Width="52"/>
+                            <ComboBox x:Name="PriorityCombo" Width="90" VerticalAlignment="Center" Margin="0,0,12,0"/>
+
+                            <TextBlock Text="Araç Plaka:" VerticalAlignment="Center" Margin="0,0,4,0" Width="66"/>
+                            <TextBox x:Name="VehiclePlateBox" Width="90" VerticalAlignment="Center" Margin="0,0,12,0"
+                                     Padding="3,2"/>
+
+                            <TextBlock Text="Takip No:" VerticalAlignment="Center" Margin="0,0,4,0" Width="58"/>
+                            <TextBox x:Name="TrackingBox" Width="90" VerticalAlignment="Center" Margin="0,0,12,0"
+                                     Padding="3,2"/>
+
+                            <TextBlock Text="Kargo No:" VerticalAlignment="Center" Margin="0,0,4,0" Width="60"/>
+                            <TextBox x:Name="ShipmentNoBox" Width="90" VerticalAlignment="Center" Margin="0,0,12,0"
+                                     Padding="3,2"/>
+
+                        </WrapPanel>
+
+                        <!-- Filtre butonları -->
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <Button x:Name="FilterButton"
+                                    Content="Raporu Getir"
+                                    Width="110" Height="28"
+                                    Background="#2E5984" Foreground="White"
+                                    Click="FilterButton_Click"
+                                    Margin="0,0,8,0"/>
+                            <Button x:Name="ClearFilterButton"
+                                    Content="Filtreleri Temizle"
+                                    Width="120" Height="28"
+                                    Click="ClearFilterButton_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- ── Rapor Sonuç Özeti ─────────────────────────── -->
+                <Border x:Name="ReportSummaryBorder"
+                        Background="#EEF4FA" BorderBrush="#93C5FD" BorderThickness="1"
+                        CornerRadius="4" Padding="10,6" Margin="0,0,0,6"
+                        Visibility="Collapsed">
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right"
+                                x:Name="ExportPdfButton"
+                                Content="PDF İndir"
+                                Width="90" Height="26"
+                                Background="#1A3354" Foreground="White"
+                                Click="ExportPdfButton_Click"
+                                Margin="8,0,0,0"/>
+                        <TextBlock x:Name="ReportSummaryBlock"
+                                   Foreground="#1E40AF" FontSize="11"
+                                   VerticalAlignment="Center"/>
+                    </DockPanel>
+                </Border>
+
+                <!-- PDF başarı / hata bildirimi -->
+                <Border x:Name="ExportResultBorder"
+                        Background="#F0FDF4" BorderBrush="#86EFAC" BorderThickness="1"
+                        CornerRadius="4" Padding="8,5" Margin="0,0,0,6"
+                        Visibility="Collapsed">
+                    <TextBlock x:Name="ExportResultBlock"
+                               Foreground="#166534" FontSize="11"/>
+                </Border>
+
+                <!-- ── Rapor Tablosu ──────────────────────────────── -->
+                <DataGrid x:Name="ReportGrid"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False"
+                          SelectionMode="Single"
+                          Height="280"
+                          GridLinesVisibility="Horizontal"
+                          AlternatingRowBackground="#F8FAFC"
+                          MouseDoubleClick="ReportGrid_MouseDoubleClick">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Kargo No"       Binding="{Binding ShipmentNumber}"              Width="100"/>
+                        <DataGridTextColumn Header="Yön"             Binding="{Binding DirectionDisplay}"            Width="55"/>
+                        <DataGridTextColumn Header="Tarih"           Binding="{Binding ShipmentDate, StringFormat=dd.MM.yyyy}" Width="75"/>
+                        <DataGridTextColumn Header="Firma / Karşı Taraf" Binding="{Binding Party}"                  Width="*"/>
+                        <DataGridTextColumn Header="Kargo Firması"   Binding="{Binding CargoCompanyName}"           Width="120"/>
+                        <DataGridTextColumn Header="Takip No"        Binding="{Binding TrackingNumber}"             Width="110"/>
+                        <DataGridTextColumn Header="Araç Plaka"      Binding="{Binding VehiclePlate}"               Width="90"/>
+                        <DataGridTextColumn Header="Durum"           Binding="{Binding StatusDisplay}"              Width="100"/>
+                        <DataGridTextColumn Header="Bildirim"        Binding="{Binding NotificationStatusDisplay}"  Width="100"/>
+                        <DataGridTextColumn Header="Öncelik"         Binding="{Binding PriorityDisplay}"            Width="70"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

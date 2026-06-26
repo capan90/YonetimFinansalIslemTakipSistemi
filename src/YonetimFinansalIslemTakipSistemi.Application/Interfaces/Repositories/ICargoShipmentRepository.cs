@@ -16,4 +16,20 @@ public interface ICargoShipmentRepository
     /// Gelen: C-YYYY-0001, Giden: G-YYYY-0001. Silinmiş kayıtlar dahil tüm mevcut numaralar dikkate alınır.
     /// </summary>
     Task<string> GetNextShipmentNumberAsync(CargoShipmentDirection direction, int year);
+
+    /// <summary>Silinmemiş tüm kargo kayıtlarını ilişkileriyle döner (Dashboard, Rapor için).</summary>
+    Task<IReadOnlyList<CargoShipment>> GetAllActiveAsync();
+
+    /// <summary>En son oluşturulan <paramref name="count"/> kaydı ilişkileriyle döner.</summary>
+    Task<IReadOnlyList<CargoShipment>> GetRecentAsync(int count);
+
+    /// <summary>Sunucu tarafı filtreli rapor verisi; metin filtreleme handler'da yapılır.</summary>
+    Task<IReadOnlyList<CargoShipment>> GetFilteredReportAsync(
+        DateTime?                dateFrom,
+        DateTime?                dateTo,
+        CargoShipmentDirection?  direction,
+        Guid?                    cargoCompanyId,
+        CargoShipmentStatus?     status,
+        CargoNotificationStatus? notificationStatus,
+        CargoShipmentPriority?   priority);
 }

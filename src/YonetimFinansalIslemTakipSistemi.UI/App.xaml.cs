@@ -53,6 +53,8 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Querie
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Label.GenerateCargoLabel;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Notification.GenerateCargoNotification;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Notification.MarkCargoNotificationPrepared;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Queries.GetCargoDashboard;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Queries.GetCargoReport;
 using YonetimFinansalIslemTakipSistemi.Application.Services;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Cargo;
 
@@ -229,6 +231,12 @@ public partial class App : System.Windows.Application
         services.AddSingleton<MailNotificationComposer>();
         services.AddScoped<GenerateCargoNotificationHandler>();
         services.AddScoped<MarkCargoNotificationPreparedHandler>();
+
+        // Dashboard + Rapor — Sprint 5
+        services.AddScoped<GetCargoDashboardHandler>();
+        services.AddScoped<GetCargoReportHandler>();
+        // ICargoReportPdfExporter: Singleton — renderer durumsuz
+        services.AddSingleton<ICargoReportPdfExporter, QuestPdfCargoReportExporter>();
 
         // ViewModels
         services.AddTransient<LoginViewModel>();

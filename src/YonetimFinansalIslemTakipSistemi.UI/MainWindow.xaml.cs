@@ -431,6 +431,9 @@ public partial class MainWindow : Window
         MenuItemKargoFirmalari.Visibility = userContext.HasPermission(PermissionType.CanManageCargoCompanies)
                                          || userContext.HasPermission(PermissionType.CanViewCargoModule)
             ? Visibility.Visible : Visibility.Collapsed;
+
+        MenuItemKargoDashboard.Visibility = userContext.HasPermission(PermissionType.CanViewCargoModule)
+            ? Visibility.Visible : Visibility.Collapsed;
     }
 
     // ── İşlem Butonları ───────────────────────────────────────────────────────
@@ -556,6 +559,11 @@ public partial class MainWindow : Window
     }
 
     // ── Kargo Katip Menü Tıklamaları ─────────────────────────────────────────
+
+    private void OpenCargoDashboard_Click(object sender, RoutedEventArgs e)
+    {
+        new CargoDashboardWindow(_services) { Owner = this }.ShowDialog();
+    }
 
     private void OpenIncomingCargo_Click(object sender, RoutedEventArgs e)
     {

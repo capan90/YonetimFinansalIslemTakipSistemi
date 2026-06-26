@@ -9,21 +9,24 @@ namespace YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Co
 
 public class UpdateCargoShipmentHandler
 {
-    private readonly ICargoShipmentRepository _repository;
-    private readonly ICargoCompanyRepository _cargoCompanyRepository;
-    private readonly IAuditLogService _auditLogService;
-    private readonly IUserContext _userContext;
+    private readonly ICargoShipmentRepository    _repository;
+    private readonly ICargoCompanyRepository     _cargoCompanyRepository;
+    private readonly IAuditLogService            _auditLogService;
+    private readonly IUserContext                _userContext;
+    private readonly ICargoDashboardCacheService _cache;
 
     public UpdateCargoShipmentHandler(
-        ICargoShipmentRepository repository,
-        ICargoCompanyRepository cargoCompanyRepository,
-        IAuditLogService auditLogService,
-        IUserContext userContext)
+        ICargoShipmentRepository    repository,
+        ICargoCompanyRepository     cargoCompanyRepository,
+        IAuditLogService            auditLogService,
+        IUserContext                userContext,
+        ICargoDashboardCacheService cache)
     {
-        _repository            = repository;
+        _repository             = repository;
         _cargoCompanyRepository = cargoCompanyRepository;
-        _auditLogService       = auditLogService;
-        _userContext           = userContext;
+        _auditLogService        = auditLogService;
+        _userContext            = userContext;
+        _cache                  = cache;
     }
 
     public async Task<OperationResult<bool>> HandleAsync(UpdateCargoShipmentRequest request)
@@ -102,6 +105,8 @@ public class UpdateCargoShipmentHandler
             "CargoShipment", entity.Id,
             oldValues, newValues);
 
+        // Güncelleme sonrası dashboard cache geçersiz
+        _cache.Invalidate();
         return OperationResult<bool>.Ok(true);
     }
 

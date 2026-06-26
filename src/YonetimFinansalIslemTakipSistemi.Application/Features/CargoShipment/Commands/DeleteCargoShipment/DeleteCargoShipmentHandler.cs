@@ -7,18 +7,21 @@ namespace YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Co
 
 public class DeleteCargoShipmentHandler
 {
-    private readonly ICargoShipmentRepository _repository;
-    private readonly IAuditLogService _auditLogService;
-    private readonly IUserContext _userContext;
+    private readonly ICargoShipmentRepository    _repository;
+    private readonly IAuditLogService            _auditLogService;
+    private readonly IUserContext                _userContext;
+    private readonly ICargoDashboardCacheService _cache;
 
     public DeleteCargoShipmentHandler(
-        ICargoShipmentRepository repository,
-        IAuditLogService auditLogService,
-        IUserContext userContext)
+        ICargoShipmentRepository    repository,
+        IAuditLogService            auditLogService,
+        IUserContext                userContext,
+        ICargoDashboardCacheService cache)
     {
         _repository      = repository;
         _auditLogService = auditLogService;
         _userContext     = userContext;
+        _cache           = cache;
     }
 
     public async Task<OperationResult<bool>> HandleAsync(DeleteCargoShipmentRequest request)
@@ -50,6 +53,8 @@ public class DeleteCargoShipmentHandler
             "CargoShipment", entity.Id,
             oldValues, null);
 
+        // Silme sonrası dashboard cache geçersiz
+        _cache.Invalidate();
         return OperationResult<bool>.Ok(true);
     }
 }

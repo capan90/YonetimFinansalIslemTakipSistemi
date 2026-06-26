@@ -1,66 +1,58 @@
 using System.Net;
 using System.Net.Mail;
 using Microsoft.Extensions.Logging;
-using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 
 namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Services;
 
 /// <summary>
 /// Kargo bilgilendirme maili için SMTP gönderici.
-/// Mevcut ErrorNotifications SMTP altyapısını kullanır — ayrı sunucu/kimlik yapılandırması gerekmez.
-/// Gönderici adresi: CargoNotificationOptions.FromEmail → SmtpNotificationOptions.From → SmtpUsername öncelik sırası.
+/// SMTP ayarları artık appsettings değil, application_settings tablosundan okunur.
 /// </summary>
 public class CargoSmtpMailSenderService : ICargoMailSenderService
 {
-    private readonly SmtpNotificationOptions              _smtp;
-    private readonly CargoNotificationOptions             _cargo;
-    private readonly ILogger<CargoSmtpMailSenderService>  _logger;
+    private readonly IMailSettingsService                _mailSettings;
+    private readonly ILogger<CargoSmtpMailSenderService> _logger;
 
     public CargoSmtpMailSenderService(
-        SmtpNotificationOptions              smtp,
-        CargoNotificationOptions             cargo,
+        IMailSettingsService                 mailSettings,
         ILogger<CargoSmtpMailSenderService>  logger)
     {
-        _smtp   = smtp;
-        _cargo  = cargo;
-        _logger = logger;
+        _mailSettings = mailSettings;
+        _logger       = logger;
     }
 
     public async Task<(bool Success, string? Error)> SendAsync(
         string to, string? cc, string subject, string body)
     {
-        if (string.IsNullOrWhiteSpace(_smtp.SmtpHost))
-            return (false, "SMTP sunucusu yapılandırılmamış (appsettings → ErrorNotifications:Smtp:Host).");
+        var settings = await _mailSettings.GetAsync();
 
-        // Gönderici önceliği: cargo from > smtp from > smtp username
-        var fromAddr = !string.IsNullOrWhiteSpace(_cargo.FromEmail) ? _cargo.FromEmail
-                     : !string.IsNullOrWhiteSpace(_smtp.From)        ? _smtp.From
-                     : _smtp.SmtpUsername;
+        if (settings is null || string.IsNullOrWhiteSpace(settings.SmtpHost))
+            return (false, "Mail ayarları yapılandırılmamış. Ayarlar → Mail Ayarları bölümünden SMTP bilgilerini girin.");
 
-        if (string.IsNullOrWhiteSpace(fromAddr))
-            return (false, "Gönderici e-posta adresi yapılandırılmamış (CargoNotifications:FromEmail).");
+        if (string.IsNullOrWhiteSpace(settings.SenderEmail))
+            return (false, "Gönderen e-posta adresi ayarlanmamış. Ayarlar → Mail Ayarları bölümüne bakın.");
 
         try
         {
             using var mail = new MailMessage();
-            mail.From    = new MailAddress(fromAddr);
+            mail.From    = new MailAddress(settings.SenderEmail, settings.SenderName);
             mail.To.Add(to);
             if (!string.IsNullOrWhiteSpace(cc)) mail.CC.Add(cc);
             mail.Subject    = subject;
             mail.Body       = body;
             mail.IsBodyHtml = false;
 
-            using var client = new SmtpClient(_smtp.SmtpHost, _smtp.SmtpPort)
+            using var client = new SmtpClient(settings.SmtpHost, settings.SmtpPort)
             {
-                EnableSsl             = _smtp.SmtpEnableSsl,
+                EnableSsl             = settings.EnableSsl,
                 DeliveryMethod        = SmtpDeliveryMethod.Network,
                 UseDefaultCredentials = false,
                 Timeout               = 15_000
             };
 
-            if (!string.IsNullOrWhiteSpace(_smtp.SmtpUsername))
-                client.Credentials = new NetworkCredential(_smtp.SmtpUsername, _smtp.SmtpPassword);
+            if (!string.IsNullOrWhiteSpace(settings.Username))
+                client.Credentials = new NetworkCredential(settings.Username, settings.Password);
 
             await client.SendMailAsync(mail);
             _logger.LogInformation("Kargo bildirim maili gönderildi → {To}", to);

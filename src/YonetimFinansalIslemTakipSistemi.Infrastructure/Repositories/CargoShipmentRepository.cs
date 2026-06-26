@@ -95,11 +95,12 @@ public class CargoShipmentRepository : ICargoShipmentRepository
             .Include(x => x.CompanyDirectory)
             .AsQueryable();
 
+        // timestamptz sütunu için Kind=Utc zorunlu — Npgsql 6+ strict mod
         if (dateFrom.HasValue)
-            query = query.Where(x => x.ShipmentDate >= dateFrom.Value.Date);
+            query = query.Where(x => x.ShipmentDate >= DateTime.SpecifyKind(dateFrom.Value.Date, DateTimeKind.Utc));
 
         if (dateTo.HasValue)
-            query = query.Where(x => x.ShipmentDate <= dateTo.Value.Date);
+            query = query.Where(x => x.ShipmentDate <= DateTime.SpecifyKind(dateTo.Value.Date, DateTimeKind.Utc));
 
         if (direction.HasValue)
             query = query.Where(x => x.Direction == direction.Value);

@@ -8,13 +8,18 @@ namespace YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Qu
 
 public class GetCargoDashboardHandler
 {
-    private readonly ICargoShipmentRepository _repository;
-    private readonly IUserContext             _userContext;
+    private readonly ICargoShipmentRepository     _repository;
+    private readonly IUserContext                 _userContext;
+    private readonly ICargoDashboardCacheService  _cache;
 
-    public GetCargoDashboardHandler(ICargoShipmentRepository repository, IUserContext userContext)
+    public GetCargoDashboardHandler(
+        ICargoShipmentRepository    repository,
+        IUserContext                userContext,
+        ICargoDashboardCacheService cache)
     {
         _repository  = repository;
         _userContext = userContext;
+        _cache       = cache;
     }
 
     public async Task<OperationResult<CargoDashboardDto>> HandleAsync(GetCargoDashboardQuery query)
@@ -22,6 +27,14 @@ public class GetCargoDashboardHandler
         // Dashboard yalnızca CanViewCargoModule yetkisi gerektiriyor
         if (!_userContext.HasPermission(PermissionType.CanViewCargoModule))
             return OperationResult<CargoDashboardDto>.Fail("Dashboard için CanViewCargoModule yetkisi gereklidir.");
+
+        // Cache kontrolü — BypassCache=true ise ("Yenile" butonu) DB'den taze veri çek
+        if (!query.BypassCache)
+        {
+            var cached = _cache.Get();
+            if (cached is not null)
+                return OperationResult<CargoDashboardDto>.Ok(cached);
+        }
 
         var all   = await _repository.GetAllActiveAsync();
         var today = DateTime.Today;
@@ -102,6 +115,8 @@ public class GetCargoDashboardHandler
             .Select(MapToRecent)
             .ToList();
 
+        // Sonucu önbelleğe al
+        _cache.Set(dto);
         return OperationResult<CargoDashboardDto>.Ok(dto);
     }
 

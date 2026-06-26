@@ -55,6 +55,7 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Notifi
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Notification.MarkCargoNotificationPrepared;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Queries.GetCargoDashboard;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Queries.GetCargoReport;
+using YonetimFinansalIslemTakipSistemi.Application.Features.Settings.MailSettings;
 using YonetimFinansalIslemTakipSistemi.Application.Services;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Cargo;
 
@@ -127,6 +128,8 @@ public partial class App : System.Windows.Application
         Log.Debug("Ortam: {AppEnvironment}", appEnvironment);
 
         var services = new ServiceCollection();
+        // IConfiguration'ı DI'a al — AesSecretProtector ve diğer servisler için
+        services.AddSingleton<IConfiguration>(config);
         services.AddInfrastructure(connectionString);
 
         // SMTP bildirimi: env var YONETIM_SMTP_PASSWORD / YONETIM_SMTP_USERNAME şifre güvenliği sağlar
@@ -218,12 +221,7 @@ public partial class App : System.Windows.Application
         // ICompanyInfoProvider — AppSettings'ten gönderici firma bilgisi; ileride Company Settings modülüyle değiştirilebilir
         services.AddSingleton<ICompanyInfoProvider>(new AppSettingsCompanyInfoProvider(config));
 
-        // Kargo mail gönderimi — mevcut SMTP altyapısını kullanır
-        var cargoNotifOptions = new CargoNotificationOptions
-        {
-            FromEmail = config["CargoNotifications:FromEmail"] ?? ""
-        };
-        services.AddSingleton(cargoNotifOptions);
+        // Kargo mail gönderimi — SMTP ayarları artık DB'den (IMailSettingsService) okunur
         services.AddSingleton<ICargoMailSenderService, CargoSmtpMailSenderService>();
 
         // Bildirim — Sprint 3.4/3.5 (WhatsApp + SMTP Mail)
@@ -237,6 +235,11 @@ public partial class App : System.Windows.Application
         services.AddScoped<GetCargoReportHandler>();
         // ICargoReportPdfExporter: Singleton — renderer durumsuz
         services.AddSingleton<ICargoReportPdfExporter, QuestPdfCargoReportExporter>();
+
+        // Mail Ayarları — Sprint 6
+        services.AddScoped<GetMailSettingsHandler>();
+        services.AddScoped<SaveMailSettingsHandler>();
+        services.AddScoped<SendTestMailHandler>();
 
         // ViewModels
         services.AddTransient<LoginViewModel>();
@@ -271,6 +274,24 @@ public partial class App : System.Windows.Application
         }
 
         Log.Information("Veritabanı bağlantısı doğrulandı");
+
+        // Bekleyen EF Core migration'larını otomatik uygula
+        using (var migrationScope = Services.CreateScope())
+        {
+            await migrationScope.ServiceProvider
+                .GetRequiredService<DatabaseMigrator>()
+                .ApplyAsync();
+            Log.Information("Veritabanı migration'ları uygulandı");
+        }
+
+        // appsettings.json SMTP ayarlarını DB'ye ilk çalıştırmada ekle
+        using (var seedMailScope = Services.CreateScope())
+        {
+            var seeder = seedMailScope.ServiceProvider.GetRequiredService<MailSettingsSeeder>();
+            var smtp   = Services.GetRequiredService<SmtpNotificationOptions>();
+            await seeder.SeedAsync(smtp);
+            Log.Information("Mail ayarları kontrol edildi");
+        }
 
         // [DEV-ONLY] Seed yalnızca geliştirme ortamında çalışır
         if (isDevelopment)

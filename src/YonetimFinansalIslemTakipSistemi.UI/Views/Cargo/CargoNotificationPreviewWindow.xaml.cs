@@ -1,7 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
 using System.Windows;
-using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Notification;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Notification.MarkCargoNotificationPrepared;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
@@ -56,12 +55,10 @@ public partial class CargoNotificationPreviewWindow : Window
         Title           = "Mail Hazırla";
         TitleBlock.Text = "✉ Mail Hazırla";
 
-        // Gönderici adresi: CargoNotificationOptions → SmtpNotificationOptions.From → SmtpUsername
-        var cargoOpts = _services.GetRequiredService<CargoNotificationOptions>();
-        var smtpOpts  = _services.GetRequiredService<SmtpNotificationOptions>();
-        var fromEmail  = !string.IsNullOrWhiteSpace(cargoOpts.FromEmail) ? cargoOpts.FromEmail
-                        : !string.IsNullOrWhiteSpace(smtpOpts.From)       ? smtpOpts.From
-                        : smtpOpts.SmtpUsername;
+        // Gönderici adresi: DB'deki Mail ayarlarından okunur
+        var mailSettings = _services.GetRequiredService<IMailSettingsService>();
+        var settings     = mailSettings.GetAsync().GetAwaiter().GetResult();
+        var fromEmail    = settings?.SenderEmail ?? settings?.Username ?? "";
 
         FromBlock.Text      = fromEmail;
         ToTextBox.Text      = model.TargetEmail ?? string.Empty;

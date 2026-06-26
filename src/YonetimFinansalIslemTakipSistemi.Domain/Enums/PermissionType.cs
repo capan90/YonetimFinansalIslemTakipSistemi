@@ -22,4 +22,7 @@ public enum PermissionType
     CanManageIncomingCargo     = 12,
     CanViewOutgoingCargo       = 13,
     CanManageOutgoingCargo     = 14,
+
+    // Ayarlar modülü
+    CanManageMailSettings      = 15,
 }

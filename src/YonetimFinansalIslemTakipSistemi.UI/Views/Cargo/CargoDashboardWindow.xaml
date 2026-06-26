@@ -21,7 +21,7 @@
         </Border>
 
         <!-- Ana içerik -->
-        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Margin="14,10,14,10">
 
                 <!-- ── Bölüm başlığı: Dashboard ─────────────────── -->

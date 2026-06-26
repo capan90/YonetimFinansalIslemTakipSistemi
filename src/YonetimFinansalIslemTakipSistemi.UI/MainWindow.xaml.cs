@@ -434,6 +434,11 @@ public partial class MainWindow : Window
 
         MenuItemKargoDashboard.Visibility = userContext.HasPermission(PermissionType.CanViewCargoModule)
             ? Visibility.Visible : Visibility.Collapsed;
+
+        // Ayarlar menüsü
+        var canSettings = userContext.HasPermission(PermissionType.CanManageMailSettings);
+        MenuItemAyarlar.Visibility    = canSettings ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemMailAyarlari.Visibility = canSettings ? Visibility.Visible : Visibility.Collapsed;
     }
 
     // ── İşlem Butonları ───────────────────────────────────────────────────────
@@ -583,6 +588,13 @@ public partial class MainWindow : Window
     private void OpenCargoCompanies_Click(object sender, RoutedEventArgs e)
     {
         new CargoCompanyListWindow(_services) { Owner = this }.ShowDialog();
+    }
+
+    // ── Ayarlar Menü Tıklamaları ──────────────────────────────────────────────
+
+    private void OpenMailSettings_Click(object sender, RoutedEventArgs e)
+    {
+        new Views.Settings.MailSettingsWindow(_services) { Owner = this }.ShowDialog();
     }
 
     private async void CheckForUpdates_Click(object sender, RoutedEventArgs e)

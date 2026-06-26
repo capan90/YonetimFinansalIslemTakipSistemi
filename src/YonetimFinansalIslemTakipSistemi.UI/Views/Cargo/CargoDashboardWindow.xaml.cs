@@ -32,9 +32,16 @@ public partial class CargoDashboardWindow : Window
 
         Loaded += async (_, _) =>
         {
-            PopulateFilterCombos();
-            await LoadCargoCompaniesAsync();
-            await LoadDashboardAsync();
+            try
+            {
+                PopulateFilterCombos();
+                await LoadCargoCompaniesAsync();
+                await LoadDashboardAsync();
+            }
+            catch (Exception ex)
+            {
+                _dialogService.ShowError($"Dashboard yüklenirken hata oluştu:\n{ex.Message}", "Dashboard Hatası");
+            }
         };
     }
 
@@ -77,7 +84,35 @@ public partial class CargoDashboardWindow : Window
     }
 
     private async void RefreshDashboardButton_Click(object sender, RoutedEventArgs e)
-        => await LoadDashboardAsync();
+    {
+        // "Yenile" butonu cache'i atlayıp her zaman DB'den taze veri çeker
+        var handler = _services.GetRequiredService<GetCargoDashboardHandler>();
+        var result  = await handler.HandleAsync(new GetCargoDashboardQuery
+        {
+            ChartDateFrom = DateTime.Today.AddDays(-30),
+            ChartDateTo   = DateTime.Today,
+            BypassCache   = true,
+        });
+
+        if (!result.Success)
+        {
+            _dialogService.ShowError(result.ErrorMessage ?? "Dashboard yüklenemedi.", "Dashboard");
+            return;
+        }
+
+        var dto = result.Data!;
+        DashboardDateBlock.Text = $"Güncellendi: {DateTime.Now:dd.MM.yyyy HH:mm}";
+        CardTodayIncomingVal.Text  = dto.TodayIncoming.ToString();
+        CardTodayOutgoingVal.Text  = dto.TodayOutgoing.ToString();
+        CardPendingVal.Text        = dto.Pending.ToString();
+        CardNotifPendingVal.Text   = dto.NotificationPending.ToString();
+        CardUrgentVal.Text         = dto.UrgentPending.ToString();
+        CardTodayDeliveredVal.Text = dto.TodayDelivered.ToString();
+        DirectionChart.ItemsSource = BuildChartItems(dto.DirectionChart);
+        StatusChart.ItemsSource    = BuildChartItems(dto.StatusChart);
+        CompanyChart.ItemsSource   = BuildChartItems(dto.CompanyChart);
+        RecentGrid.ItemsSource     = dto.RecentShipments;
+    }
 
     // ── Grafik yardımcı ───────────────────────────────────────────────────
 
@@ -169,7 +204,16 @@ public partial class CargoDashboardWindow : Window
     // ── Rapor ─────────────────────────────────────────────────────────────
 
     private async void FilterButton_Click(object sender, RoutedEventArgs e)
-        => await RunReportAsync();
+    {
+        try
+        {
+            await RunReportAsync();
+        }
+        catch (Exception ex)
+        {
+            _dialogService.ShowError($"Rapor alınırken hata oluştu:\n{ex.Message}", "Rapor Hatası");
+        }
+    }
 
     private async Task RunReportAsync()
     {

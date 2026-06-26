@@ -27,5 +27,8 @@ public enum AuditAction
     // Kargo operasyon aksiyonları — Sprint 3.2/3.3/3.4'te handler'lar tarafından kullanılır
     CargoLabelPrinted,
     CargoWhatsAppPrepared,
-    CargoMailPrepared
+    CargoMailPrepared,
+
+    // Ayarlar modülü
+    MailSettingsUpdated
 }

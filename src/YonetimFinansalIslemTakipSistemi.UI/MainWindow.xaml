@@ -65,6 +65,12 @@
                           Header="Kargo Firmaları"
                           Click="OpenCargoCompanies_Click"/>
             </MenuItem>
+            <MenuItem x:Name="MenuItemAyarlar" Header="Ayarlar">
+                <MenuItem x:Name="MenuItemMailAyarlari"
+                          Header="Mail Ayarları"
+                          ToolTip="SMTP sunucusu ve e-posta bildirim ayarlarını yönetin."
+                          Click="OpenMailSettings_Click"/>
+            </MenuItem>
             <MenuItem Header="Yardım">
                 <MenuItem Header="Güncellemeleri Denetle"
                           ToolTip="Yayın klasöründeki en güncel sürümü kontrol eder; güncelleme varsa bildirir."

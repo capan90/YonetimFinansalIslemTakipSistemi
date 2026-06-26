@@ -1,0 +1,147 @@
+<Window x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.Settings.MailSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Mail Ayarları"
+        Width="520" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="#F5F6FA">
+
+    <Window.Resources>
+        <Style x:Key="LabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#374151"/>
+            <Setter Property="Margin" Value="0,10,0,3"/>
+        </Style>
+        <Style x:Key="InputStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="PwdStyle" TargetType="PasswordBox">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="PrimaryBtn" TargetType="Button">
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style x:Key="SecondaryBtn" TargetType="Button">
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#374151"/>
+            <Setter Property="Background" Value="#E5E7EB"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+    </Window.Resources>
+
+    <Border Padding="24">
+        <StackPanel>
+
+            <!-- Başlık -->
+            <TextBlock Text="Mail (SMTP) Ayarları"
+                       FontSize="16" FontWeight="Bold"
+                       Foreground="#1E3A5F" Margin="0,0,0,16"/>
+
+            <!-- SMTP -->
+            <TextBlock Text="SMTP Sunucusu" Style="{StaticResource LabelStyle}"/>
+            <TextBox x:Name="SmtpHostBox" Style="{StaticResource InputStyle}"/>
+
+            <Grid Margin="0,0,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="120"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Port" Style="{StaticResource LabelStyle}"/>
+                    <TextBox x:Name="SmtpPortBox" Style="{StaticResource InputStyle}" Text="587"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" VerticalAlignment="Bottom">
+                    <TextBlock Text="SSL/TLS" Style="{StaticResource LabelStyle}"/>
+                    <CheckBox x:Name="EnableSslCheck" Content="SSL Etkin"
+                              FontSize="13" Foreground="#374151"
+                              VerticalAlignment="Center" Height="32"
+                              IsChecked="True"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Gönderen -->
+            <TextBlock Text="Gönderen E-posta" Style="{StaticResource LabelStyle}"/>
+            <TextBox x:Name="SenderEmailBox" Style="{StaticResource InputStyle}"/>
+
+            <TextBlock Text="Gönderen Ad" Style="{StaticResource LabelStyle}"/>
+            <TextBox x:Name="SenderNameBox" Style="{StaticResource InputStyle}"/>
+
+            <!-- SMTP Kimlik Doğrulama -->
+            <TextBlock Text="Kullanıcı Adı" Style="{StaticResource LabelStyle}"/>
+            <TextBox x:Name="UsernameBox" Style="{StaticResource InputStyle}"/>
+
+            <TextBlock Text="Şifre" Style="{StaticResource LabelStyle}"/>
+            <PasswordBox x:Name="PasswordBox" Style="{StaticResource PwdStyle}"
+                         PasswordChar="●"/>
+            <TextBlock Text="Şifre alanı boş bırakılırsa mevcut şifre korunur."
+                       FontSize="11" Foreground="#6B7280" Margin="0,2,0,0"/>
+
+            <Separator Margin="0,18,0,0" Background="#E5E7EB"/>
+
+            <!-- Test Mail -->
+            <TextBlock Text="Test Maili" FontSize="14" FontWeight="SemiBold"
+                       Foreground="#1E3A5F" Margin="0,14,0,0"/>
+            <TextBlock Text="Formdaki ayarlarla (kaydetmeden) test maili gönderir."
+                       FontSize="11" Foreground="#6B7280" Margin="0,2,0,8"/>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="TestRecipientBox" Grid.Column="0"
+                         Style="{StaticResource InputStyle}"/>
+                <Button x:Name="SendTestButton" Grid.Column="2"
+                        Content="Test Maili Gönder"
+                        Style="{StaticResource SecondaryBtn}"
+                        Click="SendTestButton_Click"/>
+            </Grid>
+
+            <TextBlock x:Name="TestResultBlock" FontSize="12" Margin="0,6,0,0"
+                       TextWrapping="Wrap" Visibility="Collapsed"/>
+
+            <!-- Butonlar -->
+            <Grid Margin="0,20,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" Content="Kaydet"
+                        Style="{StaticResource PrimaryBtn}"
+                        Click="SaveButton_Click"/>
+                <Button Grid.Column="2" Content="Kapat"
+                        Style="{StaticResource SecondaryBtn}"
+                        Click="CloseButton_Click"/>
+            </Grid>
+
+        </StackPanel>
+    </Border>
+</Window>

@@ -17,6 +17,9 @@ public class AppDbContext : DbContext
     public DbSet<CargoCompany>       CargoCompanies      => Set<CargoCompany>();
     public DbSet<CargoShipment>      CargoShipments      => Set<CargoShipment>();
 
+    // Genel uygulama ayarları
+    public DbSet<ApplicationSetting> ApplicationSettings => Set<ApplicationSetting>();
+
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -39,6 +39,15 @@ public static class ServiceRegistration
         services.AddScoped<ICargoCompanyRepository, CargoCompanyRepository>();
         services.AddScoped<ICargoShipmentRepository, CargoShipmentRepository>();
 
+        // Uygulama ayarları
+        services.AddScoped<IApplicationSettingRepository, ApplicationSettingRepository>();
+        // AES-256: tüm makineler + tüm Windows kullanıcıları aynı anahtarı paylaşır
+        services.AddSingleton<ISecretProtector, AesSecretProtector>();
+        services.AddSingleton<IMailSettingsService, MailSettingsService>();
+
+        // Dashboard cache — Singleton: tüm oturumlarda tek önbellek
+        services.AddSingleton<ICargoDashboardCacheService, InMemoryCargoDashboardCacheService>();
+
         services.AddScoped<IAuthenticationService, DatabaseAuthenticationService>();
         services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
         services.AddScoped<IAuditLogService, AuditLogService>();
@@ -51,6 +60,12 @@ public static class ServiceRegistration
 
         // [DEV-ONLY] Geliştirme ortamı seed servisi
         services.AddScoped<IDevDataSeeder, DevDataSeeder>();
+
+        // Mail ayarları ilk çalıştırma seed'i
+        services.AddScoped<MailSettingsSeeder>();
+
+        // EF Core migration uygulayıcı — UI katmanı EF Core referansı olmadan çağırır
+        services.AddScoped<DatabaseMigrator>();
 
         return services;
     }

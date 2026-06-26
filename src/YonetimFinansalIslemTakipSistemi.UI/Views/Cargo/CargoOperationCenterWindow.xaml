@@ -50,6 +50,20 @@
                 Margin="0,10,0,0"
                 Click="CloseButton_Click"/>
 
+        <!-- İşlem sonucu bildirimi — Mail/WhatsApp tamamlandığında görünür, pencere kapanana kadar kalır -->
+        <Border x:Name="OpStatusBorder"
+                DockPanel.Dock="Bottom"
+                Background="#E8F5E9" BorderBrush="#81C784" BorderThickness="1"
+                CornerRadius="4" Padding="10,7" Margin="0,8,0,0"
+                Visibility="Collapsed">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="✓  " Foreground="#2E7D32"
+                           FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBlock x:Name="OpStatusBlock" Foreground="#2E7D32"
+                           FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
         <!-- Kargo bilgi kartı -->
         <Border DockPanel.Dock="Top"
                 Background="#F0F4FF" BorderBrush="#B0C4F0" BorderThickness="1"

@@ -9,6 +9,12 @@ namespace YonetimFinansalIslemTakipSistemi.Application.Services;
 /// WhatsApp mesaj şablonu üretir. Dış bağımlılığı yoktur; Application katmanında kalır.
 /// Boş alanlar mesaja gereksiz satır eklemez.
 /// </summary>
+/// <remarks>
+/// Mevcut akış: wa.me linki ile tarayıcı açılır, kullanıcı mesajı WhatsApp Web'den gönderir.
+/// TODO: Gerçek programatik gönderim için WhatsApp Business Cloud API entegrasyonu gerekir
+/// (graph.facebook.com/v17.0/{phone-number-id}/messages). WhatsApp Web otomatik gönderimi desteklemez.
+/// Planlı sprint: WhatsApp Business Cloud API — bu sprinte dahil edilmedi.
+/// </remarks>
 public class WhatsAppNotificationComposer : INotificationComposer
 {
     public NotificationType NotificationType => NotificationType.WhatsApp;

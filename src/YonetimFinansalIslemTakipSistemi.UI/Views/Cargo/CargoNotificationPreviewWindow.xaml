@@ -137,6 +137,20 @@
                     IsCancel="True" Click="CloseButton_Click"/>
         </StackPanel>
 
+        <!-- Başarı bildirimi — pencere kapanmadan önce kısa süre görünür (1.5 sn) -->
+        <Border x:Name="SuccessToast"
+                DockPanel.Dock="Bottom"
+                Background="#E8F5E9" BorderBrush="#81C784" BorderThickness="0,1,0,0"
+                CornerRadius="0,0,0,0" Padding="10,7" Margin="0,6,0,0"
+                Visibility="Collapsed">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="✓  " Foreground="#2E7D32"
+                           FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBlock x:Name="SuccessToastText" Foreground="#2E7D32"
+                           FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
         <!-- Mesaj metni — her iki modda salt okunur -->
         <TextBox x:Name="MessageBodyBox"
                  IsReadOnly="True" AcceptsReturn="True"

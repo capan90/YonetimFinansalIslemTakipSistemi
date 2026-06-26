@@ -120,7 +120,7 @@ public partial class CargoNotificationPreviewWindow : Window
         // Tarayıcı başarıyla açıldı → bildirim durumunu otomatik güncelle
         WhatsAppWebButton.IsEnabled = false;
         await MarkPreparedAsync();
-        Close();
+        await ShowSuccessAndCloseAsync("WhatsApp Web açıldı. Bildirim durumu güncellendi.");
     }
 
     // ── Mail Gönder ───────────────────────────────────────────────────────
@@ -149,9 +149,9 @@ public partial class CargoNotificationPreviewWindow : Window
             return;
         }
 
-        // Başarılı gönderim → bildirim durumunu otomatik güncelle
+        // Başarılı gönderim → bildirim durumunu otomatik güncelle, başarı bildirimi göster
         await MarkPreparedAsync();
-        Close();
+        await ShowSuccessAndCloseAsync("Mail başarıyla gönderildi. Bildirim durumu güncellendi.");
     }
 
     // ── Ortak: durumu güncelle ────────────────────────────────────────────
@@ -176,6 +176,20 @@ public partial class CargoNotificationPreviewWindow : Window
     }
 
     private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
+
+    // ── Başarı bildirimi ──────────────────────────────────────────────────
+
+    /// <summary>
+    /// Yeşil başarı alanını gösterir, 1.5 saniye bekler, sonra pencereyi kapatır.
+    /// Kullanıcı işlemin tamamlandığını görmeden pencere kaybolmaz.
+    /// </summary>
+    private async Task ShowSuccessAndCloseAsync(string message)
+    {
+        SuccessToastText.Text   = message;
+        SuccessToast.Visibility = Visibility.Visible;
+        await Task.Delay(1500);
+        Close();
+    }
 
     // ── Kullanıcı dostu SMTP hata mesajı ─────────────────────────────────
 

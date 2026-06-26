@@ -114,10 +114,15 @@ public partial class CargoOperationCenterWindow : Window
         if (preview.WasMarkedPrepared)
         {
             WasModified = true;
-            // Bildirim durumunu anlık güncelle
             var newNotifDisplay = notificationType == NotificationType.Mail
                 ? "Mail Hazır" : "WhatsApp Hazır";
             NotificationBlock.Text = newNotifDisplay;
+
+            // Kullanıcı önizleme penceresi kapandıktan sonra Operation Center'da özet görsün
+            var msg = notificationType == NotificationType.Mail
+                ? "Mail gönderildi ve bildirim durumu güncellendi."
+                : "WhatsApp Web açıldı ve bildirim durumu güncellendi.";
+            ShowStatusMessage(msg);
         }
     }
 
@@ -172,6 +177,12 @@ public partial class CargoOperationCenterWindow : Window
         // Durum etiketini anlık güncelle
         StatusBlock.Text = DisplayStatus(dialog.SelectedStatus.Value);
         // Yeni duruma göre TrackButton durumunu korumaya gerek yok (TrackingUrl değişmedi)
+    }
+
+    private void ShowStatusMessage(string message)
+    {
+        OpStatusBlock.Text        = message;
+        OpStatusBorder.Visibility = Visibility.Visible;
     }
 
     private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();

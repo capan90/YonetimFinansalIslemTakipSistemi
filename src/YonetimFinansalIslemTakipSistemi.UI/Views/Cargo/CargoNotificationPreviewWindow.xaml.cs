@@ -55,12 +55,8 @@ public partial class CargoNotificationPreviewWindow : Window
         Title           = "Mail Hazırla";
         TitleBlock.Text = "✉ Mail Hazırla";
 
-        // Gönderici adresi: DB'deki Mail ayarlarından okunur
-        var mailSettings = _services.GetRequiredService<IMailSettingsService>();
-        var settings     = mailSettings.GetAsync().GetAwaiter().GetResult();
-        var fromEmail    = settings?.SenderEmail ?? settings?.Username ?? "";
-
-        FromBlock.Text      = fromEmail;
+        // Gönderici adresi DB'den async yüklenir; UI thread bloke edilmez
+        FromBlock.Text      = "...";
         ToTextBox.Text      = model.TargetEmail ?? string.Empty;
         SubjectTextBox.Text = model.Subject ?? $"Kargo Bilgilendirme - {model.ShipmentNumber}";
 
@@ -69,6 +65,15 @@ public partial class CargoNotificationPreviewWindow : Window
 
         // Alıcı alanı boşsa gönder butonu devre dışı; kullanıcı manuel doldurabilir
         MailSendButton.IsEnabled = !string.IsNullOrWhiteSpace(ToTextBox.Text);
+
+        Loaded += async (_, _) => await LoadSenderEmailAsync();
+    }
+
+    private async Task LoadSenderEmailAsync()
+    {
+        var mailSettings = _services.GetRequiredService<IMailSettingsService>();
+        var settings     = await mailSettings.GetAsync();
+        FromBlock.Text   = settings?.SenderEmail ?? settings?.Username ?? "(ayarlanmamış)";
     }
 
     private void InitializeWhatsAppMode(CargoNotificationModel model)
@@ -132,6 +137,7 @@ public partial class CargoNotificationPreviewWindow : Window
         }
 
         MailSendButton.IsEnabled = false;
+        MailSendButton.Content   = "⏳ Mail Gönderiliyor...";
 
         var mailSender       = _services.GetRequiredService<ICargoMailSenderService>();
         var cc               = string.IsNullOrWhiteSpace(CcTextBox.Text) ? null : CcTextBox.Text.Trim();
@@ -141,6 +147,7 @@ public partial class CargoNotificationPreviewWindow : Window
         if (!success)
         {
             MailSendButton.IsEnabled = true;
+            MailSendButton.Content   = "📧 Mail Gönder";
             // Teknik detay log dosyasına yazılır; kullanıcıya kısa ve anlaşılır mesaj gösterilir
             _dialogService.ShowError(BuildMailErrorMessage(error), "Mail Gönderilemedi");
             return;

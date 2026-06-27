@@ -26,6 +26,9 @@ public class SendTestMailHandler
         if (string.IsNullOrWhiteSpace(settings.SmtpHost))
             return OperationResult<bool>.Fail("SMTP sunucusu girilmemiş.");
 
+        if (settings.SmtpPort <= 0)
+            return OperationResult<bool>.Fail("SMTP port numarası geçersiz.");
+
         if (string.IsNullOrWhiteSpace(settings.SenderEmail))
             return OperationResult<bool>.Fail("Gönderen e-posta adresi girilmemiş.");
 

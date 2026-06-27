@@ -65,20 +65,29 @@ public partial class MailSettingsWindow : Window
             return;
         }
 
-        var handler = _services.GetRequiredService<SendTestMailHandler>();
-        var result  = await handler.HandleAsync(dto, recipient);
-
-        TestResultBlock.Visibility = Visibility.Visible;
-
-        if (result.Success)
+        var btn = (System.Windows.Controls.Button)sender;
+        btn.IsEnabled = false;
+        try
         {
-            TestResultBlock.Foreground = new SolidColorBrush(Color.FromRgb(21, 128, 61));
-            TestResultBlock.Text       = $"Test maili başarıyla gönderildi: {recipient}";
+            var handler = _services.GetRequiredService<SendTestMailHandler>();
+            var result  = await handler.HandleAsync(dto, recipient);
+
+            TestResultBlock.Visibility = Visibility.Visible;
+
+            if (result.Success)
+            {
+                TestResultBlock.Foreground = new SolidColorBrush(Color.FromRgb(21, 128, 61));
+                TestResultBlock.Text       = $"Test maili başarıyla gönderildi: {recipient}";
+            }
+            else
+            {
+                TestResultBlock.Foreground = new SolidColorBrush(Color.FromRgb(185, 28, 28));
+                TestResultBlock.Text       = result.ErrorMessage ?? "Gönderilemedi.";
+            }
         }
-        else
+        finally
         {
-            TestResultBlock.Foreground = new SolidColorBrush(Color.FromRgb(185, 28, 28));
-            TestResultBlock.Text       = result.ErrorMessage ?? "Gönderilemedi.";
+            btn.IsEnabled = true;
         }
     }
 

@@ -30,6 +30,12 @@ public class CargoSmtpMailSenderService : ICargoMailSenderService
         if (settings is null || string.IsNullOrWhiteSpace(settings.SmtpHost))
             return (false, "Mail ayarları yapılandırılmamış. Ayarlar → Mail Ayarları bölümünden SMTP bilgilerini girin.");
 
+        if (settings.PasswordDecryptFailed)
+            return (false, "Mail şifresi çözümlenemedi. Mail ayarlarını yeniden kaydedin.");
+
+        if (settings.SmtpPort <= 0)
+            return (false, "SMTP port numarası geçersiz. Mail ayarlarını kontrol edin.");
+
         if (string.IsNullOrWhiteSpace(settings.SenderEmail))
             return (false, "Gönderen e-posta adresi ayarlanmamış. Ayarlar → Mail Ayarları bölümüne bakın.");
 
@@ -54,13 +60,18 @@ public class CargoSmtpMailSenderService : ICargoMailSenderService
             if (!string.IsNullOrWhiteSpace(settings.Username))
                 client.Credentials = new NetworkCredential(settings.Username, settings.Password);
 
+            _logger.LogInformation(
+                "SMTP gönderim başlatılıyor → Host:{Host} Port:{Port} SSL:{Ssl} Gönderici:{From} Alıcı:{To}",
+                settings.SmtpHost, settings.SmtpPort, settings.EnableSsl, settings.SenderEmail, to);
+
             await client.SendMailAsync(mail);
             _logger.LogInformation("Kargo bildirim maili gönderildi → {To}", to);
             return (true, null);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Kargo bildirim maili gönderilemedi → {To}", to);
+            _logger.LogWarning(ex, "Kargo bildirim maili gönderilemedi → {ExType}: {ExMsg} | Alıcı:{To}",
+                ex.GetType().Name, ex.Message, to);
             return (false, ex.Message);
         }
     }

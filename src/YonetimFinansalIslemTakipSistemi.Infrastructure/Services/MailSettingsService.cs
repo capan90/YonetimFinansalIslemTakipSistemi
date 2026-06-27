@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Settings.MailSettings;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Repositories;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
@@ -11,13 +12,18 @@ namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Services;
 /// </summary>
 public class MailSettingsService : IMailSettingsService
 {
-    private readonly IServiceScopeFactory _scopeFactory;
-    private readonly ISecretProtector     _protector;
+    private readonly IServiceScopeFactory          _scopeFactory;
+    private readonly ISecretProtector              _protector;
+    private readonly ILogger<MailSettingsService>  _logger;
 
-    public MailSettingsService(IServiceScopeFactory scopeFactory, ISecretProtector protector)
+    public MailSettingsService(
+        IServiceScopeFactory         scopeFactory,
+        ISecretProtector             protector,
+        ILogger<MailSettingsService> logger)
     {
         _scopeFactory = scopeFactory;
         _protector    = protector;
+        _logger       = logger;
     }
 
     public async Task<MailSettingsDto?> GetAsync()
@@ -43,23 +49,35 @@ public class MailSettingsService : IMailSettingsService
 
         var map = settings.ToDictionary(s => s.Key, s => s);
 
+        bool passwordDecryptFailed = false;
+
         string? Get(string key)
         {
             if (!map.TryGetValue(key, out var s) || s.Value is null) return null;
             if (!s.IsEncrypted) return s.Value;
             try   { return _protector.Unprotect(s.Value); }
-            catch { return null; }
+            catch (Exception ex)
+            {
+                if (key == "Mail:Password")
+                {
+                    passwordDecryptFailed = true;
+                    // AES anahtarı değişmişse eski şifre çözülemez; kullanıcı tekrar kaydetmeli
+                    _logger.LogError(ex, "Mail:Password AES çözümü başarısız — anahtarı değişmiş olabilir");
+                }
+                return null;
+            }
         }
 
         return new MailSettingsDto
         {
-            SmtpHost    = Get("Mail:SmtpHost")    ?? "",
-            SmtpPort    = int.TryParse(Get("Mail:SmtpPort"),  out var port) ? port : 587,
-            EnableSsl   = bool.TryParse(Get("Mail:EnableSsl"), out var ssl)  ? ssl  : true,
-            SenderEmail = Get("Mail:SenderEmail") ?? "",
-            SenderName  = Get("Mail:SenderName")  ?? "",
-            Username    = Get("Mail:Username")    ?? "",
-            Password    = Get("Mail:Password")    ?? "",
+            SmtpHost              = Get("Mail:SmtpHost")    ?? "",
+            SmtpPort              = int.TryParse(Get("Mail:SmtpPort"),  out var port) ? port : 587,
+            EnableSsl             = bool.TryParse(Get("Mail:EnableSsl"), out var ssl)  ? ssl  : true,
+            SenderEmail           = Get("Mail:SenderEmail") ?? "",
+            SenderName            = Get("Mail:SenderName")  ?? "",
+            Username              = Get("Mail:Username")    ?? "",
+            Password              = Get("Mail:Password")    ?? "",
+            PasswordDecryptFailed = passwordDecryptFailed,
         };
     }
 }

@@ -1,41 +1,39 @@
 <#
 .SYNOPSIS
-    Yönetim Finansal İşlem Takip Sistemi — ClickOnce Publish Script
+    Yonetim Finansal Islem Takip Sistemi -- ClickOnce Publish Script
 
 .DESCRIPTION
     dotnet publish /p:PublishProfile=ClickOnce, .NET 9 CLI'de Engine\Launcher.exe olmadan
-    çalışmaz (Visual Studio gerektirir). Bu script dotnet-mage ile ClickOnce yapısını üretir.
+    calisir (Visual Studio gerektirir). Bu script dotnet-mage ile ClickOnce yapisini uretir.
 
     Gereksinimler:
       - dotnet tool: microsoft.dotnet.mage (dotnet tool install --global microsoft.dotnet.mage)
-      - Admin hakları (New-SmbShare için)
-      - Sertifika: Cert:\CurrentUser\My thumbprint aşağıda belirtilmiş
+      - Admin haklari (New-SmbShare icin)
+      - Sertifika: Cert:\CurrentUser\My thumbprint asagida belirtilmis
 
-    ProviderURL kaynağı:
-      YONETIM_UPDATE_PATH env var set edilmişse → o UNC kullanılır (üretim)
-      Set edilmemişse       → \\localhost\YonetimPublish\ (lokal test)
-    Başka bilgisayarların ClickOnce startup güncellemesi alabilmesi için publish öncesi:
-      $env:YONETIM_UPDATE_PATH = "\\SUNUCU\YonetimPublish\"
+    ProviderURL kaynak:
+      YONETIM_UPDATE_PATH env var set edilmisse o UNC kullanilir (uretim)
+      Set edilmemisse       -> \\localhost\YonetimPublish\ (lokal test)
 
 .PARAMETER Version
-    Yayınlanacak sürüm numarası. csproj AssemblyVersion ile aynı olmalı.
-    Her release'de artır: 1.0.0.0 → 1.0.0.1 → 1.0.0.2
-    Aynı versiyonla tekrar publish yapılırsa ClickOnce güncelleme algılamaz.
+    Yayinlanacak surum numarasi. csproj AssemblyVersion ile ayni olmali.
+    Her release'de artir: 1.0.0.0 -> 1.0.0.1 -> 1.0.0.2
+    Ayni versiyonla tekrar publish yapilirsa ClickOnce guncelleme algilamaz.
 
 .PARAMETER Sign
-    $true ise Cert:\CurrentUser\My içindeki sertifika ile her iki manifest imzalanır.
-    Gerçek ClickOnce kurulum ve güncelleme testi için $true kullan.
-    Varsayılan $false yalnızca build/manifest çıktısını doğrulamak içindir.
+    $true ise Cert:\CurrentUser\My icindeki sertifika ile her iki manifest imzalanir.
+    Gercek ClickOnce kurulum ve guncelleme testi icin $true kullan.
+    Varsayilan $false yalnizca build/manifest ciktisini dogrulamak icindir.
 
 .EXAMPLE
-    # Lokal test — imzalı
+    # Lokal test -- imzali
     .\Publish-ClickOnce.ps1 -Version "1.0.0.1" -Sign $true
 
-    # Üretim — imzalı
+    # Uretim -- imzali
     $env:YONETIM_UPDATE_PATH = "\\SUNUCU\YonetimPublish\"
     .\Publish-ClickOnce.ps1 -Version "1.0.0.1" -Sign $true
 
-    # Yalnızca çıktı doğrulama — imzasız
+    # Yalnizca cikti dogrulama -- imzasiz
     .\Publish-ClickOnce.ps1 -Version "1.0.0.1" -Sign $false
 #>
 param(
@@ -45,32 +43,31 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-# ── UNC base: env var doluysa onu kullan, yoksa localhost ────────────────────
+# UNC base: env var doluysa onu kullan, yoksa localhost
 $UncBase = $env:YONETIM_UPDATE_PATH
 if ([string]::IsNullOrWhiteSpace($UncBase)) {
     $UncBase = "\\localhost\YonetimPublish\"
 }
-# Sondaki \ yoksa ekle
 if (-not $UncBase.EndsWith("\")) { $UncBase += "\" }
 
-# Sabitler
+# Sabitler -- mage teknik degerleri ASCII olmali; Turkce karakter encoding bozukluguna yol acar
 $ProjectPath  = "$PSScriptRoot\src\YonetimFinansalIslemTakipSistemi.UI\YonetimFinansalIslemTakipSistemi.UI.csproj"
 $BuildOutput  = "$env:TEMP\YonetimBuild"
 $PublishDir   = "C:\Apps\Yonetim\Publish"
-$AppName      = "Yönetim Finansal İşlem Takip Sistemi"
+$AppName      = "Yonetim Finansal Islem Takip Sistemi"
 $ExeName      = "YonetimFinansalIslemTakipSistemi.UI.exe"
 $ManifestBase = "YonetimFinansalIslemTakipSistemi.UI"
 $CertThumb    = "0136460438B6DED7F20498C00F7D3AB4C1E1B203"
 $ProviderUrl  = "${UncBase}$ManifestBase.application"
 
-# Sürüm klasörü: noktalar alt çizgiye çevrilir
-$VersionFolder = $Version -replace "\.", "_"
-$AppFilesDir   = "$PublishDir\Application Files\${ManifestBase}_${VersionFolder}"
-$AppManifest   = "$AppFilesDir\$ManifestBase.exe.manifest"
+# Surum klasoru: noktalar alt cizgiye cevirilir
+$VersionFolder  = $Version -replace "\.", "_"
+$AppFilesDir    = "$PublishDir\Application Files\${ManifestBase}_${VersionFolder}"
+$AppManifest    = "$AppFilesDir\$ManifestBase.exe.manifest"
 $DeployManifest = "$PublishDir\$ManifestBase.application"
 $VersionJsonPath = "$PublishDir\version.json"
 
-# ── Başlangıç özeti ──────────────────────────────────────────────────────────
+# Baslangic ozeti
 Write-Host ""
 Write-Host "=== ClickOnce Publish ===" -ForegroundColor Cyan
 Write-Host "  Versiyon      : $Version"
@@ -79,9 +76,12 @@ Write-Host "  Publish klasor: $PublishDir"
 Write-Host "  ProviderURL   : $ProviderUrl"
 Write-Host ""
 
-Write-Host "[1/6] Build yapılıyor: $Version..." -ForegroundColor Cyan
+Write-Host "[0/6] Publish klasoru temizleniyor..." -ForegroundColor Cyan
+# Eski/bayat manifest kalmasin; her publish'te temiz basla
+Remove-Item -Recurse -Force "$PublishDir\*" -ErrorAction SilentlyContinue
 
-# Temizle + build
+Write-Host "[1/6] Build yapiliyor: $Version..." -ForegroundColor Cyan
+
 Remove-Item -Recurse -Force $BuildOutput -ErrorAction SilentlyContinue
 dotnet publish $ProjectPath -c Release -o $BuildOutput /p:AssemblyVersion=$Version --nologo -v minimal
 
@@ -89,16 +89,14 @@ Write-Host "[2/6] Launcher ekleniyor..." -ForegroundColor Cyan
 
 dotnet-mage -AddLauncher $ExeName -TargetDirectory $BuildOutput
 
-Write-Host "[3/6] Application Files klasörü hazırlanıyor..." -ForegroundColor Cyan
+Write-Host "[3/6] Application Files klasoru hazirlanıyor..." -ForegroundColor Cyan
 
 New-Item -ItemType Directory -Force -Path $AppFilesDir | Out-Null
 Copy-Item -Path "$BuildOutput\*" -Destination $AppFilesDir -Recurse -Force
 
-# AppIcon.ico ayrı dosya olarak kopyalanır.
-# csproj'da <Resource> (assembly'e gömülü) olarak tanımlıdır — publish output'una gelmez.
-# ClickOnce kısayol ikonu için deployment manifest'te iconFile referansı gerektirir;
-# bu dosyanın Application Files içinde bulunması ve application manifest'e dahil edilmesi şarttır.
-# Mage -FromDirectory ile manifest oluştururken dizindeki tüm dosyaları tarar → ikon de dahil olur.
+# AppIcon.ico ayri dosya olarak kopyalanir.
+# csproj'da <Resource> (assembly'e gomulu) olarak tanimlidir -- publish output'una gelmez.
+# Application Files icinde bulunmasi application manifest'e dahil edilmesi icin gereklidir.
 $IconSource = "$PSScriptRoot\src\YonetimFinansalIslemTakipSistemi.UI\Assets\AppIcon.ico"
 $IconFile   = "$AppFilesDir\AppIcon.ico"
 if (Test-Path $IconSource) {
@@ -108,7 +106,7 @@ if (Test-Path $IconSource) {
     Write-Host "  [UYARI] AppIcon.ico kaynak dosyasi bulunamadi: $IconSource" -ForegroundColor Yellow
 }
 
-Write-Host "[4/6] Application manifest oluşturuluyor..." -ForegroundColor Cyan
+Write-Host "[4/6] Application manifest olusturuluyor..." -ForegroundColor Cyan
 
 dotnet-mage -New Application `
     -ToFile $AppManifest `
@@ -122,7 +120,7 @@ if ($Sign) {
     dotnet-mage -Sign $AppManifest -CertHash $CertThumb
 }
 
-Write-Host "[5/6] Deployment manifest oluşturuluyor..." -ForegroundColor Cyan
+Write-Host "[5/6] Deployment manifest olusturuluyor..." -ForegroundColor Cyan
 
 dotnet-mage -New Deployment `
     -ToFile $DeployManifest `
@@ -134,44 +132,25 @@ dotnet-mage -New Deployment `
     -ProviderURL $ProviderUrl `
     -Publisher "YonetimApp"
 
-# dotnet-mage -New Deployment, -IconFile parametresini desteklemez.
-# ClickOnce masaüstü kısayol ikonu deployment manifest'teki description/iconFile'dan okunur.
-# XML post-processing: attribute imzalamadan ÖNCE eklenir; imza değişen içeriği kapsar.
-Write-Host "  Deployment manifest'e iconFile ekleniyor (XML post-processing)..." -ForegroundColor Gray
-try {
-    [xml]$deployXml = Get-Content $DeployManifest -Encoding UTF8
-    $asmv2Ns       = "urn:schemas-microsoft-com:asm.v2"
-    $desc          = $deployXml.assembly.description
-    if ($null -ne $desc) {
-        $desc.SetAttribute("iconFile", $asmv2Ns, "AppIcon.ico")
-        $deployXml.Save($DeployManifest)
-        Write-Host "  asmv2:iconFile='AppIcon.ico' eklendi" -ForegroundColor Gray
-    } else {
-        Write-Host "  [UYARI] description elementi bulunamadi, iconFile eklenemedi" -ForegroundColor Yellow
-    }
-} catch {
-    Write-Host "  [UYARI] iconFile post-processing hatasi: $_" -ForegroundColor Yellow
-}
-
 if ($Sign) {
     Write-Host "  Imzalaniyor: $DeployManifest" -ForegroundColor Yellow
     dotnet-mage -Sign $DeployManifest -CertHash $CertThumb
 }
 
-Write-Host "[6/6] version.json yazılıyor..." -ForegroundColor Cyan
+Write-Host "[6/6] version.json yaziliyor..." -ForegroundColor Cyan
 
-# version.json yalnızca UpdateService'in manuel "Guncellemeleri Denetle" akisinda okunur.
+# version.json yalnizca UpdateService'in manuel "Guncellemeleri Denetle" akisinda okunur.
 # ClickOnce startup guncellemesi bu dosyayi degil deployment manifest'i kullanir.
 $Json = "{`"version`":`"$Version`"}"
 Set-Content -Path $VersionJsonPath -Value $Json -Encoding utf8
 
-# ── Doğrulama ────────────────────────────────────────────────────────────────
+# Dogrulama
 Write-Host ""
 Write-Host "=== Dogrulama ===" -ForegroundColor Cyan
 
 $ok = $true
 
-# Deployment manifest
+# Deployment manifest var mi?
 if (Test-Path $DeployManifest) {
     Write-Host "  [OK] Deployment manifest olustu" -ForegroundColor Green
 } else {
@@ -179,12 +158,12 @@ if (Test-Path $DeployManifest) {
     $ok = $false
 }
 
-# version.json — sürüm eşleşmesi
+# version.json surum eslesmesi
 if (Test-Path $VersionJsonPath) {
     try {
         $parsed = (Get-Content $VersionJsonPath -Raw) | ConvertFrom-Json
         if ($parsed.version -eq $Version) {
-            Write-Host "  [OK] version.json surumu eslesip: $Version" -ForegroundColor Green
+            Write-Host "  [OK] version.json surumu eslesti: $Version" -ForegroundColor Green
         } else {
             Write-Host "  [HATA] version.json surumu uyusmuyor. Beklenen: $Version, Bulunan: $($parsed.version)" -ForegroundColor Red
             $ok = $false
@@ -198,7 +177,7 @@ if (Test-Path $VersionJsonPath) {
     $ok = $false
 }
 
-# ProviderURL ve iconFile deployment manifest içinde doğru mu?
+# ProviderURL ve encoding kontrolu
 if (Test-Path $DeployManifest) {
     $manifestContent = Get-Content $DeployManifest -Raw
     if ($manifestContent -like "*$ProviderUrl*") {
@@ -207,17 +186,33 @@ if (Test-Path $DeployManifest) {
         Write-Host "  [HATA] ProviderURL manifest icinde bulunamadi. Beklenen: $ProviderUrl" -ForegroundColor Red
         $ok = $false
     }
-    if ($manifestContent -like '*iconFile="AppIcon.ico"*') {
-        Write-Host "  [OK] iconFile deployment manifest icinde dogrulandi: AppIcon.ico" -ForegroundColor Green
+    # ASCII product adi dogrulama -- mojibake varsa bu string bulunamaz
+    if ($manifestContent -like "*Yonetim Finansal Islem Takip Sistemi*") {
+        Write-Host "  [OK] Manifest ASCII product adi dogrulandi" -ForegroundColor Green
     } else {
-        Write-Host "  [HATA] iconFile deployment manifest icinde bulunamadi" -ForegroundColor Red
+        Write-Host "  [HATA] ASCII product adi bulunamadi -- encoding sorunu olabilir" -ForegroundColor Red
         $ok = $false
+    }
+    # Non-ASCII karakter kontrolu -- mojibake byte'lari 0x80+ araligindadir
+    $hasNonAscii = [regex]::IsMatch($manifestContent, '[^\x00-\x7F]')
+    if ($hasNonAscii) {
+        Write-Host "  [HATA] Manifest non-ASCII karakter iceriyor (mojibake)" -ForegroundColor Red
+        $ok = $false
+    } else {
+        Write-Host "  [OK] Manifest ASCII-only (mojibake yok)" -ForegroundColor Green
+    }
+    # iconFile / AppIcon yasak referans kontrolu
+    if ($manifestContent -like "*iconFile*" -or $manifestContent -like "*AppIcon*") {
+        Write-Host "  [HATA] Manifest yasak referans iceriyor (iconFile/AppIcon)" -ForegroundColor Red
+        $ok = $false
+    } else {
+        Write-Host "  [OK] iconFile/AppIcon referansi yok" -ForegroundColor Green
     }
 }
 
-# İmzalama durumu
+# Imzalama durumu
 if ($Sign) {
-    # Script ErrorActionPreference=Stop ile calistigından imzalama hatasi script'i durdurur.
+    # Script ErrorActionPreference=Stop ile calistigindan imzalama hatasi script'i durdurur.
     # Bu noktaya ulasildiysa her iki manifest de basariyla imzalanmistir.
     Write-Host "  [OK] Application manifest imzalandi" -ForegroundColor Green
     Write-Host "  [OK] Deployment manifest imzalandi" -ForegroundColor Green

@@ -78,6 +78,10 @@ public class UserPermissionViewModel : INotifyPropertyChanged
         Perms.Add(new PermissionCheckItem(PermissionType.CanManageIncomingCargo,    "Gelen Kargoları Yönetme"));
         Perms.Add(new PermissionCheckItem(PermissionType.CanViewOutgoingCargo,      "Giden Kargoları Görüntüleme"));
         Perms.Add(new PermissionCheckItem(PermissionType.CanManageOutgoingCargo,    "Giden Kargoları Yönetme"));
+
+        // Ayarlar modülü
+        Perms.Add(new PermissionCheckItem(PermissionType.CanManageMailSettings, "Mail Ayarlarını Yönetme"));
+        Perms.Add(new PermissionCheckItem(PermissionType.CanViewSystemLogs,     "Sistem Loglarını Görüntüleme"));
     }
 
     public async Task LoadAsync()

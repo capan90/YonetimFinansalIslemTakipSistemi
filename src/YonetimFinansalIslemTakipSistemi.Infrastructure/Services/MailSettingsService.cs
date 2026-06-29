@@ -15,15 +15,18 @@ public class MailSettingsService : IMailSettingsService
     private readonly IServiceScopeFactory          _scopeFactory;
     private readonly ISecretProtector              _protector;
     private readonly ILogger<MailSettingsService>  _logger;
+    private readonly ISystemLogService             _systemLog;
 
     public MailSettingsService(
         IServiceScopeFactory         scopeFactory,
         ISecretProtector             protector,
-        ILogger<MailSettingsService> logger)
+        ILogger<MailSettingsService> logger,
+        ISystemLogService            systemLog)
     {
         _scopeFactory = scopeFactory;
         _protector    = protector;
         _logger       = logger;
+        _systemLog    = systemLog;
     }
 
     public async Task<MailSettingsDto?> GetAsync()
@@ -63,6 +66,7 @@ public class MailSettingsService : IMailSettingsService
                     passwordDecryptFailed = true;
                     // AES anahtarı değişmişse eski şifre çözülemez; kullanıcı tekrar kaydetmeli
                     _logger.LogError(ex, "Mail:Password AES çözümü başarısız — anahtarı değişmiş olabilir");
+                    _ = _systemLog.LogWarningAsync("Mail", "Mail şifresi AES çözümü başarısız — anahtar değişmiş olabilir, şifreyi tekrar kaydedin.", "MailSettingsService");
                 }
                 return null;
             }

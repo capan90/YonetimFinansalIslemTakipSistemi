@@ -62,6 +62,8 @@ using YonetimFinansalIslemTakipSistemi.Application.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Cargo;
 using YonetimFinansalIslemTakipSistemi.UI.Views.Cargo;
+using YonetimFinansalIslemTakipSistemi.UI.Views.SystemLogs;
+using YonetimFinansalIslemTakipSistemi.UI.ViewModels.SystemLogs;
 
 namespace YonetimFinansalIslemTakipSistemi.UI;
 
@@ -93,8 +95,7 @@ public partial class App : System.Windows.Application
         {
             Log.Fatal(ex, "Uygulama başlatılamadı");
             // Services henüz hazır olabilir (DB testi sonrası) — bildirimi dene
-            try { GetNotifier()?.NotifyAsync("Uygulama başlatılamadı — veritabanı bağlantısı kurulamadı", ex,
-                      new NotificationContext { Level = "Fatal", Screen = "Başlangıç" }); } catch { }
+            SafeLog(s => s.LogCriticalAsync("Startup", "Uygulama başlatılamadı — veritabanı bağlantısı kurulamadı", ex, source: "App.OnStartup"));
             Log.CloseAndFlush();
             ShowConnectionError();
             Shutdown();
@@ -104,6 +105,7 @@ public partial class App : System.Windows.Application
     protected override void OnExit(ExitEventArgs e)
     {
         Log.Information("Uygulama kapatılıyor");
+        SafeLog(s => s.LogInfoAsync("Startup", "Uygulama kapatıldı", source: "App.OnExit"));
         Log.CloseAndFlush();
         base.OnExit(e);
     }
@@ -259,6 +261,9 @@ public partial class App : System.Windows.Application
         services.AddTransient<ExchangeRateViewModel>();
         services.AddTransient<AnalysisViewModel>();
 
+        // Sistem Logları modülü
+        services.AddTransient<SystemLogsViewModel>();
+
         // Kargo Katip ViewModels
         services.AddTransient<CompanyDirectoryListViewModel>();
         services.AddTransient<CompanyDirectoryEditViewModel>();
@@ -275,11 +280,14 @@ public partial class App : System.Windows.Application
             if (!await testService.CanConnectAsync())
             {
                 Log.Error("Veritabanına bağlanılamadı — startup iptal ediliyor");
+                // SystemLogService henüz hazır olabilir — yazma denemesi yap
+                SafeLog(s => s.LogErrorAsync("Database", "Veritabanına bağlanılamadı", source: "Startup"));
                 throw new InvalidOperationException("Veritabanına bağlanılamadı.");
             }
         }
 
         Log.Information("Veritabanı bağlantısı doğrulandı");
+        SafeLog(s => s.LogInfoAsync("Database", "Veritabanı bağlantısı doğrulandı", source: "Startup"));
 
         // Bekleyen EF Core migration'larını otomatik uygula
         using (var migrationScope = Services.CreateScope())
@@ -307,6 +315,7 @@ public partial class App : System.Windows.Application
         }
 
         Log.Information("Uygulama başlatıldı, oturum döngüsü başlıyor");
+        SafeLog(s => s.LogInfoAsync("Startup", "Uygulama başlatıldı", source: "App.InitializeAsync"));
         RunApplicationLoop();
     }
 
@@ -316,13 +325,12 @@ public partial class App : System.Windows.Application
     {
         var ex = e.ExceptionObject as Exception;
         Log.Fatal(ex, "Yakalanmamış uygulama istisnası (AppDomain). Kapanıyor: {IsTerminating}", e.IsTerminating);
-        try { GetNotifier()?.NotifyAsync("Yakalanmamış AppDomain istisnası", ex,
-                  new NotificationContext { Level = "Fatal", Screen = "AppDomain" }); } catch { }
+        // SystemLogService kritik log yazar ve içinden mail tetikler
+        SafeLog(s => s.LogCriticalAsync("UI", "Yakalanmamış AppDomain istisnası", ex, source: "AppDomain"));
         Log.CloseAndFlush();
 
         if (e.IsTerminating)
         {
-            // Uygulama kapanmak üzere; MessageBox göstermeye çalış
             try { Dispatcher.Invoke(ShowUnexpectedError); } catch { }
         }
     }
@@ -330,26 +338,31 @@ public partial class App : System.Windows.Application
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
         Log.Error(e.Exception, "Yakalanmamış UI (Dispatcher) istisnası");
-        _ = GetNotifier()?.NotifyAsync("Yakalanmamış UI istisnası", e.Exception,
-                new NotificationContext { Level = "Error", Screen = "UI (Dispatcher)" });
+        SafeLog(s => s.LogCriticalAsync("UI", "Yakalanmamış Dispatcher istisnası", e.Exception, source: "UI (Dispatcher)"));
         ShowUnexpectedError();
         e.Handled = true; // uygulamanın kapanmasını engelle
     }
 
     private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
     {
-        // Task istisnası: gözlemlenmiş olarak işaretle, log'a yaz, uygulamayı kapatma
         Log.Warning(e.Exception, "Gözlemlenmeyen Task istisnası");
-        _ = GetNotifier()?.NotifyAsync("Gözlemlenmeyen Task istisnası", e.Exception,
-                new NotificationContext { Level = "Warning", Screen = "Background Task" });
+        SafeLog(s => s.LogWarningAsync("UI", "Gözlemlenmeyen Task istisnası", source: "Background Task"));
         e.SetObserved();
     }
 
-    // Services null ise (başlatma öncesi hata) null döner; caller ?. operatörüyle güvenle kullanır
-    private static IErrorNotificationService? GetNotifier()
+    /// <summary>
+    /// ISystemLogService'e fire-and-forget güvenli erişim.
+    /// Services henüz hazır değilse (başlatma öncesi hata) sessizce geçer.
+    /// </summary>
+    private static void SafeLog(Func<ISystemLogService, Task> action)
     {
-        try { return Services?.GetService<IErrorNotificationService>(); }
-        catch { return null; }
+        try
+        {
+            var svc = Services?.GetService<ISystemLogService>();
+            if (svc is not null)
+                _ = action(svc);
+        }
+        catch { /* log servisi erişilemiyor — uygulama akışını engelleme */ }
     }
 
     // ── Config & Logging ─────────────────────────────────────────────────────

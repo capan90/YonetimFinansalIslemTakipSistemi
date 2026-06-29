@@ -3,7 +3,10 @@
                     xmlns:converters="clr-namespace:YonetimFinansalIslemTakipSistemi.UI.Converters">
 
     <!-- ── Converter ─────────────────────────────────────────────────────────── -->
-    <converters:DecimalToColorConverter x:Key="BalanceToColor"/>
+    <converters:DecimalToColorConverter         x:Key="BalanceToColor"/>
+    <converters:SystemLogLevelToColorConverter  x:Key="LevelToBackgroundConverter"/>
+    <converters:SystemLogLevelToColorConverter  x:Key="LevelToForegroundConverter" />
+    <converters:BoolToStatusColorConverter      x:Key="BoolToStatusColorConverter"/>
 
     <!-- ── Sistem Seçim Renkleri ─────────────────────────────────────────────── -->
     <!-- WPF DataGrid hücre şablonu HighlightBrushKey / HighlightTextBrushKey'i

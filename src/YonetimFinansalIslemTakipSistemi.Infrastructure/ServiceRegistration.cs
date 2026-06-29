@@ -57,6 +57,8 @@ public static class ServiceRegistration
         services.AddScoped<IDatabaseConnectionTestService, DatabaseConnectionTestService>();
         services.AddScoped<IHealthCheckService, HealthCheckService>();
         services.AddSingleton<IErrorNotificationService, NullErrorNotificationService>();
+        // Singleton: kendi içinde scope açarak Scoped AppDbContext'e güvenle erişir
+        services.AddSingleton<ISystemLogService, SystemLogService>();
         services.AddScoped<GetDashboardHandler>();
 
         // [DEV-ONLY] Geliştirme ortamı seed servisi

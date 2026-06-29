@@ -21,6 +21,9 @@ public class AppDbContext : DbContext
     // Genel uygulama ayarları
     public DbSet<ApplicationSetting> ApplicationSettings => Set<ApplicationSetting>();
 
+    // Sistem Logları modülü
+    public DbSet<SystemLog> SystemLogs => Set<SystemLog>();
+
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

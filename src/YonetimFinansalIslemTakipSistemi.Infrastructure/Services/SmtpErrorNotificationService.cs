@@ -20,15 +20,18 @@ public class SmtpErrorNotificationService : IErrorNotificationService
 
     private readonly SmtpNotificationOptions _options;
     private readonly ILogger<SmtpErrorNotificationService> _logger;
+    private readonly ISystemLogService _systemLog;
     private readonly ConcurrentDictionary<string, DateTime> _cooldown = new();
     private bool _configWarningLogged;
 
     public SmtpErrorNotificationService(
         SmtpNotificationOptions options,
-        ILogger<SmtpErrorNotificationService> logger)
+        ILogger<SmtpErrorNotificationService> logger,
+        ISystemLogService systemLog)
     {
-        _options = options;
-        _logger  = logger;
+        _options   = options;
+        _logger    = logger;
+        _systemLog = systemLog;
     }
 
     public Task NotifyAsync(string message, Exception? exception = null, NotificationContext? context = null)
@@ -42,6 +45,7 @@ public class SmtpErrorNotificationService : IErrorNotificationService
             if (!_configWarningLogged)
             {
                 _logger.LogWarning("SmtpErrorNotificationService devre dışı: {Reason}", reason);
+                _ = _systemLog.LogWarningAsync("Mail", $"Mail bildirimi yapılandırması eksik: {reason}", "SmtpErrorNotificationService");
                 _configWarningLogged = true;
             }
             return Task.CompletedTask;
@@ -67,8 +71,10 @@ public class SmtpErrorNotificationService : IErrorNotificationService
             }
             catch (Exception ex)
             {
-                // Mail hatası asla uygulamayı etkilemez
+                // Mail hatası asla uygulamayı etkilemez; SystemLogService döngü oluşturmamak için
+                // LogWarningAsync kullanır (LogCriticalAsync tekrar mail göndermeye çalışmaz)
                 _logger.LogWarning(ex, "Hata bildirimi gönderilemedi — SMTP hatası");
+                _ = _systemLog.LogErrorAsync("Mail", $"Hata bildirimi e-postası gönderilemedi: {ex.Message}", ex, "SmtpErrorNotificationService");
             }
         });
 

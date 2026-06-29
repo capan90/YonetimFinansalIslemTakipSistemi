@@ -25,4 +25,7 @@ public enum PermissionType
 
     // Ayarlar modülü
     CanManageMailSettings      = 15,
+
+    // Sistem Logları modülü
+    CanViewSystemLogs          = 16,
 }

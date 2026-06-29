@@ -63,6 +63,10 @@
                           Header="Mail Ayarları"
                           ToolTip="SMTP sunucusu ve e-posta bildirim ayarlarını yönetin."
                           Click="OpenMailSettings_Click"/>
+                <MenuItem x:Name="MenuItemSistemLoglari"
+                          Header="Sistem Logları"
+                          ToolTip="Uygulama sistem loglarını ve hata kayıtlarını görüntüleyin."
+                          Click="OpenSystemLogs_Click"/>
                 <Separator/>
                 <MenuItem x:Name="MenuItemSistemSagligi"
                           Header="Sistem Sağlığı"

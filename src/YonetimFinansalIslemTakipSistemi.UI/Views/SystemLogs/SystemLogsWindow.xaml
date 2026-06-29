@@ -1,0 +1,150 @@
+<Window x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.SystemLogs.SystemLogsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Sistem Logları"
+        Height="680" Width="1200"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResizeWithGrip"
+        Icon="pack://application:,,,/Assets/AppIcon.ico"
+        Loaded="Window_Loaded">
+
+    <DockPanel Margin="10">
+
+        <!-- Özet kartlar -->
+        <UniformGrid DockPanel.Dock="Top" Rows="1" Margin="0,0,0,10">
+            <Border Background="#FEE2E2" CornerRadius="6" Margin="0,0,6,0" Padding="12,8">
+                <StackPanel>
+                    <TextBlock Text="Bugünkü Kritik" FontSize="11" Foreground="#991B1B"/>
+                    <TextBlock Text="{Binding TodayCriticalCount}" FontSize="26" FontWeight="Bold" Foreground="#DC2626"/>
+                </StackPanel>
+            </Border>
+            <Border Background="#FEF3C7" CornerRadius="6" Margin="0,0,6,0" Padding="12,8">
+                <StackPanel>
+                    <TextBlock Text="Bugünkü Hata" FontSize="11" Foreground="#92400E"/>
+                    <TextBlock Text="{Binding TodayErrorCount}" FontSize="26" FontWeight="Bold" Foreground="#D97706"/>
+                </StackPanel>
+            </Border>
+            <Border Background="#FFF7ED" CornerRadius="6" Margin="0,0,6,0" Padding="12,8">
+                <StackPanel>
+                    <TextBlock Text="Son 24h Uyarı" FontSize="11" Foreground="#9A3412"/>
+                    <TextBlock Text="{Binding Last24hWarningCount}" FontSize="26" FontWeight="Bold" Foreground="#EA580C"/>
+                </StackPanel>
+            </Border>
+            <Border Background="#EFF6FF" CornerRadius="6" Padding="12,8">
+                <StackPanel>
+                    <TextBlock Text="Çözülmemiş Kritik" FontSize="11" Foreground="#1D4ED8"/>
+                    <TextBlock Text="{Binding OpenCriticalCount}" FontSize="26" FontWeight="Bold" Foreground="#2563EB"/>
+                </StackPanel>
+            </Border>
+        </UniformGrid>
+
+        <!-- Filtre paneli -->
+        <Border DockPanel.Dock="Top"
+                BorderBrush="#E2E8F0" BorderThickness="1"
+                CornerRadius="4" Padding="10,8"
+                Margin="0,0,0,8">
+            <WrapPanel Orientation="Horizontal">
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                    <TextBlock Text="Başlangıç:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <DatePicker Width="110" SelectedDate="{Binding DateFrom, Mode=TwoWay}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                    <TextBlock Text="Bitiş:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <DatePicker Width="110" SelectedDate="{Binding DateTo, Mode=TwoWay}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                    <TextBlock Text="Seviye:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <ComboBox Width="90"
+                              ItemsSource="{Binding LevelOptions}"
+                              SelectedItem="{Binding SelectedLevel, Mode=TwoWay}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                    <TextBlock Text="Kategori:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <ComboBox Width="110"
+                              ItemsSource="{Binding CategoryOptions}"
+                              SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                    <TextBlock Text="Durum:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <ComboBox Width="90"
+                              ItemsSource="{Binding StatusOptions}"
+                              SelectedItem="{Binding SelectedStatus, Mode=TwoWay}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                    <TextBlock Text="Ara:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <TextBox Width="150" Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+
+                <Button Content="Filtrele"  Command="{Binding SearchCommand}" Margin="0,0,6,4" Padding="12,4"/>
+                <Button Content="Temizle"   Command="{Binding ClearCommand}"  Margin="0,0,6,4" Padding="12,4"/>
+                <Button Content="Yenile"    Click="RefreshButton_Click"       Margin="0,0,0,4" Padding="12,4"/>
+
+            </WrapPanel>
+        </Border>
+
+        <!-- Sayfalama -->
+        <Border DockPanel.Dock="Bottom"
+                BorderBrush="#E2E8F0" BorderThickness="0,1,0,0"
+                Padding="0,6,0,0" Margin="0,6,0,0">
+            <DockPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                    <Button Content="◀ Önceki" Command="{Binding PrevCommand}"
+                            Margin="0,0,6,0" Padding="10,3"
+                            IsEnabled="{Binding CanGoPrev}"/>
+                    <Button Content="Sonraki ▶" Command="{Binding NextCommand}"
+                            Padding="10,3"
+                            IsEnabled="{Binding CanGoNext}"/>
+                </StackPanel>
+                <TextBlock Text="{Binding PageInfo}"
+                           VerticalAlignment="Center" Foreground="#64748B"/>
+            </DockPanel>
+        </Border>
+
+        <!-- DataGrid -->
+        <DataGrid x:Name="MainGrid"
+                  ItemsSource="{Binding Items}"
+                  SelectedItem="{Binding Selected, Mode=TwoWay}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  AlternatingRowBackground="#F8FAFC"
+                  RowHeight="28"
+                  MouseDoubleClick="MainGrid_MouseDoubleClick">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Tarih"     Binding="{Binding CreatedAt, StringFormat=dd.MM.yyyy HH:mm:ss}" Width="140"/>
+                <DataGridTemplateColumn Header="Seviye" Width="80">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Border CornerRadius="3" Padding="4,1"
+                                    Background="{Binding Level, Converter={StaticResource LevelToBackgroundConverter}}"
+                                    HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding LevelDisplay}"
+                                           Foreground="{Binding Level, Converter={StaticResource LevelToForegroundConverter}, ConverterParameter=foreground}"
+                                           FontSize="11" FontWeight="SemiBold"/>
+                            </Border>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Kategori"  Binding="{Binding Category}"      Width="100"/>
+                <DataGridTextColumn Header="Kullanıcı" Binding="{Binding Username}"      Width="120"/>
+                <DataGridTextColumn Header="Makine"    Binding="{Binding MachineName}"   Width="120"/>
+                <DataGridTextColumn Header="Mesaj"     Binding="{Binding Message}"       Width="*"/>
+                <DataGridTemplateColumn Header="Durum" Width="80">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding StatusDisplay}"
+                                       Foreground="{Binding IsResolved, Converter={StaticResource BoolToStatusColorConverter}}"
+                                       FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+    </DockPanel>
+</Window>

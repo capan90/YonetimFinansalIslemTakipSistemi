@@ -28,6 +28,9 @@
 
   <ItemGroup>
     <Resource Include="Assets\AppIcon.ico" />
+    <Resource Include="Assets\LoginIcon.png" />
+    <!-- CompanyLogo.png opsiyonel: dosya eklenince otomatik resource olarak dahil edilir -->
+    <Resource Include="Assets\CompanyLogo.png" Condition="Exists('Assets\CompanyLogo.png')" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -1,0 +1,77 @@
+<Window x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.Settings.AppearanceSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Görünüm Ayarları"
+        Height="260" Width="360"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Icon="pack://application:,,,/Assets/AppIcon.ico"
+        Loaded="Window_Loaded">
+
+    <DockPanel Margin="20">
+
+        <!-- Kaydet butonu — alt panel -->
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+                    HorizontalAlignment="Right" Margin="0,16,0,0">
+            <TextBlock x:Name="StatusText"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource Theme.Success}"
+                       FontSize="11"
+                       Margin="0,0,12,0"
+                       Visibility="Collapsed"/>
+            <Button Content="Kaydet ve Uygula"
+                    Click="Save_Click"
+                    Width="130" Height="30"
+                    Style="{StaticResource PrimaryButton}"/>
+            <Button Content="Kapat"
+                    IsCancel="True"
+                    Width="80" Height="30"
+                    Margin="8,0,0,0"
+                    Style="{StaticResource SecondaryButton}"/>
+        </StackPanel>
+
+        <!-- İçerik -->
+        <StackPanel>
+
+            <TextBlock Text="Uygulama Teması"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource Theme.Text}"
+                       Margin="0,0,0,8"/>
+
+            <DockPanel Margin="0,0,0,12">
+                <TextBlock Text="Tema:"
+                           DockPanel.Dock="Left"
+                           Width="70"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource Theme.Text}"/>
+                <ComboBox x:Name="ThemeCombo"
+                          SelectedIndex="0">
+                    <ComboBoxItem Content="Açık Tema" Tag="Light"/>
+                    <!-- Koyu tema sonraki sürümde aktif edilecek -->
+                    <ComboBoxItem Content="Koyu Tema (Yakında)" Tag="Dark" IsEnabled="False"
+                                  Foreground="{DynamicResource Theme.MutedText}"/>
+                </ComboBox>
+            </DockPanel>
+
+            <Border Background="{DynamicResource Theme.AppBackground}"
+                    BorderBrush="{DynamicResource Theme.Border}"
+                    BorderThickness="1" CornerRadius="4"
+                    Padding="10,8">
+                <StackPanel>
+                    <TextBlock TextWrapping="Wrap" FontSize="11"
+                               Foreground="{DynamicResource Theme.MutedText}"
+                               Margin="0,0,0,4">
+                        Tema değişikliği anında uygulanır. Pencereler yeniden açılmadan
+                        renk şeması güncellenir.
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="11"
+                               Foreground="{DynamicResource Theme.Warning}">
+                        Koyu tema sonraki sürümde aktif edilecektir.
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+
+    </DockPanel>
+</Window>

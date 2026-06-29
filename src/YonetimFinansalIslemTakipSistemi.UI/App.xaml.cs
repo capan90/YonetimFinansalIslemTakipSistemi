@@ -264,6 +264,9 @@ public partial class App : System.Windows.Application
         // Sistem Logları modülü
         services.AddTransient<SystemLogsViewModel>();
 
+        // Tema servisi — UI katmanında (WPF Application.Current erişimi gerektirir)
+        services.AddSingleton<IThemeService, YonetimFinansalIslemTakipSistemi.UI.Services.ThemeService>();
+
         // Kargo Katip ViewModels
         services.AddTransient<CompanyDirectoryListViewModel>();
         services.AddTransient<CompanyDirectoryEditViewModel>();
@@ -314,8 +317,17 @@ public partial class App : System.Windows.Application
             await seedScope.ServiceProvider.GetRequiredService<IDevDataSeeder>().SeedAsync();
         }
 
+        // Kaydedilmiş temayı DB'den oku ve uygula (login öncesi, UI thread'inde)
+        var themeService = Services.GetRequiredService<IThemeService>();
+        var savedTheme   = await themeService.GetCurrentThemeAsync();
+        themeService.ApplyTheme(savedTheme);
+
         Log.Information("Uygulama başlatıldı, oturum döngüsü başlıyor");
         SafeLog(s => s.LogInfoAsync("Startup", "Uygulama başlatıldı", source: "App.InitializeAsync"));
+
+        // Kargo retention arka planda çalışsın — UI'ı bloklamamak için fire-and-forget
+        _ = Services.GetRequiredService<ICargoRetentionService>().RunAsync();
+
         RunApplicationLoop();
     }
 

@@ -5,7 +5,10 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <!-- Bileşen stilleri ve converter'lar -->
                 <ResourceDictionary Source="Resources/AppStyles.xaml"/>
+                <!-- Varsayılan tema — IThemeService startup'ta kaydedilmiş temayı uygular -->
+                <ResourceDictionary Source="Resources/Themes/LightTheme.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

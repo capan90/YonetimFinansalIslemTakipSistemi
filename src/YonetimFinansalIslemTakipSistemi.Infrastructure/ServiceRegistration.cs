@@ -59,6 +59,8 @@ public static class ServiceRegistration
         services.AddSingleton<IErrorNotificationService, NullErrorNotificationService>();
         // Singleton: kendi içinde scope açarak Scoped AppDbContext'e güvenle erişir
         services.AddSingleton<ISystemLogService, SystemLogService>();
+        // Singleton: startup'ta bir kez arka planda çalışır; IServiceProvider ile kendi scope'unu açar
+        services.AddSingleton<ICargoRetentionService, CargoRetentionService>();
         services.AddScoped<GetDashboardHandler>();
 
         // [DEV-ONLY] Geliştirme ortamı seed servisi

@@ -646,6 +646,11 @@ public partial class MainWindow : Window
         new Views.SystemLogs.SystemLogsWindow(_services) { Owner = this }.ShowDialog();
     }
 
+    private void OpenAppearanceSettings_Click(object sender, RoutedEventArgs e)
+    {
+        new Views.Settings.AppearanceSettingsWindow(_services) { Owner = this }.ShowDialog();
+    }
+
     private async void CheckForUpdates_Click(object sender, RoutedEventArgs e)
     {
         var updateService = _services.GetRequiredService<IUpdateService>();

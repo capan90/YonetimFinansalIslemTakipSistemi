@@ -1,0 +1,47 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ── Arka Plan ──────────────────────────────────────────────────────────── -->
+    <SolidColorBrush x:Key="Theme.AppBackground"         Color="#0F172A"/>
+    <SolidColorBrush x:Key="Theme.Surface"               Color="#1E293B"/>
+    <SolidColorBrush x:Key="Theme.CardBackground"        Color="#1E293B"/>
+
+    <!-- ── Marka ──────────────────────────────────────────────────────────────── -->
+    <SolidColorBrush x:Key="Theme.Primary"               Color="#60A5FA"/>
+    <SolidColorBrush x:Key="Theme.PrimaryHover"          Color="#93C5FD"/>
+
+    <!-- ── Metin ──────────────────────────────────────────────────────────────── -->
+    <SolidColorBrush x:Key="Theme.Text"                  Color="#F1F5F9"/>
+    <SolidColorBrush x:Key="Theme.MutedText"             Color="#94A3B8"/>
+
+    <!-- ── Kenarlık / Input ───────────────────────────────────────────────────── -->
+    <SolidColorBrush x:Key="Theme.Border"                Color="#334155"/>
+    <SolidColorBrush x:Key="Theme.InputBackground"       Color="#1E293B"/>
+    <SolidColorBrush x:Key="Theme.InputBorder"           Color="#475569"/>
+    <SolidColorBrush x:Key="Theme.InputBorderFocus"      Color="#60A5FA"/>
+
+    <!-- ── DataGrid ───────────────────────────────────────────────────────────── -->
+    <SolidColorBrush x:Key="Theme.DataGridHeader"        Color="#1E293B"/>
+    <SolidColorBrush x:Key="Theme.DataGridHeaderText"    Color="#93C5FD"/>
+    <SolidColorBrush x:Key="Theme.DataGridRow"           Color="#1E293B"/>
+    <SolidColorBrush x:Key="Theme.DataGridAltRow"        Color="#263348"/>
+    <SolidColorBrush x:Key="Theme.DataGridSelectedRow"   Color="#1E3A5F"/>
+    <SolidColorBrush x:Key="Theme.DataGridSelectedText"  Color="#F1F5F9"/>
+    <SolidColorBrush x:Key="Theme.DataGridHoverRow"      Color="#2D4A6B"/>
+
+    <!-- ── Durum ──────────────────────────────────────────────────────────────── -->
+    <SolidColorBrush x:Key="Theme.Danger"                Color="#F87171"/>
+    <SolidColorBrush x:Key="Theme.Success"               Color="#4ADE80"/>
+    <SolidColorBrush x:Key="Theme.Warning"               Color="#FBBF24"/>
+
+    <!-- ── Sistem: DataGrid seçim rengi override (koyu tema) ─────────────────── -->
+    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
+                     Color="#1E3A5F"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}"
+                     Color="#F1F5F9"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}"
+                     Color="#1E3A5F"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}"
+                     Color="#F1F5F9"/>
+
+</ResourceDictionary>

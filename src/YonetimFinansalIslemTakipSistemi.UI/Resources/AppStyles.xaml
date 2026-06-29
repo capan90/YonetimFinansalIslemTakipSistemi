@@ -8,23 +8,8 @@
     <converters:SystemLogLevelToColorConverter  x:Key="LevelToForegroundConverter" />
     <converters:BoolToStatusColorConverter      x:Key="BoolToStatusColorConverter"/>
 
-    <!-- ── Sistem Seçim Renkleri ─────────────────────────────────────────────── -->
-    <!-- WPF DataGrid hücre şablonu HighlightBrushKey / HighlightTextBrushKey'i
-         DynamicResource olarak kullanır. Buradaki override, şablonun iç Border'ına
-         doğrudan yansır; hem odakta hem odak dışında (InactiveSelection) etkilidir.
-         TargetName setter'ları Style trigger'ı ile geçersiz kılınamadığı için
-         sistem kaynaklarının override'ı en güvenilir çözümdür. -->
-    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
-                     Color="#DBEAFE"/>
-    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}"
-                     Color="#1A202C"/>
-    <!-- Odak kaybında da seçili satır aktifle aynı şekilde gösterilir -->
-    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}"
-                     Color="#DBEAFE"/>
-    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}"
-                     Color="#1A202C"/>
-
-    <!-- ── Renk Fırçaları ────────────────────────────────────────────────────── -->
+    <!-- ── Sabit Renk Fırçaları (StaticResource ile referans verilen mevcut isimler) ── -->
+    <!-- Not: Tema fırçaları (Theme.*) ayrı LightTheme/DarkTheme.xaml dosyalarındadır -->
     <SolidColorBrush x:Key="Brush.Primary"       Color="#1E3A5F"/>
     <SolidColorBrush x:Key="Brush.Success"       Color="#2E7D32"/>
     <SolidColorBrush x:Key="Brush.Danger"        Color="#C62828"/>
@@ -40,7 +25,7 @@
     <!-- ── Buton Stilleri ────────────────────────────────────────────────────── -->
 
     <Style x:Key="PrimaryButton" TargetType="Button">
-        <Setter Property="Background"      Value="#1E3A5F"/>
+        <Setter Property="Background"      Value="{DynamicResource Theme.Primary}"/>
         <Setter Property="Foreground"      Value="White"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Height"          Value="30"/>
@@ -61,7 +46,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="#2E5F9F"/>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Theme.PrimaryHover}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="Bd" Property="Background" Value="#152C4A"/>
@@ -150,37 +135,64 @@
         </Setter>
     </Style>
 
-    <!-- ── TextBox ────────────────────────────────────────────────────────────── -->
+    <!-- ── TextBox ──────────────────────────────────────────────────────────── -->
     <Style TargetType="{x:Type TextBox}">
         <Setter Property="Padding"                  Value="6,4"/>
-        <Setter Property="BorderBrush"              Value="#CBD5E1"/>
+        <Setter Property="BorderBrush"              Value="{DynamicResource Theme.InputBorder}"/>
         <Setter Property="BorderThickness"          Value="1"/>
-        <Setter Property="Background"               Value="White"/>
+        <Setter Property="Background"               Value="{DynamicResource Theme.InputBackground}"/>
+        <Setter Property="Foreground"               Value="{DynamicResource Theme.Text}"/>
+        <Setter Property="CaretBrush"               Value="{DynamicResource Theme.Text}"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Style.Triggers>
             <Trigger Property="IsFocused" Value="True">
-                <Setter Property="BorderBrush" Value="#1E3A5F"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource Theme.InputBorderFocus}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
 
-    <!-- ── DataGrid ───────────────────────────────────────────────────────────── -->
+    <!-- ── PasswordBox ──────────────────────────────────────────────────────── -->
+    <Style TargetType="{x:Type PasswordBox}">
+        <Setter Property="Padding"                  Value="6,4"/>
+        <Setter Property="BorderBrush"              Value="{DynamicResource Theme.InputBorder}"/>
+        <Setter Property="BorderThickness"          Value="1"/>
+        <Setter Property="Background"               Value="{DynamicResource Theme.InputBackground}"/>
+        <Setter Property="Foreground"               Value="{DynamicResource Theme.Text}"/>
+        <Setter Property="CaretBrush"               Value="{DynamicResource Theme.Text}"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+
+    <!-- ── ComboBox ─────────────────────────────────────────────────────────── -->
+    <Style TargetType="{x:Type ComboBox}">
+        <Setter Property="Background" Value="{DynamicResource Theme.InputBackground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Theme.Text}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Theme.InputBorder}"/>
+    </Style>
+
+    <!-- ── DataGrid ──────────────────────────────────────────────────────────── -->
     <!-- SelectionUnit="FullRow": tıklamada tüm satır hücreleri seçilir.
          Seçim rengi DataGridCell trigger üzerinden uygulanır — AlternatingRowBackground
          satıra local value koyduğu için DataGridRow trigger etkisiz kalır;
          DataGridCell trigger local value taşımaz, dolayısıyla güvenilir çalışır. -->
     <Style TargetType="{x:Type DataGrid}">
-        <Setter Property="HeadersVisibility" Value="Column"/>
-        <Setter Property="SelectionUnit"     Value="FullRow"/>
+        <Setter Property="HeadersVisibility"    Value="Column"/>
+        <Setter Property="SelectionUnit"        Value="FullRow"/>
+        <Setter Property="Background"           Value="{DynamicResource Theme.DataGridRow}"/>
+        <Setter Property="RowBackground"        Value="{DynamicResource Theme.DataGridRow}"/>
+        <Setter Property="AlternatingRowBackground" Value="{DynamicResource Theme.DataGridAltRow}"/>
+        <Setter Property="Foreground"           Value="{DynamicResource Theme.Text}"/>
+        <Setter Property="BorderBrush"          Value="{DynamicResource Theme.Border}"/>
+        <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource Theme.Border}"/>
+        <Setter Property="VerticalGridLinesBrush"   Value="{DynamicResource Theme.Border}"/>
     </Style>
 
     <Style TargetType="{x:Type DataGridColumnHeader}">
-        <Setter Property="Background"                 Value="#F1F5F9"/>
-        <Setter Property="Foreground"                 Value="#1E3A5F"/>
+        <Setter Property="Background"                 Value="{DynamicResource Theme.DataGridHeader}"/>
+        <Setter Property="Foreground"                 Value="{DynamicResource Theme.DataGridHeaderText}"/>
         <Setter Property="FontWeight"                 Value="SemiBold"/>
         <Setter Property="FontSize"                   Value="12"/>
         <Setter Property="Padding"                    Value="8,6"/>
-        <Setter Property="BorderBrush"                Value="#E2E8F0"/>
+        <Setter Property="BorderBrush"                Value="{DynamicResource Theme.Border}"/>
         <Setter Property="BorderThickness"            Value="0,0,1,1"/>
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
         <Setter Property="Cursor"                     Value="Arrow"/>
@@ -188,20 +200,19 @@
 
     <Style TargetType="{x:Type DataGridRow}">
         <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Foreground"      Value="{DynamicResource Theme.Text}"/>
         <Style.Triggers>
-            <!-- Seçili satır: arka plan açık mavi, metin koyu (sistem renk override ile tutarlı) -->
             <Trigger Property="IsSelected" Value="True">
-                <Setter Property="Background" Value="#DBEAFE"/>
-                <Setter Property="Foreground" Value="#1A202C"/>
+                <Setter Property="Background" Value="{DynamicResource Theme.DataGridSelectedRow}"/>
+                <Setter Property="Foreground" Value="{DynamicResource Theme.DataGridSelectedText}"/>
             </Trigger>
-            <!-- Hover (seçili olmayan): çok hafif mavi, alternating ile kontrast yeterli -->
             <MultiTrigger>
                 <MultiTrigger.Conditions>
                     <Condition Property="IsMouseOver" Value="True"/>
                     <Condition Property="IsSelected"  Value="False"/>
                 </MultiTrigger.Conditions>
                 <MultiTrigger.Setters>
-                    <Setter Property="Background" Value="#EFF6FF"/>
+                    <Setter Property="Background" Value="{DynamicResource Theme.DataGridHoverRow}"/>
                 </MultiTrigger.Setters>
             </MultiTrigger>
         </Style.Triggers>
@@ -210,14 +221,12 @@
     <Style TargetType="{x:Type DataGridCell}">
         <Setter Property="BorderThickness"  Value="0"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Foreground"       Value="{DynamicResource Theme.Text}"/>
         <Style.Triggers>
-            <!-- Hücre üzerinden seçim rengi uygulanır: AlternatingRowBackground satıra local value
-                 koyduğu için DataGridRow.Background trigger'ı etkisizdir; DataGridCell.Background
-                 bu sorundan etkilenmez ve hem odakta hem odak dışında güvenilir çalışır. -->
             <Trigger Property="IsSelected" Value="True">
-                <Setter Property="Background"  Value="#DBEAFE"/>
+                <Setter Property="Background"  Value="{DynamicResource Theme.DataGridSelectedRow}"/>
                 <Setter Property="BorderBrush" Value="Transparent"/>
-                <Setter Property="Foreground"  Value="#1A202C"/>
+                <Setter Property="Foreground"  Value="{DynamicResource Theme.DataGridSelectedText}"/>
             </Trigger>
         </Style.Triggers>
     </Style>

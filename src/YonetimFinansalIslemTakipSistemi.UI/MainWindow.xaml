@@ -67,6 +67,9 @@
                           Header="Sistem Logları"
                           ToolTip="Uygulama sistem loglarını ve hata kayıtlarını görüntüleyin."
                           Click="OpenSystemLogs_Click"/>
+                <MenuItem Header="Görünüm Ayarları"
+                          ToolTip="Uygulama temasını (açık / koyu) değiştirin."
+                          Click="OpenAppearanceSettings_Click"/>
                 <Separator/>
                 <MenuItem x:Name="MenuItemSistemSagligi"
                           Header="Sistem Sağlığı"

@@ -94,6 +94,20 @@ Write-Host "[3/6] Application Files klasörü hazırlanıyor..." -ForegroundColo
 New-Item -ItemType Directory -Force -Path $AppFilesDir | Out-Null
 Copy-Item -Path "$BuildOutput\*" -Destination $AppFilesDir -Recurse -Force
 
+# AppIcon.ico ayrı dosya olarak kopyalanır.
+# csproj'da <Resource> (assembly'e gömülü) olarak tanımlıdır — publish output'una gelmez.
+# ClickOnce kısayol ikonu için deployment manifest'te iconFile referansı gerektirir;
+# bu dosyanın Application Files içinde bulunması ve application manifest'e dahil edilmesi şarttır.
+# Mage -FromDirectory ile manifest oluştururken dizindeki tüm dosyaları tarar → ikon de dahil olur.
+$IconSource = "$PSScriptRoot\src\YonetimFinansalIslemTakipSistemi.UI\Assets\AppIcon.ico"
+$IconFile   = "$AppFilesDir\AppIcon.ico"
+if (Test-Path $IconSource) {
+    Copy-Item $IconSource $IconFile -Force
+    Write-Host "  AppIcon.ico kopyalandi: $IconFile" -ForegroundColor Gray
+} else {
+    Write-Host "  [UYARI] AppIcon.ico kaynak dosyasi bulunamadi: $IconSource" -ForegroundColor Yellow
+}
+
 Write-Host "[4/6] Application manifest oluşturuluyor..." -ForegroundColor Cyan
 
 dotnet-mage -New Application `
@@ -118,7 +132,8 @@ dotnet-mage -New Deployment `
     -Install true `
     -IncludeProviderURL true `
     -ProviderURL $ProviderUrl `
-    -Publisher "YonetimApp"
+    -Publisher "YonetimApp" `
+    -IconFile $IconFile
 
 if ($Sign) {
     Write-Host "  Imzalaniyor: $DeployManifest" -ForegroundColor Yellow
@@ -165,13 +180,19 @@ if (Test-Path $VersionJsonPath) {
     $ok = $false
 }
 
-# ProviderURL deployment manifest içinde doğru mu?
+# ProviderURL ve iconFile deployment manifest içinde doğru mu?
 if (Test-Path $DeployManifest) {
     $manifestContent = Get-Content $DeployManifest -Raw
     if ($manifestContent -like "*$ProviderUrl*") {
         Write-Host "  [OK] ProviderURL manifest icinde dogrulandi: $ProviderUrl" -ForegroundColor Green
     } else {
         Write-Host "  [HATA] ProviderURL manifest icinde bulunamadi. Beklenen: $ProviderUrl" -ForegroundColor Red
+        $ok = $false
+    }
+    if ($manifestContent -like "*AppIcon.ico*") {
+        Write-Host "  [OK] iconFile manifest icinde dogrulandi (kisayol ikonu)" -ForegroundColor Green
+    } else {
+        Write-Host "  [HATA] iconFile manifest icinde bulunamadi (AppIcon.ico referansi yok)" -ForegroundColor Red
         $ok = $false
     }
 }

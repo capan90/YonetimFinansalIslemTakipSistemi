@@ -115,8 +115,7 @@ dotnet-mage -New Application `
     -Name $AppName `
     -Version $Version `
     -Processor "msil" `
-    -FromDirectory $AppFilesDir `
-    -IconFile $IconFile
+    -FromDirectory $AppFilesDir
 
 if ($Sign) {
     Write-Host "  Imzalaniyor: $AppManifest" -ForegroundColor Yellow
@@ -189,21 +188,6 @@ if (Test-Path $DeployManifest) {
         Write-Host "  [HATA] ProviderURL manifest icinde bulunamadi. Beklenen: $ProviderUrl" -ForegroundColor Red
         $ok = $false
     }
-}
-
-# iconFile application manifest içinde doğru mu?
-# -IconFile yalnızca Application manifest'e eklenir (dotnet-mage kuralı).
-if (Test-Path $AppManifest) {
-    $appManifestContent = Get-Content $AppManifest -Raw
-    if ($appManifestContent -like "*AppIcon.ico*") {
-        Write-Host "  [OK] Application manifest iconFile dogrulandi: AppIcon.ico" -ForegroundColor Green
-    } else {
-        Write-Host "  [HATA] Application manifest icinde AppIcon.ico referansi bulunamadi" -ForegroundColor Red
-        $ok = $false
-    }
-} else {
-    Write-Host "  [HATA] Application manifest bulunamadi: $AppManifest" -ForegroundColor Red
-    $ok = $false
 }
 
 # İmzalama durumu

@@ -6,6 +6,8 @@ namespace YonetimFinansalIslemTakipSistemi.UI.Views.Cargo;
 
 public partial class QuickUpdateStatusDialog : Window
 {
+    private readonly CargoShipmentDirection _direction;
+
     public CargoShipmentStatus? SelectedStatus { get; private set; }
 
     public QuickUpdateStatusDialog(
@@ -14,10 +16,14 @@ public partial class QuickUpdateStatusDialog : Window
         CargoShipmentDirection direction = CargoShipmentDirection.Outgoing)
     {
         InitializeComponent();
+        _direction = direction;
         CurrentStatusText.Text = currentStatusDisplay;
 
-        // Gelen kargoda Hazırlandı/Gönderildi geçişleri gösterilmez
-        var allowed = CargoStatusTransitions.GetAllowedNext(currentStatus, direction);
+        // Mevcut durum ve izin verilen sonraki durumlar listelenir; Taslak gösterilmez
+        var allowed = CargoStatusTransitions.GetAllowedNext(currentStatus, direction)
+            .Where(s => s != CargoShipmentStatus.Draft)
+            .ToList();
+
         NewStatusCombo.ItemsSource = allowed
             .Select(s => new { Display = DisplayStatus(s), Value = s })
             .ToList();
@@ -28,18 +34,21 @@ public partial class QuickUpdateStatusDialog : Window
     private void UpdateButton_Click(object sender, RoutedEventArgs e)
     {
         if (NewStatusCombo.SelectedValue is not CargoShipmentStatus status) return;
-        SelectedStatus  = status;
-        DialogResult    = true;
+        SelectedStatus = status;
+        DialogResult   = true;
     }
 
-    private static string DisplayStatus(CargoShipmentStatus s) => s switch
+    private string DisplayStatus(CargoShipmentStatus s) => s switch
     {
-        CargoShipmentStatus.Draft     => "Taslak",
-        CargoShipmentStatus.Prepared  => "Hazırlandı",
-        CargoShipmentStatus.Shipped   => "Gönderildi",
-        CargoShipmentStatus.Received  => "Alındı",
-        CargoShipmentStatus.Delivered => "Teslim Edildi",
-        CargoShipmentStatus.Cancelled => "İptal",
-        _                             => s.ToString()
+        CargoShipmentStatus.Draft              => _direction == CargoShipmentDirection.Incoming ? "Bekleniyor" : "Gönderime Hazır",
+        CargoShipmentStatus.Prepared           => "Gönderime Hazır",
+        CargoShipmentStatus.HandedToCargo      => "Kargoya Teslim Edildi",
+        CargoShipmentStatus.Shipped            => "Gönderildi",
+        CargoShipmentStatus.Waiting            => "Bekleniyor",
+        CargoShipmentStatus.Received           => "Teslim Alındı",
+        CargoShipmentStatus.PersonnelDelivered => "Personele Teslim Edildi",
+        CargoShipmentStatus.Delivered          => "Teslim Edildi",
+        CargoShipmentStatus.Cancelled          => "İptal",
+        _                                      => s.ToString()
     };
 }

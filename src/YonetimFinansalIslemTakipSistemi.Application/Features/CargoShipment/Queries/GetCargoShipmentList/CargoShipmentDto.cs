@@ -35,5 +35,6 @@ public class CargoShipmentDto
     public string DisplayParty { get; set; } = string.Empty;
 
     public string? Notes { get; set; }
+    public string? ReceiverAttentionSnapshot { get; set; }
     public DateTime CreatedAt { get; set; }
 }

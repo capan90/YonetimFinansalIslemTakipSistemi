@@ -88,15 +88,18 @@ public class GetCargoDashboardHandler
         ];
 
         // ── Grafik 2: Durum Dağılımı (tüm aktif kayıtlar) ──────────────
-        dto.StatusChart =
-        [
-            new("Taslak",        all.Count(s => s.Status == CargoShipmentStatus.Draft),     "#64748B"),
-            new("Hazırlandı",    all.Count(s => s.Status == CargoShipmentStatus.Prepared),  "#3B82F6"),
-            new("Gönderildi",    all.Count(s => s.Status == CargoShipmentStatus.Shipped),   "#F59E0B"),
-            new("Alındı",        all.Count(s => s.Status == CargoShipmentStatus.Received),  "#8B5CF6"),
-            new("Teslim Edildi", all.Count(s => s.Status == CargoShipmentStatus.Delivered), "#10B981"),
-            new("İptal",         all.Count(s => s.Status == CargoShipmentStatus.Cancelled), "#EF4444"),
-        ];
+        // Taslak hariç; sıfır sayılı durumlar grafiği kirletmemek için dahil edilmez
+        dto.StatusChart = new[]
+        {
+            new CargoDashboardChartItem("Gönderime Hazır",         all.Count(s => s.Status == CargoShipmentStatus.Prepared),           "#3B82F6"),
+            new CargoDashboardChartItem("Kargoya Teslim Edildi",   all.Count(s => s.Status == CargoShipmentStatus.HandedToCargo),      "#6366F1"),
+            new CargoDashboardChartItem("Bekleniyor",              all.Count(s => s.Status == CargoShipmentStatus.Waiting),            "#F59E0B"),
+            new CargoDashboardChartItem("Gönderildi",              all.Count(s => s.Status == CargoShipmentStatus.Shipped),            "#0EA5E9"),
+            new CargoDashboardChartItem("Teslim Alındı",           all.Count(s => s.Status == CargoShipmentStatus.Received),          "#8B5CF6"),
+            new CargoDashboardChartItem("Personele Teslim Edildi", all.Count(s => s.Status == CargoShipmentStatus.PersonnelDelivered), "#EC4899"),
+            new CargoDashboardChartItem("Teslim Edildi",           all.Count(s => s.Status == CargoShipmentStatus.Delivered),         "#10B981"),
+            new CargoDashboardChartItem("İptal",                   all.Count(s => s.Status == CargoShipmentStatus.Cancelled),         "#EF4444"),
+        }.Where(c => c.Value > 0).ToList();
 
         // ── Grafik 3: Top 5 Kargo Firması ───────────────────────────────
         string[] companyColors = ["#2E5984", "#4A7FB5", "#6699CC", "#3B6998", "#5A8AB0"];
@@ -129,20 +132,23 @@ public class GetCargoDashboardHandler
         Party                     = s.CompanyDirectory?.CompanyName
                                     ?? (s.Direction == CargoShipmentDirection.Incoming ? s.SenderName : s.ReceiverName),
         CargoCompanyName          = s.CargoCompany?.Name,
-        StatusDisplay             = DisplayStatus(s.Status),
+        StatusDisplay             = DisplayStatus(s.Status, s.Direction),
         NotificationStatusDisplay = DisplayNotificationStatus(s.NotificationStatus),
         PriorityDisplay           = DisplayPriority(s.Priority),
     };
 
-    private static string DisplayStatus(CargoShipmentStatus s) => s switch
+    private static string DisplayStatus(CargoShipmentStatus s, CargoShipmentDirection d) => s switch
     {
-        CargoShipmentStatus.Draft     => "Taslak",
-        CargoShipmentStatus.Prepared  => "Hazırlandı",
-        CargoShipmentStatus.Shipped   => "Gönderildi",
-        CargoShipmentStatus.Received  => "Alındı",
-        CargoShipmentStatus.Delivered => "Teslim Edildi",
-        CargoShipmentStatus.Cancelled => "İptal",
-        _                             => s.ToString()
+        CargoShipmentStatus.Draft              => d == CargoShipmentDirection.Incoming ? "Bekleniyor" : "Gönderime Hazır",
+        CargoShipmentStatus.Prepared           => "Gönderime Hazır",
+        CargoShipmentStatus.HandedToCargo      => "Kargoya Teslim Edildi",
+        CargoShipmentStatus.Shipped            => "Gönderildi",
+        CargoShipmentStatus.Waiting            => "Bekleniyor",
+        CargoShipmentStatus.Received           => "Teslim Alındı",
+        CargoShipmentStatus.PersonnelDelivered => "Personele Teslim Edildi",
+        CargoShipmentStatus.Delivered          => "Teslim Edildi",
+        CargoShipmentStatus.Cancelled          => "İptal",
+        _                                      => s.ToString()
     };
 
     private static string DisplayNotificationStatus(CargoNotificationStatus ns) => ns switch

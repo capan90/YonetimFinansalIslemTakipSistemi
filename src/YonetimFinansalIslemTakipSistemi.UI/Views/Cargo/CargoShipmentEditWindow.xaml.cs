@@ -74,6 +74,24 @@ public partial class CargoShipmentEditWindow : Window
         }
     }
 
+    private async void AddAttentionContactButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialogService = _services.GetRequiredService<IDialogService>();
+        var name = _vm.AttentionContactInput?.Trim();
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            dialogService.ShowWarning("Eklenecek kişi adı boş olamaz.", "Dikkatine Ekle");
+            return;
+        }
+        if (_vm.SelectedCompanyDirectory is null)
+        {
+            dialogService.ShowWarning("Dikkatine kişisi eklemek için önce bir firma seçin.", "Dikkatine Ekle");
+            return;
+        }
+        await _vm.AddAttentionContactAsync(name);
+        dialogService.ShowInfo($"'{name}' dikkatine listesine eklendi.", "Dikkatine Ekle");
+    }
+
     private void RefreshSnapshotButton_Click(object sender, RoutedEventArgs e)
     {
         var dialogService = _services.GetRequiredService<IDialogService>();

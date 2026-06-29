@@ -15,10 +15,11 @@
                      Color="#DBEAFE"/>
     <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}"
                      Color="#1A202C"/>
+    <!-- Odak kaybında da seçili satır aktifle aynı şekilde gösterilir -->
     <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}"
-                     Color="#EFF6FF"/>
+                     Color="#DBEAFE"/>
     <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}"
-                     Color="#334155"/>
+                     Color="#1A202C"/>
 
     <!-- ── Renk Fırçaları ────────────────────────────────────────────────────── -->
     <SolidColorBrush x:Key="Brush.Primary"       Color="#1E3A5F"/>
@@ -161,11 +162,13 @@
     </Style>
 
     <!-- ── DataGrid ───────────────────────────────────────────────────────────── -->
-    <!-- HeadersVisibility="Column": satır başlığı sütununu kaldırır (sol kenardaki
-         küçük seçim oku/göstergesi). Seçim tüm satır rengiyle gösterilir.
-         Finance DataGrid'leri zaten yerel değer set ettiği için etkilenmez. -->
+    <!-- SelectionUnit="FullRow": tıklamada tüm satır hücreleri seçilir.
+         Seçim rengi DataGridCell trigger üzerinden uygulanır — AlternatingRowBackground
+         satıra local value koyduğu için DataGridRow trigger etkisiz kalır;
+         DataGridCell trigger local value taşımaz, dolayısıyla güvenilir çalışır. -->
     <Style TargetType="{x:Type DataGrid}">
         <Setter Property="HeadersVisibility" Value="Column"/>
+        <Setter Property="SelectionUnit"     Value="FullRow"/>
     </Style>
 
     <Style TargetType="{x:Type DataGridColumnHeader}">
@@ -205,10 +208,11 @@
         <Setter Property="BorderThickness"  Value="0"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Style.Triggers>
-            <!-- Ek güvence: sistem renk override (#DBEAFE/#1A202C) birincil mekanizmadır.
-                 Buradaki Transparent + Foreground ek güvencedir (Style trigger önceliği için). -->
+            <!-- Hücre üzerinden seçim rengi uygulanır: AlternatingRowBackground satıra local value
+                 koyduğu için DataGridRow.Background trigger'ı etkisizdir; DataGridCell.Background
+                 bu sorundan etkilenmez ve hem odakta hem odak dışında güvenilir çalışır. -->
             <Trigger Property="IsSelected" Value="True">
-                <Setter Property="Background"  Value="Transparent"/>
+                <Setter Property="Background"  Value="#DBEAFE"/>
                 <Setter Property="BorderBrush" Value="Transparent"/>
                 <Setter Property="Foreground"  Value="#1A202C"/>
             </Trigger>

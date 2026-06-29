@@ -152,13 +152,15 @@ public partial class CargoDashboardWindow : Window
         // Durum
         StatusCombo.ItemsSource = new[]
         {
-            new ComboItem<CargoShipmentStatus?>("Tümü",          null),
-            new ComboItem<CargoShipmentStatus?>("Taslak",        CargoShipmentStatus.Draft),
-            new ComboItem<CargoShipmentStatus?>("Hazırlandı",    CargoShipmentStatus.Prepared),
-            new ComboItem<CargoShipmentStatus?>("Gönderildi",    CargoShipmentStatus.Shipped),
-            new ComboItem<CargoShipmentStatus?>("Alındı",        CargoShipmentStatus.Received),
-            new ComboItem<CargoShipmentStatus?>("Teslim Edildi", CargoShipmentStatus.Delivered),
-            new ComboItem<CargoShipmentStatus?>("İptal",         CargoShipmentStatus.Cancelled),
+            new ComboItem<CargoShipmentStatus?>("Tümü",                     null),
+            new ComboItem<CargoShipmentStatus?>("Gönderime Hazır",          CargoShipmentStatus.Prepared),
+            new ComboItem<CargoShipmentStatus?>("Kargoya Teslim Edildi",    CargoShipmentStatus.HandedToCargo),
+            new ComboItem<CargoShipmentStatus?>("Bekleniyor",               CargoShipmentStatus.Waiting),
+            new ComboItem<CargoShipmentStatus?>("Gönderildi",               CargoShipmentStatus.Shipped),
+            new ComboItem<CargoShipmentStatus?>("Teslim Alındı",            CargoShipmentStatus.Received),
+            new ComboItem<CargoShipmentStatus?>("Personele Teslim Edildi",  CargoShipmentStatus.PersonnelDelivered),
+            new ComboItem<CargoShipmentStatus?>("Teslim Edildi",            CargoShipmentStatus.Delivered),
+            new ComboItem<CargoShipmentStatus?>("İptal",                    CargoShipmentStatus.Cancelled),
         };
         StatusCombo.DisplayMemberPath = "Label";
         StatusCombo.SelectedIndex     = 0;

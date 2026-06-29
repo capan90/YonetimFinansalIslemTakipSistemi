@@ -22,4 +22,7 @@ public class CompanyDirectory : BaseEntity
 
     // Navigation — bu rehber kaydını kullanan kargo gönderileri
     public ICollection<CargoShipment> CargoShipments { get; set; } = [];
+
+    // Navigation — firmanın dikkatine kişi listesi
+    public ICollection<CompanyAttentionContact> AttentionContacts { get; set; } = [];
 }

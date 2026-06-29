@@ -1,6 +1,7 @@
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Label;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 
@@ -197,19 +198,12 @@ public class QuestPdfLabelRenderer : ILabelRenderer
                     .Text(model.ReceiverCompany.ToUpperInvariant())
                     .FontSize(11).Bold();
 
-               // Dikkatine: daha büyük ve belirgin
-               if (!string.IsNullOrWhiteSpace(model.Attention))
+               // Muhattap dikkatine satırı — Türkçe sesli uyumu ile formatlanır
+               var attentionLine = AttentionHelper.FormatAttentionLine(model.Attention);
+               if (attentionLine != "Muhattap: -")
                {
                    c.Item().PaddingTop(1);
-                   c.Item().Row(r =>
-                   {
-                       r.AutoItem()
-                        .Text("Dikkatine: ")
-                        .Bold().FontSize(10.5f);
-                       r.RelativeItem()
-                        .Text(model.Attention)
-                        .FontSize(10.5f);
-                   });
+                   c.Item().Text(attentionLine).Bold().FontSize(10.5f);
                    c.Item().PaddingBottom(1);
                }
 

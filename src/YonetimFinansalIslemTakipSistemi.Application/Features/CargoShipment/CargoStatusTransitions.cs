@@ -4,30 +4,36 @@ namespace YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment;
 
 /// <summary>
 /// İzin verilen kargo durum geçişlerini tanımlar.
-/// Gelen kargoda Prepared/Shipped anlamlı değildir; bu yüzden direction-aware overload kullanılır.
+/// Gelen ve giden kargo için ayrı kurallar uygulanır.
 /// </summary>
 public static class CargoStatusTransitions
 {
-    // Giden kargo: tüm durumlar anlamlıdır
+    // Giden kargo geçiş kuralları
     private static readonly Dictionary<CargoShipmentStatus, CargoShipmentStatus[]> _allowed = new()
     {
-        [CargoShipmentStatus.Draft]     = [CargoShipmentStatus.Prepared,  CargoShipmentStatus.Cancelled],
-        [CargoShipmentStatus.Prepared]  = [CargoShipmentStatus.Shipped,   CargoShipmentStatus.Received, CargoShipmentStatus.Cancelled],
-        [CargoShipmentStatus.Shipped]   = [CargoShipmentStatus.Delivered, CargoShipmentStatus.Cancelled],
-        [CargoShipmentStatus.Received]  = [CargoShipmentStatus.Delivered, CargoShipmentStatus.Cancelled],
-        [CargoShipmentStatus.Delivered] = [],
-        [CargoShipmentStatus.Cancelled] = [],
+        [CargoShipmentStatus.Draft]              = [CargoShipmentStatus.Prepared,        CargoShipmentStatus.HandedToCargo, CargoShipmentStatus.Cancelled], // eski kayıt uyumluluğu
+        [CargoShipmentStatus.Prepared]           = [CargoShipmentStatus.HandedToCargo,   CargoShipmentStatus.Shipped,       CargoShipmentStatus.Delivered,        CargoShipmentStatus.Cancelled],
+        [CargoShipmentStatus.HandedToCargo]      = [CargoShipmentStatus.Shipped,         CargoShipmentStatus.Delivered,     CargoShipmentStatus.Cancelled],
+        [CargoShipmentStatus.Shipped]            = [CargoShipmentStatus.Delivered,       CargoShipmentStatus.Cancelled],
+        [CargoShipmentStatus.Received]           = [CargoShipmentStatus.Delivered,       CargoShipmentStatus.Cancelled], // eski kayıt uyumluluğu
+        [CargoShipmentStatus.Delivered]          = [],
+        [CargoShipmentStatus.Cancelled]          = [],
+        [CargoShipmentStatus.Waiting]            = [],
+        [CargoShipmentStatus.PersonnelDelivered] = [],
     };
 
-    // Gelen kargo: Hazırlandı ve Gönderildi aşamaları atlanır; Draft'tan Alındı'ya doğrudan geçilir
+    // Gelen kargo geçiş kuralları
     private static readonly Dictionary<CargoShipmentStatus, CargoShipmentStatus[]> _allowedIncoming = new()
     {
-        [CargoShipmentStatus.Draft]     = [CargoShipmentStatus.Received, CargoShipmentStatus.Cancelled],
-        [CargoShipmentStatus.Prepared]  = [CargoShipmentStatus.Received, CargoShipmentStatus.Cancelled], // eski kayıtlarda olabilir
-        [CargoShipmentStatus.Shipped]   = [CargoShipmentStatus.Received, CargoShipmentStatus.Cancelled], // eski kayıtlarda olabilir
-        [CargoShipmentStatus.Received]  = [CargoShipmentStatus.Delivered, CargoShipmentStatus.Cancelled],
-        [CargoShipmentStatus.Delivered] = [],
-        [CargoShipmentStatus.Cancelled] = [],
+        [CargoShipmentStatus.Draft]              = [CargoShipmentStatus.Waiting, CargoShipmentStatus.Received,           CargoShipmentStatus.Cancelled], // eski kayıt uyumluluğu
+        [CargoShipmentStatus.Prepared]           = [CargoShipmentStatus.Waiting, CargoShipmentStatus.Received,           CargoShipmentStatus.Cancelled], // eski kayıt uyumluluğu
+        [CargoShipmentStatus.Shipped]            = [CargoShipmentStatus.Waiting, CargoShipmentStatus.Received,           CargoShipmentStatus.Cancelled], // eski kayıt uyumluluğu
+        [CargoShipmentStatus.Waiting]            = [CargoShipmentStatus.Received, CargoShipmentStatus.Cancelled],
+        [CargoShipmentStatus.Received]           = [CargoShipmentStatus.PersonnelDelivered, CargoShipmentStatus.Cancelled],
+        [CargoShipmentStatus.PersonnelDelivered] = [],
+        [CargoShipmentStatus.Delivered]          = [], // eski gelen kayıtlar
+        [CargoShipmentStatus.Cancelled]          = [],
+        [CargoShipmentStatus.HandedToCargo]      = [],
     };
 
     /// <summary>Aynı duruma kalmak her zaman geçerlidir.</summary>
@@ -42,7 +48,7 @@ public static class CargoStatusTransitions
         => BuildAllowed(_allowed, current);
 
     /// <summary>
-    /// Yön bazlı geçiş listesi. Gelen kargoda Hazırlandı ve Gönderildi gösterilmez.
+    /// Yön bazlı geçiş listesi.
     /// </summary>
     public static CargoShipmentStatus[] GetAllowedNext(CargoShipmentStatus current, CargoShipmentDirection direction)
     {

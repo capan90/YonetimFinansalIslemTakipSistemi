@@ -117,6 +117,27 @@
                     Click="AddDirectoryButton_Click"/>
         </Grid>
 
+        <!-- Dikkatine Kişisi — firma seçildiğinde geçmiş kişiler listelenir -->
+        <Label Content="Dikkatine:" Margin="0,0,0,2"
+               ToolTip="Kargo etiketine ve bildirimlere basılacak dikkatine kişisi"/>
+        <Grid Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="4"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <ComboBox Grid.Column="0"
+                      IsEditable="True"
+                      ItemsSource="{Binding AttentionContacts}"
+                      Text="{Binding AttentionContactInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      ToolTip="Listeden seçin veya yeni isim yazın. '+' ile firmaya ekleyebilirsiniz."/>
+            <Button x:Name="AddAttentionContactButton" Grid.Column="2"
+                    Content="+" Width="26" Height="22"
+                    VerticalAlignment="Center"
+                    ToolTip="Yazdığınız ismi bu firmanın dikkatine listesine ekle"
+                    Click="AddAttentionContactButton_Click"/>
+        </Grid>
+
         <!-- Firma Özeti Kartı — firma seçildiğinde gösterilir -->
         <Border Margin="0,0,0,8" Padding="10,8" Background="#F0F4FF"
                 BorderBrush="#B0C4F0" BorderThickness="1" CornerRadius="4">
@@ -153,33 +174,10 @@
                            Text="{Binding DirectoryFirma}"
                            FontSize="11" FontWeight="SemiBold" Foreground="#1A3354" Margin="0,0,0,3"/>
 
-                <!-- Dikkatine -->
-                <TextBlock Grid.Row="1" Grid.Column="0"
-                           Text="👤" FontSize="10" VerticalAlignment="Center" Margin="0,0,4,3">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding HasDirectoryContact}" Value="False">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
-                <TextBlock Grid.Row="1" Grid.Column="1"
-                           Text="Dikkatine:" FontSize="11" Margin="0,0,4,3">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding HasDirectoryContact}" Value="False">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
-                <TextBlock Grid.Row="1" Grid.Column="2"
-                           Text="{Binding DirectoryContact}" FontSize="11" Margin="0,0,0,3">
+                <!-- Dikkatine — "İlgili: Abuzer Bey Dikkatine" veya gizli -->
+                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                           Text="{Binding DirectoryContactDisplay}"
+                           FontSize="11" Margin="0,0,0,3">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
                             <Style.Triggers>

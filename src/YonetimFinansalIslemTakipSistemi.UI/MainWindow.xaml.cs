@@ -455,7 +455,27 @@ public partial class MainWindow : Window
     }
 
     private async void EditTransactionButton_Click(object sender, RoutedEventArgs e)
+        => await OpenEditTransactionAsync();
+
+    private async void TransactionDataGrid_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
+        // Sadece satır üzerinde çift tıklamada aç; başlık tıklamasında DataGridRow yoktur
+        if (e.OriginalSource is DependencyObject src &&
+            ItemsControl.ContainerFromElement(TransactionDataGrid, src) is DataGridRow)
+        {
+            await OpenEditTransactionAsync();
+        }
+    }
+
+    private async Task OpenEditTransactionAsync()
+    {
+        var userContext = _services.GetRequiredService<IUserContext>();
+        if (!userContext.HasPermission(PermissionType.CanEditTransaction))
+        {
+            _dialogService.ShowWarning("Bu işlemi düzenlemek için yetkiniz bulunmamaktadır.", "Yetki Gerekli");
+            return;
+        }
+
         var selected = _listVm.SelectedTransaction;
         if (selected is null) return;
 

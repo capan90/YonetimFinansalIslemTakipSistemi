@@ -67,8 +67,10 @@ public class CargoShipmentListViewModel : INotifyPropertyChanged
         private set { _items = value; OnPropertyChanged(); }
     }
 
-    public IReadOnlyList<string> StatusFilterOptions { get; } =
-        ["(Tümü)", "Taslak", "Hazırlandı", "Gönderildi", "Alındı", "Teslim Edildi", "İptal"];
+    public IReadOnlyList<string> StatusFilterOptions =>
+        Direction == CargoShipmentDirection.Incoming
+            ? ["(Tümü)", "Bekleniyor", "Teslim Alındı", "Personele Teslim Edildi", "Teslim Edildi", "İptal"]
+            : ["(Tümü)", "Gönderime Hazır", "Kargoya Teslim Edildi", "Gönderildi", "Teslim Edildi", "İptal"];
 
     public IReadOnlyList<string> PriorityFilterOptions { get; } =
         ["(Tümü)", "Normal", "Orta", "Acil", "Çok Acil"];
@@ -116,13 +118,17 @@ public class CargoShipmentListViewModel : INotifyPropertyChanged
 
     private static CargoShipmentStatus? ParseStatusFilter(string display) => display switch
     {
-        "Taslak"        => CargoShipmentStatus.Draft,
-        "Hazırlandı"    => CargoShipmentStatus.Prepared,
-        "Gönderildi"    => CargoShipmentStatus.Shipped,
-        "Alındı"        => CargoShipmentStatus.Received,
-        "Teslim Edildi" => CargoShipmentStatus.Delivered,
-        "İptal"         => CargoShipmentStatus.Cancelled,
-        _               => null
+        "Gönderime Hazır"         => CargoShipmentStatus.Prepared,
+        "Hazırlandı"              => CargoShipmentStatus.Prepared,           // eski kayıt uyumluluğu
+        "Kargoya Teslim Edildi"   => CargoShipmentStatus.HandedToCargo,
+        "Gönderildi"              => CargoShipmentStatus.Shipped,
+        "Bekleniyor"              => CargoShipmentStatus.Waiting,
+        "Teslim Alındı"           => CargoShipmentStatus.Received,
+        "Alındı"                  => CargoShipmentStatus.Received,           // eski kayıt uyumluluğu
+        "Personele Teslim Edildi" => CargoShipmentStatus.PersonnelDelivered,
+        "Teslim Edildi"           => CargoShipmentStatus.Delivered,
+        "İptal"                   => CargoShipmentStatus.Cancelled,
+        _                         => null
     };
 
     private static CargoShipmentPriority? ParsePriorityFilter(string display) => display switch

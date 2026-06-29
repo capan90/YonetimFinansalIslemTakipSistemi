@@ -41,6 +41,8 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.CompanyDirectory.Com
 using YonetimFinansalIslemTakipSistemi.Application.Features.CompanyDirectory.Commands.UpdateCompanyDirectory;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CompanyDirectory.Commands.DeleteCompanyDirectory;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CompanyDirectory.Queries.GetCompanyDirectoryList;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CompanyAttentionContacts.GetCompanyAttentionContacts;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CompanyAttentionContacts.EnsureCompanyAttentionContact;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoCompany.Commands.CreateCargoCompany;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoCompany.Commands.UpdateCargoCompany;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoCompany.Commands.DeleteCargoCompany;
@@ -208,6 +210,8 @@ public partial class App : System.Windows.Application
         services.AddScoped<UpdateCompanyDirectoryHandler>();
         services.AddScoped<DeleteCompanyDirectoryHandler>();
         services.AddScoped<GetCompanyDirectoryListHandler>();
+        services.AddScoped<GetCompanyAttentionContactsHandler>();
+        services.AddScoped<EnsureCompanyAttentionContactHandler>();
         services.AddScoped<CreateCargoCompanyHandler>();
         services.AddScoped<UpdateCargoCompanyHandler>();
         services.AddScoped<DeleteCargoCompanyHandler>();

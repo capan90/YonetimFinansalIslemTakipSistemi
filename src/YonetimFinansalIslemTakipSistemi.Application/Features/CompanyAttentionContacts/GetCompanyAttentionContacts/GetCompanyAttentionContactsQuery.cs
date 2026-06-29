@@ -1,0 +1,3 @@
+namespace YonetimFinansalIslemTakipSistemi.Application.Features.CompanyAttentionContacts.GetCompanyAttentionContacts;
+
+public record GetCompanyAttentionContactsQuery(Guid CompanyDirectoryId);

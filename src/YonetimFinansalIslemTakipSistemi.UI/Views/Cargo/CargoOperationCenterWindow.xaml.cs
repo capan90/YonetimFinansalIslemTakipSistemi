@@ -43,6 +43,16 @@ public partial class CargoOperationCenterWindow : Window
 
         // Takip butonu: takip linki yoksa devre dışı
         TrackButton.IsEnabled = !string.IsNullOrWhiteSpace(dto.TrackingUrl);
+
+        // Gelen kargoda bildirim butonları henüz aktif değil
+        if (dto.Direction == CargoShipmentDirection.Incoming)
+        {
+            const string tip = "Gelen kargo bildirimleri daha sonra aktif edilecektir.";
+            WhatsAppButton.IsEnabled = false;
+            WhatsAppButton.ToolTip   = tip;
+            MailButton.IsEnabled     = false;
+            MailButton.ToolTip       = tip;
+        }
     }
 
     private void PopulateInfo(string statusDisplay, string notificationDisplay)
@@ -187,14 +197,17 @@ public partial class CargoOperationCenterWindow : Window
 
     private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
 
-    private static string DisplayStatus(CargoShipmentStatus s) => s switch
+    private string DisplayStatus(CargoShipmentStatus s) => s switch
     {
-        CargoShipmentStatus.Draft     => "Taslak",
-        CargoShipmentStatus.Prepared  => "Hazırlandı",
-        CargoShipmentStatus.Shipped   => "Gönderildi",
-        CargoShipmentStatus.Received  => "Alındı",
-        CargoShipmentStatus.Delivered => "Teslim Edildi",
-        CargoShipmentStatus.Cancelled => "İptal",
-        _                             => s.ToString()
+        CargoShipmentStatus.Draft              => _dto.Direction == CargoShipmentDirection.Incoming ? "Bekleniyor" : "Gönderime Hazır",
+        CargoShipmentStatus.Prepared           => "Gönderime Hazır",
+        CargoShipmentStatus.HandedToCargo      => "Kargoya Teslim Edildi",
+        CargoShipmentStatus.Shipped            => "Gönderildi",
+        CargoShipmentStatus.Waiting            => "Bekleniyor",
+        CargoShipmentStatus.Received           => "Teslim Alındı",
+        CargoShipmentStatus.PersonnelDelivered => "Personele Teslim Edildi",
+        CargoShipmentStatus.Delivered          => "Teslim Edildi",
+        CargoShipmentStatus.Cancelled          => "İptal",
+        _                                      => s.ToString()
     };
 }

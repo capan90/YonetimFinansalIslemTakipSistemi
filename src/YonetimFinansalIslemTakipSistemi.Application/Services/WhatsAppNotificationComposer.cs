@@ -1,4 +1,5 @@
 using System.Text;
+using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Notification;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
@@ -40,8 +41,9 @@ public class WhatsAppNotificationComposer : INotificationComposer
         if (!string.IsNullOrWhiteSpace(model.TrackingUrl))
             sb.AppendLine($"Takip Linki: {model.TrackingUrl}");
 
-        if (!string.IsNullOrWhiteSpace(model.Attention))
-            sb.AppendLine($"Dikkatine: {model.Attention}");
+        var attentionLine = AttentionHelper.FormatAttentionLine(model.Attention);
+        if (attentionLine != "Muhattap: -")
+            sb.AppendLine(attentionLine);
 
         sb.AppendLine();
         sb.Append("Bilgilerinize.");

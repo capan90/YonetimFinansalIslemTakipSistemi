@@ -13,9 +13,10 @@ public class AppDbContext : DbContext
     public DbSet<UserGridLayout>     UserGridLayouts     => Set<UserGridLayout>();
 
     // Kargo Katip modülü
-    public DbSet<CompanyDirectory>   CompanyDirectories  => Set<CompanyDirectory>();
-    public DbSet<CargoCompany>       CargoCompanies      => Set<CargoCompany>();
-    public DbSet<CargoShipment>      CargoShipments      => Set<CargoShipment>();
+    public DbSet<CompanyDirectory>          CompanyDirectories         => Set<CompanyDirectory>();
+    public DbSet<CompanyAttentionContact>   CompanyAttentionContacts   => Set<CompanyAttentionContact>();
+    public DbSet<CargoCompany>              CargoCompanies             => Set<CargoCompany>();
+    public DbSet<CargoShipment>             CargoShipments             => Set<CargoShipment>();
 
     // Genel uygulama ayarları
     public DbSet<ApplicationSetting> ApplicationSettings => Set<ApplicationSetting>();

@@ -36,6 +36,7 @@ public static class ServiceRegistration
 
         // Kargo Katip modülü repository'leri
         services.AddScoped<ICompanyDirectoryRepository, CompanyDirectoryRepository>();
+        services.AddScoped<ICompanyAttentionContactRepository, CompanyAttentionContactRepository>();
         services.AddScoped<ICargoCompanyRepository, CargoCompanyRepository>();
         services.AddScoped<ICargoShipmentRepository, CargoShipmentRepository>();
 

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Navigation;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.DeleteCargoShipment;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.QuickUpdateCargoStatus;
@@ -104,6 +105,12 @@ public partial class CargoShipmentListWindow : Window
 
     private async void MainGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
+        // Tıklama başlık veya boş alan üzerindeyse form açılmaz
+        var hit = e.OriginalSource as DependencyObject;
+        while (hit is not null && hit is not DataGridRow)
+            hit = VisualTreeHelper.GetParent(hit);
+        if (hit is null) return;
+
         if (_vm.Selected is null) return;
         var form = new CargoShipmentEditWindow(_services) { Owner = this };
         await form.PrepareEditAsync(_vm.Selected);

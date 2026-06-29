@@ -240,7 +240,8 @@
                       HeadersVisibility="Column"
                       BorderBrush="#E2E8F0"
                       BorderThickness="1"
-                      RowHeight="30">
+                      RowHeight="30"
+                      MouseDoubleClick="TransactionDataGrid_MouseDoubleClick">
 
                 <!-- Sağ tıklama context menu'su kod arkasında atanır (bkz. MainWindow.xaml.cs) -->
 

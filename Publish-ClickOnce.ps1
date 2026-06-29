@@ -134,6 +134,25 @@ dotnet-mage -New Deployment `
     -ProviderURL $ProviderUrl `
     -Publisher "YonetimApp"
 
+# dotnet-mage -New Deployment, -IconFile parametresini desteklemez.
+# ClickOnce masaüstü kısayol ikonu deployment manifest'teki description/iconFile'dan okunur.
+# XML post-processing: attribute imzalamadan ÖNCE eklenir; imza değişen içeriği kapsar.
+Write-Host "  Deployment manifest'e iconFile ekleniyor (XML post-processing)..." -ForegroundColor Gray
+try {
+    [xml]$deployXml = Get-Content $DeployManifest -Encoding UTF8
+    $asmv2Ns       = "urn:schemas-microsoft-com:asm.v2"
+    $desc          = $deployXml.assembly.description
+    if ($null -ne $desc) {
+        $desc.SetAttribute("iconFile", $asmv2Ns, "AppIcon.ico")
+        $deployXml.Save($DeployManifest)
+        Write-Host "  asmv2:iconFile='AppIcon.ico' eklendi" -ForegroundColor Gray
+    } else {
+        Write-Host "  [UYARI] description elementi bulunamadi, iconFile eklenemedi" -ForegroundColor Yellow
+    }
+} catch {
+    Write-Host "  [UYARI] iconFile post-processing hatasi: $_" -ForegroundColor Yellow
+}
+
 if ($Sign) {
     Write-Host "  Imzalaniyor: $DeployManifest" -ForegroundColor Yellow
     dotnet-mage -Sign $DeployManifest -CertHash $CertThumb
@@ -186,6 +205,12 @@ if (Test-Path $DeployManifest) {
         Write-Host "  [OK] ProviderURL manifest icinde dogrulandi: $ProviderUrl" -ForegroundColor Green
     } else {
         Write-Host "  [HATA] ProviderURL manifest icinde bulunamadi. Beklenen: $ProviderUrl" -ForegroundColor Red
+        $ok = $false
+    }
+    if ($manifestContent -like '*iconFile="AppIcon.ico"*') {
+        Write-Host "  [OK] iconFile deployment manifest icinde dogrulandi: AppIcon.ico" -ForegroundColor Green
+    } else {
+        Write-Host "  [HATA] iconFile deployment manifest icinde bulunamadi" -ForegroundColor Red
         $ok = $false
     }
 }

@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Login;
 
@@ -9,16 +10,23 @@ namespace YonetimFinansalIslemTakipSistemi.UI;
 
 public partial class LoginWindow : Window
 {
+    private readonly LoginViewModel _vm;
+    private readonly ILocalUserPreferencesService _prefService;
+    private readonly ISystemLogService? _logService;
+
     public LoginWindow(IServiceProvider services)
     {
         InitializeComponent();
-        var vm = services.GetRequiredService<LoginViewModel>();
-        DataContext = vm;
+
+        _vm         = services.GetRequiredService<LoginViewModel>();
+        _prefService = services.GetRequiredService<ILocalUserPreferencesService>();
+        _logService  = services.GetService<ISystemLogService>();
+        DataContext  = _vm;
 
         // PasswordBox binding desteklemiyor; code-behind ile yönetilir
         PasswordBox.PasswordChanged += (_, _) =>
         {
-            vm.Password = PasswordBox.Password;
+            _vm.Password = PasswordBox.Password;
             PasswordPlaceholder.Visibility = string.IsNullOrEmpty(PasswordBox.Password)
                 ? Visibility.Visible : Visibility.Collapsed;
         };
@@ -29,10 +37,52 @@ public partial class LoginWindow : Window
                 ? Visibility.Visible : Visibility.Collapsed;
         };
 
-        vm.LoginCompleted = () => { DialogResult = true; };
+        // Başarılı login: username kaydedilir, ardından pencere kapanır.
+        // Func<Task> — await ile yazma tamamlanmadan DialogResult=true set edilmez.
+        _vm.LoginCompleted = async () =>
+        {
+            if (!string.IsNullOrWhiteSpace(_vm.UserName))
+            {
+                try
+                {
+                    await _prefService.SaveLastUsernameAsync(_vm.UserName);
+                }
+                catch (Exception ex)
+                {
+                    // Kayıt hatası başarılı girişi engellememeli — sadece logla
+                    _ = _logService?.LogWarningAsync(
+                        "Login",
+                        $"Son kullanıcı adı kaydedilemedi: {ex.Message}",
+                        source: "LoginWindow");
+                }
+            }
+            DialogResult = true;
+        };
+
+        Loaded += async (_, _) => await RestoreLastUsernameAsync();
 
         LoadLogo();
         SetVersionText(services.GetRequiredService<IUpdateService>());
+    }
+
+    /// <summary>
+    /// Son başarılı giriş kullanıcı adını doldurur ve odağı ayarlar.
+    /// Dosya okunamazsa sessizce geçer — login ekranı patlamaz.
+    /// </summary>
+    private async Task RestoreLastUsernameAsync()
+    {
+        var lastUsername = await _prefService.GetLastUsernameAsync();
+        if (!string.IsNullOrWhiteSpace(lastUsername))
+        {
+            // ViewModel property'si set edilir → TwoWay binding UserNameBox.Text'i günceller
+            // → TextChanged → placeholder gizlenir
+            _vm.UserName = lastUsername;
+            PasswordBox.Focus();
+        }
+        else
+        {
+            UserNameBox.Focus();
+        }
     }
 
     private void LoadLogo()

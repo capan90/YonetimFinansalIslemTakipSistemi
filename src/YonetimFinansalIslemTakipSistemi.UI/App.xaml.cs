@@ -267,6 +267,9 @@ public partial class App : System.Windows.Application
         // Tema servisi — UI katmanında (WPF Application.Current erişimi gerektirir)
         services.AddSingleton<IThemeService, YonetimFinansalIslemTakipSistemi.UI.Services.ThemeService>();
 
+        // Lokal kullanıcı tercihleri — makine başına %AppData% dosyasına yazılır, DB kullanılmaz
+        services.AddSingleton<ILocalUserPreferencesService, LocalUserPreferencesService>();
+
         // Kargo Katip ViewModels
         services.AddTransient<CompanyDirectoryListViewModel>();
         services.AddTransient<CompanyDirectoryEditViewModel>();

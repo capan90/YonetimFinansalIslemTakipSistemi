@@ -34,9 +34,10 @@ public class LoginViewModel : INotifyPropertyChanged
 
     /// <summary>
     /// Başarılı girişte tetiklenir; App.xaml.cs bu callback'i dinleyerek MainWindow'u açar.
+    /// Func&lt;Task&gt; — LoginWindow burada username'i await ile kaydeder, ardından DialogResult=true.
     /// ViewModel pencere veya navigasyon referansı tutmaz.
     /// </summary>
-    public Action? LoginCompleted { get; set; }
+    public Func<Task>? LoginCompleted { get; set; }
 
     public ICommand LoginCommand { get; }
 
@@ -68,7 +69,8 @@ public class LoginViewModel : INotifyPropertyChanged
         {
             // Oturum bağlamını singleton'a yaz; izinler giriş sırasında DB'den yüklenir
             _userSession.SetUser(result.UserId!.Value, result.FullName!, result.Permissions);
-            LoginCompleted?.Invoke();
+            if (LoginCompleted is not null)
+                await LoginCompleted();
         }
         else
         {

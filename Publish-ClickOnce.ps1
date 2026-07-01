@@ -38,7 +38,10 @@
 #>
 param(
     [string]$Version = "1.0.0.0",
-    [bool]$Sign = $false
+    [bool]$Sign = $false,
+    # Yayimlanan pakete gomulecek ortam adi (orn. "Production").
+    # Bos birakilirsa appsettings.json icindeki AppEnvironment degeri korunur (lokal test).
+    [string]$Environment = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -93,6 +96,29 @@ Write-Host "[3/6] Application Files klasoru hazirlanıyor..." -ForegroundColor C
 
 New-Item -ItemType Directory -Force -Path $AppFilesDir | Out-Null
 Copy-Item -Path "$BuildOutput\*" -Destination $AppFilesDir -Recurse -Force
+
+# Ortam gomme: ClickOnce istemcilerinde ortam degiskeni tasinmadigi icin, yayimlanan
+# appsettings.json'daki AppEnvironment degeri istemcinin ortamini belirler.
+# Bu duzenleme manifest hash'lenmeden ONCE yapilmali (dotnet-mage -New Application asagida).
+if (-not [string]::IsNullOrWhiteSpace($Environment)) {
+    $AppSettingsFile = Join-Path $AppFilesDir "appsettings.json"
+    if (-not (Test-Path $AppSettingsFile)) {
+        throw "appsettings.json publish ciktisinda bulunamadi: $AppSettingsFile"
+    }
+
+    $AppSettings = Get-Content $AppSettingsFile -Raw | ConvertFrom-Json
+    $AppSettings.AppEnvironment = $Environment
+    ($AppSettings | ConvertTo-Json -Depth 20) | Set-Content -Path $AppSettingsFile -Encoding utf8
+    Write-Host "  AppEnvironment gomuldu: $Environment -> $AppSettingsFile" -ForegroundColor Gray
+
+    # Production paketinde appsettings.Production.json (gercek baglanti dizesi) bulunmali.
+    if ($Environment -eq "Production") {
+        $ProdSettingsFile = Join-Path $AppFilesDir "appsettings.Production.json"
+        if (-not (Test-Path $ProdSettingsFile)) {
+            throw "Production publish icin appsettings.Production.json pakette yok. Publish makinesinde src\YonetimFinansalIslemTakipSistemi.UI\appsettings.Production.json olusturun (gitignore'da, gercek prod baglanti dizesi)."
+        }
+    }
+}
 
 # AppIcon.ico ayri dosya olarak kopyalanir.
 # csproj'da <Resource> (assembly'e gomulu) olarak tanimlidir -- publish output'una gelmez.

@@ -50,6 +50,9 @@ param(
     [string]$ShareRoot            = "\\10.0.0.169\YonetimPublish",
     [string]$ManifestName         = "YonetimFinansalIslemTakipSistemi.UI.application",
     [int]   $MinDotnetMajor       = 9,
+    # Resmi aka.ms DOGRUDAN indirme (x64 Desktop Runtime) -- otomatik kurulum icin.
+    [string]$RuntimeDirectUrl     = "https://aka.ms/dotnet/9.0/windowsdesktop-runtime-win-x64.exe",
+    # Resmi indirme SAYFASI -- yalnizca otomatik kurulum basarisiz olursa son secenek.
     [string]$RuntimeDownloadUrl   = "https://dotnet.microsoft.com/download/dotnet/9.0",
     [string]$RuntimeInstallerPath = "",
     [switch]$CreateDesktopShortcut,
@@ -106,6 +109,7 @@ Say "  Ortam kontrol ediliyor..." "Cyan"
 try {
     $os  = Get-CimInstance Win32_OperatingSystem -ErrorAction Stop
     $ver = [version]$os.Version
+    Log "Windows surumu: $($os.Caption) ($($os.Version)) $($os.OSArchitecture)"
     if ($ver.Major -lt 10) {
         Fail "Bu uygulama Windows 10 veya Windows 11 gerektirir. Bilgisayariniz: $($os.Caption)." "OSVersion=$($os.Version)"
     }
@@ -115,63 +119,110 @@ try {
 catch { Fail "Windows surumu dogrulanamadi." "$($_.Exception.Message)" }
 
 # ── 2) .NET Desktop Runtime kontrolu ──────────────────────────────────────────
+# WPF uygulamasi icin GEREKLI: Microsoft.NETCore.App 9.x + Microsoft.WindowsDesktop.App 9.x (x64).
+# Yalnizca 'dotnet --list-runtimes' cikstisina guvenmeyiz; x64 paylasim klasorlerini de dogrulariz.
 Say "  .NET Desktop Runtime kontrol ediliyor..." "Cyan"
 
-function Test-DesktopRuntime([int]$minMajor) {
-    $lines = $null
-    try { $lines = & dotnet --list-runtimes 2>$null } catch { $lines = $null }
-    if (-not $lines) { return [pscustomobject]@{ Found = $false; Version = $null } }
-    $found = $null
-    foreach ($l in $lines) {
-        if ($l -match '^Microsoft\.WindowsDesktop\.App\s+(\d+)\.(\d+)\.(\d+)') {
-            if ([int]$Matches[1] -ge $minMajor) { $found = "$($Matches[1]).$($Matches[2]).$($Matches[3])" }
-        }
+# x64 .NET her zaman '%ProgramFiles%\dotnet' altindadir (x86 ise 'Program Files (x86)').
+$DotnetX64Root = Join-Path $env:ProgramFiles "dotnet"
+
+function Test-VersionDir([string]$dir, [int]$minMajor) {
+    if (-not (Test-Path $dir)) { return $false }
+    $hit = Get-ChildItem $dir -Directory -ErrorAction SilentlyContinue | Where-Object {
+        $_.Name -match '^(\d+)\.' -and [int]$Matches[1] -ge $minMajor
     }
-    return [pscustomobject]@{ Found = [bool]$found; Version = $found }
+    return [bool]$hit
 }
 
-$rt = Test-DesktopRuntime $MinDotnetMajor
-if (-not $rt.Found) {
-    StepWarn ".NET Desktop Runtime $MinDotnetMajor bulunamadi."
+function Test-Runtimes([int]$minMajor) {
+    # Kaynak 1: dotnet CLI (x86 yollari haric)
+    $raw = ""
+    try { $raw = (& dotnet --list-runtimes 2>$null | Out-String) } catch { $raw = "" }
 
-    # Yerel installer: parametreyle verilen ya da kurulum klasorunde aranan.
-    $installer = $null
-    if (-not [string]::IsNullOrWhiteSpace($RuntimeInstallerPath) -and (Test-Path $RuntimeInstallerPath)) {
-        $installer = $RuntimeInstallerPath
-    } else {
-        $localRt = Get-ChildItem -Path $ScriptDir -Filter "windowsdesktop-runtime-*.exe" -ErrorAction SilentlyContinue |
-            Sort-Object Name -Descending | Select-Object -First 1
-        if ($localRt) { $installer = $localRt.FullName }
+    $netcoreCli = $false; $desktopCli = $false
+    foreach ($line in ($raw -split "`r?`n")) {
+        if ($line -match '^Microsoft\.NETCore\.App\s+(\d+)\.\d+\.\d+\s+\[(.+)\]$' -and
+            [int]$Matches[1] -ge $minMajor -and $Matches[2] -notmatch '\(x86\)') { $netcoreCli = $true }
+        if ($line -match '^Microsoft\.WindowsDesktop\.App\s+(\d+)\.\d+\.\d+\s+\[(.+)\]$' -and
+            [int]$Matches[1] -ge $minMajor -and $Matches[2] -notmatch '\(x86\)') { $desktopCli = $true }
     }
+
+    # Kaynak 2: x64 dosya sistemi
+    $netcoreFs = Test-VersionDir (Join-Path $DotnetX64Root "shared\Microsoft.NETCore.App") $minMajor
+    $desktopFs = Test-VersionDir (Join-Path $DotnetX64Root "shared\Microsoft.WindowsDesktop.App") $minMajor
+
+    $netcore = ($netcoreCli -or $netcoreFs)
+    $desktop = ($desktopCli -or $desktopFs)
+    return [pscustomobject]@{
+        Raw = $raw.Trim(); NetCore = $netcore; Desktop = $desktop; Ok = ($netcore -and $desktop)
+    }
+}
+
+# Runtime installer'i indirir (aka.ms dogrudan x64). Basarisizsa $null.
+function Get-RuntimeInstaller([string]$url) {
+    $dest = Join-Path $env:TEMP "windowsdesktop-runtime-9-win-x64.exe"
+    try {
+        try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 } catch { }
+        $ProgressPreference = 'SilentlyContinue'
+        Invoke-WebRequest -Uri $url -OutFile $dest -UseBasicParsing -ErrorAction Stop
+        if ((Test-Path $dest) -and ((Get-Item $dest).Length -gt 1MB)) { return $dest }
+        return $null
+    }
+    catch { Log "Runtime indirilemedi: $($_.Exception.Message)"; return $null }
+}
+
+$rt = Test-Runtimes $MinDotnetMajor
+Log "dotnet --list-runtimes ciktisi:`r`n$($rt.Raw)"
+Log "NETCore.App >= $MinDotnetMajor (x64) bulundu: $($rt.NetCore)"
+Log "WindowsDesktop.App >= $MinDotnetMajor (x64) bulundu: $($rt.Desktop)"
+
+if (-not $rt.Ok) {
+    StepWarn ".NET $MinDotnetMajor Desktop Runtime eksik (NETCore=$($rt.NetCore), Desktop=$($rt.Desktop)). Otomatik kurulum deneniyor..."
+
+    # Kaynak onceligi: 1) parametre 2) kurulum klasorundeki yerel exe 3) aka.ms indirme.
+    $installer = $null; $installerSource = ""
+    if (-not [string]::IsNullOrWhiteSpace($RuntimeInstallerPath) -and (Test-Path $RuntimeInstallerPath)) {
+        $installer = $RuntimeInstallerPath; $installerSource = "parametre"
+    }
+    if (-not $installer) {
+        $localRt = Get-ChildItem -Path $ScriptDir -Filter "windowsdesktop-runtime-9*-win-x64.exe" -ErrorAction SilentlyContinue |
+            Sort-Object Name -Descending | Select-Object -First 1
+        if ($localRt) { $installer = $localRt.FullName; $installerSource = "yerel klasor" }
+    }
+    if (-not $installer) {
+        StepInfo "Gerekli bilesen indiriliyor (aka.ms, x64)..."
+        $installer = Get-RuntimeInstaller $RuntimeDirectUrl
+        if ($installer) { $installerSource = "aka.ms indirme" }
+    }
+    Log "Runtime installer kaynagi: $installerSource | dosya: $installer"
 
     if ($installer) {
-        StepInfo "Gerekli bilesen kuruluyor, bu birkac dakika surebilir..."
-        Log "Runtime installer: $installer"
+        StepInfo "Gerekli bilesen kuruluyor, bu birkac dakika surebilir (yonetici izni istenebilir)..."
         try {
             $p = Start-Process -FilePath $installer -ArgumentList "/install", "/quiet", "/norestart" -Verb RunAs -Wait -PassThru
-            Log "Runtime installer exit code: $($p.ExitCode)"
+            Log "Runtime kurulum exit code: $($p.ExitCode)"
         }
-        catch { Fail "Gerekli bilesen kurulamadi. Kurulumu yonetici izniyle tekrar deneyin." "$($_.Exception.Message)" }
+        catch { Log "Runtime kurulum hatasi: $($_.Exception.Message)" }
 
-        $rt = Test-DesktopRuntime $MinDotnetMajor
-        if (-not $rt.Found) {
-            Fail "Gerekli .NET bileseni kurulduktan sonra dogrulanamadi. Bilgisayari yeniden baslatip tekrar deneyin." "runtime still missing after local install"
-        }
-        StepOk ".NET Desktop Runtime $($rt.Version) kuruldu"
+        # Kurulumdan sonra tekrar dogrula.
+        $rt = Test-Runtimes $MinDotnetMajor
+        Log "Kurulum sonrasi NETCore=$($rt.NetCore) Desktop=$($rt.Desktop)"
     }
-    else {
-        # Yerel installer yok -> resmi indirme sayfasina yonlendir.
-        Log "Runtime yok, yerel installer yok. Yonlendirme: $RuntimeDownloadUrl"
+
+    # Hala eksikse: SON secenek olarak resmi sayfaya yonlendir.
+    if (-not $rt.Ok) {
+        Log "Runtime otomatik kurulamadi. Son secenek: $RuntimeDownloadUrl"
         Write-Host ""
-        Write-Host "  Uygulamanin calismasi icin 'Microsoft .NET Desktop Runtime $MinDotnetMajor' gereklidir." -ForegroundColor Yellow
-        Write-Host "  Acilan sayfadan 'Desktop Runtime' (x64) surumunu indirip kurun, sonra kurulumu tekrar calistirin." -ForegroundColor Yellow
+        Write-Host "  Otomatik kurulum tamamlanamadi. Lutfen 'Desktop Runtime $MinDotnetMajor (x64)' surumunu" -ForegroundColor Yellow
+        Write-Host "  acilan sayfadan indirip kurun, sonra kurulumu tekrar baslatin:" -ForegroundColor Yellow
         Write-Host "    $RuntimeDownloadUrl" -ForegroundColor Cyan
         try { Start-Process $RuntimeDownloadUrl | Out-Null } catch { }
-        Fail "Gerekli .NET bileseni eksik. Yukaridaki adresten kurup kurulumu tekrar baslatin." "runtime missing, no local installer"
+        Fail "Gerekli .NET $MinDotnetMajor Desktop Runtime kurulamadi. Yukaridaki adresten kurup tekrar deneyin." "runtime install failed (NETCore=$($rt.NetCore), Desktop=$($rt.Desktop))"
     }
+    StepOk ".NET $MinDotnetMajor Desktop Runtime kuruldu ve dogrulandi"
 }
 else {
-    StepOk ".NET Desktop Runtime $($rt.Version) bulundu"
+    StepOk ".NET $MinDotnetMajor Desktop Runtime dogrulandi (NETCore + WindowsDesktop, x64)"
 }
 
 # ── 3) Sunucu baglantisi ──────────────────────────────────────────────────────
@@ -181,10 +232,23 @@ if (-not (Test-Path $ShareRoot)) {
 }
 StepOk "Sunucu baglantisi tamam"
 
-# ── 4) Kurulum paketi (manifest) kontrolu ─────────────────────────────────────
+# ── 4) Kurulum paketi (manifest) + guncelleme (version.json) kontrolu ─────────
 Say "  Kurulum paketi kontrol ediliyor..." "Cyan"
-if (-not (Test-Path $Manifest)) {
+$VersionJson = Join-Path $ShareRoot "version.json"
+$manifestOk  = Test-Path $Manifest
+$versionOk   = Test-Path $VersionJson
+Log "Publish manifest erisim: $manifestOk ($Manifest)"
+Log "version.json erisim: $versionOk ($VersionJson)"
+
+if (-not $manifestOk -and -not $versionOk) {
+    Fail "Kurulum/guncelleme sunucusuna ulasilamadi. Aginizi kontrol edip tekrar deneyin veya BT ekibine basvurun." "manifest & version.json missing/unreachable at $ShareRoot"
+}
+if (-not $manifestOk) {
     Fail "Kurulum paketi sunucuda bulunamadi. Lutfen BT ekibine basvurun." "manifest not found: $Manifest"
+}
+if (-not $versionOk) {
+    # Kurulum yapilabilir ama guncelleme kontrolu etkilenebilir -> uyar, durdurma.
+    StepWarn "version.json bulunamadi; kurulum surecek ancak guncelleme kontrolu etkilenebilir."
 }
 StepOk "Kurulum paketi dogrulandi"
 

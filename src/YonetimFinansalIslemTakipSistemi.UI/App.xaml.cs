@@ -114,6 +114,10 @@ public partial class App : System.Windows.Application
     {
         var config = BuildConfiguration();
 
+        // ClickOnce güncelleme yolunu yapılandır: env var > appsettings Deployment:UpdatePath > üretim varsayılanı.
+        // ProviderURL ile aynı UNC olmalı; aksi halde manuel güncelleme kontrolü yanlış sunucuya bakar.
+        DeploymentSettings.Configure(config["Deployment:UpdatePath"]);
+
         // Logger'ı bağlantı testi ve hata mesajlarından önce kur
         LogDirectory = ResolveLogDirectory(config);
         Log.Logger   = CreateLogger(config, LogDirectory);

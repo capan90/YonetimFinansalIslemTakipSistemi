@@ -30,34 +30,71 @@ yanındaki `Install-Yonetim.ps1`'i (PowerShell) başlatır ve şu adımları sı
 ```
 
 1. **Ortam kontrolü** — Windows 10/11 mi? (`Win32_OperatingSystem`; major < 10 → durur).
-2. **.NET Desktop Runtime kontrolü** — `dotnet --list-runtimes` içinde
-   `Microsoft.WindowsDesktop.App 9.x` var mı? (uygulama `net9.0-windows`).
+2. **.NET Desktop Runtime kontrolü** — **hem** `Microsoft.NETCore.App 9.x` **hem**
+   `Microsoft.WindowsDesktop.App 9.x` **(x64)** var mı? Eksikse **otomatik kurulur** (aşağıda).
 3. **Sunucu bağlantısı** — `\\10.0.0.169\YonetimPublish` erişilebilir mi?
-4. **Kurulum paketi** — ClickOnce `.application` manifesti sunucuda var mı?
-5. **Kurulum** — manifest başlatılır (`Start-Process <manifest>`), ClickOnce kurulum/güncelleme
-   akışı devreye girer; uygulama kurulur ve otomatik başlar.
+4. **Kurulum paketi + güncelleme** — ClickOnce `.application` manifesti **ve** `version.json`
+   sunucuda var mı? (ikisi de yoksa → durur; sadece `version.json` yoksa → uyarı, devam).
+5. **Kurulum** — runtime kesin doğrulandıktan **sonra** manifest başlatılır
+   (`Start-Process <manifest>`), ClickOnce kurulum akışı devreye girer; uygulama kurulur ve başlar.
 6. **Tamamlandı** — başarı mesajı; istenirse (`-CreateDesktopShortcut`) masaüstü kısayolu.
 
 ## Runtime kontrolü
 
-- **Varsa:** sürüm gösterilir, devam edilir.
-- **Yoksa** iki yol:
-  1. **Yerel installer:** Kurulum klasöründe `windowsdesktop-runtime-*.exe` varsa (ya da
-     `-RuntimeInstallerPath` verilirse) **sessiz** kurulur (`/install /quiet /norestart`,
-     yönetici izni ister), sonra yeniden doğrulanır.
-  2. **Yerel installer yoksa:** resmi indirme sayfası açılır ve kullanıcı yönlendirilir:
-     `https://dotnet.microsoft.com/download/dotnet/9.0` → **Desktop Runtime (x64)**.
-     Kurup kurulumu tekrar başlatması istenir.
+WPF uygulaması için **iki** bileşen gereklidir ve **x64** olmalıdır:
+`Microsoft.NETCore.App 9.x` + `Microsoft.WindowsDesktop.App 9.x`.
 
-> **Öneri:** Ağı kısıtlı ortamlarda `windowsdesktop-runtime-9.x.x-win-x64.exe` dosyasını
-> Kurulum share'ine (`Install-Yonetim.ps1` ile aynı klasöre) koyun; installer onu otomatik bulur.
+**Tespit iki kaynaktan** yapılır (yalnızca `dotnet --list-runtimes`'a güvenilmez):
+1. `dotnet --list-runtimes` çıktısı (x86 yolları **hariç**),
+2. dosya sistemi: `C:\Program Files\dotnet\shared\Microsoft.NETCore.App\9.*` ve
+   `...\Microsoft.WindowsDesktop.App\9.*`.
+
+**Eksikse otomatik kurulum** (kullanıcı elle sayfa açmak zorunda kalmaz — bu **son** seçenektir):
+1. `-RuntimeInstallerPath` parametresi verildiyse o kullanılır.
+2. Kurulum klasöründe `windowsdesktop-runtime-9*-win-x64.exe` varsa o kullanılır.
+3. İkisi de yoksa resmi **aka.ms doğrudan** bağlantısından indirilir:
+   `https://aka.ms/dotnet/9.0/windowsdesktop-runtime-win-x64.exe`.
+4. **Sessiz kurulur:** `installer.exe /install /quiet /norestart` (yönetici izni istenir).
+5. Kurulumdan **sonra runtime'lar tekrar doğrulanır**.
+6. Hâlâ eksikse **son çare** olarak resmi indirme sayfası açılıp kullanıcı yönlendirilir ve
+   açıklayıcı hata verilir.
+
+Bu sıralama sayesinde ClickOnce başlatılmadan runtime **kesin** doğrulanır; uygulama
+**"You must install or update .NET"** hatası vermez.
+
+> **Öneri:** Ağı kısıtlı/internetsiz istemcilerde `windowsdesktop-runtime-9.x.x-win-x64.exe`
+> dosyasını Kurulum share'ine (`Install-Yonetim.ps1` ile aynı klasöre) koyun; installer
+> indirmeye çalışmadan onu kullanır.
+
+## Güncelleme yolu (version.json) — uygulama tarafı
+
+Manuel **"Güncellemeleri Denetle"** akışı `version.json`'ı ClickOnce ProviderURL ile **aynı**
+UNC'den okumalıdır. Yol önceliği (uygulama içinde `DeploymentSettings`):
+
+1. `YONETIM_UPDATE_PATH` ortam değişkeni,
+2. `appsettings.json` → `Deployment:UpdatePath`,
+3. üretim varsayılanı `\\10.0.0.169\YonetimPublish\`.
+
+> **Bugfix (14.7):** Eski varsayılan `\\localhost\YonetimPublish\` idi; production istemcisinde
+> `YONETIM_UPDATE_PATH` set olmadığından manuel güncelleme kontrolü **"sunucuya erişilemedi"**
+> veriyordu. Varsayılan artık ClickOnce ProviderURL ile aynı (`\\10.0.0.169\YonetimPublish\`)
+> ve `appsettings.json` `Deployment:UpdatePath` ile yönetilebilir. Yerel test için
+> `appsettings.Development.json` `\\localhost\YonetimPublish\` kullanır.
 
 ## Log dosyaları
 
 - Konum: `%LOCALAPPDATA%\Yonetim\InstallerLogs\install-<yyyy-MM-dd_HH-mm-ss>.log`
-- Her adım, uyarı ve hata teknik ayrıntısıyla loglanır.
 - **Kullanıcı ekranda teknik hata görmez**; sadece açıklayıcı mesaj + log yolu görür.
   Destek için kullanıcıdan bu log dosyası istenir.
+- Loga yazılanlar (tanılama için):
+  - Windows sürümü (Caption + version + mimari)
+  - `dotnet --list-runtimes` tam çıktısı
+  - `Microsoft.NETCore.App 9.x (x64)` bulundu mu?
+  - `Microsoft.WindowsDesktop.App 9.x (x64)` bulundu mu?
+  - Runtime installer kaynağı (parametre / yerel klasör / aka.ms indirme)
+  - Runtime kurulum çıkış kodu
+  - Publish manifest erişim sonucu (yol + true/false)
+  - `version.json` erişim sonucu (yol + true/false)
 
 ## Hata senaryoları (kullanıcıya gösterilen mesaj)
 

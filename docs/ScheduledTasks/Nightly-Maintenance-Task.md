@@ -83,6 +83,42 @@ Unregister-ScheduledTask -TaskName "Yonetim Nightly Maintenance" -Confirm:$false
 - Görev geçmişi: Task Scheduler → `Yonetim Nightly Maintenance` → History sekmesi
   (History kapalıysa: `wevtutil set-log Microsoft-Windows-TaskScheduler/Operational /enabled:true`).
 
+## Event Log & Mail Bildirimi (14.6C)
+
+Bakım artık her çalışmada **Windows Event Log**'a yazar ve isteğe bağlı olarak **FAIL**
+durumunda mail gönderebilir. Ayrıntı: [Maintenance-Framework.md](./Maintenance-Framework.md#sprint-146c--event-log-mail-bildirimi-ve-genişletilmiş-cleanup).
+
+**Event IDs:** PASS = `140600` (Information), WARNING = `140601` (Warning), FAIL = `140602` (Error).
+
+**Event Log nasıl kontrol edilir?**
+- Event Viewer → `Windows Logs` → `Application` → Source `YonetimMaintenance`.
+- veya:
+  ```powershell
+  Get-EventLog -LogName Application -Source YonetimMaintenance -Newest 10 |
+    Format-Table TimeGenerated, EntryType, EventID, Message -Auto
+  ```
+- **Event kaynağını bir kez yönetici oluşturmalı.** `Register-NightlyMaintenanceTask.ps1`
+  veya `Test-MaintenanceNotification.ps1` yönetici olarak çalıştırıldığında kaynak oluşur.
+
+**Görev içinde mail bildirimini etkinleştirme:** Görev **SYSTEM** hesabıyla çalışır; bu yüzden
+`YONETIM_SMTP_PASSWORD` **Machine** kapsamında ayarlanmalıdır:
+```powershell
+[System.Environment]::SetEnvironmentVariable('YONETIM_SMTP_PASSWORD','<sifre>','Machine')
+```
+Görev komutuna mail parametrelerini eklemek için görevi şu argümanla yeniden kaydedin
+(Register scriptindeki komuta `-EnableMailNotification -MailTo … -MailFrom … -SmtpHost … -SmtpUsername …`
+eklenerek). Şifre **komuta yazılmaz**; yalnızca env var'dan okunur ve **loglanmaz**.
+
+> `Send-MailMessage` deprecated'dir (PS 5.1'de çalışır); ileride .NET `SmtpClient` /
+> uygulama içi bildirim servisine taşınabilir.
+
+**Bildirim altyapısını test etme** (gerçek mail göndermez):
+```powershell
+C:\Apps\Yonetim\Kurulum\Maintenance\Test-MaintenanceNotification.ps1
+# gercek test maili:
+C:\Apps\Yonetim\Kurulum\Maintenance\Test-MaintenanceNotification.ps1 -SendTestMail -MailTo bilgi@x.com -MailFrom app@x.com -SmtpHost smtp.x.com -SmtpUsername app@x.com
+```
+
 ## Troubleshooting
 
 | Belirti | Olası neden / çözüm |

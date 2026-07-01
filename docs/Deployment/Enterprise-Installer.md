@@ -81,6 +81,54 @@ UNC'den okumalıdır. Yol önceliği (uygulama içinde `DeploymentSettings`):
 > ve `appsettings.json` `Deployment:UpdatePath` ile yönetilebilir. Yerel test için
 > `appsettings.Development.json` `\\localhost\YonetimPublish\` kullanır.
 
+## "Unknown Publisher" (Bilinmeyen Yayımcı) uyarısı
+
+ClickOnce kurulum ekranında **"Unknown Publisher / Bilinmeyen Yayımcı"** uyarısı görülebilir.
+
+- **Bu bir hata değildir.** Kurulum çalışır; kullanıcı **Install / Kur** demelidir.
+- **Nedeni:** ClickOnce paketini imzalayan **code signing sertifikası** istemci makinede
+  **güvenilir** (Trusted Publishers / Trusted Root) olarak tanınmıyor.
+- **Bu sprint kapsamında koda müdahale edilmez** — kalıcı çözüm kod/işlem değil, sertifika/dağıtım işidir.
+- **Kalıcı çözüm (ayrı sprint / roadmap maddesi):**
+  1. Genel geçerli bir **Code Signing Certificate** (ör. DigiCert/Sectigo) ile imzalama, veya
+  2. Şirket içi **CA sertifikasının** GPO ile istemcilerin **Trusted Publishers / Trusted Root**
+     deposuna dağıtılması.
+- Sertifika güvenildiğinde uyarı otomatik kaybolur; installer/uygulama kodunda değişiklik gerekmez.
+
+> Bu konu bilinçli olarak **ertelenmiştir**; installer bu durumu kullanıcıya kurulum ekranında
+> açıkça not olarak gösterir ("bu bir HATA DEĞİLDİR, Install/Kur deyin").
+
+## Kurulum sonrası pencere davranışı
+
+ClickOnce ayrı bir pencerede açılır ve başarı/iptal durumu bu ekrandan **güvenilir şekilde
+otomatik algılanamaz**. Bu nedenle akış şöyledir:
+
+1. Installer, ClickOnce'ı başlatır ve net yönerge verir:
+   *"ClickOnce kurulum penceresi açıldı. Lütfen ekrandaki Install/Kur butonuna basarak kurulumu tamamlayın."*
+2. Kısa bir bekleme sonrası kullanıcıdan **onay** ister:
+   *"Kurulum ekranındaki adımları tamamladıysanız Enter'a basın. İptal ettiyseniz C yazıp Enter'a basın."*
+3. **Enter** → "Kurulum tamamlandı kabul edildi" (exit 0). Log klasörü açma seçeneği sunulur,
+   ardından pencere **5 saniye içinde otomatik kapanır** (kullanıcı "press any key" beklemez).
+4. `Kurulum.bat` başarıda kısa bir mesaj gösterip **beklemeden** kapanır; hata/iptalde **bekler**.
+
+## Kullanıcı iptal ederse ne olur?
+
+- Onay adımında **C** (veya `c`) girilirse installer bunu iptal sayar:
+  - Loga *"Kurulum kullanıcı tarafından iptal edildi"* yazılır,
+  - Ekranda *"Kurulum kullanıcı tarafından iptal edildi. Kurulumu daha sonra tekrar başlatabilirsiniz."*,
+  - Çıkış kodu **1** (`Kurulum.bat` bekler ki kullanıcı mesajı okusun).
+- İptal, ClickOnce'ın kendi ekranında Cancel demekle **birebir aynı değildir**; installer yalnızca
+  kullanıcının beyanına göre iptal/tamam ayrımı yapar (ClickOnce durumu programatik olarak güvenilir
+  alınamadığı için).
+
+## Log klasörünü açma
+
+Hem tamamlanma hem iptal ekranında kullanıcıya seçenek sunulur:
+*"Kurulum log klasörünü açmak için L, çıkmak için Enter."*
+
+- **L** → `%LOCALAPPDATA%\Yonetim\InstallerLogs` klasörü **Explorer** ile açılır.
+- Destek talebinde kullanıcıdan bu klasördeki **son** `install-*.log` dosyası istenir.
+
 ## Log dosyaları
 
 - Konum: `%LOCALAPPDATA%\Yonetim\InstallerLogs\install-<yyyy-MM-dd_HH-mm-ss>.log`

@@ -83,6 +83,16 @@ function StepOk([string]$msg)   { Write-Host ("  {0} {1}" -f $OK, $msg) -Foregro
 function StepInfo([string]$msg) { Write-Host ("    {0}"    -f $msg)      -ForegroundColor Gray;   Log "INFO: $msg" }
 function StepWarn([string]$msg) { Write-Host ("  ! {0}"    -f $msg)      -ForegroundColor Yellow; Log "WARN: $msg" }
 
+# Kullaniciya kurulum log klasorunu acma secenegi sunar (L -> explorer).
+function Show-LogFolderOption {
+    Write-Host ""
+    $open = Read-Host "  Kurulum log klasorunu acmak icin L, cikmak icin Enter"
+    if ($open -match '^\s*[lL]') {
+        try { Start-Process explorer.exe $LogDir; Log "Log klasoru kullanici tarafindan acildi: $LogDir" }
+        catch { Log "Log klasoru acilamadi: $($_.Exception.Message)" }
+    }
+}
+
 # Kullaniciya anlasilir mesaj; teknik ayrinti yalnizca log dosyasina.
 function Fail([string]$userMsg, [string]$tech) {
     Write-Host ""
@@ -279,16 +289,43 @@ try {
     Log "ClickOnce baslatildi: $Manifest"
 }
 catch { Fail "Uygulama kurulumu baslatilamadi. Lutfen tekrar deneyin veya BT ekibine basvurun." "$($_.Exception.Message)" }
-StepOk "Kurulum baslatildi (ekrandaki adimlari onaylayin)"
 
-# ── 6) Opsiyonel masaustu kisayolu ────────────────────────────────────────────
+# ClickOnce ayri bir pencerede acilir; kisa bir sure taninir.
+Start-Sleep -Seconds 3
+
+Write-Host ""
+Write-Host ("  {0} ClickOnce kurulum penceresi acildi." -f $OK) -ForegroundColor Cyan
+Write-Host "  Lutfen ekrandaki Install/Kur butonuna basarak kurulumu tamamlayin." -ForegroundColor Cyan
+Write-Host ""
+Write-Host "  Not: 'Unknown Publisher' (Bilinmeyen Yayimci) uyarisi cikabilir -- bu bir HATA DEGILDIR." -ForegroundColor Gray
+Write-Host "       Kurulumu surdurmek icin Install/Kur deyin. (Kalici cozum: code signing sertifikasi.)" -ForegroundColor Gray
+Write-Host ""
+Write-Host "  ClickOnce'in basari/iptal durumu buradan guvenilir sekilde OTOMATIK algilanamaz;" -ForegroundColor DarkGray
+Write-Host "  bu nedenle asagida sizden onay isteniyor." -ForegroundColor DarkGray
+Write-Host ""
+
+# ── Kullanici onayi (tamamlandi / iptal) ──────────────────────────────────────
+$confirm = Read-Host "  Kurulum ekranindaki adimlari tamamladiysaniz Enter'a basin. Iptal ettiyseniz C yazip Enter'a basin"
+
+if ($confirm -match '^\s*[cC]') {
+    Log "Kurulum kullanici tarafindan iptal edildi."
+    Write-Host ""
+    Write-Host ("  {0} Kurulum kullanici tarafindan iptal edildi." -f $NO) -ForegroundColor Yellow
+    Write-Host "  Kurulumu daha sonra tekrar baslatabilirsiniz." -ForegroundColor Gray
+    Show-LogFolderOption
+    exit 1
+}
+
+Log "Kurulum tamamlandi kabul edildi."
+
+# ── Opsiyonel masaustu kisayolu (kurulum onaylandiktan SONRA) ─────────────────
 if ($CreateDesktopShortcut) {
     Say "  Masaustu kisayolu hazirlaniyor..." "Cyan"
     try {
-        # ClickOnce, Start Menu altinda '<AppName>.appref-ms' olusturur. Kurulum bitince kopyalanir.
+        # ClickOnce, Start Menu altinda '<AppName>.appref-ms' olusturur.
         $startMenu = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs"
         $desktop   = [Environment]::GetFolderPath("Desktop")
-        $deadline  = (Get-Date).AddSeconds(90)
+        $deadline  = (Get-Date).AddSeconds(30)
         $apprefs   = @()
         do {
             Start-Sleep -Seconds 3
@@ -313,10 +350,13 @@ Write-Host ("  {0} Kurulum tamamlandi." -f $OK) -ForegroundColor Green
 Write-Host "==================================================" -ForegroundColor Green
 Write-Host ""
 Write-Host "  $AppName artik Baslat menusunden acilabilir." -ForegroundColor Green
-Write-Host "  (Ilk kurulumda ClickOnce onay ekranini onaylamaniz gerekebilir.)" -ForegroundColor Gray
-Write-Host ""
 Write-Host "  Kurulum logu: $LogFile" -ForegroundColor DarkGray
-Log "Kurulum akisi sorunsuz tamamlandi."
+Log "Kurulum akisi sorunsuz tamamlandi (kullanici onayli)."
 
-if (-not $NoPause) { Write-Host ""; Read-Host "Kapatmak icin Enter'a basin" | Out-Null }
+# Log klasorunu acma secenegi
+Show-LogFolderOption
+
+Write-Host ""
+Write-Host "  Bu pencere 5 saniye icinde kapanacaktir." -ForegroundColor DarkGray
+Start-Sleep -Seconds 5
 exit 0

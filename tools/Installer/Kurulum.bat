@@ -31,9 +31,16 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Install-Yonetim.ps1" -
 set "RC=%ERRORLEVEL%"
 
 echo.
-if not "%RC%"=="0" (
-  echo   Kurulum tamamlanamadi. Yukaridaki mesaji ve log yolunu BT ekibine iletin.
+if "%RC%"=="0" (
+  rem Basari: motor zaten kapanis geri sayimini yapti. Beklemeden kapan.
+  echo   Kurulum tamamlandi. Uygulama Baslat menusunden acilabilir.
+  popd
+  exit /b 0
 )
+
+rem Hata veya kullanici iptali (RC^!=0): kullanici mesaji okuyabilsin diye beklet.
+echo   Kurulum tamamlanamadi veya iptal edildi.
+echo   Yukaridaki mesaji ve log yolunu BT ekibine iletin.
 echo.
 popd
 pause

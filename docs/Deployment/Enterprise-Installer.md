@@ -118,6 +118,12 @@ açık tutar (`pause`).
   burada; `Publish-Production.ps1` buraya yayın yapar.
 - Her iki share de kullanıcı ağından erişilebilir olmalıdır.
 
+> **Bugfix (14.7-2):** `Kurulum.bat`, kurulum motoruna sunucu yolunu **açıkça**
+> `-ShareRoot "\\10.0.0.169\YonetimPublish"` olarak geçirir (asla `pushd`/`%~dp0`/`%CD%`
+> üzerinden türetilmez). `Install-Yonetim.ps1` ShareRoot'u doğrular; boş, `\`, `\\` veya
+> yalnızca kök/sürücü ise **"Kurulum sunucusu yolu geçersiz."** hatası verir ve loga
+> `ShareRoot=...` satırını net yazar. Bu, sahada görülen `ShareRoot=\` hatasını giderir.
+
 ## Güncelleme mantığı
 
 - Kurulum ClickOnce kullandığından **güncelleme otomatiktir**: kullanıcı uygulamayı her

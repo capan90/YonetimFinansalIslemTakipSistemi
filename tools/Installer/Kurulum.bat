@@ -24,8 +24,10 @@ if errorlevel 1 (
   exit /b 1
 )
 
-rem Kurulum motorunu bu bat ile ayni klasorden calistir. Ekstra parametreler aktarilir.
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Install-Yonetim.ps1" -NoPause %*
+rem Kurulum motorunu bu bat ile ayni klasorden calistir.
+rem ShareRoot ACIKCA verilir (pushd/%~dp0/%CD% uzerinden TURETILMEZ). Sondaki '\' konmaz;
+rem aksi halde CMD icin "...\" ifadesi tirnagi kacirir (\" -> escape) ve yol bozulur.
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Install-Yonetim.ps1" -ShareRoot "\\10.0.0.169\YonetimPublish" -NoPause %*
 set "RC=%ERRORLEVEL%"
 
 echo.

@@ -68,7 +68,7 @@ $NO = [char]0x2716   # ✖
 
 $AppName    = "Yonetim Finansal Islem Takip Sistemi"
 $ScriptDir  = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
-$Manifest   = Join-Path $ShareRoot $ManifestName
+# $Manifest, ShareRoot dogrulamasindan SONRA hesaplanir (asagida).
 
 # ── Log kurulumu ──────────────────────────────────────────────────────────────
 $LogDir  = Join-Path $env:LOCALAPPDATA "Yonetim\InstallerLogs"
@@ -102,7 +102,26 @@ Write-Host "   $AppName" -ForegroundColor Cyan
 Write-Host "   Kurulum Sihirbazi" -ForegroundColor Cyan
 Write-Host "==================================================" -ForegroundColor Cyan
 Write-Host ""
-Log "Kurulum baslatildi. Kullanici=$env:USERNAME Makine=$env:COMPUTERNAME ShareRoot=$ShareRoot"
+Log "Kurulum baslatildi. Kullanici=$env:USERNAME Makine=$env:COMPUTERNAME"
+
+# ── ShareRoot dogrulamasi ─────────────────────────────────────────────────────
+# ShareRoot ASLA %CD% / %~dp0 uzerinden turetilmez; parametreden ya da varsayilandan gelir.
+# Kurulum.bat de bunu acikca -ShareRoot "\\10.0.0.169\YonetimPublish" olarak gecirir.
+$ShareRoot = "$ShareRoot".Trim().TrimEnd('\')
+Log "ShareRoot=$ShareRoot"
+
+$invalidShare =
+    [string]::IsNullOrWhiteSpace($ShareRoot) -or
+    $ShareRoot -eq '\' -or $ShareRoot -eq '\\' -or
+    ($ShareRoot -match '^[A-Za-z]:$') -or                # surucu koku (C:)
+    (-not ($ShareRoot -match '^\\\\[^\\]+\\[^\\]+'))      # gecerli UNC degil (\\sunucu\pay bekleniyor)
+
+if ($invalidShare) {
+    Fail "Kurulum sunucusu yolu gecersiz. Lutfen BT ekibine basvurun." "invalid ShareRoot: '$ShareRoot' (beklenen: \\10.0.0.169\YonetimPublish)"
+}
+
+# Dogrulanmis ShareRoot ile hedef yollar.
+$Manifest = Join-Path $ShareRoot $ManifestName
 
 # ── 1) Ortam kontrolu ─────────────────────────────────────────────────────────
 Say "  Ortam kontrol ediliyor..." "Cyan"

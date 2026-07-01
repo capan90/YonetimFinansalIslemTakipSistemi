@@ -50,6 +50,35 @@ Varsayılan yollar/portlarla çalışır. Özelleştirme:
 
 Çıkış kodu: **FAIL varsa 1**, aksi halde 0 (WARNING çıkış kodunu etkilemez) — CI/zamanlanmış görevde kullanılabilir.
 
+#### Çalışma modları: Server vs PublishMachine
+
+`SecurityAudit.ps1` iki modda çalışır; fark **sertifika** kontrolünün sertliğindedir:
+
+| Mod | Nasıl | Sertifika yok/expired | Kullanım |
+|-----|-------|-----------------------|----------|
+| **Server** (varsayılan) | parametresiz | **WARNING** — "Bu makine publish/imzalama makinesi değilse normaldir." | DB/uygulama sunucusu |
+| **PublishMachine** | `-PublishMachine` | **FAIL** — imzalı yayın alınamaz | ClickOnce yayın/imzalama makinesi |
+
+```powershell
+# DB sunucusu (sertifika beklenmez):
+.\docs\Security\SecurityAudit.ps1
+
+# Publish/imzalama makinesi (sertifika zorunlu):
+.\docs\Security\SecurityAudit.ps1 -PublishMachine
+```
+
+#### Port ve Firewall değerlendirmesi
+
+PostgreSQL portu `0.0.0.0` (tüm arayüzler) üzerinde dinliyor olsa bile, **firewall
+`RemoteAddress`'i güvenli bir subnet'e kısıtlıysa** (ör. `10.0.0.0/24`) bu durum **FAIL
+değildir** — "Firewall kısıtlı olduğu için kabul edilebilir" açıklamasıyla WARNING olarak
+raporlanır. Firewall `Any`'e açıksa veya kural yoksa yine WARNING (sıkılaştırma önerilir).
+
+#### YONETIM_DB_CONNECTION
+
+Bu ortam değişkeni ayarlı değilse **WARNING** verilir (FAIL değil): bağlantı dizesi
+`appsettings.Production.json` üzerinden de sağlanabilir (bkz. [../Environment-Configuration.md](../Environment-Configuration.md)).
+
 ### 2) Sağlık Kontrolü
 
 ```powershell

@@ -54,7 +54,11 @@ param(
     [int]   $Port           = 5432,
     [string]$BackupPath     = "C:\Apps\Yonetim\Backups",
     [string]$LogsPath       = "C:\Apps\Yonetim\Logs",
-    [string]$CertThumbprint = "0136460438B6DED7F20498C00F7D3AB4C1E1B203"
+    [string]$CertThumbprint = "0136460438B6DED7F20498C00F7D3AB4C1E1B203",
+
+    # Publish/imzalama makinesi modu. Verilirse ClickOnce imzalama sertifikasi
+    # bulunamazsa FAIL uretilir. Verilmezse (varsayilan sunucu modu) yalnizca WARNING.
+    [switch]$PublishMachine
 )
 
 # Denetim scripti sistemi degistirmemeli; hatalar kontrol basina yakalanir.
@@ -83,13 +87,47 @@ function Add-Result {
     Write-Host ("  [{0,-7}] {1,-22} {2}" -f $Status, $Check, $Detail) -ForegroundColor $color
 }
 
+# Belirtilen port icin gelen (inbound) firewall durumunu tek seferde degerlendirir.
+# State: Restricted (uzak adres kisitli) | Open (RemoteAddress=Any) | None (kural yok) | Unknown
+# Bu sonuc hem Port hem Firewall kontrollerinde kullanilir; boylece 0.0.0.0 dinleyen
+# ama firewall ile kisitlanmis bir port FAIL degil, kabul edilebilir WARNING olur.
+function Get-PortFirewallStatus([int]$port) {
+    try {
+        $filters = Get-NetFirewallPortFilter -ErrorAction SilentlyContinue |
+            Where-Object { $_.Protocol -eq "TCP" -and ($_.LocalPort -eq "$port" -or $_.LocalPort -contains "$port") }
+        if (-not $filters) { return [pscustomobject]@{ State = "None"; Remote = ""; Detail = "port icin kural yok" } }
+
+        $rules = $filters | ForEach-Object { $_ | Get-NetFirewallRule -ErrorAction SilentlyContinue } |
+            Where-Object { $_.Enabled -eq "True" -and $_.Direction -eq "Inbound" -and $_.Action -eq "Allow" }
+        if (-not $rules) { return [pscustomobject]@{ State = "None"; Remote = ""; Detail = "etkin izin verici gelen kural yok" } }
+
+        $remotes = @()
+        $anyRemote = $false
+        foreach ($r in $rules) {
+            $scope = $r | Get-NetFirewallAddressFilter -ErrorAction SilentlyContinue
+            foreach ($ra in @($scope.RemoteAddress)) {
+                if ($ra -eq "Any") { $anyRemote = $true } else { $remotes += $ra }
+            }
+        }
+        if ($anyRemote) { return [pscustomobject]@{ State = "Open"; Remote = (($remotes | Select-Object -Unique) -join ", "); Detail = "RemoteAddress=Any" } }
+        return [pscustomobject]@{ State = "Restricted"; Remote = (($remotes | Select-Object -Unique) -join ", "); Detail = "uzak adres kisitli" }
+    }
+    catch {
+        return [pscustomobject]@{ State = "Unknown"; Remote = ""; Detail = $_.Exception.Message }
+    }
+}
+
 Write-Host ""
 Write-Host "==================================================" -ForegroundColor Cyan
 Write-Host " YONETIM -- PRODUCTION SECURITY AUDIT"              -ForegroundColor Cyan
 Write-Host " Makine : $env:COMPUTERNAME"                        -ForegroundColor Cyan
 Write-Host " Tarih  : $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -ForegroundColor Cyan
+Write-Host " Mod    : $(if ($PublishMachine) { 'PublishMachine (sertifika zorunlu)' } else { 'Server (sertifika opsiyonel)' })" -ForegroundColor Cyan
 Write-Host "==================================================" -ForegroundColor Cyan
 Write-Host ""
+
+# Firewall durumu bir kez hesaplanir; Port ve Firewall kontrollerinde paylasilir.
+$fw = Get-PortFirewallStatus $Port
 
 # ── 1. PostgreSQL Service ─────────────────────────────────────────────────────
 try {
@@ -111,13 +149,17 @@ catch { Add-Result "PostgreSQL Service" "FAIL" "Kontrol hatasi: $($_.Exception.M
 try {
     $listening = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
     if ($listening) {
-        # 0.0.0.0 / :: dinleniyorsa dis dunyaya aciktir -> firewall kontrolu onemli
         $addrs = ($listening | Select-Object -ExpandProperty LocalAddress -Unique) -join ", "
         $wideOpen = $listening | Where-Object { $_.LocalAddress -in @("0.0.0.0", "::") }
         if ($wideOpen) {
-            Add-Result "PostgreSQL Port" "WARNING" "$Port tum arayuzlerde dinleniyor ($addrs). Firewall ile kisitlayin."
+            # 0.0.0.0 dinlemek tek basina risk degildir; belirleyici olan firewall'dir.
+            if ($fw.State -eq "Restricted") {
+                Add-Result "PostgreSQL Port" "WARNING" "$Port tum arayuzlerde dinleniyor ($addrs) ancak firewall kisitli ($($fw.Remote)). Firewall kisitli oldugu icin kabul edilebilir."
+            } else {
+                Add-Result "PostgreSQL Port" "WARNING" "$Port tum arayuzlerde dinleniyor ($addrs) ve firewall $($fw.Detail). Guvenli subnet'e kisitlayin."
+            }
         } else {
-            Add-Result "PostgreSQL Port" "PASS" "$Port dinleniyor ($addrs)."
+            Add-Result "PostgreSQL Port" "PASS" "$Port yalnizca yerel/kisitli arayuzde dinleniyor ($addrs)."
         }
     } else {
         Add-Result "PostgreSQL Port" "FAIL" "$Port dinlenmiyor. PostgreSQL erisilemez olabilir."
@@ -126,35 +168,13 @@ try {
 catch { Add-Result "PostgreSQL Port" "WARNING" "Port durumu okunamadi: $($_.Exception.Message)" }
 
 # ── 3. Firewall Rule ──────────────────────────────────────────────────────────
-try {
-    $portFilters = Get-NetFirewallPortFilter -ErrorAction SilentlyContinue |
-        Where-Object { $_.Protocol -eq "TCP" -and ($_.LocalPort -eq "$Port" -or $_.LocalPort -contains "$Port") }
-
-    if (-not $portFilters) {
-        Add-Result "Firewall Rule" "WARNING" "$Port icin acik firewall kurali bulunamadi (varsayilan politikaya bagli)."
-    }
-    else {
-        $rules = $portFilters | ForEach-Object { $_ | Get-NetFirewallRule -ErrorAction SilentlyContinue } |
-            Where-Object { $_.Enabled -eq "True" -and $_.Direction -eq "Inbound" -and $_.Action -eq "Allow" }
-
-        if (-not $rules) {
-            Add-Result "Firewall Rule" "PASS" "$Port icin etkin izin verici gelen kural yok."
-        }
-        else {
-            $anyRemote = $false
-            foreach ($r in $rules) {
-                $scope = $r | Get-NetFirewallAddressFilter -ErrorAction SilentlyContinue
-                if ($scope.RemoteAddress -contains "Any") { $anyRemote = $true }
-            }
-            if ($anyRemote) {
-                Add-Result "Firewall Rule" "WARNING" "$Port her IP'ye acik (RemoteAddress=Any). Yalnizca guvenli subnet'e kisitlayin."
-            } else {
-                Add-Result "Firewall Rule" "PASS" "$Port icin kural mevcut ve uzak adres kisitli."
-            }
-        }
-    }
+# $fw yukarida bir kez hesaplandi (Port kontrolu ile paylasilir).
+switch ($fw.State) {
+    "Restricted" { Add-Result "Firewall Rule" "PASS"    "$Port icin kural mevcut ve uzak adres kisitli ($($fw.Remote))." }
+    "Open"       { Add-Result "Firewall Rule" "WARNING" "$Port her IP'ye acik (RemoteAddress=Any). Yalnizca guvenli subnet'e kisitlayin." }
+    "None"       { Add-Result "Firewall Rule" "WARNING" "$Port icin izin verici gelen kural yok ($($fw.Detail); varsayilan politikaya bagli)." }
+    default      { Add-Result "Firewall Rule" "WARNING" "Firewall kurallari okunamadi: $($fw.Detail)" }
 }
-catch { Add-Result "Firewall Rule" "WARNING" "Firewall kurallari okunamadi: $($_.Exception.Message)" }
 
 # ── 4. Publish Share ──────────────────────────────────────────────────────────
 try {
@@ -278,19 +298,28 @@ catch { Add-Result "Scheduled Tasks" "WARNING" "Gorevler okunamadi: $($_.Excepti
 
 # ── 10. Certificate ───────────────────────────────────────────────────────────
 try {
+    # Sertifika yalnizca publish/imzalama makinesinde zorunludur.
+    # PublishMachine modu: yok/expired -> FAIL. Server modu (varsayilan): yok/expired -> WARNING.
+    $certMissingSeverity = if ($PublishMachine) { "FAIL" } else { "WARNING" }
+
     $cert = Get-ChildItem Cert:\CurrentUser\My -ErrorAction SilentlyContinue |
         Where-Object { $_.Thumbprint -eq $CertThumbprint }
     if (-not $cert) {
-        Add-Result "Certificate" "FAIL" "Imzalama sertifikasi bulunamadi: $CertThumbprint"
+        if ($PublishMachine) {
+            Add-Result "Certificate" "FAIL" "ClickOnce imzalama sertifikasi bulunamadi: $CertThumbprint (PublishMachine modu -- imzali yayin alinamaz)."
+        } else {
+            Add-Result "Certificate" "WARNING" "Imzalama sertifikasi yok ($CertThumbprint). Bu makine publish/imzalama makinesi degilse normaldir. Zorunlu kilmak icin -PublishMachine kullanin."
+        }
     }
     else {
         $daysLeft = [int]([math]::Floor(($cert.NotAfter - (Get-Date)).TotalDays))
+        $expDate  = $cert.NotAfter.ToString('yyyy-MM-dd')
         if ($daysLeft -lt 0) {
-            Add-Result "Certificate" "FAIL" "Sertifika SURESI DOLMUS ($($cert.NotAfter.ToString('yyyy-MM-dd')))."
+            Add-Result "Certificate" $certMissingSeverity "Sertifika SURESI DOLMUS ($expDate)."
         } elseif ($daysLeft -lt 30) {
-            Add-Result "Certificate" "WARNING" "Sertifika $daysLeft gun icinde doluyor ($($cert.NotAfter.ToString('yyyy-MM-dd')))."
+            Add-Result "Certificate" "WARNING" "Sertifika $daysLeft gun icinde doluyor ($expDate)."
         } else {
-            Add-Result "Certificate" "PASS" "Gecerli, $daysLeft gun kaldi ($($cert.NotAfter.ToString('yyyy-MM-dd')))."
+            Add-Result "Certificate" "PASS" "Gecerli, $daysLeft gun kaldi ($expDate)."
         }
     }
 }

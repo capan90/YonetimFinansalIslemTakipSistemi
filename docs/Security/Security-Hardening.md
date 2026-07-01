@@ -53,6 +53,10 @@ New-NetFirewallRule -DisplayName "PostgreSQL 5432 (LAN)" -Direction Inbound `
   -Protocol TCP -LocalPort 5432 -Action Allow -RemoteAddress 10.0.0.0/24
 ```
 
+> **Denetim notu:** PostgreSQL `0.0.0.0` üzerinde dinlese bile firewall `RemoteAddress`
+> güvenli bir subnet'e kısıtlıysa `SecurityAudit.ps1` bunu **FAIL değil**, kabul edilebilir
+> **WARNING** olarak raporlar. Asıl kritik olan portun dinlenmesi değil, firewall kısıtıdır.
+
 ## 4. PostgreSQL
 
 - `pg_hba.conf`: uzak bağlantılar için `scram-sha-256`; `trust` **kullanılmamalı**.
@@ -84,6 +88,19 @@ New-NetFirewallRule -DisplayName "PostgreSQL 5432 (LAN)" -Direction Inbound `
 - Özel anahtar **dışa aktarılamaz** olarak korunmalı, yedeği güvenli kasada tutulmalı.
 - Süre dolmadan **en az 30 gün önce** yenilenmeli (`SecurityAudit.ps1` uyarır).
 - Sertifika yenilenirse `Publish-ClickOnce.ps1` içindeki `$CertThumb` güncellenmeli.
+
+**Denetim modu (önemli):** Sertifika yalnızca **publish/imzalama makinesinde** zorunludur.
+`SecurityAudit.ps1` bu nedenle iki modda çalışır:
+
+- **Server modu** (varsayılan): sertifika yoksa **WARNING** — DB/uygulama sunucusunda
+  imzalama sertifikası bulunmaması normaldir.
+- **PublishMachine modu** (`-PublishMachine`): sertifika yok/süresi dolmuşsa **FAIL** —
+  bu makineden imzalı yayın alınamayacağı için kritiktir.
+
+```powershell
+# Publish makinesinde imzalama sertifikasini zorunlu denetle:
+.\docs\Security\SecurityAudit.ps1 -PublishMachine
+```
 
 ## 8. Environment Variables
 

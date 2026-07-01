@@ -11,6 +11,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.1" />
     <PackageReference Include="Serilog" Version="4.*" />
     <PackageReference Include="Serilog.Enrichers.Environment" Version="3.*" />
@@ -18,10 +19,24 @@
     <PackageReference Include="Serilog.Sinks.File" Version="6.*" />
   </ItemGroup>
 
-  <!-- appsettings.json: build çıktısına ve ClickOnce paketine dahil edilir -->
+  <!-- appsettings.json: ortak taban ayar. Build çıktısına ve ClickOnce paketine her zaman dahil edilir. -->
   <ItemGroup>
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </Content>
+
+    <!-- Development: yerel geliştirme/EF migration için build çıktısına kopyalanır.
+         Üretim paketine dahil edilmez (Publish=Never) — istemci Production ortamıyla çalışır. -->
+    <Content Include="appsettings.Development.json" Condition="Exists('appsettings.Development.json')">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </Content>
+
+    <!-- Production: gitignore'da; yalnızca publish makinesinde bulunur (gerçek bağlantı dizesi).
+         Yerelde yoksa build kırılmaz (Condition=Exists). Varsa ClickOnce paketine dahil edilir. -->
+    <Content Include="appsettings.Production.json" Condition="Exists('appsettings.Production.json')">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>
     </Content>
   </ItemGroup>

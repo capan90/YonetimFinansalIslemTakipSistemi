@@ -12,7 +12,7 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 {
     public AppDbContext CreateDbContext(string[] args)
     {
-        // Öncelik: YONETIM_DB_CONNECTION env var > appsettings.json > hata
+        // Öncelik: YONETIM_DB_CONNECTION env var > appsettings.{Environment}.json > appsettings.json > hata
         var connectionString = Environment.GetEnvironmentVariable("YONETIM_DB_CONNECTION")
             ?? ReadConnectionStringFromConfig();
 
@@ -36,13 +36,43 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
         var configPath = FindAppsettingsPath();
         if (configPath is null) return null;
 
+        var basePath = Path.GetDirectoryName(configPath)!;
+
+        // App.xaml.cs ile aynı ortam mantığı: base appsettings.json'daki AppEnvironment yedek görevi görür.
+        var baseConfig = new ConfigurationBuilder()
+            .SetBasePath(basePath)
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+            .Build();
+
+        var environment = ResolveEnvironmentName(baseConfig["AppEnvironment"]);
+
+        // Katmanlı yükleme: appsettings.json → appsettings.{Environment}.json → ortam değişkenleri.
+        // Env var yoksa varsayılan Development'tır; dotnet ef bu yüzden yanlışlıkla canlı DB'ye gitmez.
         var config = new ConfigurationBuilder()
-            .SetBasePath(Path.GetDirectoryName(configPath)!)
-            .AddJsonFile(Path.GetFileName(configPath), optional: false, reloadOnChange: false)
+            .SetBasePath(basePath)
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+            .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: false)
+            .AddEnvironmentVariables()
             .Build();
 
         return config.GetConnectionString("DefaultConnection");
     }
+
+    /// <summary>
+    /// Aktif ortam adını çözer. Öncelik sırası:
+    ///   YONETIM_ENVIRONMENT > DOTNET_ENVIRONMENT > ASPNETCORE_ENVIRONMENT > config AppEnvironment > "Development"
+    /// </summary>
+    private static string ResolveEnvironmentName(string? configFallback)
+    {
+        return FirstNonEmpty(Environment.GetEnvironmentVariable("YONETIM_ENVIRONMENT"))
+            ?? FirstNonEmpty(Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT"))
+            ?? FirstNonEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"))
+            ?? FirstNonEmpty(configFallback)
+            ?? "Development";
+    }
+
+    private static string? FirstNonEmpty(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value;
 
     /// <summary>
     /// appsettings.json için şu konumları sırayla arar:

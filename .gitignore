@@ -19,7 +19,12 @@ obj/
 
 # Üretim ortam yapılandırması — gerçek şifre içerebilir, repoya girmemeli
 appsettings.Production.json
+appsettings.Local.json
 appsettings.*.local.json
+appsettings.Production.local.json
+
+# Publish makinesine özel gizli değerler (prod bağlantı dizesi, SMTP şifresi vb.)
+Publish-Production.local.ps1
 
 # Backup dosyaları — gerçek veri içerebilir, repoya girmemeli
 Backups/

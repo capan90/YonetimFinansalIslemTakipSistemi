@@ -128,7 +128,8 @@ public partial class App : System.Windows.Application
             ?? config.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Bağlantı dizesi yapılandırılmamış.");
 
-        var appEnvironment = config["AppEnvironment"] ?? "Development";
+        // Aktif ortam, BuildConfiguration ile aynı önceliği kullanır (env var > config > Development).
+        var appEnvironment = ResolveEnvironmentName(config["AppEnvironment"]);
         var isDevelopment  = !appEnvironment.Equals("Production", StringComparison.OrdinalIgnoreCase);
 
         Log.Debug("Ortam: {AppEnvironment}", appEnvironment);
@@ -383,16 +384,51 @@ public partial class App : System.Windows.Application
     // ── Config & Logging ─────────────────────────────────────────────────────
 
     /// <summary>
-    /// appsettings.json'dan IConfiguration oluşturur.
-    /// Env var YONETIM_DB_CONNECTION bağlantı dizesi için her zaman önceliklidir.
+    /// Ortama göre katmanlı IConfiguration oluşturur:
+    ///   appsettings.json  →  appsettings.{Environment}.json  →  ortam değişkenleri
+    /// Ortam değişkenleri en son eklenir → en yüksek önceliğe sahiptir.
+    /// Ayrıca env var YONETIM_DB_CONNECTION, bağlantı dizesi için InitializeAsync içinde
+    /// her zaman öncelikli olarak okunur.
     /// </summary>
     private static IConfiguration BuildConfiguration()
     {
-        return new ConfigurationBuilder()
-            .SetBasePath(AppContext.BaseDirectory)
+        var basePath = AppContext.BaseDirectory;
+
+        // 1) Ortamı belirle. base appsettings.json'daki AppEnvironment, ClickOnce istemcilerinde
+        //    ortam değişkeni taşınmadığı için yedek görevi görür (publish bu değeri Production yapar).
+        var baseConfig = new ConfigurationBuilder()
+            .SetBasePath(basePath)
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
             .Build();
+
+        var environment = ResolveEnvironmentName(baseConfig["AppEnvironment"]);
+
+        // 2) Katmanlı yükleme: ortama özel dosya varsa base değerleri geçersiz kılar,
+        //    ortam değişkenleri de en üstte kalır.
+        return new ConfigurationBuilder()
+            .SetBasePath(basePath)
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+            .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: false)
+            .AddEnvironmentVariables()
+            .Build();
     }
+
+    /// <summary>
+    /// Aktif ortam adını çözer. Öncelik sırası:
+    ///   YONETIM_ENVIRONMENT > DOTNET_ENVIRONMENT > ASPNETCORE_ENVIRONMENT > config AppEnvironment > "Development"
+    /// Varsayılan "Development"; böylece geliştirici hiçbir şey ayarlamazsa yanlışlıkla canlı DB'ye bağlanmaz.
+    /// </summary>
+    private static string ResolveEnvironmentName(string? configFallback)
+    {
+        return FirstNonEmpty(Environment.GetEnvironmentVariable("YONETIM_ENVIRONMENT"))
+            ?? FirstNonEmpty(Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT"))
+            ?? FirstNonEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"))
+            ?? FirstNonEmpty(configFallback)
+            ?? "Development";
+    }
+
+    private static string? FirstNonEmpty(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value;
 
     private static string ResolveBackupDirectory(IConfiguration config)
     {
@@ -402,15 +438,28 @@ public partial class App : System.Windows.Application
 
     private static SmtpNotificationOptions BuildSmtpNotificationOptions(IConfiguration config)
     {
-        // Şifre/kullanıcı env var'dan okunur — appsettings.Production.json'a şifre yazılmaz
-        var password = Environment.GetEnvironmentVariable("YONETIM_SMTP_PASSWORD")
-                       ?? config["ErrorNotifications:Smtp:Password"] ?? "";
+        // GÜVENLİK: SMTP şifresi hiçbir appsettings dosyasına yazılmaz.
+        // Yalnızca YONETIM_SMTP_PASSWORD ortam değişkeninden okunur; config'teki
+        // placeholder değeri bilinçli olarak kullanılmaz.
+        var password = Environment.GetEnvironmentVariable("YONETIM_SMTP_PASSWORD") ?? "";
         var username = Environment.GetEnvironmentVariable("YONETIM_SMTP_USERNAME")
                        ?? config["ErrorNotifications:Smtp:Username"] ?? "";
 
+        var enabled = "true".Equals(config["ErrorNotifications:Enabled"], StringComparison.OrdinalIgnoreCase);
+
+        // Env var yoksa uygulama ÇÖKMEZ; yalnızca açıklayıcı uyarı loglanır.
+        // SmtpErrorNotificationService şifre boş olduğunda gönderimi kendisi devre dışı bırakır.
+        if (enabled && string.IsNullOrWhiteSpace(password))
+        {
+            Log.Warning(
+                "YONETIM_SMTP_PASSWORD ortam değişkeni ayarlanmamış — hata e-posta bildirimleri gönderilemeyecek. " +
+                "Ayarlamak için (yönetici PowerShell): " +
+                "[System.Environment]::SetEnvironmentVariable('YONETIM_SMTP_PASSWORD','<sifre>','Machine')");
+        }
+
         return new SmtpNotificationOptions
         {
-            Enabled       = "true".Equals(config["ErrorNotifications:Enabled"],     StringComparison.OrdinalIgnoreCase),
+            Enabled       = enabled,
             Provider      = config["ErrorNotifications:Provider"]      ?? "Smtp",
             MinimumLevel  = config["ErrorNotifications:MinimumLevel"]  ?? "Error",
             To            = config["ErrorNotifications:To"]            ?? "",

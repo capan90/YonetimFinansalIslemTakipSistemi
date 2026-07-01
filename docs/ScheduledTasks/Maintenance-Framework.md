@@ -90,6 +90,8 @@ diğer adımları atlamaz); exit kodu en sonda belirlenir.
 
 ## 14.6B Notu — Windows Scheduled Task
 
+> **Windows Scheduled Task kurulumu için [Nightly-Maintenance-Task.md](./Nightly-Maintenance-Task.md) dosyasına bakın.**
+
 Bu framework 14.6A'da **manuel/çağrılabilir** olacak şekilde tasarlandı. Sprint **14.6B**'de
 `Maintenance.ps1`, her gece çalışacak bir **Windows Scheduled Task**'a bağlanacaktır
 (ör. `SYSTEM` hesabı, en yüksek yetki, günlük tetikleyici). Exit code 1 döndüğünde görev

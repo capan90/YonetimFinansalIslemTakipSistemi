@@ -19,7 +19,7 @@
       (Exit kodu mantigi 14.6C'de DEGISMEDI.)
 
     Event Log:
-      - Sonuca gore Application logune event yazilir (PASS=140600, WARNING=140601, FAIL=140602).
+      - Sonuca gore Application logune event yazilir (PASS=14600, WARNING=14601, FAIL=14602).
       - Kaynak yoksa olusturulmaya calisilir; yetki yoksa script cokmez, WARNING loglanir.
 
     Mail bildirimi (opsiyonel, -EnableMailNotification):
@@ -184,10 +184,11 @@ function Add-ChildOutputToLog([string]$stepName, [string]$output) {
 # Sonuca gore Windows Event Log'a event yazar. Kaynak yoksa olusturulmaya calisilir;
 # yetki yoksa (New-EventLog admin ister) script COKMEZ, durum WARNING olarak kaydedilir.
 function Write-MaintenanceEvent([string]$overallStatus, [string]$message) {
+    # Windows Event ID araligi 0-65535'tir; degerler bu sinirin altinda olmalidir.
     $map = @{
-        "PASS"    = @{ Type = "Information"; Id = 140600 }
-        "WARNING" = @{ Type = "Warning";     Id = 140601 }
-        "FAIL"    = @{ Type = "Error";       Id = 140602 }
+        "PASS"    = @{ Type = "Information"; Id = 14600 }
+        "WARNING" = @{ Type = "Warning";     Id = 14601 }
+        "FAIL"    = @{ Type = "Error";       Id = 14602 }
     }
     $entry = $map[$overallStatus]
     try {

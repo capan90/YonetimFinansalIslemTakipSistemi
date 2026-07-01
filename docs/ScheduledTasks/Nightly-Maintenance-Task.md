@@ -88,7 +88,7 @@ Unregister-ScheduledTask -TaskName "Yonetim Nightly Maintenance" -Confirm:$false
 Bakım artık her çalışmada **Windows Event Log**'a yazar ve isteğe bağlı olarak **FAIL**
 durumunda mail gönderebilir. Ayrıntı: [Maintenance-Framework.md](./Maintenance-Framework.md#sprint-146c--event-log-mail-bildirimi-ve-genişletilmiş-cleanup).
 
-**Event IDs:** PASS = `140600` (Information), WARNING = `140601` (Warning), FAIL = `140602` (Error).
+**Event IDs:** PASS = `14600` (Information), WARNING = `14601` (Warning), FAIL = `14602` (Error), TEST = `14609` (Information). _(Windows Event ID sınırı 0–65535; değerler bu aralıktadır.)_
 
 **Event Log nasıl kontrol edilir?**
 - Event Viewer → `Windows Logs` → `Application` → Source `YonetimMaintenance`.

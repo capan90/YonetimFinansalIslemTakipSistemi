@@ -78,10 +78,11 @@ try {
     }
 
     if ($exists) {
+        # TEST event ID (Windows siniri 0-65535 icinde).
         Write-EventLog -LogName $EventLogName -Source $EventSource `
-            -EntryType Information -EventId 140600 `
+            -EntryType Information -EventId 14609 `
             -Message "Maintenance notification test event (Test-MaintenanceNotification.ps1)" -ErrorAction Stop
-        Write-Info "  [OK] Test event yazildi (EventId 140600)." "Green"
+        Write-Info "  [OK] Test event yazildi (EventId 14609)." "Green"
     } else {
         Write-Info "  [WARNING] Kaynak olmadigi icin event yazilamadi. Bir kez YONETICI olarak calistirin." "Yellow"
     }

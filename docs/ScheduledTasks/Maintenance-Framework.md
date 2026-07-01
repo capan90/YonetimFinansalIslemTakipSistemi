@@ -100,9 +100,13 @@ Her bakım sonunda `Application` loguna, sonuca göre bir event yazılır:
 
 | Sonuç | EntryType | Event ID |
 |-------|-----------|----------|
-| PASS | Information | **140600** |
-| WARNING | Warning | **140601** |
-| FAIL | Error | **140602** |
+| PASS | Information | **14600** |
+| WARNING | Warning | **14601** |
+| FAIL | Error | **14602** |
+| TEST (`Test-MaintenanceNotification.ps1`) | Information | **14609** |
+
+> **Not:** Windows Event ID aralığı **0–65535**'tir; değerler bu sınırın altındadır
+> (önceki `1406xx` değerleri sınırı aşıyordu, 14.6C bugfix ile düzeltildi).
 
 - Kaynak (`YonetimMaintenance`) yoksa oluşturulmaya çalışılır. **Kaynak oluşturmak yönetici
   yetkisi ister**; yetki yoksa script **çökmez**, özet alanında `EventLogWriteStatus: WARNING…`

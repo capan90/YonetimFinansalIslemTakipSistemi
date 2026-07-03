@@ -21,7 +21,7 @@ public class QuestPdfLabelRenderer : ILabelRenderer
     // ── Kurumsal renk paleti ────────────────────────────────────────────
     private const string HeaderText = "#1A3354"; // koyu lacivert
     private const string SectionText = "#1A3354"; // koyu lacivert
-    private const string SubText    = "#475569"; // slate-600
+    private const string SubText    = "#334155"; // slate-700 (daha koyu okunaklı)
     private const string BorderGrey = "#CBD5E1"; // slate-300
     private const string LightBg    = "#F8FAFC"; // slate-50
 
@@ -34,7 +34,7 @@ public class QuestPdfLabelRenderer : ILabelRenderer
                 page.Size(PageSizes.A4);
                 page.Margin(15, Unit.Millimetre);
                 page.DefaultTextStyle(ts =>
-                    ts.FontSize(11).FontFamily("Segoe UI"));
+                    ts.FontSize(12).FontFamily("Segoe UI")); // Temel yazı boyutu 12 yapıldı
 
                 page.Content().Column(col =>
                 {
@@ -73,13 +73,13 @@ public class QuestPdfLabelRenderer : ILabelRenderer
                    }
                    else
                    {
-                       // Logo bulunamazsa şık bir tipografik logo göstergesi
-                       row.ConstantItem(40, Unit.Millimetre)
+                       // Logo bulunamazsa yüksek kontrastlı ve kalın yazı
+                       row.ConstantItem(45, Unit.Millimetre)
                           .AlignMiddle()
                           .Column(c =>
                           {
-                              c.Item().Text("ERDEMSOFT").FontSize(16).Bold().FontColor(HeaderText);
-                              c.Item().Text("TEKSTİL").FontSize(10).FontColor(SubText);
+                              c.Item().Text("ERDEMSOFT").FontSize(18).ExtraBold().FontColor(HeaderText);
+                              c.Item().Text("TEKSTİL A.Ş.").FontSize(12).Bold().FontColor(HeaderText);
                           });
                    }
                    row.ConstantItem(10, Unit.Millimetre);
@@ -91,10 +91,10 @@ public class QuestPdfLabelRenderer : ILabelRenderer
                    var titleText = isErdemsoft ? "ERDEMSOFT KARGO ETİKETİ" : "KARGO ETİKETİ";
                    c.Item()
                     .Text(titleText)
-                    .FontSize(20).Bold().FontColor(HeaderText);
+                    .FontSize(22).Bold().FontColor(HeaderText);
                    c.Item()
                     .Text($"İç Kargo No: {model.ShipmentNumber ?? "—"}")
-                    .FontSize(12).FontColor(SubText);
+                    .FontSize(13).Bold().FontColor(SubText);
                });
            });
     }
@@ -111,7 +111,7 @@ public class QuestPdfLabelRenderer : ILabelRenderer
            .Padding(12)
            .Row(row =>
            {
-               // Firma bilgileri (sol)
+               // Firma bilgileri (sol) - yazı boyutları büyütüldü
                row.RelativeItem().Column(c =>
                {
                    c.Spacing(3);
@@ -119,40 +119,40 @@ public class QuestPdfLabelRenderer : ILabelRenderer
                    if (!string.IsNullOrWhiteSpace(model.SenderCompanyName))
                        c.Item()
                         .Text(model.SenderCompanyName)
-                        .FontSize(12).Bold().FontColor(HeaderText);
+                        .FontSize(14).Bold().FontColor(HeaderText); // 12 -> 14 yapıldı
 
                    if (!string.IsNullOrWhiteSpace(model.SenderCompanyAddress))
                        c.Item()
                         .Text(model.SenderCompanyAddress)
-                        .FontSize(10).FontColor(SubText);
+                        .FontSize(11).FontColor(SubText); // 10 -> 11 yapıldı
 
                    var senderLoc = BuildLocation(
                        model.SenderCompanyDistrict, model.SenderCompanyCity);
                    if (!string.IsNullOrWhiteSpace(senderLoc))
                        c.Item()
                         .Text(senderLoc)
-                        .FontSize(10).FontColor(SubText);
+                        .FontSize(11).FontColor(SubText); // 10 -> 11 yapıldı
 
                    if (!string.IsNullOrWhiteSpace(model.SenderCompanyPhone))
                        c.Item()
                         .Text($"Tel: {model.SenderCompanyPhone}")
-                        .FontSize(10).FontColor(SubText);
+                        .FontSize(11).FontColor(SubText); // 10 -> 11 yapıldı
 
                    c.Item().PaddingTop(4);
 
                    if (!string.IsNullOrWhiteSpace(model.Sender))
                        c.Item()
                         .Text($"Yönlendiren: {model.Sender}")
-                        .FontSize(10).FontColor(SubText);
+                        .FontSize(11).FontColor(SubText); // 10 -> 11 yapıldı
 
                    c.Item()
                     .Text($"Tarih: {model.CreatedDate:dd.MM.yyyy}")
-                    .FontSize(10).FontColor(SubText);
+                    .FontSize(11).FontColor(SubText); // 10 -> 11 yapıldı
 
                    if (!string.IsNullOrWhiteSpace(model.CargoCompany))
                        c.Item()
                         .Text($"Kargo: {model.CargoCompany}")
-                        .FontSize(10).FontColor(SubText);
+                        .FontSize(11).FontColor(SubText); // 10 -> 11 yapıldı
                });
 
                row.ConstantItem(10, Unit.Millimetre);
@@ -181,35 +181,35 @@ public class QuestPdfLabelRenderer : ILabelRenderer
                if (!string.IsNullOrWhiteSpace(model.ReceiverCompany))
                    c.Item()
                     .Text(model.ReceiverCompany.ToUpperInvariant())
-                    .FontSize(16).Bold().FontColor(HeaderText);
+                    .FontSize(18).Bold().FontColor(HeaderText); // 16 -> 18 yapıldı
 
                var attentionLine = AttentionHelper.FormatAttentionLine(model.Attention);
                if (attentionLine != "Muhattap: -")
                {
                    c.Item().PaddingTop(2);
-                   c.Item().Text(attentionLine).Bold().FontSize(13).FontColor(SectionText);
+                   c.Item().Text(attentionLine).Bold().FontSize(15).FontColor(SectionText); // 13 -> 15 yapıldı
                }
 
                if (!string.IsNullOrWhiteSpace(model.Address))
                    c.Item().Row(r =>
                    {
-                       r.AutoItem().Text("Adres: ").FontColor(SubText).FontSize(11);
-                       r.RelativeItem().Text(model.Address).FontSize(11);
+                       r.AutoItem().Text("Adres: ").FontColor(SubText).FontSize(13); // 11 -> 13 yapıldı
+                       r.RelativeItem().Text(model.Address).FontSize(13); // 11 -> 13 yapıldı
                    });
 
                var location = BuildLocation(model.District, model.City);
                if (!string.IsNullOrWhiteSpace(location))
                    c.Item().Row(r =>
                    {
-                       r.AutoItem().Text("İlçe / İl: ").FontColor(SubText).FontSize(11);
-                       r.RelativeItem().Text(location).FontSize(11);
+                       r.AutoItem().Text("İlçe / İl: ").FontColor(SubText).FontSize(13); // 11 -> 13 yapıldı
+                       r.RelativeItem().Text(location).FontSize(13); // 11 -> 13 yapıldı
                    });
 
                if (!string.IsNullOrWhiteSpace(model.Phone))
                    c.Item().Row(r =>
                    {
-                       r.AutoItem().Text("Tel: ").FontColor(SubText).FontSize(11);
-                       r.RelativeItem().Text(model.Phone).FontSize(11);
+                       r.AutoItem().Text("Tel: ").FontColor(SubText).FontSize(13); // 11 -> 13 yapıldı
+                       r.RelativeItem().Text(model.Phone).FontSize(13); // 11 -> 13 yapıldı
                    });
            });
     }
@@ -236,15 +236,15 @@ public class QuestPdfLabelRenderer : ILabelRenderer
                        if (hasTracking)
                            r.RelativeItem().Column(c =>
                            {
-                               c.Item().Text("TAKİP NO").FontSize(9).FontColor(SubText).Bold();
-                               c.Item().Text(model.TrackingNumber!).FontSize(14).Bold().FontColor(HeaderText);
+                               c.Item().Text("TAKİP NO").FontSize(10).FontColor(SubText).Bold();
+                               c.Item().Text(model.TrackingNumber!).FontSize(15).Bold().FontColor(HeaderText);
                            });
 
                        if (hasPlate)
                            r.AutoItem().Column(c =>
                            {
-                               c.Item().Text("ARAÇ PLAKA").FontSize(9).FontColor(SubText).Bold();
-                               c.Item().Text(model.VehiclePlate!).FontSize(14).Bold().FontColor(HeaderText);
+                               c.Item().Text("ARAÇ PLAKA").FontSize(10).FontColor(SubText).Bold();
+                               c.Item().Text(model.VehiclePlate!).FontSize(15).Bold().FontColor(HeaderText);
                            });
                    });
 
@@ -297,7 +297,7 @@ public class QuestPdfLabelRenderer : ILabelRenderer
            .PaddingBottom(4)
            .BorderBottom(1.5f).BorderColor(HeaderText)
            .Text(title)
-           .FontSize(11).Bold().FontColor(HeaderText);
+           .FontSize(12).Bold().FontColor(HeaderText); // 11 -> 12 yapıldı
     }
 
     private static string? BuildLocation(string? district, string? city)
@@ -326,21 +326,28 @@ public class QuestPdfLabelRenderer : ILabelRenderer
 
     private static byte[] GenerateQrCode(CargoLabelModel model)
     {
-        string qrContent;
-        if (!string.IsNullOrWhiteSpace(model.TrackingUrl))
-        {
-            qrContent = model.TrackingUrl;
-        }
-        else
-        {
-            qrContent = $"Kargo No: {model.ShipmentNumber}\n" +
-                        $"Gönderici: {model.SenderCompanyName}\n" +
-                        $"Alıcı: {model.ReceiverCompany}\n" +
-                        $"İlgili Kişi: {model.Attention}\n" +
-                        $"Adres: {model.Address}, {model.District} / {model.City}\n" +
-                        $"Tel: {model.Phone}\n" +
-                        $"Kargo Firması: {model.CargoCompany}";
-        }
+        var senderLoc = BuildLocation(model.SenderCompanyDistrict, model.SenderCompanyCity);
+        var senderFullAddress = !string.IsNullOrWhiteSpace(senderLoc)
+            ? $"{model.SenderCompanyAddress}, {senderLoc}"
+            : model.SenderCompanyAddress ?? "—";
+
+        var receiverLoc = BuildLocation(model.District, model.City);
+        var receiverFullAddress = !string.IsNullOrWhiteSpace(receiverLoc)
+            ? $"{model.Address}, {receiverLoc}"
+            : model.Address ?? "—";
+
+        var sb = new StringBuilder();
+        sb.AppendLine("GONDEREN");
+        sb.AppendLine($"Firma: {model.SenderCompanyName ?? "—"}");
+        sb.AppendLine($"Adres: {senderFullAddress}");
+        sb.AppendLine($"Yonlendiren: {model.Sender ?? "—"}");
+        sb.AppendLine();
+        sb.AppendLine("ALICI");
+        sb.AppendLine($"Firma: {model.ReceiverCompany ?? "—"}");
+        sb.AppendLine($"Adres: {receiverFullAddress}");
+        sb.AppendLine($"Dikkatine: {model.Attention ?? "—"}");
+
+        var qrContent = sb.ToString().TrimEnd();
 
         using var qrGenerator = new QRCoder.QRCodeGenerator();
         using var qrCodeData = qrGenerator.CreateQrCode(qrContent, QRCoder.QRCodeGenerator.ECCLevel.Q);

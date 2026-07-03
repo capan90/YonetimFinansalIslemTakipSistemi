@@ -204,7 +204,7 @@ public sealed class SystemLogService : ISystemLogService
         IsCritical    = x.IsCritical,
         IsResolved    = x.IsResolved,
         StatusDisplay = x.IsResolved ? "Çözüldü" : "Açık",
-        CreatedAt     = x.CreatedAt
+        CreatedAt     = x.CreatedAt.Kind == DateTimeKind.Local ? x.CreatedAt : DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc).ToLocalTime()
     };
 
     private static SystemLogDetailDto MapToDetail(SystemLog x) => new()
@@ -224,10 +224,10 @@ public sealed class SystemLogService : ISystemLogService
         AppVersion            = x.AppVersion,
         IsCritical            = x.IsCritical,
         IsResolved            = x.IsResolved,
-        ResolvedAt            = x.ResolvedAt,
+        ResolvedAt            = x.ResolvedAt.HasValue ? (x.ResolvedAt.Value.Kind == DateTimeKind.Local ? x.ResolvedAt.Value : DateTime.SpecifyKind(x.ResolvedAt.Value, DateTimeKind.Utc).ToLocalTime()) : null,
         ResolvedByUserId      = x.ResolvedByUserId,
         ResolutionNote        = x.ResolutionNote,
-        CreatedAt             = x.CreatedAt
+        CreatedAt             = x.CreatedAt.Kind == DateTimeKind.Local ? x.CreatedAt : DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc).ToLocalTime()
     };
 
     internal static string DisplayLevel(SystemLogLevel level) => level switch

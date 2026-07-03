@@ -15,12 +15,14 @@ public class GetMailSettingsHandler
         _userContext         = userContext;
     }
 
-    public async Task<OperationResult<MailSettingsDto>> HandleAsync()
+    public async Task<OperationResult<MailSettingsDto>> HandleAsync(bool isPersonal = false)
     {
-        if (!_userContext.HasPermission(PermissionType.CanManageMailSettings))
+        if (!isPersonal && !_userContext.HasPermission(PermissionType.CanManageMailSettings))
             return OperationResult<MailSettingsDto>.Fail("Mail ayarlarını görüntüleme yetkiniz bulunmamaktadır.");
 
-        var settings = await _mailSettingsService.GetAsync();
+        var settings = isPersonal
+            ? await _mailSettingsService.GetPersonalOnlyAsync(_userContext.UserId)
+            : await _mailSettingsService.GetGlobalAsync();
 
         // Şifreyi UI'ya açık göndermiyoruz
         if (settings is not null)

@@ -33,40 +33,77 @@ public class MailSettingsService : IMailSettingsService
     {
         try
         {
-            return await GetInternalAsync();
+            using var scope = _scopeFactory.CreateScope();
+            var userContext = scope.ServiceProvider.GetService<IUserContext>();
+            var repo = scope.ServiceProvider.GetRequiredService<IApplicationSettingRepository>();
+
+            if (userContext is not null && userContext.UserId != Guid.Empty)
+            {
+                var personal = await GetInternalAsync(repo, $"UserMail:{userContext.UserId}:");
+                if (personal is not null && !string.IsNullOrWhiteSpace(personal.SmtpHost))
+                {
+                    return personal;
+                }
+            }
+
+            return await GetInternalAsync(repo, "Mail:");
         }
         catch
         {
-            // Tablo henüz oluşturulmamış (migration bekleniyor) ya da beklenmedik hata — null dönder
             return null;
         }
     }
 
-    private async Task<MailSettingsDto?> GetInternalAsync()
+    public async Task<MailSettingsDto?> GetGlobalAsync()
     {
-        using var scope = _scopeFactory.CreateScope();
-        var repo = scope.ServiceProvider.GetRequiredService<IApplicationSettingRepository>();
+        try
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var repo = scope.ServiceProvider.GetRequiredService<IApplicationSettingRepository>();
+            return await GetInternalAsync(repo, "Mail:");
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
-        var settings = await repo.GetByPrefixAsync("Mail:");
+    public async Task<MailSettingsDto?> GetPersonalOnlyAsync(Guid userId)
+    {
+        try
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var repo = scope.ServiceProvider.GetRequiredService<IApplicationSettingRepository>();
+            return await GetInternalAsync(repo, $"UserMail:{userId}:");
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private async Task<MailSettingsDto?> GetInternalAsync(IApplicationSettingRepository repo, string prefix)
+    {
+        var settings = await repo.GetByPrefixAsync(prefix);
         if (settings.Count == 0) return null;
 
         var map = settings.ToDictionary(s => s.Key, s => s);
 
         bool passwordDecryptFailed = false;
 
-        string? Get(string key)
+        string? Get(string keySuffix)
         {
-            if (!map.TryGetValue(key, out var s) || s.Value is null) return null;
+            string fullKey = prefix + keySuffix;
+            if (!map.TryGetValue(fullKey, out var s) || s.Value is null) return null;
             if (!s.IsEncrypted) return s.Value;
             try   { return _protector.Unprotect(s.Value); }
             catch (Exception ex)
             {
-                if (key == "Mail:Password")
+                if (keySuffix == "Password")
                 {
                     passwordDecryptFailed = true;
-                    // AES anahtarı değişmişse eski şifre çözülemez; kullanıcı tekrar kaydetmeli
-                    _logger.LogError(ex, "Mail:Password AES çözümü başarısız — anahtarı değişmiş olabilir");
-                    _ = _systemLog.LogWarningAsync("Mail", "Mail şifresi AES çözümü başarısız — anahtar değişmiş olabilir, şifreyi tekrar kaydedin.", "MailSettingsService");
+                    _logger.LogError(ex, "{Key} AES çözümü başarısız — anahtarı değişmiş olabilir", fullKey);
+                    _ = _systemLog.LogWarningAsync("Mail", $"Mail şifresi AES çözümü başarısız ({fullKey}) — anahtar değişmiş olabilir, şifreyi tekrar kaydedin.", "MailSettingsService");
                 }
                 return null;
             }
@@ -74,13 +111,13 @@ public class MailSettingsService : IMailSettingsService
 
         return new MailSettingsDto
         {
-            SmtpHost              = Get("Mail:SmtpHost")    ?? "",
-            SmtpPort              = int.TryParse(Get("Mail:SmtpPort"),  out var port) ? port : 587,
-            EnableSsl             = bool.TryParse(Get("Mail:EnableSsl"), out var ssl)  ? ssl  : true,
-            SenderEmail           = Get("Mail:SenderEmail") ?? "",
-            SenderName            = Get("Mail:SenderName")  ?? "",
-            Username              = Get("Mail:Username")    ?? "",
-            Password              = Get("Mail:Password")    ?? "",
+            SmtpHost              = Get("SmtpHost")    ?? "",
+            SmtpPort              = int.TryParse(Get("SmtpPort"),  out var port) ? port : 587,
+            EnableSsl             = bool.TryParse(Get("EnableSsl"), out var ssl)  ? ssl  : true,
+            SenderEmail           = Get("SenderEmail") ?? "",
+            SenderName            = Get("SenderName")  ?? "",
+            Username              = Get("Username")    ?? "",
+            Password              = Get("Password")    ?? "",
             PasswordDecryptFailed = passwordDecryptFailed,
         };
     }

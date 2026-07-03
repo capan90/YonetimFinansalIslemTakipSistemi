@@ -46,11 +46,12 @@
                            x:Name="PhoneLabelBlock"
                            Text="Telefon:" FontWeight="SemiBold" Margin="0,0,6,0"
                            Visibility="Collapsed"/>
-                <TextBlock Grid.Row="1" Grid.Column="1"
-                           x:Name="PhoneValueBlock"
+                <TextBox   Grid.Row="1" Grid.Column="1"
+                           x:Name="PhoneTextBox"
                            Grid.ColumnSpan="3" Margin="0,0,0,0"
-                           TextTrimming="CharacterEllipsis"
-                           Visibility="Collapsed"/>
+                           Padding="4,2" BorderThickness="1" BorderBrush="#CBD5E1"
+                           Visibility="Collapsed"
+                           ToolTip="WhatsApp alıcı numarası — yalnızca bu gönderim için kullanılır"/>
             </Grid>
         </Border>
 
@@ -89,6 +90,7 @@
                            x:Name="ToTextBox"
                            Padding="4,3" Margin="0,0,0,5"
                            BorderThickness="1" BorderBrush="#CBD5E1"
+                           TextChanged="ToTextBox_TextChanged"
                            ToolTip="Alıcı adresi yalnızca bu gönderim için kullanılır — DB'ye kaydedilmez"/>
 
                 <!-- CC (düzenlenebilir, DB'ye kaydedilmez) -->

@@ -89,6 +89,12 @@
                 <MenuItem Header="Güncellemeleri Denetle"
                           ToolTip="Yayın klasöründeki en güncel sürümü kontrol eder; güncelleme varsa bildirir."
                           Click="CheckForUpdates_Click"/>
+                <MenuItem Header="Mail Ayarlarım"
+                          ToolTip="Kendi mail gönderim bilgilerinizi düzenleyin."
+                          Click="OpenPersonalMailSettings_Click"/>
+                <MenuItem Header="Log Klasörünü Aç"
+                          ToolTip="Uygulama loglarının bulunduğu klasörü açar."
+                          Click="OpenLogDirectory_Click"/>
             </MenuItem>
         </Menu>
 

@@ -63,8 +63,8 @@ public partial class CargoNotificationPreviewWindow : Window
         MailFieldsPanel.Visibility = Visibility.Visible;
         MailSendButton.Visibility  = Visibility.Visible;
 
-        // Alıcı alanı boşsa gönder butonu devre dışı; kullanıcı manuel doldurabilir
-        MailSendButton.IsEnabled = !string.IsNullOrWhiteSpace(ToTextBox.Text);
+        // Alıcı alanı boşsa veya geçersizse gönder butonu devre dışı; kullanıcı manuel doldurabilir
+        MailSendButton.IsEnabled = IsValidEmail(ToTextBox.Text.Trim());
 
         Loaded += async (_, _) => await LoadSenderEmailAsync();
     }
@@ -82,9 +82,9 @@ public partial class CargoNotificationPreviewWindow : Window
         TitleBlock.Text = "💬 WhatsApp Mesajı Hazırla";
 
         PhoneLabelBlock.Visibility = Visibility.Visible;
-        PhoneValueBlock.Visibility = Visibility.Visible;
-        PhoneValueBlock.Text = !string.IsNullOrWhiteSpace(model.TargetPhone)
-            ? model.TargetPhone : "Telefon bilgisi girilmemiş";
+        PhoneTextBox.Visibility = Visibility.Visible;
+        PhoneTextBox.Text = !string.IsNullOrWhiteSpace(model.TargetPhone)
+            ? model.TargetPhone : string.Empty;
 
         WhatsAppWebButton.Visibility = Visibility.Visible;
     }
@@ -102,12 +102,22 @@ public partial class CargoNotificationPreviewWindow : Window
 
     private async void WhatsAppWebButton_Click(object sender, RoutedEventArgs e)
     {
-        var phone   = NormalizePhone(_model?.TargetPhone);
-        var encoded = Uri.EscapeDataString(_model?.MessageBody ?? string.Empty);
+        var inputPhone = PhoneTextBox.Text.Trim();
+        if (string.IsNullOrWhiteSpace(inputPhone))
+        {
+            _dialogService.ShowWarning("Lütfen WhatsApp alıcı telefon numarasını giriniz.", "Telefon Eksik");
+            return;
+        }
 
-        var url = string.IsNullOrWhiteSpace(phone)
-            ? $"https://wa.me/?text={encoded}"
-            : $"https://wa.me/{phone}?text={encoded}";
+        var phone = NormalizePhone(inputPhone);
+        if (string.IsNullOrWhiteSpace(phone) || phone.Length < 10)
+        {
+            _dialogService.ShowWarning("Lütfen geçerli bir telefon numarası giriniz (örn: 0532 123 45 67).", "Geçersiz Telefon");
+            return;
+        }
+
+        var encoded = Uri.EscapeDataString(_model?.MessageBody ?? string.Empty);
+        var url = $"https://wa.me/{phone}?text={encoded}";
 
         try
         {
@@ -180,6 +190,31 @@ public partial class CargoNotificationPreviewWindow : Window
     }
 
     private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
+
+    private void ToTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+    {
+        if (MailSendButton is not null)
+        {
+            var email = ToTextBox.Text.Trim();
+            MailSendButton.IsEnabled = IsValidEmail(email);
+        }
+    }
+
+    private static bool IsValidEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return false;
+        try
+        {
+            return System.Text.RegularExpressions.Regex.IsMatch(email, 
+                @"^[^@\s]+@[^@\s]+\.[^@\s]+$", 
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase, 
+                TimeSpan.FromMilliseconds(250));
+        }
+        catch
+        {
+            return false;
+        }
+    }
 
     // ── Başarı bildirimi ──────────────────────────────────────────────────
 

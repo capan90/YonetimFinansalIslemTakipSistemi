@@ -35,7 +35,7 @@ public class GetAuditLogsHandler
             OldValues     = l.OldValues,
             NewValues     = l.NewValues,
             ComputerName  = l.ComputerName,
-            Timestamp     = l.Timestamp
+            Timestamp     = l.Timestamp.Kind == DateTimeKind.Local ? l.Timestamp : DateTime.SpecifyKind(l.Timestamp, DateTimeKind.Utc).ToLocalTime()
         }).ToList();
 
         return OperationResult<List<AuditLogDto>>.Ok(dtos);

@@ -91,7 +91,7 @@ public partial class MainWindow : Window
             ApplyColumnHeaderContextMenu();
             await ApplySavedLayoutAsync();
             ApplyBalanceColumnVisibility();
-            await _listVm.LoadAsync();
+            await _listVm.LoadTransactionsAsync();
             RefreshMenuVisibility(userContext);
         };
     }
@@ -453,7 +453,7 @@ public partial class MainWindow : Window
     {
         var form = new CashTransactionFormWindow(_services) { Owner = this };
         if (form.ShowDialog() == true)
-            await _listVm.LoadAsync();
+            await _listVm.LoadTransactionsAsync();
     }
 
     private async void EditTransactionButton_Click(object sender, RoutedEventArgs e)
@@ -484,7 +484,7 @@ public partial class MainWindow : Window
         var form = new CashTransactionFormWindow(_services) { Owner = this };
         form.InitializeForEdit(selected);
         if (form.ShowDialog() == true)
-            await _listVm.LoadAsync();
+            await _listVm.LoadTransactionsAsync();
     }
 
     private async void CopyTransactionButton_Click(object sender, RoutedEventArgs e)
@@ -501,7 +501,7 @@ public partial class MainWindow : Window
         if (form.ShowDialog() == true)
         {
             _dialogService.ShowSuccess("İşlem kopyalanarak yeni kayıt oluşturuldu.", "Kopyalama Başarılı");
-            await _listVm.LoadAsync();
+            await _listVm.LoadTransactionsAsync();
         }
     }
 
@@ -530,7 +530,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        await _listVm.LoadAsync();
+        await _listVm.LoadTransactionsAsync();
     }
 
     private void Logout_Click(object sender, RoutedEventArgs e)
@@ -581,13 +581,33 @@ public partial class MainWindow : Window
     {
         var logDir = App.LogDirectory;
 
-        if (string.IsNullOrEmpty(logDir) || !Directory.Exists(logDir))
+        if (string.IsNullOrEmpty(logDir))
         {
-            _dialogService.ShowWarning("Log klasörü henüz oluşturulmadı. Uygulama log yazmaya başladığında klasör otomatik oluşturulur.");
+            _dialogService.ShowWarning("Log klasör yolu belirlenemedi.");
             return;
         }
 
-        Process.Start(new ProcessStartInfo("explorer.exe", logDir) { UseShellExecute = true });
+        if (!Directory.Exists(logDir))
+        {
+            try
+            {
+                Directory.CreateDirectory(logDir);
+            }
+            catch (Exception ex)
+            {
+                _dialogService.ShowError($"Log klasörü oluşturulamadı: {ex.Message}");
+                return;
+            }
+        }
+
+        try
+        {
+            Process.Start(new ProcessStartInfo("explorer.exe", logDir) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            _dialogService.ShowError($"Log klasörü açılamadı: {ex.Message}");
+        }
     }
 
     private async void TestDbConnection_Click(object sender, RoutedEventArgs e)
@@ -638,7 +658,12 @@ public partial class MainWindow : Window
 
     private void OpenMailSettings_Click(object sender, RoutedEventArgs e)
     {
-        new Views.Settings.MailSettingsWindow(_services) { Owner = this }.ShowDialog();
+        new Views.Settings.MailSettingsWindow(_services, isPersonal: false) { Owner = this }.ShowDialog();
+    }
+
+    private void OpenPersonalMailSettings_Click(object sender, RoutedEventArgs e)
+    {
+        new Views.Settings.MailSettingsWindow(_services, isPersonal: true) { Owner = this }.ShowDialog();
     }
 
     private void OpenSystemLogs_Click(object sender, RoutedEventArgs e)

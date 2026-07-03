@@ -57,7 +57,7 @@
         <StackPanel>
 
             <!-- Başlık -->
-            <TextBlock Text="Mail (SMTP) Ayarları"
+            <TextBlock x:Name="TitleBlock" Text="Mail (SMTP) Ayarları"
                        FontSize="16" FontWeight="Bold"
                        Foreground="#1E3A5F" Margin="0,0,0,16"/>
 

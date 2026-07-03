@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Data;
 using System.Windows.Input;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Queries.GetCashTransactions;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Queries.GetCurrentBalances;
@@ -17,7 +18,7 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
     private DateTime?           _dateFrom;
     private DateTime?           _dateTo;
     private string?             _selectedTransactionType;
-    private string?             _selectedCurrencyType = "TRY"; // Varsayılan: TL işlemleri göster
+    private string?             _selectedCurrencyType = CurrencyType.USD.ToString(); // Varsayılan: USD işlemleri göster
     private string?             _selectedAmountOperator;
     private string?             _amountValueText;
     private string?             _descriptionFilter;
@@ -37,7 +38,8 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
     {
         _handler        = handler;
         _balanceHandler = balanceHandler;
-        FilterCommand   = new RelayCommand(async () => await ExecuteFilterAsync());
+        FilterCommand   = new RelayCommand(async () => await LoadTransactionsAsync());
+        UpdateBalanceColumnVisibility();
     }
 
     // --- Filtre alanları ---
@@ -174,14 +176,31 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
     public ICommand FilterCommand { get; }
 
     /// <summary>İşlem listesini ve genel bakiyeleri yükler (bakiye filtreden bağımsızdır).</summary>
-    public async Task LoadAsync()
+    public async Task LoadTransactionsAsync()
     {
         await ExecuteFilterAsync();
         var balances = await _balanceHandler.HandleAsync();
         TlBalance  = balances.TlBalance;
         UsdBalance = balances.UsdBalance;
         EurBalance = balances.EurBalance;
+
+        // ObservableCollection güncellenirken UI binding kesin tetiklensin.
+        OnPropertyChanged(nameof(Transactions));
+
+        // Eğer ICollectionView kullanılıyorsa Refresh çağrılsın.
+        var view = CollectionViewSource.GetDefaultView(Transactions);
+        if (view is not null)
+        {
+            view.SortDescriptions.Clear();
+            view.SortDescriptions.Add(new SortDescription(nameof(CashTransactionDto.TransactionDate), ListSortDirection.Descending));
+            view.SortDescriptions.Add(new SortDescription(nameof(CashTransactionDto.CreatedAt), ListSortDirection.Descending));
+            view.SortDescriptions.Add(new SortDescription(nameof(CashTransactionDto.Id), ListSortDirection.Descending));
+            view.Refresh();
+        }
     }
+
+    [Obsolete("Use LoadTransactionsAsync instead")]
+    public Task LoadAsync() => LoadTransactionsAsync();
 
     private async Task ExecuteFilterAsync()
     {
@@ -205,15 +224,17 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
         Transactions.Clear();
         foreach (var item in results)
             Transactions.Add(item);
+
+        OnPropertyChanged(nameof(Transactions));
     }
 
     private void UpdateBalanceColumnVisibility()
     {
         // Tümü veya null → tüm bakiye kolonları görünür
         var isTumu = string.IsNullOrEmpty(_selectedCurrencyType) || _selectedCurrencyType == "Tümü";
-        ShowTlBalance  = isTumu || _selectedCurrencyType == "TRY";
-        ShowUsdBalance = isTumu || _selectedCurrencyType == "USD";
-        ShowEurBalance = isTumu || _selectedCurrencyType == "EUR";
+        ShowTlBalance  = isTumu || _selectedCurrencyType == CurrencyType.TRY.ToString();
+        ShowUsdBalance = isTumu || _selectedCurrencyType == CurrencyType.USD.ToString();
+        ShowEurBalance = isTumu || _selectedCurrencyType == CurrencyType.EUR.ToString();
     }
 
     // "Tümü" veya null → null (filtre uygulanmaz)

@@ -46,6 +46,10 @@ public class DeleteUserHandler
         user.IsActive  = false;
         user.DeletedAt = DateTime.UtcNow;
 
+        // TODO: Kullanıcı soft-delete edildiğinde veya ileride tamamen silindiğinde,
+        // application_settings tablosundaki "UserMail:{UserId}:" prefix'li kişisel mail ayarları
+        // temizlenmeli (cleanup/hard-delete senaryoları için).
+
         await _repository.UpdateAsync(user);
 
         // Audit: kullanıcı silindi

@@ -11,19 +11,33 @@ public partial class MailSettingsWindow : Window
 {
     private readonly IServiceProvider _services;
     private readonly IDialogService   _dialogService;
+    private readonly bool             _isPersonal;
 
-    public MailSettingsWindow(IServiceProvider services)
+    public MailSettingsWindow(IServiceProvider services, bool isPersonal = false)
     {
         InitializeComponent();
         _services      = services;
+        _isPersonal    = isPersonal;
         _dialogService = services.GetRequiredService<IDialogService>();
+
+        if (_isPersonal)
+        {
+            Title = "Kişisel Mail Ayarlarım";
+            TitleBlock.Text = "✉ Kişisel Mail Ayarlarım";
+        }
+        else
+        {
+            Title = "Genel Mail Ayarları";
+            TitleBlock.Text = "⚙ Genel Mail (SMTP) Ayarları";
+        }
+
         Loaded += async (_, _) => await LoadCurrentSettingsAsync();
     }
 
     private async Task LoadCurrentSettingsAsync()
     {
         var handler = _services.GetRequiredService<GetMailSettingsHandler>();
-        var result  = await handler.HandleAsync();
+        var result  = await handler.HandleAsync(_isPersonal);
 
         if (!result.Success || result.Data is null) return;
 
@@ -43,7 +57,7 @@ public partial class MailSettingsWindow : Window
         if (dto is null) return;
 
         var handler = _services.GetRequiredService<SaveMailSettingsHandler>();
-        var result  = await handler.HandleAsync(dto);
+        var result  = await handler.HandleAsync(dto, _isPersonal);
 
         if (result.Success)
             _dialogService.ShowSuccess("Mail ayarları kaydedildi.", "Kayıt Başarılı");
@@ -70,7 +84,7 @@ public partial class MailSettingsWindow : Window
         try
         {
             var handler = _services.GetRequiredService<SendTestMailHandler>();
-            var result  = await handler.HandleAsync(dto, recipient);
+            var result  = await handler.HandleAsync(dto, recipient, _isPersonal);
 
             TestResultBlock.Visibility = Visibility.Visible;
 

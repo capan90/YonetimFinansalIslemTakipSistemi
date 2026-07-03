@@ -18,9 +18,9 @@ public class SendTestMailHandler
     /// <summary>
     /// Form'daki geçici ayarlarla test maili gönderir — kaydetmeden önce de çalışır.
     /// </summary>
-    public async Task<OperationResult<bool>> HandleAsync(MailSettingsDto settings, string testRecipient)
+    public async Task<OperationResult<bool>> HandleAsync(MailSettingsDto settings, string testRecipient, bool isPersonal = false)
     {
-        if (!_userContext.HasPermission(PermissionType.CanManageMailSettings))
+        if (!isPersonal && !_userContext.HasPermission(PermissionType.CanManageMailSettings))
             return OperationResult<bool>.Fail("Bu işlem için yetkiniz bulunmamaktadır.");
 
         if (string.IsNullOrWhiteSpace(settings.SmtpHost))

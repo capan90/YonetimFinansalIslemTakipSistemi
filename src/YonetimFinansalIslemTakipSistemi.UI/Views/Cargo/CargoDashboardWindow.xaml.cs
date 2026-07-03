@@ -369,6 +369,17 @@ public partial class CargoDashboardWindow : Window
 
     // ── Pencere Kapat ─────────────────────────────────────────────────────
 
+    public bool IsLogoutRequested { get; private set; }
+
+    private void Logout_Click(object sender, RoutedEventArgs e)
+    {
+        if (!_dialogService.ShowConfirmation("Oturumu kapatmak istediğinize emin misiniz?", "Çıkış Yap"))
+            return;
+
+        IsLogoutRequested = true;
+        Close();
+    }
+
     private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
 }
 

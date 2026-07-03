@@ -578,7 +578,7 @@ public partial class App : System.Windows.Application
                     var cargoWindow = new CargoDashboardWindow(scope.ServiceProvider);
                     Current.MainWindow = cargoWindow;
                     cargoWindow.ShowDialog();
-                    isLogout = true; // kargo penceresi kapandığında login ekranına dön
+                    isLogout = cargoWindow.IsLogoutRequested;
                 }
                 else
                 {

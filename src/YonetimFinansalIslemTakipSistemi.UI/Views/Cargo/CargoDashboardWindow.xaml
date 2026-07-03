@@ -13,36 +13,47 @@
         <!-- Üst: Navigasyon çubuğu — yetkiye göre kargo ekranlarına erişim -->
         <Border x:Name="NavBar" DockPanel.Dock="Top"
                 Background="#1E3A5F" Padding="10,6">
-            <WrapPanel Orientation="Horizontal">
-                <Button x:Name="NavGelenButton"
-                        Content="Gelen Kargolar"
-                        Height="28" Padding="12,0" Margin="0,0,6,0"
-                        Foreground="White" Background="#2E5F9F"
-                        BorderBrush="#3B7BC8" BorderThickness="1"
-                        Cursor="Hand"
-                        Click="NavGelenButton_Click"/>
-                <Button x:Name="NavGidenButton"
-                        Content="Giden Kargolar"
-                        Height="28" Padding="12,0" Margin="0,0,6,0"
-                        Foreground="White" Background="#2E5F9F"
-                        BorderBrush="#3B7BC8" BorderThickness="1"
-                        Cursor="Hand"
-                        Click="NavGidenButton_Click"/>
-                <Button x:Name="NavFirmaRehberiButton"
-                        Content="Firma Rehberi"
-                        Height="28" Padding="12,0" Margin="0,0,6,0"
-                        Foreground="White" Background="#2E5F9F"
-                        BorderBrush="#3B7BC8" BorderThickness="1"
-                        Cursor="Hand"
-                        Click="NavFirmaRehberiButton_Click"/>
-                <Button x:Name="NavKargoFirmalariButton"
-                        Content="Kargo Firmaları"
+            <DockPanel LastChildFill="False">
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                    <Button x:Name="NavGelenButton"
+                            Content="Gelen Kargolar"
+                            Height="28" Padding="12,0" Margin="0,0,6,0"
+                            Foreground="White" Background="#2E5F9F"
+                            BorderBrush="#3B7BC8" BorderThickness="1"
+                            Cursor="Hand"
+                            Click="NavGelenButton_Click"/>
+                    <Button x:Name="NavGidenButton"
+                            Content="Giden Kargolar"
+                            Height="28" Padding="12,0" Margin="0,0,6,0"
+                            Foreground="White" Background="#2E5F9F"
+                            BorderBrush="#3B7BC8" BorderThickness="1"
+                            Cursor="Hand"
+                            Click="NavGidenButton_Click"/>
+                    <Button x:Name="NavFirmaRehberiButton"
+                            Content="Firma Rehberi"
+                            Height="28" Padding="12,0" Margin="0,0,6,0"
+                            Foreground="White" Background="#2E5F9F"
+                            BorderBrush="#3B7BC8" BorderThickness="1"
+                            Cursor="Hand"
+                            Click="NavFirmaRehberiButton_Click"/>
+                    <Button x:Name="NavKargoFirmalariButton"
+                            Content="Kargo Firmaları"
+                            Height="28" Padding="12,0" Margin="0,0,0,0"
+                            Foreground="White" Background="#2E5F9F"
+                            BorderBrush="#3B7BC8" BorderThickness="1"
+                            Cursor="Hand"
+                            Click="NavKargoFirmalariButton_Click"/>
+                </StackPanel>
+
+                <Button x:Name="NavLogoutButton"
+                        Content="Çıkış Yap"
+                        DockPanel.Dock="Right"
                         Height="28" Padding="12,0" Margin="0,0,0,0"
-                        Foreground="White" Background="#2E5F9F"
-                        BorderBrush="#3B7BC8" BorderThickness="1"
+                        Foreground="White" Background="#B91C1C"
+                        BorderBrush="#991B1B" BorderThickness="1"
                         Cursor="Hand"
-                        Click="NavKargoFirmalariButton_Click"/>
-            </WrapPanel>
+                        Click="Logout_Click"/>
+            </DockPanel>
         </Border>
 
         <!-- Alt: Kapat butonu -->

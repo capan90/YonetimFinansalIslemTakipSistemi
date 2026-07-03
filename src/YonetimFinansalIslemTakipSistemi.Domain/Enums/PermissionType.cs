@@ -28,4 +28,7 @@ public enum PermissionType
 
     // Sistem Logları modülü
     CanViewSystemLogs          = 16,
+
+    // Ayarlar Menüsü Görünürlüğü
+    CanAccessSettings          = 17,
 }

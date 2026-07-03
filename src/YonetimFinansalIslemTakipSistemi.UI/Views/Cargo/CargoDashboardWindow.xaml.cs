@@ -369,6 +369,44 @@ public partial class CargoDashboardWindow : Window
 
     // ── Pencere Kapat ─────────────────────────────────────────────────────
 
+    private void OpenPersonalMailSettings_Click(object sender, RoutedEventArgs e)
+    {
+        new Views.Settings.MailSettingsWindow(_services, isPersonal: true) { Owner = this }.ShowDialog();
+    }
+
+    private void OpenLogDirectory_Click(object sender, RoutedEventArgs e)
+    {
+        var logDir = App.LogDirectory;
+
+        if (string.IsNullOrEmpty(logDir))
+        {
+            _dialogService.ShowWarning("Log klasör yolu belirlenemedi.");
+            return;
+        }
+
+        if (!Directory.Exists(logDir))
+        {
+            try
+            {
+                Directory.CreateDirectory(logDir);
+            }
+            catch (Exception ex)
+            {
+                _dialogService.ShowError($"Log klasörü oluşturulamadı: {ex.Message}");
+                return;
+            }
+        }
+
+        try
+        {
+            Process.Start(new ProcessStartInfo("explorer.exe", logDir) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            _dialogService.ShowError($"Log klasörü açılamadı: {ex.Message}");
+        }
+    }
+
     public bool IsLogoutRequested { get; private set; }
 
     private void Logout_Click(object sender, RoutedEventArgs e)

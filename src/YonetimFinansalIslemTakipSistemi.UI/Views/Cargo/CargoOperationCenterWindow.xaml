@@ -128,7 +128,7 @@
             <Button x:Name="LabelButton"
                     Style="{StaticResource OpCard}"
                     Click="LabelButton_Click"
-                    ToolTip="Seçili kargo için A6 PDF etiketi oluşturur ve PDF görüntüleyicide açar">
+                    ToolTip="Seçili kargo için A4 PDF kargo etiketi oluşturur ve açar.">
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                     <TextBlock Text="🏷" FontSize="22" HorizontalAlignment="Center"/>
                     <TextBlock Text="Etiket Önizle" FontSize="11"

@@ -80,8 +80,22 @@ Write-Host "  ProviderURL   : $ProviderUrl"
 Write-Host ""
 
 Write-Host "[0/6] Publish klasoru temizleniyor..." -ForegroundColor Cyan
-# Eski/bayat manifest kalmasin; her publish'te temiz basla
-Remove-Item -Recurse -Force "$PublishDir\*" -ErrorAction SilentlyContinue
+# Eski manifest dosyalari ve version.json temizlenir
+Remove-Item -Force "$PublishDir\*.application" -ErrorAction SilentlyContinue
+Remove-Item -Force "$PublishDir\version.json" -ErrorAction SilentlyContinue
+
+# Application Files klasorunun altindaki eski surumlerden en son 2 tanesi haricindekiler temizlenir (yeni surumle birlikte 3 olacak)
+$AppFilesRoot = "$PublishDir\Application Files"
+if (Test-Path $AppFilesRoot) {
+    $VersionFolders = Get-ChildItem -Path $AppFilesRoot -Directory | Sort-Object LastWriteTime -Descending
+    if ($VersionFolders.Count -gt 2) {
+        $FoldersToDelete = $VersionFolders | Select-Object -Skip 2
+        foreach ($folder in $FoldersToDelete) {
+            Write-Host "  Eski surum klasoru siliniyor: $($folder.FullName)" -ForegroundColor Gray
+            Remove-Item -Recurse -Force $folder.FullName -ErrorAction SilentlyContinue
+        }
+    }
+}
 
 Write-Host "[1/6] Build yapiliyor: $Version..." -ForegroundColor Cyan
 
@@ -106,9 +120,11 @@ if (-not [string]::IsNullOrWhiteSpace($Environment)) {
         throw "appsettings.json publish ciktisinda bulunamadi: $AppSettingsFile"
     }
 
-    $AppSettings = Get-Content $AppSettingsFile -Raw | ConvertFrom-Json
+    $RawJson = [System.IO.File]::ReadAllText($AppSettingsFile, [System.Text.Encoding]::UTF8)
+    $AppSettings = $RawJson | ConvertFrom-Json
     $AppSettings.AppEnvironment = $Environment
-    ($AppSettings | ConvertTo-Json -Depth 20) | Set-Content -Path $AppSettingsFile -Encoding utf8
+    $UpdatedJson = $AppSettings | ConvertTo-Json -Depth 20
+    [System.IO.File]::WriteAllText($AppSettingsFile, $UpdatedJson, [System.Text.Encoding]::UTF8)
     Write-Host "  AppEnvironment gomuldu: $Environment -> $AppSettingsFile" -ForegroundColor Gray
 
     # Production paketinde appsettings.Production.json (gercek baglanti dizesi) bulunmali.

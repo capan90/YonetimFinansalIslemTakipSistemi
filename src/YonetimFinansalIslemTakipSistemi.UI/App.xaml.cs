@@ -620,7 +620,10 @@ public partial class App : System.Windows.Application
                        || userContext.HasPermission(PermissionType.CanViewReports)
                        || userContext.HasPermission(PermissionType.CanManageUsers)
                        || userContext.HasPermission(PermissionType.CanViewAuditLog)
-                       || userContext.HasPermission(PermissionType.CanManageExchangeRates);
+                       || userContext.HasPermission(PermissionType.CanManageExchangeRates)
+                       || userContext.HasPermission(PermissionType.CanAccessSettings)
+                       || userContext.HasPermission(PermissionType.CanManageMailSettings)
+                       || userContext.HasPermission(PermissionType.CanViewSystemLogs);
 
         if (hasFinance) return "finance";
 

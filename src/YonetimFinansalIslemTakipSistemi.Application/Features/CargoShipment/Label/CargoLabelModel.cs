@@ -20,6 +20,7 @@ public class CargoLabelModel
     // ── Kargo firması — CargoShipment.CargoCompany navigasyonu ──────────
     public string? CargoCompany   { get; set; }
     public string? TrackingNumber { get; set; }
+    public string? TrackingUrl    { get; set; }
 
     // ── Operasyonel ─────────────────────────────────────────────────────
     public string?   Sender       { get; set; }

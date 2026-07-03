@@ -45,14 +45,29 @@
                             Click="NavKargoFirmalariButton_Click"/>
                 </StackPanel>
 
-                <Button x:Name="NavLogoutButton"
-                        Content="Çıkış Yap"
-                        DockPanel.Dock="Right"
-                        Height="28" Padding="12,0" Margin="0,0,0,0"
-                        Foreground="White" Background="#B91C1C"
-                        BorderBrush="#991B1B" BorderThickness="1"
-                        Cursor="Hand"
-                        Click="Logout_Click"/>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                    <Button x:Name="NavMailSettingsButton"
+                            Content="Mail Ayarlarım"
+                            Height="28" Padding="12,0" Margin="0,0,6,0"
+                            Foreground="White" Background="#2E5F9F"
+                            BorderBrush="#3B7BC8" BorderThickness="1"
+                            Cursor="Hand"
+                            Click="OpenPersonalMailSettings_Click"/>
+                    <Button x:Name="NavLogDirButton"
+                            Content="Log Klasörü"
+                            Height="28" Padding="12,0" Margin="0,0,6,0"
+                            Foreground="White" Background="#2E5F9F"
+                            BorderBrush="#3B7BC8" BorderThickness="1"
+                            Cursor="Hand"
+                            Click="OpenLogDirectory_Click"/>
+                    <Button x:Name="NavLogoutButton"
+                            Content="Çıkış Yap"
+                            Height="28" Padding="12,0" Margin="0,0,0,0"
+                            Foreground="White" Background="#B91C1C"
+                            BorderBrush="#991B1B" BorderThickness="1"
+                            Cursor="Hand"
+                            Click="Logout_Click"/>
+                </StackPanel>
             </DockPanel>
         </Border>
 

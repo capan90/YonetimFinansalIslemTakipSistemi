@@ -46,20 +46,19 @@
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
-                    <!-- Ayarlar Menüsü (Yetkiye tabi) -->
-                    <Menu x:Name="MenuAyarlar" Background="Transparent" Margin="0,0,8,0" Visibility="Collapsed">
-                        <MenuItem Header="Ayarlar" Foreground="White" Background="#2E5F9F" Padding="12,5" BorderBrush="#3B7BC8" BorderThickness="1">
-                            <MenuItem x:Name="MenuGlobalMail" Header="Global Mail Ayarları" Click="OpenGlobalMailSettings_Click"/>
-                            <MenuItem x:Name="MenuSystemLogs" Header="Sistem Logları" Click="OpenSystemLogs_Click"/>
-                        </MenuItem>
-                    </Menu>
-
-                    <!-- Yardım Menüsü (Herkes görebilir) -->
-                    <Menu Background="Transparent" Margin="0,0,8,0">
-                        <MenuItem Header="Yardım" Foreground="White" Background="#2E5F9F" Padding="12,5" BorderBrush="#3B7BC8" BorderThickness="1">
-                            <MenuItem Header="Güncellemeleri Denetle" Click="CheckUpdates_Click"/>
-                            <MenuItem Header="Mail Ayarlarım" Click="OpenPersonalMailSettings_Click"/>
-                            <MenuItem Header="Log Klasörünü Aç" Click="OpenLogDirectory_Click"/>
+                    <!-- Yardım Menüsü (Yetkiye tabi) -->
+                    <Menu x:Name="MenuYardim" Background="Transparent" Margin="0,0,10,0" Visibility="Collapsed">
+                        <Menu.Resources>
+                            <Style TargetType="MenuItem">
+                                <Setter Property="FontSize" Value="12"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Padding" Value="10,6"/>
+                            </Style>
+                        </Menu.Resources>
+                        <MenuItem Header="Yardım ▾" Foreground="White" Background="#2E5F9F" BorderBrush="#3B7BC8" BorderThickness="1" Padding="12,5" Height="28">
+                            <MenuItem Header="Güncellemeleri Denetle" Click="CheckUpdates_Click" Foreground="Black"/>
+                            <MenuItem Header="Mail Ayarlarım" Click="OpenPersonalMailSettings_Click" Foreground="Black"/>
+                            <MenuItem Header="Log Klasörünü Aç" Click="OpenLogDirectory_Click" Foreground="Black"/>
                         </MenuItem>
                     </Menu>
 

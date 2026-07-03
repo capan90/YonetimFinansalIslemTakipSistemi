@@ -31,4 +31,7 @@ public enum PermissionType
 
     // Ayarlar Menüsü Görünürlüğü
     CanAccessSettings          = 17,
+
+    // Yardım Menüsü Görünürlüğü
+    CanAccessHelpMenu          = 18,
 }

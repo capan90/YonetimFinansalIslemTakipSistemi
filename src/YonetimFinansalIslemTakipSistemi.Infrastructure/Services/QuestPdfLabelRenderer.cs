@@ -1,8 +1,8 @@
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-using SkiaSharp;
 using System.IO;
+using System.Text;
 using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Label;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
@@ -259,46 +259,23 @@ public class QuestPdfLabelRenderer : ILabelRenderer
                     {
                         bc.Spacing(4);
 
-                        // SkiaSharp Vektör Çizim Alanı
-                        bc.Item()
-                          .Height(30, Unit.Millimetre)
-                          .Canvas((object canvasObj, QuestPDF.Infrastructure.Size size) =>
-                          {
-                              SKCanvas canvas = (SKCanvas)canvasObj;
-                              try
-                              {
-                                  var barcode = Barcoder.Code128.Code128Encoder.Encode(model.ShipmentNumber);
-                                  var numModules = barcode.Bounds.X;
-                                  var moduleWidth = size.Width / numModules;
-
-                                  using var paint = new SKPaint
-                                  {
-                                      Color = SKColors.Black,
-                                      Style = SKPaintStyle.Fill
-                                  };
-
-                                  for (int i = 0; i < numModules; i++)
-                                  {
-                                      if (barcode.At(i, 0))
-                                      {
-                                          var x = i * moduleWidth;
-                                          canvas.DrawRect(x, 0, moduleWidth, size.Height, paint);
-                                      }
-                                  }
-                              }
-                              catch
-                              {
-                                  // Barkod kodlama hatası durumunda fallback olarak hata çizgisi çizilir
-                                  using var paint = new SKPaint
-                                  {
-                                      Color = SKColors.Red,
-                                      Style = SKPaintStyle.Stroke,
-                                      StrokeWidth = 2
-                                  };
-                                  canvas.DrawLine(0, 0, size.Width, size.Height, paint);
-                                  canvas.DrawLine(0, size.Height, size.Width, 0, paint);
-                              }
-                          });
+                        try
+                        {
+                            var svgContent = GenerateBarcodeSvg(model.ShipmentNumber);
+                            bc.Item()
+                              .Height(25, Unit.Millimetre)
+                              .Svg(svgContent);
+                        }
+                        catch
+                        {
+                            // Barkod üretimi başarısız olursa fallback
+                            bc.Item()
+                              .Height(25, Unit.Millimetre)
+                              .AlignCenter()
+                              .AlignMiddle()
+                              .Text("Barkod Oluşturulamadı")
+                              .FontSize(11).Bold().FontColor(Colors.Red.Medium);
+                        }
 
                         bc.Item().AlignCenter()
                                  .Text(model.ShipmentNumber)
@@ -369,5 +346,26 @@ public class QuestPdfLabelRenderer : ILabelRenderer
         using var qrCodeData = qrGenerator.CreateQrCode(qrContent, QRCoder.QRCodeGenerator.ECCLevel.Q);
         using var qrCode = new QRCoder.PngByteQRCode(qrCodeData);
         return qrCode.GetGraphic(20);
+    }
+
+    private static string GenerateBarcodeSvg(string value)
+    {
+        var barcode = Barcoder.Code128.Code128Encoder.Encode(value);
+        var width = barcode.Bounds.X;
+        var height = 50; // standard aspect ratio height
+
+        var sb = new StringBuilder();
+        sb.Append($"<svg viewBox=\"0 0 {width} {height}\" xmlns=\"http://www.w3.org/2000/svg\">");
+        sb.Append($"<rect width=\"{width}\" height=\"{height}\" fill=\"white\" />");
+
+        for (int i = 0; i < width; i++)
+        {
+            if (barcode.At(i, 0))
+            {
+                sb.Append($"<rect x=\"{i}\" y=\"0\" width=\"1\" height=\"{height}\" fill=\"black\" />");
+            }
+        }
+        sb.Append("</svg>");
+        return sb.ToString();
     }
 }

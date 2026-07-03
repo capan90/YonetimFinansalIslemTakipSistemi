@@ -83,6 +83,7 @@ public class UserPermissionViewModel : INotifyPropertyChanged
         Perms.Add(new PermissionCheckItem(PermissionType.CanManageMailSettings, "Mail Ayarlarını Yönetme"));
         Perms.Add(new PermissionCheckItem(PermissionType.CanViewSystemLogs,     "Sistem Loglarını Görüntüleme"));
         Perms.Add(new PermissionCheckItem(PermissionType.CanAccessSettings,     "Ayarlar Menüsüne Erişim"));
+        Perms.Add(new PermissionCheckItem(PermissionType.CanAccessHelpMenu,     "Yardım Menüsüne Erişim"));
     }
 
     public async Task LoadAsync()

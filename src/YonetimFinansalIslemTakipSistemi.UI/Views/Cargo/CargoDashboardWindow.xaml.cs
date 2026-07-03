@@ -350,20 +350,12 @@ public partial class CargoDashboardWindow : Window
         NavFirmaRehberiButton.Visibility   = canRehber   ? Visibility.Visible : Visibility.Collapsed;
         NavKargoFirmalariButton.Visibility = canFirmalar ? Visibility.Visible : Visibility.Collapsed;
 
-        // Ayarlar menüsü görünürlük ve alt eleman yetki kontrolleri
-        if (ctx.HasPermission(PermissionType.CanAccessSettings))
-        {
-            MenuAyarlar.Visibility = Visibility.Visible;
-            MenuGlobalMail.IsEnabled = ctx.HasPermission(PermissionType.CanManageMailSettings);
-            MenuSystemLogs.IsEnabled = ctx.HasPermission(PermissionType.CanViewSystemLogs);
-        }
-        else
-        {
-            MenuAyarlar.Visibility = Visibility.Collapsed;
-        }
+        // Yardım menüsü görünürlük kontrolü
+        var canHelp = ctx.HasPermission(PermissionType.CanAccessHelpMenu);
+        MenuYardim.Visibility = canHelp ? Visibility.Visible : Visibility.Collapsed;
 
         // Navigasyon çubuğu görünürlüğü: Herhangi bir menü veya buton görünecekse göster
-        NavBar.Visibility = (canGelen || canGiden || canRehber || canFirmalar || ctx.HasPermission(PermissionType.CanAccessSettings))
+        NavBar.Visibility = (canGelen || canGiden || canRehber || canFirmalar || canHelp)
             ? Visibility.Visible : Visibility.Collapsed;
     }
 
@@ -386,15 +378,7 @@ public partial class CargoDashboardWindow : Window
         new Views.Settings.MailSettingsWindow(_services, isPersonal: true) { Owner = this }.ShowDialog();
     }
 
-    private void OpenGlobalMailSettings_Click(object sender, RoutedEventArgs e)
-    {
-        new Views.Settings.MailSettingsWindow(_services, isPersonal: false) { Owner = this }.ShowDialog();
-    }
 
-    private void OpenSystemLogs_Click(object sender, RoutedEventArgs e)
-    {
-        new Views.SystemLogs.SystemLogsWindow(_services) { Owner = this }.ShowDialog();
-    }
 
     private async void CheckUpdates_Click(object sender, RoutedEventArgs e)
     {

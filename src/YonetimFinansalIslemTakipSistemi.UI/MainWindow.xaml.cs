@@ -439,9 +439,15 @@ public partial class MainWindow : Window
         var canAccessSettings = userContext.HasPermission(PermissionType.CanAccessSettings);
         var canSettings       = userContext.HasPermission(PermissionType.CanManageMailSettings);
         var canSystemLogs     = userContext.HasPermission(PermissionType.CanViewSystemLogs);
-        MenuItemAyarlar.Visibility       = canAccessSettings ? Visibility.Visible : Visibility.Collapsed;
-        MenuItemMailAyarlari.Visibility  = canSettings       ? Visibility.Visible : Visibility.Collapsed;
-        MenuItemSistemLoglari.Visibility = canSystemLogs     ? Visibility.Visible : Visibility.Collapsed;
+        var canSystemHealth   = canSystemLogs || canAccessSettings;
+
+        MenuItemAyarlar.Visibility          = canAccessSettings ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemMailAyarlari.Visibility     = canSettings       ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemSistemLoglari.Visibility    = canSystemLogs     ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemGorunumAyarlari.Visibility  = canAccessSettings ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemSistemSagligi.Visibility    = canSystemHealth   ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemDbTest.Visibility           = canAccessSettings ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemLogKlasor.Visibility        = canAccessSettings ? Visibility.Visible : Visibility.Collapsed;
 
         // İşlem kopyalama — create yetkisi gerekir
         var canCreate = userContext.HasPermission(PermissionType.CanCreateTransaction);

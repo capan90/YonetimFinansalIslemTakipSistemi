@@ -68,24 +68,32 @@ public partial class CargoOperationCenterWindow : Window
 
     private async void LabelButton_Click(object sender, RoutedEventArgs e)
     {
-        var handler = _services.GetRequiredService<GenerateCargoLabelHandler>();
-        var result  = await handler.HandleAsync(new GenerateCargoLabelRequest
+        try
         {
-            Id        = _dto.Id,
-            Direction = _dto.Direction
-        });
+            var handler = _services.GetRequiredService<GenerateCargoLabelHandler>();
+            var result  = await handler.HandleAsync(new GenerateCargoLabelRequest
+            {
+                Id        = _dto.Id,
+                Direction = _dto.Direction
+            });
 
-        if (!result.Success)
-        {
-            _dialogService.ShowError(result.ErrorMessage ?? "Etiket oluşturulamadı.");
-            return;
+            if (!result.Success)
+            {
+                _dialogService.ShowError(result.ErrorMessage ?? "Etiket oluşturulamadı.");
+                return;
+            }
+
+            var safeName = (_dto.ShipmentNumber ?? _dto.Id.ToString()[..8])
+                .Replace('/', '-').Replace('\\', '-');
+            var tempPath = Path.Combine(Path.GetTempPath(), $"kargo-etiketi-{safeName}.pdf");
+            await File.WriteAllBytesAsync(tempPath, result.Data!);
+            Process.Start(new ProcessStartInfo(tempPath) { UseShellExecute = true });
         }
-
-        var safeName = (_dto.ShipmentNumber ?? _dto.Id.ToString()[..8])
-            .Replace('/', '-').Replace('\\', '-');
-        var tempPath = Path.Combine(Path.GetTempPath(), $"kargo-etiketi-{safeName}.pdf");
-        await File.WriteAllBytesAsync(tempPath, result.Data!);
-        Process.Start(new ProcessStartInfo(tempPath) { UseShellExecute = true });
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Kargo etiketi önizlenirken beklenmedik hata oluştu. Kargo ID: {ShipmentId}", _dto.Id);
+            _dialogService.ShowError($"Etiket oluşturulurken beklenmeyen bir hata oluştu:\n{ex.Message}");
+        }
     }
 
     // ── WhatsApp Hazırla ──────────────────────────────────────────────────

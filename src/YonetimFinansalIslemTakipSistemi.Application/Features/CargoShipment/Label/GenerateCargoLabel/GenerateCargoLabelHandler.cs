@@ -31,34 +31,41 @@ public class GenerateCargoLabelHandler
 
     public async Task<OperationResult<byte[]>> HandleAsync(GenerateCargoLabelRequest request)
     {
-        var viewPerm   = request.Direction == CargoShipmentDirection.Incoming
-            ? PermissionType.CanViewIncomingCargo
-            : PermissionType.CanViewOutgoingCargo;
-        var managePerm = request.Direction == CargoShipmentDirection.Incoming
-            ? PermissionType.CanManageIncomingCargo
-            : PermissionType.CanManageOutgoingCargo;
+        try
+        {
+            var viewPerm   = request.Direction == CargoShipmentDirection.Incoming
+                ? PermissionType.CanViewIncomingCargo
+                : PermissionType.CanViewOutgoingCargo;
+            var managePerm = request.Direction == CargoShipmentDirection.Incoming
+                ? PermissionType.CanManageIncomingCargo
+                : PermissionType.CanManageOutgoingCargo;
 
-        if (!_userContext.HasPermission(viewPerm) && !_userContext.HasPermission(managePerm))
-            return OperationResult<byte[]>.Fail("Bu işlem için yetkiniz bulunmamaktadır.");
+            if (!_userContext.HasPermission(viewPerm) && !_userContext.HasPermission(managePerm))
+                return OperationResult<byte[]>.Fail("Bu işlem için yetkiniz bulunmamaktadır.");
 
-        // WithIncludes: CargoCompany navigasyonu yüklü gelir
-        var shipment = await _repository.GetByIdWithIncludesAsync(request.Id);
-        if (shipment is null)
-            return OperationResult<byte[]>.Fail("Kargo kaydı bulunamadı.");
+            // WithIncludes: CargoCompany navigasyonu yüklü gelir
+            var shipment = await _repository.GetByIdWithIncludesAsync(request.Id);
+            if (shipment is null)
+                return OperationResult<byte[]>.Fail("Kargo kaydı bulunamadı.");
 
-        // Shipment → model (alıcı: snapshot; kargo firması: navigasyon)
-        var model = CargoLabelBuilder.Build(shipment);
+            // Shipment → model (alıcı: snapshot; kargo firması: navigasyon)
+            var model = CargoLabelBuilder.Build(shipment);
 
-        // Gönderici firma bilgisi: ICompanyInfoProvider (AppSettings → ileride Company Settings)
-        var company = _companyInfo.Get();
-        model.SenderCompanyName     = company.Name;
-        model.SenderCompanyAddress  = company.Address;
-        model.SenderCompanyDistrict = company.District;
-        model.SenderCompanyCity     = company.City;
-        model.SenderCompanyPhone    = company.Phone;
-        model.SenderLogoPath        = company.LogoPath;
+            // Gönderici firma bilgisi: ICompanyInfoProvider (AppSettings → ileride Company Settings)
+            var company = _companyInfo.Get();
+            model.SenderCompanyName     = company.Name;
+            model.SenderCompanyAddress  = company.Address;
+            model.SenderCompanyDistrict = company.District;
+            model.SenderCompanyCity     = company.City;
+            model.SenderCompanyPhone    = company.Phone;
+            model.SenderLogoPath        = company.LogoPath;
 
-        var pdfBytes = _renderer.Render(model);
-        return OperationResult<byte[]>.Ok(pdfBytes);
+            var pdfBytes = _renderer.Render(model);
+            return OperationResult<byte[]>.Ok(pdfBytes);
+        }
+        catch (Exception ex)
+        {
+            return OperationResult<byte[]>.Fail($"Etiket oluşturulamadı. Hata: {ex.Message}");
+        }
     }
 }

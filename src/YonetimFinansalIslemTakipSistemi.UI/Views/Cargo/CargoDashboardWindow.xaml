@@ -45,21 +45,24 @@
                             Click="NavKargoFirmalariButton_Click"/>
                 </StackPanel>
 
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                    <Button x:Name="NavMailSettingsButton"
-                            Content="Mail Ayarlarım"
-                            Height="28" Padding="12,0" Margin="0,0,6,0"
-                            Foreground="White" Background="#2E5F9F"
-                            BorderBrush="#3B7BC8" BorderThickness="1"
-                            Cursor="Hand"
-                            Click="OpenPersonalMailSettings_Click"/>
-                    <Button x:Name="NavLogDirButton"
-                            Content="Log Klasörü"
-                            Height="28" Padding="12,0" Margin="0,0,6,0"
-                            Foreground="White" Background="#2E5F9F"
-                            BorderBrush="#3B7BC8" BorderThickness="1"
-                            Cursor="Hand"
-                            Click="OpenLogDirectory_Click"/>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+                    <!-- Ayarlar Menüsü (Yetkiye tabi) -->
+                    <Menu x:Name="MenuAyarlar" Background="Transparent" Margin="0,0,8,0" Visibility="Collapsed">
+                        <MenuItem Header="Ayarlar" Foreground="White" Background="#2E5F9F" Padding="12,5" BorderBrush="#3B7BC8" BorderThickness="1">
+                            <MenuItem x:Name="MenuGlobalMail" Header="Global Mail Ayarları" Click="OpenGlobalMailSettings_Click"/>
+                            <MenuItem x:Name="MenuSystemLogs" Header="Sistem Logları" Click="OpenSystemLogs_Click"/>
+                        </MenuItem>
+                    </Menu>
+
+                    <!-- Yardım Menüsü (Herkes görebilir) -->
+                    <Menu Background="Transparent" Margin="0,0,8,0">
+                        <MenuItem Header="Yardım" Foreground="White" Background="#2E5F9F" Padding="12,5" BorderBrush="#3B7BC8" BorderThickness="1">
+                            <MenuItem Header="Güncellemeleri Denetle" Click="CheckUpdates_Click"/>
+                            <MenuItem Header="Mail Ayarlarım" Click="OpenPersonalMailSettings_Click"/>
+                            <MenuItem Header="Log Klasörünü Aç" Click="OpenLogDirectory_Click"/>
+                        </MenuItem>
+                    </Menu>
+
                     <Button x:Name="NavLogoutButton"
                             Content="Çıkış Yap"
                             Height="28" Padding="12,0" Margin="0,0,0,0"

@@ -350,8 +350,20 @@ public partial class CargoDashboardWindow : Window
         NavFirmaRehberiButton.Visibility   = canRehber   ? Visibility.Visible : Visibility.Collapsed;
         NavKargoFirmalariButton.Visibility = canFirmalar ? Visibility.Visible : Visibility.Collapsed;
 
-        // Hiç gösterilecek buton yoksa çubuğu tamamen gizle
-        NavBar.Visibility = (canGelen || canGiden || canRehber || canFirmalar)
+        // Ayarlar menüsü görünürlük ve alt eleman yetki kontrolleri
+        if (ctx.HasPermission(PermissionType.CanAccessSettings))
+        {
+            MenuAyarlar.Visibility = Visibility.Visible;
+            MenuGlobalMail.IsEnabled = ctx.HasPermission(PermissionType.CanManageMailSettings);
+            MenuSystemLogs.IsEnabled = ctx.HasPermission(PermissionType.CanViewSystemLogs);
+        }
+        else
+        {
+            MenuAyarlar.Visibility = Visibility.Collapsed;
+        }
+
+        // Navigasyon çubuğu görünürlüğü: Herhangi bir menü veya buton görünecekse göster
+        NavBar.Visibility = (canGelen || canGiden || canRehber || canFirmalar || ctx.HasPermission(PermissionType.CanAccessSettings))
             ? Visibility.Visible : Visibility.Collapsed;
     }
 
@@ -372,6 +384,67 @@ public partial class CargoDashboardWindow : Window
     private void OpenPersonalMailSettings_Click(object sender, RoutedEventArgs e)
     {
         new Views.Settings.MailSettingsWindow(_services, isPersonal: true) { Owner = this }.ShowDialog();
+    }
+
+    private void OpenGlobalMailSettings_Click(object sender, RoutedEventArgs e)
+    {
+        new Views.Settings.MailSettingsWindow(_services, isPersonal: false) { Owner = this }.ShowDialog();
+    }
+
+    private void OpenSystemLogs_Click(object sender, RoutedEventArgs e)
+    {
+        new Views.SystemLogs.SystemLogsWindow(_services) { Owner = this }.ShowDialog();
+    }
+
+    private async void CheckUpdates_Click(object sender, RoutedEventArgs e)
+    {
+        var updateService = _services.GetRequiredService<IUpdateService>();
+
+        if (!updateService.IsClickOnceDeployment)
+        {
+            _dialogService.ShowInfo("Güncelleme kontrolü yalnızca ClickOnce ile kurulu sürümde kullanılabilir.");
+            return;
+        }
+
+        var result = await updateService.CheckForUpdateAsync();
+
+        if (result.ErrorMessage == "io_error")
+        {
+            _dialogService.ShowWarning("Güncelleme sunucusuna erişilemiyor. Ağ bağlantınızı kontrol edin.");
+            return;
+        }
+
+        if (result.ErrorMessage is not null)
+        {
+            _dialogService.ShowWarning("Güncelleme kontrolü sırasında beklenmeyen bir hata oluştu.");
+            return;
+        }
+
+        if (!result.IsUpdateAvailable)
+        {
+            _dialogService.ShowInfo($"Uygulamanız güncel.\nMevcut sürüm: v{result.CurrentVersion}");
+            return;
+        }
+
+        if (!_dialogService.ShowConfirmation(
+                $"Yeni sürüm mevcut: v{result.LatestVersion}\nMevcut sürüm: v{result.CurrentVersion}\n\nŞimdi güncellemek ister misiniz?",
+                "Güncelleme Mevcut"))
+            return;
+
+        if (!_dialogService.ShowConfirmation(
+                "Güncelleme başlatılacak ve uygulama kapatılacak.\nDevam etmek istiyor musunuz?",
+                "Uygulama Kapatılıyor"))
+            return;
+
+        if (!updateService.LaunchInstaller())
+        {
+            _dialogService.ShowError(
+                "Güncelleme başlatılamadı. Güncelleme sunucusuna erişilemiyor veya kurulum dosyası bulunamadı.");
+            return;
+        }
+
+        await Task.Delay(800);
+        System.Windows.Application.Current.Shutdown();
     }
 
     private void OpenLogDirectory_Click(object sender, RoutedEventArgs e)

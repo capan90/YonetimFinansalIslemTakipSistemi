@@ -19,7 +19,15 @@ public partial class CargoShipmentEditWindow : Window
         _services   = services;
         _vm         = services.GetRequiredService<CargoShipmentEditViewModel>();
         DataContext = _vm;
-        _vm.SaveCompleted += () => { DialogResult = true; Close(); };
+        _vm.SaveCompleted += () =>
+        {
+            // Yeni kayıtta pencere kapandığı için otomatik üretilen numara başarı mesajında gösterilir
+            if (!_vm.IsEditMode && !string.IsNullOrEmpty(_vm.SavedShipmentNumber))
+                _services.GetRequiredService<IDialogService>().ShowSuccess(
+                    $"Kargo başarıyla kaydedildi.\nKargo No: {_vm.SavedShipmentNumber}");
+            DialogResult = true;
+            Close();
+        };
 
         // UI gizlemesi; asıl koruma handler seviyesindedir
         var userContext = services.GetRequiredService<IUserContext>();

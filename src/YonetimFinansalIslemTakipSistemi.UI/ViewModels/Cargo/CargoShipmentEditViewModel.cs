@@ -59,7 +59,19 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
         : (_direction == CargoShipmentDirection.Incoming ? "Yeni Gelen Kargo"    : "Yeni Giden Kargo");
 
     public DateTime ShipmentDate  { get => _shipmentDate;   set { _shipmentDate  = value; OnPropertyChanged(); } }
-    public string ShipmentNumber  { get => _shipmentNumber; set { _shipmentNumber = value; OnPropertyChanged(); } }
+    public string ShipmentNumber  { get => _shipmentNumber; set { _shipmentNumber = value; OnPropertyChanged(); OnPropertyChanged(nameof(ShipmentNumberDisplay)); } }
+
+    /// <summary>
+    /// Salt okunur numara alanı gösterimi. Yeni kayıtta numara form açılırken rezerve
+    /// edilmez; yalnızca UI placeholder metni gösterilir (entity/DB'ye yazılmaz).
+    /// Düzenlemede gerçek numara görünür.
+    /// </summary>
+    public string ShipmentNumberDisplay => IsEditMode
+        ? ShipmentNumber
+        : "Kaydedildiğinde otomatik oluşturulacak";
+
+    /// <summary>Create başarılı olunca handler'ın ürettiği numara — başarı mesajında gösterilir.</summary>
+    public string? SavedShipmentNumber { get; private set; }
     public string SenderName      { get => _senderName;     set { _senderName    = value; OnPropertyChanged(); } }
     public string ReceiverName    { get => _receiverName;   set { _receiverName  = value; OnPropertyChanged(); } }
     public string DeliveredBy     { get => _deliveredBy;    set { _deliveredBy   = value; OnPropertyChanged(); } }
@@ -332,6 +344,7 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
 
         OnPropertyChanged(nameof(WindowTitle));
         OnPropertyChanged(nameof(IsEditMode));
+        OnPropertyChanged(nameof(ShipmentNumberDisplay));
         OnPropertyChanged(nameof(HasRefreshableSnapshot));
     }
 
@@ -530,6 +543,7 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
             };
             var result = await _createHandler.HandleAsync(req);
             if (!result.Success) { ErrorMessage = result.ErrorMessage; return; }
+            SavedShipmentNumber = result.Data?.ShipmentNumber;
         }
 
         // Dikkatine kişisini firma listesinde tazele (hata oluşursa kargo kaydı etkilenmez)

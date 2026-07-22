@@ -13,6 +13,7 @@ public class CreateCargoShipmentHandler
     private readonly IUserContext                _userContext;
     private readonly ICargoDashboardCacheService _cache;
     private readonly IUserTextNormalizationService _textNormalization;
+    private readonly ISystemLogService           _systemLog;
 
     public CreateCargoShipmentHandler(
         ICargoShipmentRepository    repository,
@@ -20,7 +21,8 @@ public class CreateCargoShipmentHandler
         IAuditLogService            auditLogService,
         IUserContext                userContext,
         ICargoDashboardCacheService cache,
-        IUserTextNormalizationService textNormalization)
+        IUserTextNormalizationService textNormalization,
+        ISystemLogService           systemLog)
     {
         _repository             = repository;
         _cargoCompanyRepository = cargoCompanyRepository;
@@ -28,6 +30,7 @@ public class CreateCargoShipmentHandler
         _userContext            = userContext;
         _cache                  = cache;
         _textNormalization      = textNormalization;
+        _systemLog              = systemLog;
     }
 
     public async Task<OperationResult<CreateCargoShipmentResponse>> HandleAsync(
@@ -95,8 +98,22 @@ public class CreateCargoShipmentHandler
             IsDeleted           = false
         };
 
-        // Numara üretimi + insert tek transaction: rollback'te numara boşa gitmez
-        await _repository.AddWithAutoNumberAsync(entity);
+        // Numara üretimi + insert tek transaction: rollback'te numara boşa gitmez.
+        // Audit yalnızca insert başarılı olunca yazılır; hata durumunda gerçek exception
+        // System Log'a kaydedilir, kullanıcıya anlaşılır mesaj döner.
+        try
+        {
+            await _repository.AddWithAutoNumberAsync(entity);
+        }
+        catch (Exception ex)
+        {
+            await _systemLog.LogErrorAsync(
+                "Cargo", "Kargo kaydı oluşturulamadı.", ex, source: nameof(CreateCargoShipmentHandler));
+
+            return OperationResult<CreateCargoShipmentResponse>.Fail(ex is DataStoreException
+                ? ex.Message
+                : "Kargo kaydı oluşturulamadı. Teknik ayrıntı Sistem Loglarına kaydedildi; sorun sürerse yöneticinize başvurun.");
+        }
 
         var direction = request.Direction == CargoShipmentDirection.Incoming ? "Gelen" : "Giden";
         // Otomatik üretilen numara create audit kaydında yer alır
@@ -112,7 +129,8 @@ public class CreateCargoShipmentHandler
 
         return OperationResult<CreateCargoShipmentResponse>.Ok(new CreateCargoShipmentResponse
         {
-            Id           = entity.Id,
+            Id             = entity.Id,
+            ShipmentNumber = entity.ShipmentNumber,
             Direction    = entity.Direction,
             ShipmentDate = entity.ShipmentDate,
             CreatedAt    = entity.CreatedAt

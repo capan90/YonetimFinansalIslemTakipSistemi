@@ -25,8 +25,8 @@ public class CargoNumberReclaimTests
 
         var create = new CreateCargoShipmentHandler(
             repo, new FakeCargoCompanyRepository(), audit, user,
-            new FakeCargoDashboardCache(), new UserTextNormalizationService(user));
-        var delete = new DeleteCargoShipmentHandler(repo, audit, user, new FakeCargoDashboardCache());
+            new FakeCargoDashboardCache(), new UserTextNormalizationService(user), new FakeSystemLogService());
+        var delete = new DeleteCargoShipmentHandler(repo, audit, user, new FakeCargoDashboardCache(), new FakeSystemLogService());
         return (create, delete, repo, audit);
     }
 

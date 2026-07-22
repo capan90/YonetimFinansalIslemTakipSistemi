@@ -21,6 +21,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\YonetimFinansalIslemTakipSistemi.Domain\YonetimFinansalIslemTakipSistemi.Domain.csproj" />
     <ProjectReference Include="..\..\src\YonetimFinansalIslemTakipSistemi.Application\YonetimFinansalIslemTakipSistemi.Application.csproj" />
+    <!-- Integration testler: gerçek PostgreSQL üzerinde repository SQL doğrulaması -->
+    <ProjectReference Include="..\..\src\YonetimFinansalIslemTakipSistemi.Infrastructure\YonetimFinansalIslemTakipSistemi.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

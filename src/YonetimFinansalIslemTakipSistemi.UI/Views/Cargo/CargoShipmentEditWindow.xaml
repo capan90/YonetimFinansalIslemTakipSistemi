@@ -32,8 +32,9 @@
             <StackPanel Grid.Column="2">
                 <Label Content="Kargo No:" Margin="0,0,0,2"
                        ToolTip="Sistem tarafından otomatik üretilir (Gelen: GLN00001, Giden: GDN00001)"/>
-                <!-- Salt okunur: numara atomik sayaçtan üretilir, kullanıcı değiştiremez -->
-                <TextBox Text="{Binding ShipmentNumber, Mode=OneWay}"
+                <!-- Salt okunur: numara atomik sayaçtan üretilir, kullanıcı değiştiremez.
+                     Yeni kayıtta placeholder metin görünür; numara form açılırken rezerve edilmez -->
+                <TextBox Text="{Binding ShipmentNumberDisplay, Mode=OneWay}"
                          IsReadOnly="True" Background="#F1F5F9" Foreground="#475569"
                          ToolTip="Kayıt sırasında otomatik atanır; değiştirilemez"/>
             </StackPanel>

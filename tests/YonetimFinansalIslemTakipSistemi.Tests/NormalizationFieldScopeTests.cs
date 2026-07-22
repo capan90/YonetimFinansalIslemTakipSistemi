@@ -71,7 +71,8 @@ public class NormalizationFieldScopeTests
         user.GrantAll();
         var handler = new CreateCargoShipmentHandler(
             repo, new FakeCargoCompanyRepository(), new FakeAuditLogService(),
-            user, new FakeCargoDashboardCache(), new UserTextNormalizationService(user));
+            user, new FakeCargoDashboardCache(), new UserTextNormalizationService(user),
+            new FakeSystemLogService());
 
         var result = await handler.HandleAsync(new CreateCargoShipmentRequest
         {

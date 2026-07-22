@@ -5,6 +5,10 @@ namespace YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Co
 public class CreateCargoShipmentResponse
 {
     public Guid Id { get; set; }
+
+    /// <summary>Otomatik üretilen numara — UI başarı mesajında kullanıcıya gösterilir.</summary>
+    public string? ShipmentNumber { get; set; }
+
     public CargoShipmentDirection Direction { get; set; }
     public DateTime ShipmentDate { get; set; }
     public DateTime CreatedAt { get; set; }

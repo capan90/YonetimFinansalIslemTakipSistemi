@@ -60,12 +60,20 @@ public class CargoShipmentRepository : ICargoShipmentRepository
             await using var tx = await _context.Database.BeginTransactionAsync();
             try
             {
-                var seq = await _context.Database.SqlQuery<long>($@"
+                // NOT: INSERT ... RETURNING, EF SqlQuery ile okunamaz (non-composable SQL);
+                // artış ExecuteSql ile yapılır, değer aynı transaction içinde ayrıca okunur.
+                // Upsert satır kilidi commit'e kadar tutulur → okuma ve eşzamanlılık güvenlidir.
+                await _context.Database.ExecuteSqlAsync($@"
                     INSERT INTO cargo_number_counters (""Direction"", ""LastValue"")
                     VALUES ({(int)entity.Direction}, 1)
                     ON CONFLICT (""Direction"")
-                    DO UPDATE SET ""LastValue"" = cargo_number_counters.""LastValue"" + 1
-                    RETURNING ""LastValue"" AS ""Value""").SingleAsync();
+                    DO UPDATE SET ""LastValue"" = cargo_number_counters.""LastValue"" + 1");
+
+                var seq = await _context.CargoNumberCounters
+                    .AsNoTracking()
+                    .Where(c => c.Direction == entity.Direction)
+                    .Select(c => c.LastValue)
+                    .SingleAsync();
 
                 entity.ShipmentNumber = CargoNumberFormatter.Format(entity.Direction, seq);
 
@@ -73,6 +81,15 @@ public class CargoShipmentRepository : ICargoShipmentRepository
                 await _context.SaveChangesAsync();
                 await tx.CommitAsync();
                 return;
+            }
+            catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.UndefinedTable)
+            {
+                // Migration uygulanmamış — kullanıcıya anlaşılır teknik yönlendirme,
+                // gerçek hata InnerException'da korunur (handler System Log'a yazar)
+                throw new Application.Common.DataStoreException(
+                    "Veritabanı şeması güncel değil: 'cargo_number_counters' tablosu bulunamadı. " +
+                    "Lütfen uygulamayı yeniden başlatın (migration açılışta uygulanır) veya " +
+                    "'20260722083350_AddUserPrefsWhatsAppDirectoryAndCargoCounters' migration'ını uygulayın.", ex);
             }
             catch (DbUpdateException ex) when (attempt < 3 && ex.InnerException is PostgresException { SqlState: "23505" })
             {

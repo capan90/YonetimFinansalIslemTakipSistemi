@@ -50,6 +50,32 @@ internal sealed class FakeAuditLogService : IAuditLogService
     }
 }
 
+internal sealed class FakeSystemLogService : ISystemLogService
+{
+    public List<(string Level, string Category, string Message, Exception? Exception)> Entries { get; } = [];
+
+    public Task LogInfoAsync(string category, string message, string? source = null)
+    { Entries.Add(("Info", category, message, null)); return Task.CompletedTask; }
+
+    public Task LogWarningAsync(string category, string message, string? source = null)
+    { Entries.Add(("Warning", category, message, null)); return Task.CompletedTask; }
+
+    public Task LogErrorAsync(string category, string message, Exception? exception = null, string? source = null)
+    { Entries.Add(("Error", category, message, exception)); return Task.CompletedTask; }
+
+    public Task LogCriticalAsync(string category, string message, Exception? exception = null, string? source = null)
+    { Entries.Add(("Critical", category, message, exception)); return Task.CompletedTask; }
+
+    public Task<Application.Features.SystemLogs.PagedSystemLogResultDto> SearchAsync(
+        Application.Features.SystemLogs.SystemLogSearchQuery query)
+        => Task.FromResult(new Application.Features.SystemLogs.PagedSystemLogResultDto());
+
+    public Task<Application.Features.SystemLogs.SystemLogDetailDto?> GetByIdAsync(Guid id)
+        => Task.FromResult<Application.Features.SystemLogs.SystemLogDetailDto?>(null);
+
+    public Task MarkResolvedAsync(Guid id, Guid resolvedByUserId, string? note) => Task.CompletedTask;
+}
+
 internal sealed class FakeCargoDashboardCache : ICargoDashboardCacheService
 {
     public Application.Features.CargoShipment.Queries.GetCargoDashboard.CargoDashboardDto? Get() => null;

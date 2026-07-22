@@ -25,7 +25,8 @@ public class CargoShipmentNumberTests
             new FakeAuditLogService(),
             user,
             new FakeCargoDashboardCache(),
-            new UserTextNormalizationService(user));
+            new UserTextNormalizationService(user),
+            new FakeSystemLogService());
         return (handler, repo, user);
     }
 

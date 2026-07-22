@@ -27,8 +27,9 @@ public sealed class UserContext : IUserContext, IUserSession
         UserId       = userId;
         FullName     = fullName;
         _permissions = new HashSet<PermissionType>(permissions);
-        // Tercih login akışında ayrıca yüklenir; önceki oturumdan sızmasın
-        TextCasePreference = TextCasePreference.Preserve;
+        // TextCasePreference burada BİLEREK sıfırlanmaz: SetUser oturum içinde de çağrılır
+        // (ör. kullanıcı kendi izinlerini güncellediğinde) ve tercih kaybolmamalıdır.
+        // Oturumlar arası sızıntıyı logout'taki Clear() önler; login'de tercih DB'den yüklenir.
     }
 
     public void SetTextCasePreference(TextCasePreference preference)

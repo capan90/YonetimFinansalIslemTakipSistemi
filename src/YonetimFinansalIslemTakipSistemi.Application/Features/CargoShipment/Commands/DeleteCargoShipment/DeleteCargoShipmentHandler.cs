@@ -11,17 +11,20 @@ public class DeleteCargoShipmentHandler
     private readonly IAuditLogService            _auditLogService;
     private readonly IUserContext                _userContext;
     private readonly ICargoDashboardCacheService _cache;
+    private readonly ISystemLogService           _systemLog;
 
     public DeleteCargoShipmentHandler(
         ICargoShipmentRepository    repository,
         IAuditLogService            auditLogService,
         IUserContext                userContext,
-        ICargoDashboardCacheService cache)
+        ICargoDashboardCacheService cache,
+        ISystemLogService           systemLog)
     {
         _repository      = repository;
         _auditLogService = auditLogService;
         _userContext     = userContext;
         _cache           = cache;
+        _systemLog       = systemLog;
     }
 
     public async Task<OperationResult<bool>> HandleAsync(DeleteCargoShipmentRequest request)
@@ -47,7 +50,20 @@ public class DeleteCargoShipmentHandler
 
         // Soft delete + (yalnızca son numaraysa) sayaç geri alma — tek transaction'da.
         // Aradaki silinmiş numaralar asla yeniden kullanılmaz.
-        var reclaimed = await _repository.SoftDeleteWithNumberReclaimAsync(entity);
+        long? reclaimed;
+        try
+        {
+            reclaimed = await _repository.SoftDeleteWithNumberReclaimAsync(entity);
+        }
+        catch (Exception ex)
+        {
+            await _systemLog.LogErrorAsync(
+                "Cargo", "Kargo kaydı silinemedi.", ex, source: nameof(DeleteCargoShipmentHandler));
+
+            return OperationResult<bool>.Fail(ex is DataStoreException
+                ? ex.Message
+                : "Kargo kaydı silinemedi. Teknik ayrıntı Sistem Loglarına kaydedildi.");
+        }
 
         await _auditLogService.WriteAsync(
             AuditAction.CargoShipmentDeleted,

@@ -121,10 +121,11 @@ public partial class CargoNotificationPreviewWindow : Window
 
         WhatsAppWebButton.Visibility = Visibility.Visible;
 
-        // Rehber paneli: aranabilir çoklu seçim + chip listesi
+        // Rehber paneli: aranabilir çoklu seçim + chip listesi.
+        // Kişi listesi Popup içinde açılır-kapanır; panel ekranı sürekli kaplamaz.
         ContactsPanel.Visibility = Visibility.Visible;
         SelectedChips.ItemsSource = _selectedContacts;
-        Height = 800; // rehber paneli için ek alan
+        Height = 720;
 
         Loaded += async (_, _) => await LoadContactsAsync();
     }
@@ -171,7 +172,21 @@ public partial class CargoNotificationPreviewWindow : Window
     }
 
     private void ContactSearchBox_TextChanged(object sender, TextChangedEventArgs e)
-        => ApplyContactFilter();
+    {
+        ApplyContactFilter();
+        // Yazmaya başlayınca sonuç listesi açılır (başlangıçta kapalıdır)
+        if (IsLoaded)
+            ContactPopup.IsOpen = true;
+    }
+
+    private void ContactSearchBox_GotKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
+        => ContactPopup.IsOpen = true;
+
+    private void DropDownButton_Click(object sender, RoutedEventArgs e)
+    {
+        ContactPopup.IsOpen = true;
+        ContactSearchBox.Focus();
+    }
 
     private void ContactCheckBox_Changed(object sender, RoutedEventArgs e)
     {

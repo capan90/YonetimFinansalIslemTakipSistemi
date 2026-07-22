@@ -19,7 +19,8 @@
                        FontSize="11"
                        Margin="0,0,12,0"
                        Visibility="Collapsed"/>
-            <Button Content="Kaydet"
+            <Button x:Name="SaveButton"
+                    Content="Kaydet"
                     Click="Save_Click"
                     Width="110" Height="30"
                     Style="{StaticResource PrimaryButton}"/>

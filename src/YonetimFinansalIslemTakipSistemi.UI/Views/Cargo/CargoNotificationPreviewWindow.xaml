@@ -66,35 +66,60 @@
                 <TextBlock Text="Rehberden Alıcı Seç" FontWeight="SemiBold"
                            FontSize="12" Margin="0,0,0,6"/>
 
-                <DockPanel Margin="0,0,0,6">
+                <DockPanel Margin="0,0,0,2">
+                    <!-- Padding=0 zorunlu: SecondaryButton stilinin 14px yatay padding'i
+                         dar butonda '+' işaretini tamamen kırpıyordu -->
                     <Button x:Name="AddContactButton"
                             DockPanel.Dock="Right"
-                            Content="+" Width="28" Height="24" Margin="6,0,0,0"
+                            Content="+" Width="32" Height="26" Margin="6,0,0,0"
+                            Padding="0" FontSize="16" FontWeight="Bold"
                             Style="{StaticResource SecondaryButton}"
                             Click="AddContactButton_Click"
-                            ToolTip="Rehberde olmayan kişiyi ekle — kişi ortak rehbere kaydedilir"/>
+                            ToolTip="Yeni WhatsApp kişisi ekle"/>
+                    <Button x:Name="DropDownButton"
+                            DockPanel.Dock="Right"
+                            Content="▼" Width="26" Height="26" Margin="4,0,0,0"
+                            Padding="0" FontSize="10"
+                            Style="{StaticResource SecondaryButton}"
+                            Click="DropDownButton_Click"
+                            ToolTip="Rehber listesini aç"/>
                     <TextBox x:Name="ContactSearchBox"
+                             Height="26" VerticalContentAlignment="Center"
                              Padding="4,2" BorderThickness="1" BorderBrush="#CBD5E1"
                              TextChanged="ContactSearchBox_TextChanged"
-                             ToolTip="Ad, firma veya telefonla arayın"/>
+                             GotKeyboardFocus="ContactSearchBox_GotKeyboardFocus"
+                             ToolTip="Ad, firma veya telefonla arayın — yazınca liste açılır"/>
                 </DockPanel>
 
-                <ListBox x:Name="ContactListBox"
-                         MaxHeight="110" BorderBrush="#E2E8F0" BorderThickness="1"
-                         ScrollViewer.VerticalScrollBarVisibility="Auto">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <CheckBox Content="{Binding Display}"
-                                      IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                      FontSize="12"
-                                      Checked="ContactCheckBox_Changed"
-                                      Unchecked="ContactCheckBox_Changed"
-                                      ToolTip="{Binding Phone}"/>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                <!-- Kişi listesi: sürekli açık durmaz; arama alanına odaklanınca/yazınca veya
+                     ▼ ile açılır, panel dışına tıklanınca kapanır (StaysOpen=False) -->
+                <Popup x:Name="ContactPopup"
+                       StaysOpen="False"
+                       AllowsTransparency="True"
+                       PlacementTarget="{Binding ElementName=ContactSearchBox}"
+                       Placement="Bottom"
+                       VerticalOffset="2">
+                    <Border Background="White" BorderBrush="#CBD5E1" BorderThickness="1"
+                            CornerRadius="4" Padding="4"
+                            Width="{Binding ActualWidth, ElementName=ContactSearchBox}">
+                        <ListBox x:Name="ContactListBox"
+                                 MaxHeight="150" BorderThickness="0"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding Display}"
+                                              IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                              FontSize="12"
+                                              Checked="ContactCheckBox_Changed"
+                                              Unchecked="ContactCheckBox_Changed"
+                                              ToolTip="{Binding Phone}"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Border>
+                </Popup>
 
-                <!-- Seçilen kişiler (chip listesi) -->
+                <!-- Seçilen kişiler (chip listesi) — liste kapalıyken de görünür -->
                 <ItemsControl x:Name="SelectedChips" Margin="0,6,0,0">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>

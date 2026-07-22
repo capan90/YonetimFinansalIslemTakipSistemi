@@ -31,6 +31,9 @@ public partial class TextCaseSettingsWindow : Window
 
     private async void Save_Click(object sender, RoutedEventArgs e)
     {
+        // Çift tıklama koruması: işlem sürerken buton devre dışı
+        SaveButton.IsEnabled = false;
+
         var tag = (PreferenceCombo.SelectedItem as ComboBoxItem)?.Tag as string ?? "Preserve";
         var preference = Enum.TryParse<TextCasePreference>(tag, out var parsed)
             ? parsed
@@ -41,12 +44,19 @@ public partial class TextCaseSettingsWindow : Window
 
         if (!result.Success)
         {
+            // Başarısız kayıt: pencere açık kalır, kullanıcı tekrar deneyebilir
+            SaveButton.IsEnabled = true;
             _dialogService.ShowError(result.ErrorMessage ?? "Harf duyarlılığı ayarı kaydedilemedi.");
             return;
         }
 
+        // Başarı mesajı kısaca gösterilir, ardından pencere otomatik kapanır
+        // (CargoNotificationPreviewWindow ile aynı desen)
         StatusText.Text       = "Harf duyarlılığı ayarı kaydedildi.";
         StatusText.Visibility = Visibility.Visible;
+        await Task.Delay(800);
+        DialogResult = true;
+        Close();
     }
 
     private void SelectPreference(TextCasePreference preference)

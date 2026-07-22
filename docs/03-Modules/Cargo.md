@@ -32,7 +32,7 @@ Her gelen veya giden kargo kaydı.
 
 | Alan | Açıklama |
 |------|----------|
-| ShipmentNumber | Otomatik: G-2026-0001 (giden), C-2026-0001 (gelen) |
+| ShipmentNumber | Otomatik: GDN00001 (giden), GLN00001 (gelen) — salt okunur |
 | Direction | Giden=1, Gelen=2 |
 | ShipmentType | CargoShipmentType enum |
 | Status | CargoShipmentStatus enum |
@@ -48,13 +48,34 @@ Her gelen veya giden kargo kaydı.
 
 ---
 
-## Kargo Numarası Otomasyonu
+## Kargo Numarası Otomasyonu (2026-07-22'de revize edildi)
 
-- Giden: `G-YYYY-0001` formatı, yılın ilk kaydından itibaren artan
-- Gelen: `C-YYYY-0001` formatı
-- `GetNextShipmentNumberAsync`: silinen kayıtlar dahil (`IgnoreQueryFilters`) max+1
-- Unique index: `IX_cargo_shipments_ShipmentNumber` (partial: IS NOT NULL)
-- Oluşturma sırasında ShipmentNumber boşsa otomatik üretilir
+- Giden: `GDN00001`, Gelen: `GLN00001` — yönler bağımsız sayaç kullanır
+- Sayaç: `cargo_number_counters` tablosu (yön başına satır); artış
+  `INSERT ... ON CONFLICT DO UPDATE ... RETURNING` ile atomik, kargo insert'iyle
+  aynı transaction'da (`AddWithAutoNumberAsync`) — eşzamanlı mükerrer imkânsız,
+  rollback'te numara boşa gitmez
+- Numara kullanıcı tarafından girilemez/değiştirilemez; UI'da salt okunur
+- Silme davranışı: **aradaki** silinmiş numaralar asla yeniden kullanılmaz; yalnızca
+  yönün **en son** numarası silinirse (daha yüksek kayıt yoksa) sayaç aynı transaction'da
+  bir geri alınır ve numara sonraki kayıtta yeniden kullanılır
+  (`SoftDeleteWithNumberReclaimAsync`); geri alma System Log Info'ya yazılır,
+  numara silme audit kaydında korunur
+- Unique index: `IX_cargo_shipments_ShipmentNumber` (partial: IS NOT NULL); ihlalde
+  sayaç mevcut max'a resync edilip yeniden denenir
+- Eski `G/C-YYYY-NNNN` numaralar korunur; detaylı gerekçe: `docs/05-ADR/ADR-006-CargoNumberCounter.md`
+
+---
+
+## Kargo Portal Bağlantısı (2026-07-22)
+
+- `CargoCompany.PortalUrl`: firmaya ait self-servis/işlem portalı; kodda firma adına
+  göre hard-code edilmez, kayıt üzerinden yönetilir
+- Doğrulama: yalnızca `http`/`https` (`UrlValidator`), boş bırakılabilir
+- Kargo düzenleme ekranında seçili firmanın bağlantısı salt okunur gösterilir;
+  "Portalı Aç" varsayılan tarayıcıda açar
+- Yurtiçi Kargo varsayılan bağlantısı migration/seed ile gelir; değişiklikler
+  `CargoCompanyUpdated` audit'inde izlenir
 
 ---
 

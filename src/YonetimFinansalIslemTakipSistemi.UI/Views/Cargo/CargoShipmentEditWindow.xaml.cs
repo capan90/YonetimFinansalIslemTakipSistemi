@@ -48,6 +48,24 @@ public partial class CargoShipmentEditWindow : Window
         await _vm.InitializeForCopyAsync(source);
     }
 
+    /// <summary>Seçili firmanın portal bağlantısını varsayılan tarayıcıda açar.</summary>
+    private void OpenPortalButton_Click(object sender, RoutedEventArgs e)
+    {
+        var url = _vm.SelectedCompanyPortalUrl;
+        if (string.IsNullOrWhiteSpace(url)) return;
+
+        try
+        {
+            System.Diagnostics.Process.Start(
+                new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            _services.GetRequiredService<IDialogService>()
+                .ShowError($"Portal bağlantısı açılamadı: {ex.Message}");
+        }
+    }
+
     private async void AddCargoCompanyButton_Click(object sender, RoutedEventArgs e)
     {
         var oldIds = _vm.CargoCompanies.Select(c => c.Id).ToHashSet();

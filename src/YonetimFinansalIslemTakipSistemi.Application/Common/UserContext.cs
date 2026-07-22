@@ -15,6 +15,8 @@ public sealed class UserContext : IUserContext, IUserSession
     public Guid   UserId   { get; private set; }
     public string FullName { get; private set; } = string.Empty;
 
+    public TextCasePreference TextCasePreference { get; private set; } = TextCasePreference.Preserve;
+
     public IReadOnlySet<PermissionType> Permissions => _permissions;
 
     public bool HasPermission(PermissionType permission)
@@ -25,7 +27,12 @@ public sealed class UserContext : IUserContext, IUserSession
         UserId       = userId;
         FullName     = fullName;
         _permissions = new HashSet<PermissionType>(permissions);
+        // Tercih login akışında ayrıca yüklenir; önceki oturumdan sızmasın
+        TextCasePreference = TextCasePreference.Preserve;
     }
+
+    public void SetTextCasePreference(TextCasePreference preference)
+        => TextCasePreference = preference;
 
     /// <summary>
     /// Logout sonrası çağrılır. Kullanıcı bilgisi ve tüm izinler temizlenir.
@@ -34,6 +41,7 @@ public sealed class UserContext : IUserContext, IUserSession
     {
         UserId   = Guid.Empty;
         FullName = string.Empty;
+        TextCasePreference = TextCasePreference.Preserve;
         _permissions.Clear();
     }
 }

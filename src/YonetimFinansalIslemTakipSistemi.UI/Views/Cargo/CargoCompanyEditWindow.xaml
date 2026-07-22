@@ -29,6 +29,13 @@
         <Label Content="Website:" Margin="0,0,0,2"/>
         <TextBox Text="{Binding Website, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
+        <Label Content="Kargo Portal Bağlantısı:" Margin="0,0,0,2"/>
+        <TextBox Text="{Binding PortalUrl, UpdateSourceTrigger=PropertyChanged}"
+                 ToolTip="Firmanın self-servis/işlem portalı adresi. Yalnızca http/https kabul edilir; boş bırakılabilir."
+                 Margin="0,0,0,2"/>
+        <TextBlock Text="Kargo işlem ekranındaki 'Portalı Aç' butonu bu adresi kullanır."
+                   FontSize="10" Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,8"/>
+
         <Label Content="Notlar:" Margin="0,0,0,2"/>
         <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}"
                  Height="48" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"

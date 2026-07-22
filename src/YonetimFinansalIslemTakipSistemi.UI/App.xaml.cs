@@ -58,7 +58,13 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Notifi
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Queries.GetCargoDashboard;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Queries.GetCargoReport;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Settings.MailSettings;
+using YonetimFinansalIslemTakipSistemi.Application.Features.Settings.UserPreferences;
+using YonetimFinansalIslemTakipSistemi.Application.Features.WhatsAppContacts.CreateWhatsAppContact;
+using YonetimFinansalIslemTakipSistemi.Application.Features.WhatsAppContacts.DeleteWhatsAppContact;
+using YonetimFinansalIslemTakipSistemi.Application.Features.WhatsAppContacts.GetWhatsAppContactList;
+using YonetimFinansalIslemTakipSistemi.Application.Features.WhatsAppContacts.UpdateWhatsAppContact;
 using YonetimFinansalIslemTakipSistemi.Application.Services;
+using YonetimFinansalIslemTakipSistemi.UI.ViewModels.WhatsApp;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Cargo;
 using YonetimFinansalIslemTakipSistemi.UI.Views.Cargo;
@@ -254,6 +260,17 @@ public partial class App : System.Windows.Application
         services.AddScoped<SaveMailSettingsHandler>();
         services.AddScoped<SendTestMailHandler>();
 
+        // Kullanıcı tercihleri (harf duyarlılığı) — merkezi normalize servisi tercihi IUserContext'ten okur
+        services.AddSingleton<IUserTextNormalizationService, UserTextNormalizationService>();
+        services.AddScoped<GetUserPreferenceHandler>();
+        services.AddScoped<SaveUserPreferenceHandler>();
+
+        // Ortak WhatsApp rehberi
+        services.AddScoped<GetWhatsAppContactListHandler>();
+        services.AddScoped<CreateWhatsAppContactHandler>();
+        services.AddScoped<UpdateWhatsAppContactHandler>();
+        services.AddScoped<DeleteWhatsAppContactHandler>();
+
         // ViewModels
         services.AddTransient<LoginViewModel>();
         services.AddTransient<CashTransactionListViewModel>();
@@ -281,6 +298,8 @@ public partial class App : System.Windows.Application
         services.AddTransient<CargoCompanyListViewModel>();
         services.AddTransient<CargoCompanyEditViewModel>();
         services.AddTransient<CargoShipmentEditViewModel>();
+        services.AddTransient<WhatsAppContactListViewModel>();
+        services.AddTransient<WhatsAppContactEditViewModel>();
 
         Services = services.BuildServiceProvider();
 

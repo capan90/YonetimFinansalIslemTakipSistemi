@@ -2,7 +2,6 @@ using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Repositories;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
-using static YonetimFinansalIslemTakipSistemi.Application.Common.TextNormalizer;
 
 namespace YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.CreateCargoShipment;
 
@@ -13,19 +12,22 @@ public class CreateCargoShipmentHandler
     private readonly IAuditLogService            _auditLogService;
     private readonly IUserContext                _userContext;
     private readonly ICargoDashboardCacheService _cache;
+    private readonly IUserTextNormalizationService _textNormalization;
 
     public CreateCargoShipmentHandler(
         ICargoShipmentRepository    repository,
         ICargoCompanyRepository     cargoCompanyRepository,
         IAuditLogService            auditLogService,
         IUserContext                userContext,
-        ICargoDashboardCacheService cache)
+        ICargoDashboardCacheService cache,
+        IUserTextNormalizationService textNormalization)
     {
         _repository             = repository;
         _cargoCompanyRepository = cargoCompanyRepository;
         _auditLogService        = auditLogService;
         _userContext            = userContext;
         _cache                  = cache;
+        _textNormalization      = textNormalization;
     }
 
     public async Task<OperationResult<CreateCargoShipmentResponse>> HandleAsync(
@@ -43,11 +45,6 @@ public class CreateCargoShipmentHandler
         if (request.ShipmentDate == default)
             return OperationResult<CreateCargoShipmentResponse>.Fail("Kargo tarihi zorunludur.");
 
-        // ShipmentNumber: boş bırakılırsa yön ve yıla göre otomatik üretilir (G/C-YYYY-0001)
-        var shipmentNumber = string.IsNullOrWhiteSpace(request.ShipmentNumber)
-            ? await _repository.GetNextShipmentNumberAsync(request.Direction, request.ShipmentDate.Year)
-            : request.ShipmentNumber.Trim();
-
         // Manuel URL varsa doğrudan kullan; boşsa şablon + takip numarasından üret
         string? trackingUrl = string.IsNullOrWhiteSpace(request.TrackingUrl) ? null : request.TrackingUrl.Trim();
         if (trackingUrl is null && request.CargoCompanyId.HasValue && !string.IsNullOrWhiteSpace(request.TrackingNumber))
@@ -60,7 +57,7 @@ public class CreateCargoShipmentHandler
         var entity = new Domain.Entities.CargoShipment
         {
             Id                  = Guid.NewGuid(),
-            ShipmentNumber      = shipmentNumber,
+            // ShipmentNumber kullanıcıdan alınmaz; AddWithAutoNumberAsync atomik sayaçtan üretir
             Direction           = request.Direction,
             ShipmentDate        = DateTime.SpecifyKind(request.ShipmentDate.Date, DateTimeKind.Utc),
             ShipmentTime        = request.ShipmentTime,
@@ -71,38 +68,44 @@ public class CreateCargoShipmentHandler
             CompanyDirectoryId  = request.CompanyDirectoryId,
 
             // Snapshot: oluşturma anındaki firma bilgileri kalıcı olarak saklanır
+            // Snapshot metinleri rehber kaydından kopyalanır (rehberde zaten normalize edilir);
+            // dikkatine alanı kullanıcı girişi olduğundan harf tercihine tabidir
             ReceiverCompanyNameSnapshot = request.ReceiverCompanyNameSnapshot?.Trim(),
             ReceiverAddressSnapshot     = request.ReceiverAddressSnapshot?.Trim(),
-            ReceiverAttentionSnapshot   = request.ReceiverAttentionSnapshot?.Trim(),
+            ReceiverAttentionSnapshot   = _textNormalization.Normalize(request.ReceiverAttentionSnapshot),
             ReceiverCitySnapshot        = request.ReceiverCitySnapshot?.Trim(),
             ReceiverDistrictSnapshot    = request.ReceiverDistrictSnapshot?.Trim(),
             ReceiverPhoneSnapshot       = request.ReceiverPhoneSnapshot?.Trim(),
             ReceiverEmailSnapshot       = request.ReceiverEmailSnapshot?.Trim(),
 
-            SenderName          = TitleCaseOrNull(request.SenderName),
-            ReceiverName        = TitleCaseOrNull(request.ReceiverName),
-            DeliveredBy         = TitleCaseOrNull(request.DeliveredBy),
-            ReceivedBy          = TitleCaseOrNull(request.ReceivedBy),
-            VehiclePlate        = UpperOrNull(request.VehiclePlate),
+            // Harf dönüşümü kullanıcı tercihine göre merkezi serviste yapılır;
+            // takip no / URL gibi kod alanlarına uygulanmaz
+            SenderName          = _textNormalization.Normalize(request.SenderName),
+            ReceiverName        = _textNormalization.Normalize(request.ReceiverName),
+            DeliveredBy         = _textNormalization.Normalize(request.DeliveredBy),
+            ReceivedBy          = _textNormalization.Normalize(request.ReceivedBy),
+            VehiclePlate        = _textNormalization.Normalize(request.VehiclePlate),
             TrackingNumber      = request.TrackingNumber?.Trim(),
             TrackingUrl         = trackingUrl,
             Status              = request.Status,
             NotificationStatus  = CargoNotificationStatus.NotNotified,
-            Notes               = request.Notes?.Trim(),
+            Notes               = _textNormalization.Normalize(request.Notes),
             CreatedByUserId     = request.CreatedByUserId,
             CreatedAt           = DateTime.UtcNow,
             IsDeleted           = false
         };
 
-        await _repository.AddAsync(entity);
+        // Numara üretimi + insert tek transaction: rollback'te numara boşa gitmez
+        await _repository.AddWithAutoNumberAsync(entity);
 
         var direction = request.Direction == CargoShipmentDirection.Incoming ? "Gelen" : "Giden";
+        // Otomatik üretilen numara create audit kaydında yer alır
         await _auditLogService.WriteAsync(
             AuditAction.CargoShipmentCreated,
             _userContext.UserId,
             _userContext.FullName,
             "CargoShipment", entity.Id,
-            null, $"Yön: {direction} | No: {shipmentNumber} | Tarih: {entity.ShipmentDate:dd.MM.yyyy}");
+            null, $"Yön: {direction} | No: {entity.ShipmentNumber} | Tarih: {entity.ShipmentDate:dd.MM.yyyy}");
 
         // Yeni kargo oluşturulunca dashboard cache geçersiz
         _cache.Invalidate();

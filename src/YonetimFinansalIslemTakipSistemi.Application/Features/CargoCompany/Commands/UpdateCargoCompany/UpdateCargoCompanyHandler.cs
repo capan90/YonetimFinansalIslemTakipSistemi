@@ -10,15 +10,18 @@ public class UpdateCargoCompanyHandler
     private readonly ICargoCompanyRepository _repository;
     private readonly IAuditLogService _auditLogService;
     private readonly IUserContext _userContext;
+    private readonly IUserTextNormalizationService _textNormalization;
 
     public UpdateCargoCompanyHandler(
         ICargoCompanyRepository repository,
         IAuditLogService auditLogService,
-        IUserContext userContext)
+        IUserContext userContext,
+        IUserTextNormalizationService textNormalization)
     {
-        _repository      = repository;
-        _auditLogService = auditLogService;
-        _userContext     = userContext;
+        _repository        = repository;
+        _auditLogService   = auditLogService;
+        _userContext       = userContext;
+        _textNormalization = textNormalization;
     }
 
     public async Task<OperationResult<bool>> HandleAsync(UpdateCargoCompanyRequest request)
@@ -30,18 +33,24 @@ public class UpdateCargoCompanyHandler
             return OperationResult<bool>.Fail("Kargo firması adı zorunludur.");
         if (!string.IsNullOrWhiteSpace(request.Phone) && request.Phone.Trim().Length > 20)
             return OperationResult<bool>.Fail("Telefon numarası en fazla 20 karakter olabilir.");
+        if (!UrlValidator.IsValidHttpUrlOrEmpty(request.PortalUrl))
+            return OperationResult<bool>.Fail(
+                "Kargo portal bağlantısı geçerli bir http/https adresi olmalıdır.");
 
         var entity = await _repository.GetByIdWithTrackingAsync(request.Id);
         if (entity is null)
             return OperationResult<bool>.Fail("Kargo firması bulunamadı.");
 
-        var oldValues = $"Ad: {entity.Name}";
+        // Portal URL değişikliği audit'te izlenir
+        var oldValues = $"Ad: {entity.Name} | Portal: {entity.PortalUrl ?? "-"}";
 
-        entity.Name                = request.Name.Trim();
+        // Firma adı/notlar harf tercihine tabi; URL alanları dönüştürülmez
+        entity.Name                = _textNormalization.Normalize(request.Name) ?? string.Empty;
         entity.TrackingUrlTemplate = request.TrackingUrlTemplate?.Trim();
         entity.Phone               = request.Phone?.Trim();
         entity.Website             = request.Website?.Trim();
-        entity.Notes               = request.Notes?.Trim();
+        entity.PortalUrl           = request.PortalUrl?.Trim();
+        entity.Notes               = _textNormalization.Normalize(request.Notes);
         entity.IsActive            = request.IsActive;
         entity.UpdatedByUserId     = request.UpdatedByUserId;
         entity.UpdatedAt           = DateTime.UtcNow;
@@ -53,7 +62,7 @@ public class UpdateCargoCompanyHandler
             _userContext.UserId,
             _userContext.FullName,
             "CargoCompany", entity.Id,
-            oldValues, $"Ad: {entity.Name}");
+            oldValues, $"Ad: {entity.Name} | Portal: {entity.PortalUrl ?? "-"}");
 
         return OperationResult<bool>.Ok(true);
     }

@@ -1,11 +1,17 @@
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
+using System.Windows.Controls;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Notification;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Notification.MarkCargoNotificationPrepared;
+using YonetimFinansalIslemTakipSistemi.Application.Features.WhatsAppContacts;
+using YonetimFinansalIslemTakipSistemi.Application.Features.WhatsAppContacts.GetWhatsAppContactList;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
+using YonetimFinansalIslemTakipSistemi.UI.Views.WhatsApp;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Cargo;
 
@@ -16,6 +22,33 @@ public partial class CargoNotificationPreviewWindow : Window
     private readonly CargoShipmentDirection _direction;
     private readonly NotificationType       _notificationType;
     private          CargoNotificationModel _model = null!;
+
+    // WhatsApp rehber seçimi
+    private readonly List<ContactPickItem> _allContacts = [];
+    private readonly ObservableCollection<ContactPickItem> _selectedContacts = [];
+
+    /// <summary>Rehber checkbox listesi satırı. Display: "Ad (Firma)".</summary>
+    private sealed class ContactPickItem : INotifyPropertyChanged
+    {
+        private bool _isSelected;
+
+        public required WhatsAppContactDto Contact { get; init; }
+        public string Display => Contact.DisplayText;
+        public string Phone   => Contact.Phone;
+
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                if (_isSelected == value) return;
+                _isSelected = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
+            }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+    }
 
     /// <summary>
     /// WhatsApp Web açıldı veya mail başarıyla gönderildiyse true.
@@ -87,6 +120,111 @@ public partial class CargoNotificationPreviewWindow : Window
             ? model.TargetPhone : string.Empty;
 
         WhatsAppWebButton.Visibility = Visibility.Visible;
+
+        // Rehber paneli: aranabilir çoklu seçim + chip listesi
+        ContactsPanel.Visibility = Visibility.Visible;
+        SelectedChips.ItemsSource = _selectedContacts;
+        Height = 800; // rehber paneli için ek alan
+
+        Loaded += async (_, _) => await LoadContactsAsync();
+    }
+
+    // ── WhatsApp rehber seçimi ────────────────────────────────────────────
+
+    private async Task LoadContactsAsync(Guid? autoSelectId = null)
+    {
+        var listHandler = _services.GetRequiredService<GetWhatsAppContactListHandler>();
+        // Pasif/silinmiş kayıtlar seçim listesinde görünmez
+        var contacts = await listHandler.HandleAsync(new GetWhatsAppContactListQuery());
+
+        // Önceki seçimleri koru
+        var selectedIds = _selectedContacts.Select(x => x.Contact.Id).ToHashSet();
+
+        _allContacts.Clear();
+        _selectedContacts.Clear();
+        foreach (var c in contacts)
+        {
+            var item = new ContactPickItem { Contact = c };
+            if (selectedIds.Contains(c.Id) || c.Id == autoSelectId)
+            {
+                item.IsSelected = true;
+                _selectedContacts.Add(item);
+            }
+            _allContacts.Add(item);
+        }
+
+        ApplyContactFilter();
+        UpdatePhoneBoxFromSelection();
+    }
+
+    private void ApplyContactFilter()
+    {
+        var term = ContactSearchBox.Text;
+        var filteredDtos = WhatsAppContactSearch
+            .Filter(_allContacts.Select(x => x.Contact).ToList(), term)
+            .Select(x => x.Id)
+            .ToHashSet();
+
+        ContactListBox.ItemsSource = _allContacts
+            .Where(x => filteredDtos.Contains(x.Contact.Id))
+            .ToList();
+    }
+
+    private void ContactSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        => ApplyContactFilter();
+
+    private void ContactCheckBox_Changed(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.DataContext is not ContactPickItem item) return;
+
+        if (item.IsSelected && !_selectedContacts.Contains(item))
+            _selectedContacts.Add(item);
+        else if (!item.IsSelected)
+            _selectedContacts.Remove(item);
+
+        UpdatePhoneBoxFromSelection();
+    }
+
+    private void RemoveChip_Click(object sender, RoutedEventArgs e)
+    {
+        if ((sender as Button)?.Tag is not ContactPickItem item) return;
+        item.IsSelected = false; // checkbox binding'i Unchecked handler'ını tetikler
+        _selectedContacts.Remove(item);
+        UpdatePhoneBoxFromSelection();
+    }
+
+    /// <summary>
+    /// Rehberden kişi seçiliyken telefon alanı salt okunurdur — numara düzeltmesi
+    /// yalnızca WhatsApp Rehberi ekranından yapılır.
+    /// </summary>
+    private void UpdatePhoneBoxFromSelection()
+    {
+        switch (_selectedContacts.Count)
+        {
+            case 0:
+                PhoneTextBox.IsReadOnly = false;
+                PhoneTextBox.Text = _model?.TargetPhone ?? string.Empty;
+                PhoneTextBox.ToolTip = "WhatsApp alıcı numarası — yalnızca bu gönderim için kullanılır";
+                break;
+            case 1:
+                PhoneTextBox.IsReadOnly = true;
+                PhoneTextBox.Text = _selectedContacts[0].Phone;
+                PhoneTextBox.ToolTip = "Numara rehberden gelir — düzeltmek için WhatsApp Rehberi ekranını kullanın";
+                break;
+            default:
+                PhoneTextBox.IsReadOnly = true;
+                PhoneTextBox.Text = $"{_selectedContacts.Count} kişi seçildi";
+                PhoneTextBox.ToolTip = "Numaralar rehberden gelir — düzeltmek için WhatsApp Rehberi ekranını kullanın";
+                break;
+        }
+    }
+
+    private async void AddContactButton_Click(object sender, RoutedEventArgs e)
+    {
+        // Hızlı ekleme: kişi ortak rehbere kaydedilir, liste yenilenir, yeni kişi otomatik seçilir
+        var form = new WhatsAppContactEditWindow(_services) { Owner = this };
+        if (form.ShowDialog() == true && form.SavedContact is not null)
+            await LoadContactsAsync(autoSelectId: form.SavedContact.Id);
     }
 
     // ── Kopyala ──────────────────────────────────────────────────────────
@@ -102,37 +240,86 @@ public partial class CargoNotificationPreviewWindow : Window
 
     private async void WhatsAppWebButton_Click(object sender, RoutedEventArgs e)
     {
-        var inputPhone = PhoneTextBox.Text.Trim();
-        if (string.IsNullOrWhiteSpace(inputPhone))
+        // Alıcılar: rehberden seçilen kişiler; hiç seçim yoksa manuel telefon (mevcut akış korunur)
+        var recipients = new List<(string Name, string Phone)>();
+
+        if (_selectedContacts.Count > 0)
         {
-            _dialogService.ShowWarning("Lütfen WhatsApp alıcı telefon numarasını giriniz.", "Telefon Eksik");
+            foreach (var item in _selectedContacts)
+            {
+                var normalized = NormalizePhone(item.Phone);
+                if (!string.IsNullOrWhiteSpace(normalized))
+                    recipients.Add((item.Contact.FullName, normalized));
+            }
+        }
+        else
+        {
+            var inputPhone = PhoneTextBox.Text.Trim();
+            if (string.IsNullOrWhiteSpace(inputPhone))
+            {
+                _dialogService.ShowWarning("Lütfen rehberden kişi seçiniz veya alıcı telefon numarasını giriniz.", "Alıcı Eksik");
+                return;
+            }
+
+            var phone = NormalizePhone(inputPhone);
+            if (string.IsNullOrWhiteSpace(phone) || phone.Length < 10)
+            {
+                _dialogService.ShowWarning("Lütfen geçerli bir telefon numarası giriniz (örn: 0532 123 45 67).", "Geçersiz Telefon");
+                return;
+            }
+
+            recipients.Add(("Manuel numara", phone));
+        }
+
+        if (recipients.Count == 0)
+        {
+            _dialogService.ShowWarning("Geçerli alıcı bulunamadı.", "Alıcı Eksik");
             return;
         }
 
-        var phone = NormalizePhone(inputPhone);
-        if (string.IsNullOrWhiteSpace(phone) || phone.Length < 10)
-        {
-            _dialogService.ShowWarning("Lütfen geçerli bir telefon numarası giriniz (örn: 0532 123 45 67).", "Geçersiz Telefon");
-            return;
-        }
-
-        var encoded = Uri.EscapeDataString(_model?.MessageBody ?? string.Empty);
-        var url = $"https://wa.me/{phone}?text={encoded}";
-
-        try
-        {
-            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-        }
-        catch (Exception ex)
-        {
-            _dialogService.ShowError($"WhatsApp Web açılamadı: {ex.Message}");
-            return;
-        }
-
-        // Tarayıcı başarıyla açıldı → bildirim durumunu otomatik güncelle
         WhatsAppWebButton.IsEnabled = false;
-        await MarkPreparedAsync();
-        await ShowSuccessAndCloseAsync("WhatsApp Web açıldı. Bildirim durumu güncellendi.");
+
+        // wa.me toplu gönderimi desteklemez — her alıcı için ayrı WhatsApp Web açılışı yapılır
+        var encoded   = Uri.EscapeDataString(_model?.MessageBody ?? string.Empty);
+        var succeeded = new List<string>();
+        var failed    = new List<string>();
+
+        foreach (var (name, phone) in recipients)
+        {
+            try
+            {
+                var url = $"https://wa.me/{phone}?text={encoded}";
+                Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+                succeeded.Add(name);
+                // Ardışık sekme açılışları arasında tarayıcıya nefes payı
+                if (recipients.Count > 1)
+                    await Task.Delay(400);
+            }
+            catch
+            {
+                failed.Add(name);
+            }
+        }
+
+        if (succeeded.Count == 0)
+        {
+            WhatsAppWebButton.IsEnabled = true;
+            _dialogService.ShowError("WhatsApp Web açılamadı. Varsayılan tarayıcıyı kontrol edin.");
+            return;
+        }
+
+        if (failed.Count > 0)
+            _dialogService.ShowWarning(
+                $"İşlenen kişiler: {string.Join(", ", succeeded)}\n\nAçılamayanlar: {string.Join(", ", failed)}",
+                "Bazı Alıcılar İşlenemedi");
+
+        // En az bir alıcı işlendi → bildirim durumu güncellenir; işlenenler audit'e yazılır
+        await MarkPreparedAsync(string.Join(", ", succeeded));
+
+        var summary = recipients.Count == 1
+            ? "WhatsApp Web açıldı. Bildirim durumu güncellendi."
+            : $"{succeeded.Count}/{recipients.Count} kişi için WhatsApp Web açıldı. Bildirim durumu güncellendi.";
+        await ShowSuccessAndCloseAsync(summary);
     }
 
     // ── Mail Gönder ───────────────────────────────────────────────────────
@@ -170,14 +357,15 @@ public partial class CargoNotificationPreviewWindow : Window
 
     // ── Ortak: durumu güncelle ────────────────────────────────────────────
 
-    private async Task MarkPreparedAsync()
+    private async Task MarkPreparedAsync(string? recipientSummary = null)
     {
         var handler = _services.GetRequiredService<MarkCargoNotificationPreparedHandler>();
         var result  = await handler.HandleAsync(new MarkCargoNotificationPreparedRequest
         {
             CargoShipmentId  = _model.ShipmentId,
             Direction        = _direction,
-            NotificationType = _notificationType
+            NotificationType = _notificationType,
+            RecipientSummary = recipientSummary
         });
 
         if (!result.Success)

@@ -4,7 +4,7 @@ namespace YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Co
 
 public class CreateCargoShipmentRequest
 {
-    public string? ShipmentNumber { get; set; }
+    // ShipmentNumber alınmaz: numara her zaman atomik sayaçtan otomatik üretilir (GLN/GDN)
     public CargoShipmentDirection Direction { get; set; }
     public DateTime ShipmentDate { get; set; }
     public TimeSpan? ShipmentTime { get; set; }

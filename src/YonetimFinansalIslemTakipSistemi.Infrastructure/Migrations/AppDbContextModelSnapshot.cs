@@ -150,6 +150,10 @@ namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<string>("PortalUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<string>("TrackingUrlTemplate")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
@@ -167,6 +171,19 @@ namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("cargo_companies", (string)null);
+                });
+
+            modelBuilder.Entity("YonetimFinansalIslemTakipSistemi.Domain.Entities.CargoNumberCounter", b =>
+                {
+                    b.Property<int>("Direction")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("LastValue")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Direction");
+
+                    b.ToTable("cargo_number_counters", (string)null);
                 });
 
             modelBuilder.Entity("YonetimFinansalIslemTakipSistemi.Domain.Entities.CargoShipment", b =>
@@ -718,6 +735,105 @@ namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Migrations
                     b.ToTable("user_permissions", (string)null);
                 });
 
+            modelBuilder.Entity("YonetimFinansalIslemTakipSistemi.Domain.Entities.UserPreference", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("TextCase")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("user_preferences", (string)null);
+                });
+
+            modelBuilder.Entity("YonetimFinansalIslemTakipSistemi.Domain.Entities.WhatsAppContact", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Company")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Phone")
+                        .IsUnique();
+
+                    b.ToTable("whatsapp_contacts", (string)null);
+                });
+
             modelBuilder.Entity("YonetimFinansalIslemTakipSistemi.Domain.Entities.CargoShipment", b =>
                 {
                     b.HasOne("YonetimFinansalIslemTakipSistemi.Domain.Entities.CargoCompany", "CargoCompany")
@@ -747,6 +863,17 @@ namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Migrations
                 });
 
             modelBuilder.Entity("YonetimFinansalIslemTakipSistemi.Domain.Entities.UserPermission", b =>
+                {
+                    b.HasOne("YonetimFinansalIslemTakipSistemi.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("YonetimFinansalIslemTakipSistemi.Domain.Entities.UserPreference", b =>
                 {
                     b.HasOne("YonetimFinansalIslemTakipSistemi.Domain.Entities.User", "User")
                         .WithMany()

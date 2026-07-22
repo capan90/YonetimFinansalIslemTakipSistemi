@@ -5,7 +5,7 @@ namespace YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Co
 public class UpdateCargoShipmentRequest
 {
     public Guid Id { get; set; }
-    public string? ShipmentNumber { get; set; }
+    // ShipmentNumber güncellenemez: otomatik üretilen numara kayıt ömrü boyunca sabittir
     public CargoShipmentDirection Direction { get; set; }
     public DateTime ShipmentDate { get; set; }
     public TimeSpan? ShipmentTime { get; set; }

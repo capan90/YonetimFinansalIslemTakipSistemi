@@ -1,5 +1,40 @@
 # Oturum Özeti
 
+## Oturum — 2026-07-22 — Revizyon Sprinti (Harf Tercihi, Kargo No, WhatsApp Rehberi, Portal URL)
+
+### Yapılanlar
+
+**1. Kullanıcı bazlı harf tercihi**
+- `TextCasePreference` (Olduğu Gibi / BÜYÜK HARF / küçük harf) — kullanıcı bazlı, `user_preferences` tablosunda kalıcı.
+- Merkezi `IUserTextNormalizationService`: tr-TR dönüşüm; kural tek noktada, UI'da zorlanmaz. Tercih login'de oturuma yüklenir, kaydetmede anında etkinleşir.
+- Handler'larda alan bazlı uygulandı (reflection yok): nakit açıklama, firma rehberi metin alanları, kargo kişi/plaka/not alanları, dikkatine, kargo firması ad/not, WhatsApp rehber alanları. E-posta/telefon/URL/kod alanları muaf.
+- Ayarlar → Harf Duyarlılığı ekranı; `UserPreferenceUpdated` audit.
+- Davranış değişikliği: eski zorunlu TitleCase/UPPER kaldırıldı — varsayılan "Olduğu Gibi".
+
+**2. Otomatik kargo numarası**
+- Yeni format: Gelen `GLN00001`, Giden `GDN00001`; yönler bağımsız sayaç kullanır.
+- `cargo_number_counters` + `AddWithAutoNumberAsync`: atomik `ON CONFLICT ... RETURNING`, insert ile aynı transaction — eşzamanlı mükerrer imkansız, rollback'te numara boşa gitmez; silinen numara asla geri kullanılmaz.
+- Numara kullanıcıdan alınmaz (request'lerden kaldırıldı), UI salt okunur. Eski `G/C-YYYY-NNNN` numaralar aynen korunur.
+- ADR-006 eklendi.
+
+**3. Ortak WhatsApp rehberi**
+- `whatsapp_contacts` (soft delete, normalize telefon unique). `PhoneNumberNormalizer`: tüm yazımlar → `+905XXXXXXXXX`.
+- Yönetim ekranı (arama/firma filtresi/pasifler), bildirim önizlemede aranabilir çoklu seçim + chip + `+` hızlı ekleme, kişi seçiliyken telefon salt okunur.
+- Toplu gönderim: kişi başına ayrı wa.me açılışı + başarı/başarısızlık raporu + audit'te alıcı listesi.
+- Mükerrer numara: anlaşılır uyarı + mevcut kişi adı; soft delete edilmiş numara geri yüklenir.
+
+**4. Kargo portal bağlantısı**
+- `CargoCompany.PortalUrl` (http/https doğrulamalı, opsiyonel). Kargo düzenlemede salt okunur gösterim + "Portalı Aç".
+- Yurtiçi Kargo varsayılan URL'i migration ile (mevcutsa boş alan doldurulur, yoksa eklenir); kod içinde hard-code yok.
+
+**Migration:** `AddUserPrefsWhatsAppDirectoryAndCargoCounters` — canlı veri silinmez; yalnızca kolon/tablo ekleme + boş alan doldurma. DB'ye uygulanmadı.
+
+**Revizyon düzeltmeleri (aynı gün):**
+- Harf Duyarlılığı artık Yardım → Kullanıcı Ayarlarım altından yetki gerektirmeden erişilir (Ayarlar'daki giriş korunur; aynı pencere/handler).
+- Silinen SON kargo numarası kontrollü geri kullanılır: koşullu sayaç geri alma + soft delete tek transaction'da; aradaki silinmiş numaralar asla geri dönmez (ADR-006 güncellendi). Schema değişikliği yok — ek migration gerekmedi.
+
+**Build/Test:** 0 hata, 0 uyarı; 78/78 test başarılı.
+
 ## Oturum 4b — 2026-06-24 — Kargo Katip Sprint 1.1 Stabilizasyon
 
 ### Yapılanlar

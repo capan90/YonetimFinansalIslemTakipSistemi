@@ -94,6 +94,50 @@
 - [x] UI: App.xaml.cs DI kayıtları (12 handler + 5 ViewModel)
 - [x] Build: 0 hata, 0 uyarı
 
+### Revizyon Sprinti — Harf Tercihi, Otomatik Kargo No, WhatsApp Rehberi, Kargo Portalı (2026-07-22)
+
+#### Kullanıcı Bazlı Harf Tercihi
+- [x] `TextCasePreference` enum (Preserve/Uppercase/Lowercase) + `UserPreference` entity (user_preferences, UserId unique)
+- [x] `IUserTextNormalizationService` + `UserTextNormalizationService`: tr-TR kültürüyle merkezi dönüşüm; tercih `IUserContext`'ten okunur
+- [x] Login'de tercih DB'den oturuma yüklenir; kaydetmede `IUserSession.SetTextCasePreference` ile anında etkinleşir
+- [x] Dönüştürülen alanlar handler seviyesinde açıkça belirlendi: işlem açıklaması, firma adı/adres/il/ilçe, kişi adları, kargo notları, plaka, WhatsApp rehber alanları
+- [x] Muaf alanlar: e-posta, telefon, URL, takip no, otomatik kargo no, posta kodu
+- [x] Ayarlar → Harf Duyarlılığı penceresi (`TextCaseSettingsWindow`); `UserPreferenceUpdated` audit
+- [x] NOT: Eski zorunlu TitleCase/UPPER davranışı kaldırıldı — dönüşüm artık tamamen kullanıcı tercihine bağlı (varsayılan: Olduğu Gibi)
+
+#### Otomatik Kargo Numarası (GLN/GDN)
+- [x] `cargo_number_counters` tablosu (yön başına satır); `CargoNumberCounter` entity — BaseEntity değil
+- [x] `AddWithAutoNumberAsync`: sayaç artışı `INSERT ... ON CONFLICT DO UPDATE ... RETURNING` ile atomik, insert ile aynı transaction'da (rollback'te numara boşa gitmez); unique ihlalinde sayaç resync + retry
+- [x] Format: Gelen `GLN00001`, Giden `GDN00001` (`CargoNumberFormatter`); eski `G/C-YYYY-NNNN` numaralar korunur
+- [x] Create/Update request'lerinden `ShipmentNumber` kaldırıldı; UI'da salt okunur
+- [x] Migration backfill: yalnızca NULL numaralar deterministik doldurulur; sayaçlar mevcut max'a eşitlenir
+- [x] Bkz. `docs/05-ADR/ADR-006-CargoNumberCounter.md`
+
+#### Ortak WhatsApp Rehberi
+- [x] `WhatsAppContact` entity (whatsapp_contacts) — soft delete, normalize telefon üzerinde filtresiz unique index
+- [x] `PhoneNumberNormalizer`: 0532/5xx/+90/0090 yazımları → `+905321234567`; TR mobil doğrulaması
+- [x] CRUD handler'lar: mükerrer numarada anlaşılır uyarı; soft delete edilmiş numara yeniden eklenince kayıt geri yüklenir
+- [x] `WhatsAppContactListWindow`: arama (ad/telefon/firma), firma filtresi, pasifleri göster, çift tıkla düzenle
+- [x] Bildirim önizleme (WhatsApp modu): aranabilir çoklu seçim listesi + chip'ler + `+` hızlı ekleme (otomatik seçim); kişi seçiliyken telefon salt okunur
+- [x] Toplu gönderim: her alıcı için ayrı wa.me açılışı; başarılı/başarısız raporu; alıcılar `CargoWhatsAppPrepared` audit'ine yazılır
+- [x] Permission eklenmedi (bilinçli): oturum açan kullanıcılar rehberi görüntüleyip yönetebilir
+
+#### Kargo Firması Portal Bağlantısı
+- [x] `CargoCompany.PortalUrl` (500, opsiyonel) + `UrlValidator` (yalnızca http/https)
+- [x] Kargo Firmaları düzenleme ekranına alan eklendi; değişiklik `CargoCompanyUpdated` audit'inde izlenir
+- [x] Kargo düzenleme ekranı: seçili firmanın portal bağlantısı salt okunur + "Portalı Aç" butonu (firma adına if/else yok)
+- [x] Yurtiçi Kargo varsayılanı migration'da: mevcut kayıtta boş URL doldurulur, kayıt yoksa sabit Id ile eklenir
+
+#### Revizyon Düzeltmeleri (2026-07-22, aynı sprint)
+- [x] Harf Duyarlılığı erişimi: Yardım → Kullanıcı Ayarlarım → Harf Duyarlılığı (yetki gerektirmez; Ayarlar'daki giriş korunur, aynı pencere/handler)
+- [x] Silinen SON kargo numarasının kontrollü geri alınması: soft delete + koşullu sayaç geri alma tek transaction'da (`SoftDeleteWithNumberReclaimAsync`); aradaki silinmiş numaralar asla geri dönmez; geri alma System Log Info'ya, numara silme audit'ine yazılır — schema değişikliği yok, migration gerekmedi
+- [x] Testler: yetkisiz kullanıcı tercih kaydı (4 test) + numara geri alma senaryoları (8 test) — toplam 78/78
+
+#### Ortak
+- [x] Migration: `AddUserPrefsWhatsAppDirectoryAndCargoCounters`
+- [x] Test projesi Application referansı aldı; 66 test (harf tercihi, telefon normalize, kargo no, arama, portal URL)
+- [x] Build: 0 hata, 0 uyarı; testler: 66/66 başarılı
+
 ---
 
 ## Sıradaki (V2)

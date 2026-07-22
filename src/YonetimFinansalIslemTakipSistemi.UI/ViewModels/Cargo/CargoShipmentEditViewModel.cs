@@ -64,7 +64,8 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
     public string ReceiverName    { get => _receiverName;   set { _receiverName  = value; OnPropertyChanged(); } }
     public string DeliveredBy     { get => _deliveredBy;    set { _deliveredBy   = value; OnPropertyChanged(); } }
     public string ReceivedBy      { get => _receivedBy;     set { _receivedBy    = value; OnPropertyChanged(); } }
-    public string VehiclePlate   { get => _vehiclePlate;   set { _vehiclePlate  = (value ?? string.Empty).ToUpperInvariant(); OnPropertyChanged(); } }
+    // Harf dönüşümü UI'da zorlanmaz; kayıt öncesi kullanıcı tercihine göre merkezi serviste yapılır
+    public string VehiclePlate   { get => _vehiclePlate;   set { _vehiclePlate  = value ?? string.Empty; OnPropertyChanged(); } }
     public string TrackingNumber
     {
         get => _trackingNumber;
@@ -101,10 +102,18 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
         {
             _selectedCargoCompany = value;
             OnPropertyChanged();
+            // Portal bağlantısı seçili firmanın kaydından gelir — firma adına if/else yazılmaz
+            OnPropertyChanged(nameof(SelectedCompanyPortalUrl));
+            OnPropertyChanged(nameof(HasPortalUrl));
             if (string.IsNullOrWhiteSpace(TrackingUrl))
                 TryAutoFillTrackingUrl();
         }
     }
+
+    /// <summary>Seçili kargo firmasının portal bağlantısı; UI'da salt okunur gösterilir.</summary>
+    public string? SelectedCompanyPortalUrl => _selectedCargoCompany?.PortalUrl;
+
+    public bool HasPortalUrl => !string.IsNullOrWhiteSpace(SelectedCompanyPortalUrl);
 
     public CompanyDirectoryDto? SelectedCompanyDirectory
     {
@@ -453,7 +462,7 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
             var req = new UpdateCargoShipmentRequest
             {
                 Id                 = _editTargetId!.Value,
-                ShipmentNumber     = NullIfEmpty(ShipmentNumber),
+                // ShipmentNumber gönderilmez — otomatik numara değiştirilemez
                 Direction          = _direction,
                 ShipmentDate       = ShipmentDate,
                 ShipmentType       = shipmentType,
@@ -490,7 +499,7 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
             var dir = _selectedCompanyDirectory;
             var req = new CreateCargoShipmentRequest
             {
-                ShipmentNumber     = NullIfEmpty(ShipmentNumber),
+                // ShipmentNumber gönderilmez — handler atomik sayaçtan üretir (GLN/GDN)
                 Direction          = _direction,
                 ShipmentDate       = ShipmentDate,
                 ShipmentType       = shipmentType,

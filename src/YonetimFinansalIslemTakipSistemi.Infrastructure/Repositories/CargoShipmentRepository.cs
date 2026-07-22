@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Repositories;
+using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Entities;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.Infrastructure.Persistence;
@@ -9,8 +12,13 @@ namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Repositories;
 public class CargoShipmentRepository : ICargoShipmentRepository
 {
     private readonly AppDbContext _context;
+    private readonly ISystemLogService _systemLog;
 
-    public CargoShipmentRepository(AppDbContext context) => _context = context;
+    public CargoShipmentRepository(AppDbContext context, ISystemLogService systemLog)
+    {
+        _context   = context;
+        _systemLog = systemLog;
+    }
 
     public async Task<CargoShipment?> GetByIdAsync(Guid id)
         => await _context.CargoShipments.FirstOrDefaultAsync(x => x.Id == id);
@@ -41,27 +49,112 @@ public class CargoShipmentRepository : ICargoShipmentRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<string> GetNextShipmentNumberAsync(CargoShipmentDirection direction, int year)
+    public async Task AddWithAutoNumberAsync(CargoShipment entity)
     {
-        var prefix = direction == CargoShipmentDirection.Incoming ? "C" : "G";
-        var pattern = $"{prefix}-{year}-";
-
-        // Silinmiş kayıtlar dahil — bir kez kullanılan numara tekrar kullanılmamalı
-        var existing = await _context.CargoShipments
-            .IgnoreQueryFilters()
-            .Where(x => x.ShipmentNumber != null && x.ShipmentNumber.StartsWith(pattern))
-            .Select(x => x.ShipmentNumber!)
-            .ToListAsync();
-
-        int maxSeq = 0;
-        foreach (var num in existing)
+        // Sayaç artışı ve insert tek transaction'dadır:
+        //  - UPDATE ... RETURNING satır kilidiyle eşzamanlı eklemeleri sıraya sokar (mükerrer imkansız)
+        //  - insert başarısız olursa rollback sayaç artışını da geri alır (numara boşa gitmez)
+        //  - sayaç kayıt tablosundan bağımsızdır: soft delete edilen numaralar asla yeniden kullanılmaz
+        for (var attempt = 1; ; attempt++)
         {
-            var parts = num.Split('-');
-            if (parts.Length == 3 && int.TryParse(parts[2], out int seq))
-                maxSeq = Math.Max(maxSeq, seq);
+            await using var tx = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var seq = await _context.Database.SqlQuery<long>($@"
+                    INSERT INTO cargo_number_counters (""Direction"", ""LastValue"")
+                    VALUES ({(int)entity.Direction}, 1)
+                    ON CONFLICT (""Direction"")
+                    DO UPDATE SET ""LastValue"" = cargo_number_counters.""LastValue"" + 1
+                    RETURNING ""LastValue"" AS ""Value""").SingleAsync();
+
+                entity.ShipmentNumber = CargoNumberFormatter.Format(entity.Direction, seq);
+
+                await _context.CargoShipments.AddAsync(entity);
+                await _context.SaveChangesAsync();
+                await tx.CommitAsync();
+                return;
+            }
+            catch (DbUpdateException ex) when (attempt < 3 && ex.InnerException is PostgresException { SqlState: "23505" })
+            {
+                // Sayaç mevcut verinin gerisindeyse (ör. elle taşınmış kayıt) unique index yakalar.
+                // Sayaç mevcut max'a senkronlanır ve yeniden denenir.
+                _context.Entry(entity).State = EntityState.Detached;
+                await tx.RollbackAsync();
+                await ResyncCounterAsync(entity.Direction);
+
+                // Normal akışta hiç yaşanmaması gereken bir durum — teknik iz bırakılır
+                await _systemLog.LogWarningAsync(
+                    "CargoNumber",
+                    $"Kargo numarası çakışması yakalandı; sayaç yeniden senkronlandı (deneme {attempt}, yön {entity.Direction}).",
+                    source: nameof(CargoShipmentRepository));
+            }
+        }
+    }
+
+    public async Task<long?> SoftDeleteWithNumberReclaimAsync(CargoShipment entity)
+    {
+        // İş kuralı: yalnızca yönün EN SON numarası silinirse numara geri kullanılabilir;
+        // aradaki silinmiş numaralar asla geri dönmez. Eski format (G/C-YYYY-NNNN) sayaca dokunmaz.
+        var seq = CargoNumberFormatter.TryParseSequence(entity.ShipmentNumber, entity.Direction);
+        long? reclaimed = null;
+
+        await using var tx = await _context.Database.BeginTransactionAsync();
+
+        if (seq is not null)
+        {
+            var prefix = CargoNumberFormatter.Prefix(entity.Direction);
+
+            // Koşullu geri alma tek atomik UPDATE ile yapılır; satır kilidi eşzamanlı
+            // create'leri (aynı sayaç satırındaki ON CONFLICT UPDATE) commit'e kadar bekletir:
+            //  - sayaç, silinen kaydın sıra değerine eşitse VE
+            //  - aynı yönde (soft delete dahil) daha yüksek numaralı kayıt yoksa → sayaç 1 geri alınır
+            var affected = await _context.Database.ExecuteSqlAsync($@"
+                UPDATE cargo_number_counters c
+                SET ""LastValue"" = c.""LastValue"" - 1
+                WHERE c.""Direction"" = {(int)entity.Direction}
+                  AND c.""LastValue"" = {seq.Value}
+                  AND NOT EXISTS (
+                      SELECT 1 FROM cargo_shipments s
+                      WHERE s.""Id"" <> {entity.Id}
+                        AND s.""ShipmentNumber"" ~ ('^' || {prefix} || '[0-9]+$')
+                        AND substring(s.""ShipmentNumber"" from 4)::bigint > {seq.Value})");
+
+            if (affected == 1)
+            {
+                // Numara unique index'ten serbest bırakılır ki sonraki kayıt aynı numarayı
+                // alabilsin. Numara bilgisi silme audit kaydında korunur (handler yazar).
+                entity.ShipmentNumber = null;
+                reclaimed = seq;
+            }
         }
 
-        return $"{prefix}-{year}-{(maxSeq + 1):D4}";
+        // Soft delete ve (varsa) sayaç geri alma aynı transaction'da:
+        // rollback durumunda sayaç değişmeden kalır
+        _context.CargoShipments.Update(entity);
+        await _context.SaveChangesAsync();
+        await tx.CommitAsync();
+
+        if (reclaimed is not null)
+            await _systemLog.LogInfoAsync(
+                "CargoNumber",
+                $"Silinen son kargo numarası geri alındı: {CargoNumberFormatter.Format(entity.Direction, reclaimed.Value)} " +
+                $"— sonraki kayıt bu numarayı yeniden kullanacak (yön {entity.Direction}).",
+                source: nameof(CargoShipmentRepository));
+
+        return reclaimed;
+    }
+
+    /// <summary>Sayacı, o yöndeki mevcut en büyük numara sırasına eşitler (defansif onarım).</summary>
+    private async Task ResyncCounterAsync(CargoShipmentDirection direction)
+    {
+        var prefix = CargoNumberFormatter.Prefix(direction);
+        await _context.Database.ExecuteSqlAsync($@"
+            UPDATE cargo_number_counters c
+            SET ""LastValue"" = GREATEST(c.""LastValue"", COALESCE((
+                SELECT MAX(substring(""ShipmentNumber"" from 4)::bigint)
+                FROM cargo_shipments
+                WHERE ""ShipmentNumber"" ~ ('^' || {prefix} || '[0-9]+$')), 0))
+            WHERE ""Direction"" = {(int)direction}");
     }
 
     public async Task<IReadOnlyList<CargoShipment>> GetAllActiveAsync()

@@ -15,15 +15,18 @@ public class UpdateCashTransactionHandler
     private readonly ICashTransactionRepository _repository;
     private readonly IAuditLogService _auditLogService;
     private readonly IUserContext _userContext;
+    private readonly IUserTextNormalizationService _textNormalization;
 
     public UpdateCashTransactionHandler(
         ICashTransactionRepository repository,
         IAuditLogService auditLogService,
-        IUserContext userContext)
+        IUserContext userContext,
+        IUserTextNormalizationService textNormalization)
     {
-        _repository      = repository;
-        _auditLogService = auditLogService;
-        _userContext     = userContext;
+        _repository        = repository;
+        _auditLogService   = auditLogService;
+        _userContext       = userContext;
+        _textNormalization = textNormalization;
     }
 
     public async Task<OperationResult<bool>> HandleAsync(UpdateCashTransactionRequest request)
@@ -51,7 +54,8 @@ public class UpdateCashTransactionHandler
         entity.TransactionType = request.TransactionType;
         entity.CurrencyType    = request.CurrencyType;
         entity.Amount          = request.Amount;
-        entity.Description     = request.Description;
+        // Açıklama kullanıcı tercihi doğrultusunda harf dönüşümüne tabidir
+        entity.Description     = _textNormalization.Normalize(request.Description) ?? string.Empty;
         entity.UpdatedByUserId = request.UpdatedByUserId;
         entity.UpdatedAt       = DateTime.UtcNow;
 

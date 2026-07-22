@@ -2,7 +2,6 @@ using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Repositories;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
-using static YonetimFinansalIslemTakipSistemi.Application.Common.TextNormalizer;
 
 namespace YonetimFinansalIslemTakipSistemi.Application.Features.CompanyDirectory.Commands.CreateCompanyDirectory;
 
@@ -11,15 +10,18 @@ public class CreateCompanyDirectoryHandler
     private readonly ICompanyDirectoryRepository _repository;
     private readonly IAuditLogService _auditLogService;
     private readonly IUserContext _userContext;
+    private readonly IUserTextNormalizationService _textNormalization;
 
     public CreateCompanyDirectoryHandler(
         ICompanyDirectoryRepository repository,
         IAuditLogService auditLogService,
-        IUserContext userContext)
+        IUserContext userContext,
+        IUserTextNormalizationService textNormalization)
     {
-        _repository      = repository;
-        _auditLogService = auditLogService;
-        _userContext     = userContext;
+        _repository        = repository;
+        _auditLogService   = auditLogService;
+        _userContext       = userContext;
+        _textNormalization = textNormalization;
     }
 
     public async Task<OperationResult<CreateCompanyDirectoryResponse>> HandleAsync(
@@ -36,16 +38,17 @@ public class CreateCompanyDirectoryHandler
         var entity = new Domain.Entities.CompanyDirectory
         {
             Id            = Guid.NewGuid(),
-            CompanyName   = TitleCase(request.CompanyName),
-            ContactPerson = TitleCaseOrNull(request.ContactPerson),
-            AttentionTo   = TitleCaseOrNull(request.AttentionTo),
-            AddressLine   = CollapseSpaces(request.AddressLine),
-            District      = TitleCaseOrNull(request.District),
-            City          = TitleCaseOrNull(request.City),
+            // Harf dönüşümü kullanıcı tercihine göre yapılır; telefon/e-posta/posta kodu muaf
+            CompanyName   = _textNormalization.Normalize(request.CompanyName) ?? string.Empty,
+            ContactPerson = _textNormalization.Normalize(request.ContactPerson),
+            AttentionTo   = _textNormalization.Normalize(request.AttentionTo),
+            AddressLine   = _textNormalization.Normalize(request.AddressLine) ?? string.Empty,
+            District      = _textNormalization.Normalize(request.District),
+            City          = _textNormalization.Normalize(request.City),
             PostalCode    = request.PostalCode?.Trim(),
             Phone         = request.Phone?.Trim(),
             Email         = request.Email?.Trim()?.ToLowerInvariant(),
-            Notes         = request.Notes?.Trim(),
+            Notes         = _textNormalization.Normalize(request.Notes),
             IsActive      = request.IsActive,
             CreatedByUserId = request.CreatedByUserId,
             CreatedAt     = DateTime.UtcNow,

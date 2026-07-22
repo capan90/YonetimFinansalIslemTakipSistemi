@@ -661,6 +661,11 @@ public partial class MainWindow : Window
         new CargoCompanyListWindow(_services) { Owner = this }.ShowDialog();
     }
 
+    private void OpenWhatsAppContacts_Click(object sender, RoutedEventArgs e)
+    {
+        new Views.WhatsApp.WhatsAppContactListWindow(_services) { Owner = this }.ShowDialog();
+    }
+
     // ── Ayarlar Menü Tıklamaları ──────────────────────────────────────────────
 
     private void OpenMailSettings_Click(object sender, RoutedEventArgs e)
@@ -681,6 +686,11 @@ public partial class MainWindow : Window
     private void OpenAppearanceSettings_Click(object sender, RoutedEventArgs e)
     {
         new Views.Settings.AppearanceSettingsWindow(_services) { Owner = this }.ShowDialog();
+    }
+
+    private void OpenTextCaseSettings_Click(object sender, RoutedEventArgs e)
+    {
+        new Views.Settings.TextCaseSettingsWindow(_services) { Owner = this }.ShowDialog();
     }
 
     private async void CheckForUpdates_Click(object sender, RoutedEventArgs e)

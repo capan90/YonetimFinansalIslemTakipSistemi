@@ -47,6 +47,7 @@ public class GetCargoCompanyListHandler
                 TrackingUrlTemplate = x.TrackingUrlTemplate,
                 Phone               = x.Phone,
                 Website             = x.Website,
+                PortalUrl           = x.PortalUrl,
                 Notes               = x.Notes,
                 IsActive            = x.IsActive,
                 CreatedAt           = x.CreatedAt

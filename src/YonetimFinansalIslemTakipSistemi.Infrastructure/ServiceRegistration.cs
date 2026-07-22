@@ -40,6 +40,12 @@ public static class ServiceRegistration
         services.AddScoped<ICargoCompanyRepository, CargoCompanyRepository>();
         services.AddScoped<ICargoShipmentRepository, CargoShipmentRepository>();
 
+        // Ortak WhatsApp rehberi
+        services.AddScoped<IWhatsAppContactRepository, WhatsAppContactRepository>();
+
+        // Kullanıcı tercihleri (harf duyarlılığı)
+        services.AddScoped<IUserPreferenceRepository, UserPreferenceRepository>();
+
         // Uygulama ayarları
         services.AddScoped<IApplicationSettingRepository, ApplicationSettingRepository>();
         // AES-256: tüm makineler + tüm Windows kullanıcıları aynı anahtarı paylaşır

@@ -55,6 +55,10 @@
                 <MenuItem x:Name="MenuItemKargoFirmalari"
                           Header="Kargo Firmaları"
                           Click="OpenCargoCompanies_Click"/>
+                <MenuItem x:Name="MenuItemWhatsAppRehberi"
+                          Header="WhatsApp Rehberi"
+                          ToolTip="Tüm kullanıcıların ortak kullandığı WhatsApp alıcı rehberi."
+                          Click="OpenWhatsAppContacts_Click"/>
             </MenuItem>
 
             <!-- Ayarlar: mail + teknik/operasyonel işlemler -->
@@ -71,6 +75,10 @@
                           Header="Görünüm Ayarları"
                           ToolTip="Uygulama temasını (açık / koyu) değiştirin."
                           Click="OpenAppearanceSettings_Click"/>
+                <MenuItem x:Name="MenuItemHarfDuyarliligi"
+                          Header="Harf Duyarlılığı"
+                          ToolTip="Girdiğiniz metinlerin BÜYÜK/küçük harf dönüşüm tercihini belirleyin (kullanıcı bazlı)."
+                          Click="OpenTextCaseSettings_Click"/>
                 <Separator/>
                 <MenuItem x:Name="MenuItemSistemSagligi"
                           Header="Sistem Sağlığı"
@@ -93,6 +101,14 @@
                 <MenuItem Header="Mail Ayarlarım"
                           ToolTip="Kendi mail gönderim bilgilerinizi düzenleyin."
                           Click="OpenPersonalMailSettings_Click"/>
+                <!-- Kişisel kullanıcı ayarları: CanAccessSettings gerektirmez —
+                     giriş yapan her kullanıcı kendi tercihini yönetebilir.
+                     Ayarlar menüsündeki aynı pencere/handler altyapısını kullanır. -->
+                <MenuItem Header="Kullanıcı Ayarlarım">
+                    <MenuItem Header="Harf Duyarlılığı"
+                              ToolTip="Girdiğiniz metinlerin BÜYÜK/küçük harf dönüşüm tercihini belirleyin (kişisel ayar)."
+                              Click="OpenTextCaseSettings_Click"/>
+                </MenuItem>
                 <MenuItem Header="Log Klasörünü Aç"
                           ToolTip="Uygulama loglarının bulunduğu klasörü açar."
                           Click="OpenLogDirectory_Click"/>

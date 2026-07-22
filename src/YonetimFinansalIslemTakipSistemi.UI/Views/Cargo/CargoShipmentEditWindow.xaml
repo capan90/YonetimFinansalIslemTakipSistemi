@@ -7,6 +7,10 @@
         ResizeMode="NoResize"
         Icon="pack://application:,,,/Assets/AppIcon.ico">
 
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </Window.Resources>
+
     <!-- Ctrl+S = Kaydet -->
     <Window.InputBindings>
         <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding SaveCommand}"/>
@@ -27,9 +31,11 @@
             </StackPanel>
             <StackPanel Grid.Column="2">
                 <Label Content="Kargo No:" Margin="0,0,0,2"
-                       ToolTip="Boş bırakılırsa otomatik üretilir (örn. G-2026-0001)"/>
-                <TextBox Text="{Binding ShipmentNumber, UpdateSourceTrigger=PropertyChanged}"
-                         ToolTip="Boş bırakılırsa sistem G-YYYY-NNNN formatında otomatik numara atar"/>
+                       ToolTip="Sistem tarafından otomatik üretilir (Gelen: GLN00001, Giden: GDN00001)"/>
+                <!-- Salt okunur: numara atomik sayaçtan üretilir, kullanıcı değiştiremez -->
+                <TextBox Text="{Binding ShipmentNumber, Mode=OneWay}"
+                         IsReadOnly="True" Background="#F1F5F9" Foreground="#475569"
+                         ToolTip="Kayıt sırasında otomatik atanır; değiştirilemez"/>
             </StackPanel>
         </Grid>
 
@@ -95,6 +101,25 @@
                     VerticalAlignment="Center"
                     ToolTip="Yeni kargo firması ekle"
                     Click="AddCargoCompanyButton_Click"/>
+        </Grid>
+
+        <!-- Kargo portal bağlantısı — seçili firmanın kaydından gelir, salt okunur -->
+        <Grid Margin="0,0,0,8"
+              Visibility="{Binding HasPortalUrl, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="4"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBox Grid.Column="0"
+                     Text="{Binding SelectedCompanyPortalUrl, Mode=OneWay}"
+                     IsReadOnly="True" Background="#F1F5F9" Foreground="#475569"
+                     ToolTip="Kargo firmasının portal bağlantısı — Kargo Firmaları ekranından düzenlenir"/>
+            <Button Grid.Column="2"
+                    Content="Portalı Aç" Width="80" Height="22"
+                    VerticalAlignment="Center"
+                    ToolTip="Portal bağlantısını varsayılan tarayıcıda açar"
+                    Click="OpenPortalButton_Click"/>
         </Grid>
 
         <!-- Firma Rehberi + hızlı ekleme -->

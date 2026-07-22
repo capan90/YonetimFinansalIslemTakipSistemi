@@ -10,15 +10,18 @@ public class CreateCargoCompanyHandler
     private readonly ICargoCompanyRepository _repository;
     private readonly IAuditLogService _auditLogService;
     private readonly IUserContext _userContext;
+    private readonly IUserTextNormalizationService _textNormalization;
 
     public CreateCargoCompanyHandler(
         ICargoCompanyRepository repository,
         IAuditLogService auditLogService,
-        IUserContext userContext)
+        IUserContext userContext,
+        IUserTextNormalizationService textNormalization)
     {
-        _repository      = repository;
-        _auditLogService = auditLogService;
-        _userContext     = userContext;
+        _repository        = repository;
+        _auditLogService   = auditLogService;
+        _userContext       = userContext;
+        _textNormalization = textNormalization;
     }
 
     public async Task<OperationResult<CreateCargoCompanyResponse>> HandleAsync(
@@ -32,15 +35,20 @@ public class CreateCargoCompanyHandler
             return OperationResult<CreateCargoCompanyResponse>.Fail("Kargo firması adı zorunludur.");
         if (!string.IsNullOrWhiteSpace(request.Phone) && request.Phone.Trim().Length > 20)
             return OperationResult<CreateCargoCompanyResponse>.Fail("Telefon numarası en fazla 20 karakter olabilir.");
+        if (!UrlValidator.IsValidHttpUrlOrEmpty(request.PortalUrl))
+            return OperationResult<CreateCargoCompanyResponse>.Fail(
+                "Kargo portal bağlantısı geçerli bir http/https adresi olmalıdır.");
 
         var entity = new Domain.Entities.CargoCompany
         {
             Id                  = Guid.NewGuid(),
-            Name                = request.Name.Trim(),
+            // Firma adı/notlar harf tercihine tabi; URL alanları dönüştürülmez
+            Name                = _textNormalization.Normalize(request.Name) ?? string.Empty,
             TrackingUrlTemplate = request.TrackingUrlTemplate?.Trim(),
             Phone               = request.Phone?.Trim(),
             Website             = request.Website?.Trim(),
-            Notes               = request.Notes?.Trim(),
+            PortalUrl           = request.PortalUrl?.Trim(),
+            Notes               = _textNormalization.Normalize(request.Notes),
             IsActive            = request.IsActive,
             CreatedByUserId     = request.CreatedByUserId,
             CreatedAt           = DateTime.UtcNow,

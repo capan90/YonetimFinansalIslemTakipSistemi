@@ -14,6 +14,12 @@ public interface IUserSession
     void SetUser(Guid userId, string fullName, IReadOnlySet<PermissionType> permissions);
 
     /// <summary>
+    /// Harf dönüşüm tercihini oturuma yazar. Login'de ve ayar kaydında çağrılır;
+    /// tercih anında etkinleşir, yeniden giriş gerektirmez.
+    /// </summary>
+    void SetTextCasePreference(TextCasePreference preference);
+
+    /// <summary>
     /// Logout sonrası scope dispose edildikten sonra çağrılır.
     /// Bir sonraki oturuma önceki kullanıcı bilgisi taşınmaz.
     /// </summary>

@@ -12,10 +12,21 @@ public interface ICargoShipmentRepository
     Task UpdateAsync(CargoShipment entity);
 
     /// <summary>
-    /// Verilen yön ve yıl için sıradaki kargo numarasını döner.
-    /// Gelen: C-YYYY-0001, Giden: G-YYYY-0001. Silinmiş kayıtlar dahil tüm mevcut numaralar dikkate alınır.
+    /// Kaydı, yön bazlı atomik sayaçtan üretilen numarayla (GLN00001/GDN00001) tek
+    /// transaction içinde ekler. Rollback durumunda numara boşa gitmez; eşzamanlı
+    /// eklemelerde mükerrer numara oluşmaz. Entity.ShipmentNumber çağrı sonrası doludur.
     /// </summary>
-    Task<string> GetNextShipmentNumberAsync(CargoShipmentDirection direction, int year);
+    Task AddWithAutoNumberAsync(CargoShipment entity);
+
+    /// <summary>
+    /// Kaydı soft delete eder; yalnızca yönün EN SON üretilen numarası siliniyorsa
+    /// (sayaç = kayıt numarası ve daha yüksek numaralı kayıt yoksa) sayaç aynı
+    /// transaction içinde bir geri alınır ve numara sonraki kayıtta yeniden kullanılabilir.
+    /// Aradaki silinmiş numaralar asla geri kullanılmaz. Geri alınan sıra değeri,
+    /// geri alma olmadıysa null döner. Silme flag'leri (IsDeleted/DeletedAt/DeletedBy)
+    /// çağrı öncesi entity üzerinde set edilmiş olmalıdır.
+    /// </summary>
+    Task<long?> SoftDeleteWithNumberReclaimAsync(CargoShipment entity);
 
     /// <summary>Silinmemiş tüm kargo kayıtlarını ilişkileriyle döner (Dashboard, Rapor için).</summary>
     Task<IReadOnlyList<CargoShipment>> GetAllActiveAsync();

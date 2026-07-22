@@ -14,6 +14,7 @@ public class CargoCompanyConfiguration : IEntityTypeConfiguration<CargoCompany>
         builder.Property(x => x.TrackingUrlTemplate).HasMaxLength(500);
         builder.Property(x => x.Phone).HasMaxLength(50);
         builder.Property(x => x.Website).HasMaxLength(300);
+        builder.Property(x => x.PortalUrl).HasMaxLength(500);
         builder.Property(x => x.Notes).HasMaxLength(1000);
 
         builder.HasQueryFilter(x => !x.IsDeleted);

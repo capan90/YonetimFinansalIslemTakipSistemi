@@ -20,6 +20,7 @@ public class CargoCompanyEditViewModel : INotifyPropertyChanged
     private string _trackingUrlTemplate = string.Empty;
     private string _phone               = string.Empty;
     private string _website             = string.Empty;
+    private string _portalUrl           = string.Empty;
     private string _notes               = string.Empty;
     private bool   _isActive            = true;
     private string? _errorMessage;
@@ -31,6 +32,10 @@ public class CargoCompanyEditViewModel : INotifyPropertyChanged
     public string TrackingUrlTemplate { get => _trackingUrlTemplate; set { _trackingUrlTemplate = value; OnPropertyChanged(); } }
     public string Phone               { get => _phone;               set { _phone               = value; OnPropertyChanged(); } }
     public string Website             { get => _website;             set { _website             = value; OnPropertyChanged(); } }
+
+    /// <summary>Kargo Portal Bağlantısı — firma adına hard-code edilmez, kayıt üzerinden yönetilir.</summary>
+    public string PortalUrl           { get => _portalUrl;           set { _portalUrl           = value; OnPropertyChanged(); } }
+
     public string Notes               { get => _notes;               set { _notes               = value; OnPropertyChanged(); } }
     public bool IsActive              { get => _isActive;            set { _isActive            = value; OnPropertyChanged(); } }
 
@@ -62,6 +67,7 @@ public class CargoCompanyEditViewModel : INotifyPropertyChanged
         TrackingUrlTemplate = dto.TrackingUrlTemplate ?? string.Empty;
         Phone               = dto.Phone               ?? string.Empty;
         Website             = dto.Website             ?? string.Empty;
+        PortalUrl           = dto.PortalUrl           ?? string.Empty;
         Notes               = dto.Notes               ?? string.Empty;
         IsActive            = dto.IsActive;
         OnPropertyChanged(nameof(WindowTitle));
@@ -81,6 +87,7 @@ public class CargoCompanyEditViewModel : INotifyPropertyChanged
                 TrackingUrlTemplate = NullIfEmpty(TrackingUrlTemplate),
                 Phone               = NullIfEmpty(Phone),
                 Website             = NullIfEmpty(Website),
+                PortalUrl           = NullIfEmpty(PortalUrl),
                 Notes               = NullIfEmpty(Notes),
                 IsActive            = IsActive,
                 UpdatedByUserId     = _userContext.UserId
@@ -96,6 +103,7 @@ public class CargoCompanyEditViewModel : INotifyPropertyChanged
                 TrackingUrlTemplate = NullIfEmpty(TrackingUrlTemplate),
                 Phone               = NullIfEmpty(Phone),
                 Website             = NullIfEmpty(Website),
+                PortalUrl           = NullIfEmpty(PortalUrl),
                 Notes               = NullIfEmpty(Notes),
                 IsActive            = IsActive,
                 CreatedByUserId     = _userContext.UserId

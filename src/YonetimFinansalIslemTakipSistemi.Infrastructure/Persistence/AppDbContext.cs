@@ -17,6 +17,13 @@ public class AppDbContext : DbContext
     public DbSet<CompanyAttentionContact>   CompanyAttentionContacts   => Set<CompanyAttentionContact>();
     public DbSet<CargoCompany>              CargoCompanies             => Set<CargoCompany>();
     public DbSet<CargoShipment>             CargoShipments             => Set<CargoShipment>();
+    public DbSet<CargoNumberCounter>        CargoNumberCounters        => Set<CargoNumberCounter>();
+
+    // Ortak WhatsApp rehberi
+    public DbSet<WhatsAppContact>           WhatsAppContacts           => Set<WhatsAppContact>();
+
+    // Kullanıcı tercihleri (harf duyarlılığı vb.)
+    public DbSet<UserPreference>            UserPreferences            => Set<UserPreference>();
 
     // Genel uygulama ayarları
     public DbSet<ApplicationSetting> ApplicationSettings => Set<ApplicationSetting>();

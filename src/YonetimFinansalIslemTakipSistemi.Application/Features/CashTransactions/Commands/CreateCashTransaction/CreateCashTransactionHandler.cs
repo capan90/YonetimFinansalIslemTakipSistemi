@@ -16,15 +16,18 @@ public class CreateCashTransactionHandler
     private readonly ICashTransactionRepository _repository;
     private readonly IAuditLogService _auditLogService;
     private readonly IUserContext _userContext;
+    private readonly IUserTextNormalizationService _textNormalization;
 
     public CreateCashTransactionHandler(
         ICashTransactionRepository repository,
         IAuditLogService auditLogService,
-        IUserContext userContext)
+        IUserContext userContext,
+        IUserTextNormalizationService textNormalization)
     {
-        _repository      = repository;
-        _auditLogService = auditLogService;
-        _userContext     = userContext;
+        _repository        = repository;
+        _auditLogService   = auditLogService;
+        _userContext       = userContext;
+        _textNormalization = textNormalization;
     }
 
     public async Task<OperationResult<CreateCashTransactionResponse>> HandleAsync(
@@ -46,7 +49,8 @@ public class CreateCashTransactionHandler
             TransactionType = request.TransactionType,
             CurrencyType = request.CurrencyType,
             Amount = request.Amount,
-            Description = request.Description,
+            // Açıklama kullanıcı tercihi doğrultusunda harf dönüşümüne tabidir
+            Description = _textNormalization.Normalize(request.Description) ?? string.Empty,
             CreatedByUserId = request.CreatedByUserId,
             CreatedAt = DateTime.UtcNow,
             IsDeleted = false

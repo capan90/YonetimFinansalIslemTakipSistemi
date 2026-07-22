@@ -41,7 +41,8 @@
                            x:Name="ReceiverBlock" Margin="0,0,0,4"
                            TextTrimming="CharacterEllipsis"/>
 
-                <!-- Telefon — yalnızca WhatsApp modunda görünür -->
+                <!-- Telefon — yalnızca WhatsApp modunda görünür.
+                     Rehberden kişi seçiliyken salt okunurdur; düzeltme WhatsApp Rehberi ekranından yapılır -->
                 <TextBlock Grid.Row="1" Grid.Column="0"
                            x:Name="PhoneLabelBlock"
                            Text="Telefon:" FontWeight="SemiBold" Margin="0,0,6,0"
@@ -53,6 +54,72 @@
                            Visibility="Collapsed"
                            ToolTip="WhatsApp alıcı numarası — yalnızca bu gönderim için kullanılır"/>
             </Grid>
+        </Border>
+
+        <!-- WhatsApp rehber seçimi — yalnızca WhatsApp modunda görünür -->
+        <Border x:Name="ContactsPanel"
+                DockPanel.Dock="Top"
+                Background="#F8F9FA" BorderBrush="#CBD5E1" BorderThickness="1"
+                CornerRadius="4" Padding="10,8" Margin="0,0,0,8"
+                Visibility="Collapsed">
+            <StackPanel>
+                <TextBlock Text="Rehberden Alıcı Seç" FontWeight="SemiBold"
+                           FontSize="12" Margin="0,0,0,6"/>
+
+                <DockPanel Margin="0,0,0,6">
+                    <Button x:Name="AddContactButton"
+                            DockPanel.Dock="Right"
+                            Content="+" Width="28" Height="24" Margin="6,0,0,0"
+                            Style="{StaticResource SecondaryButton}"
+                            Click="AddContactButton_Click"
+                            ToolTip="Rehberde olmayan kişiyi ekle — kişi ortak rehbere kaydedilir"/>
+                    <TextBox x:Name="ContactSearchBox"
+                             Padding="4,2" BorderThickness="1" BorderBrush="#CBD5E1"
+                             TextChanged="ContactSearchBox_TextChanged"
+                             ToolTip="Ad, firma veya telefonla arayın"/>
+                </DockPanel>
+
+                <ListBox x:Name="ContactListBox"
+                         MaxHeight="110" BorderBrush="#E2E8F0" BorderThickness="1"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <CheckBox Content="{Binding Display}"
+                                      IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                      FontSize="12"
+                                      Checked="ContactCheckBox_Changed"
+                                      Unchecked="ContactCheckBox_Changed"
+                                      ToolTip="{Binding Phone}"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <!-- Seçilen kişiler (chip listesi) -->
+                <ItemsControl x:Name="SelectedChips" Margin="0,6,0,0">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#E3F2FD" BorderBrush="#90CAF9" BorderThickness="1"
+                                    CornerRadius="10" Padding="8,3" Margin="0,0,6,4">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Display}" FontSize="11"
+                                               VerticalAlignment="Center"
+                                               ToolTip="{Binding Phone}"/>
+                                    <Button Content="✕" FontSize="10" Margin="6,0,0,0"
+                                            Padding="2,0" BorderThickness="0"
+                                            Background="Transparent" Cursor="Hand"
+                                            Click="RemoveChip_Click" Tag="{Binding}"
+                                            ToolTip="Seçimden çıkar"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
         </Border>
 
         <!-- Mail alanları paneli — yalnızca mail modunda görünür -->

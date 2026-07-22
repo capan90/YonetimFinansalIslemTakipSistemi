@@ -1,4 +1,5 @@
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Repositories;
+using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Entities;
 
 namespace YonetimFinansalIslemTakipSistemi.Application.Features.CompanyAttentionContacts.EnsureCompanyAttentionContact;
@@ -7,18 +8,22 @@ public class EnsureCompanyAttentionContactHandler
 {
     private readonly ICompanyAttentionContactRepository _repository;
     private readonly ICompanyDirectoryRepository        _directoryRepository;
+    private readonly IUserTextNormalizationService      _textNormalization;
 
     public EnsureCompanyAttentionContactHandler(
         ICompanyAttentionContactRepository repository,
-        ICompanyDirectoryRepository        directoryRepository)
+        ICompanyDirectoryRepository        directoryRepository,
+        IUserTextNormalizationService      textNormalization)
     {
         _repository          = repository;
         _directoryRepository = directoryRepository;
+        _textNormalization   = textNormalization;
     }
 
     public async Task HandleAsync(EnsureCompanyAttentionContactRequest request)
     {
-        var name = request.Name.Trim();
+        // Dikkatine kişi adı kullanıcı girişi — harf tercihine tabi
+        var name = _textNormalization.Normalize(request.Name);
         if (string.IsNullOrEmpty(name)) return;
 
         var contacts = await _repository.GetByCompanyAsync(request.CompanyDirectoryId);

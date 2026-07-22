@@ -47,13 +47,18 @@ public class MarkCargoNotificationPreparedHandler
             entity.NotificationStatus = CargoNotificationStatus.WhatsAppPrepared;
             await _repository.UpdateAsync(entity);
 
+            // Alıcı özeti doluysa audit'e yazılır (toplu gönderimde kimler işlendi)
+            var recipients = string.IsNullOrWhiteSpace(request.RecipientSummary)
+                ? string.Empty
+                : $" | Alıcılar: {request.RecipientSummary}";
+
             await _auditLogService.WriteAsync(
                 AuditAction.CargoWhatsAppPrepared,
                 _userContext.UserId,
                 _userContext.FullName,
                 "CargoShipment",
                 entity.Id,
-                newValues: $"WhatsApp mesajı hazırlandı | Kargo No: {entity.ShipmentNumber}");
+                newValues: $"WhatsApp mesajı hazırlandı | Kargo No: {entity.ShipmentNumber}{recipients}");
         }
         else if (request.NotificationType == NotificationType.Mail)
         {

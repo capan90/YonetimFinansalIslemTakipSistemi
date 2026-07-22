@@ -2,7 +2,6 @@ using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Repositories;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
-using static YonetimFinansalIslemTakipSistemi.Application.Common.TextNormalizer;
 
 namespace YonetimFinansalIslemTakipSistemi.Application.Features.CompanyDirectory.Commands.UpdateCompanyDirectory;
 
@@ -11,15 +10,18 @@ public class UpdateCompanyDirectoryHandler
     private readonly ICompanyDirectoryRepository _repository;
     private readonly IAuditLogService _auditLogService;
     private readonly IUserContext _userContext;
+    private readonly IUserTextNormalizationService _textNormalization;
 
     public UpdateCompanyDirectoryHandler(
         ICompanyDirectoryRepository repository,
         IAuditLogService auditLogService,
-        IUserContext userContext)
+        IUserContext userContext,
+        IUserTextNormalizationService textNormalization)
     {
-        _repository      = repository;
-        _auditLogService = auditLogService;
-        _userContext     = userContext;
+        _repository        = repository;
+        _auditLogService   = auditLogService;
+        _userContext       = userContext;
+        _textNormalization = textNormalization;
     }
 
     public async Task<OperationResult<bool>> HandleAsync(UpdateCompanyDirectoryRequest request)
@@ -37,16 +39,17 @@ public class UpdateCompanyDirectoryHandler
 
         var oldValues = Format(entity.CompanyName, entity.AddressLine);
 
-        entity.CompanyName   = TitleCase(request.CompanyName);
-        entity.ContactPerson = TitleCaseOrNull(request.ContactPerson);
-        entity.AttentionTo   = TitleCaseOrNull(request.AttentionTo);
-        entity.AddressLine   = CollapseSpaces(request.AddressLine);
-        entity.District      = TitleCaseOrNull(request.District);
-        entity.City          = TitleCaseOrNull(request.City);
+        // Harf dönüşümü kullanıcı tercihine göre yapılır; telefon/e-posta/posta kodu muaf
+        entity.CompanyName   = _textNormalization.Normalize(request.CompanyName) ?? string.Empty;
+        entity.ContactPerson = _textNormalization.Normalize(request.ContactPerson);
+        entity.AttentionTo   = _textNormalization.Normalize(request.AttentionTo);
+        entity.AddressLine   = _textNormalization.Normalize(request.AddressLine) ?? string.Empty;
+        entity.District      = _textNormalization.Normalize(request.District);
+        entity.City          = _textNormalization.Normalize(request.City);
         entity.PostalCode    = request.PostalCode?.Trim();
         entity.Phone         = request.Phone?.Trim();
         entity.Email         = request.Email?.Trim()?.ToLowerInvariant();
-        entity.Notes         = request.Notes?.Trim();
+        entity.Notes         = _textNormalization.Normalize(request.Notes);
         entity.IsActive      = request.IsActive;
         entity.UpdatedByUserId = request.UpdatedByUserId;
         entity.UpdatedAt     = DateTime.UtcNow;

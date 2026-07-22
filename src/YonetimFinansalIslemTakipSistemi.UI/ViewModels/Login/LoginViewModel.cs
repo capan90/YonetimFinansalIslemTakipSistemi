@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using YonetimFinansalIslemTakipSistemi.Application.Features.Settings.UserPreferences;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.UI.Common;
 
@@ -10,6 +11,7 @@ public class LoginViewModel : INotifyPropertyChanged
 {
     private readonly IAuthenticationService _authService;
     private readonly IUserSession _userSession;
+    private readonly GetUserPreferenceHandler _preferenceHandler;
     private string  _userName     = string.Empty;
     private string  _password     = string.Empty;
     private string? _errorMessage;
@@ -41,10 +43,14 @@ public class LoginViewModel : INotifyPropertyChanged
 
     public ICommand LoginCommand { get; }
 
-    public LoginViewModel(IAuthenticationService authService, IUserSession userSession)
+    public LoginViewModel(
+        IAuthenticationService authService,
+        IUserSession userSession,
+        GetUserPreferenceHandler preferenceHandler)
     {
-        _authService = authService;
-        _userSession = userSession;
+        _authService       = authService;
+        _userSession       = userSession;
+        _preferenceHandler = preferenceHandler;
         LoginCommand = new RelayCommand(async () => await ExecuteLoginAsync());
     }
 
@@ -69,6 +75,11 @@ public class LoginViewModel : INotifyPropertyChanged
         {
             // Oturum bağlamını singleton'a yaz; izinler giriş sırasında DB'den yüklenir
             _userSession.SetUser(result.UserId!.Value, result.FullName!, result.Permissions);
+
+            // Harf tercihi kullanıcı bazlıdır ve girişte oturuma yüklenir
+            var preference = await _preferenceHandler.HandleAsync();
+            _userSession.SetTextCasePreference(preference);
+
             if (LoginCompleted is not null)
                 await LoginCompleted();
         }

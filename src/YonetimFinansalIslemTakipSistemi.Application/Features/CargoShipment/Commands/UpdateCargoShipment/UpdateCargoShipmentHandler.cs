@@ -3,7 +3,6 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Repositories;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
-using static YonetimFinansalIslemTakipSistemi.Application.Common.TextNormalizer;
 
 namespace YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.UpdateCargoShipment;
 
@@ -14,19 +13,22 @@ public class UpdateCargoShipmentHandler
     private readonly IAuditLogService            _auditLogService;
     private readonly IUserContext                _userContext;
     private readonly ICargoDashboardCacheService _cache;
+    private readonly IUserTextNormalizationService _textNormalization;
 
     public UpdateCargoShipmentHandler(
         ICargoShipmentRepository    repository,
         ICargoCompanyRepository     cargoCompanyRepository,
         IAuditLogService            auditLogService,
         IUserContext                userContext,
-        ICargoDashboardCacheService cache)
+        ICargoDashboardCacheService cache,
+        IUserTextNormalizationService textNormalization)
     {
         _repository             = repository;
         _cargoCompanyRepository = cargoCompanyRepository;
         _auditLogService        = auditLogService;
         _userContext            = userContext;
         _cache                  = cache;
+        _textNormalization      = textNormalization;
     }
 
     public async Task<OperationResult<bool>> HandleAsync(UpdateCargoShipmentRequest request)
@@ -63,7 +65,7 @@ public class UpdateCargoShipmentHandler
                 trackingUrl = string.Format(company.TrackingUrlTemplate, request.TrackingNumber.Trim());
         }
 
-        entity.ShipmentNumber     = request.ShipmentNumber?.Trim();
+        // ShipmentNumber otomatik üretilir ve değiştirilemez — request'ten alınmaz, mevcut değer korunur
         entity.Direction          = request.Direction;
         entity.ShipmentDate       = DateTime.SpecifyKind(request.ShipmentDate.Date, DateTimeKind.Utc);
         entity.ShipmentTime       = request.ShipmentTime;
@@ -71,16 +73,17 @@ public class UpdateCargoShipmentHandler
         entity.Priority           = request.Priority;
         entity.CargoCompanyId     = request.CargoCompanyId;
         entity.CompanyDirectoryId = request.CompanyDirectoryId;
-        entity.SenderName         = TitleCaseOrNull(request.SenderName);
-        entity.ReceiverName       = TitleCaseOrNull(request.ReceiverName);
-        entity.DeliveredBy        = TitleCaseOrNull(request.DeliveredBy);
-        entity.ReceivedBy         = TitleCaseOrNull(request.ReceivedBy);
-        entity.VehiclePlate       = UpperOrNull(request.VehiclePlate);
+        // Harf dönüşümü kullanıcı tercihine göre merkezi serviste yapılır
+        entity.SenderName         = _textNormalization.Normalize(request.SenderName);
+        entity.ReceiverName       = _textNormalization.Normalize(request.ReceiverName);
+        entity.DeliveredBy        = _textNormalization.Normalize(request.DeliveredBy);
+        entity.ReceivedBy         = _textNormalization.Normalize(request.ReceivedBy);
+        entity.VehiclePlate       = _textNormalization.Normalize(request.VehiclePlate);
         entity.TrackingNumber     = request.TrackingNumber?.Trim();
         entity.TrackingUrl        = trackingUrl;
         entity.Status             = request.Status;
         entity.NotificationStatus = request.NotificationStatus;
-        entity.Notes              = request.Notes?.Trim();
+        entity.Notes              = _textNormalization.Normalize(request.Notes);
         entity.UpdatedByUserId    = request.UpdatedByUserId;
         entity.UpdatedAt          = DateTime.UtcNow;
 
@@ -89,7 +92,8 @@ public class UpdateCargoShipmentHandler
         {
             entity.ReceiverCompanyNameSnapshot = request.SnapshotCompanyName;
             entity.ReceiverAddressSnapshot     = request.SnapshotAddress;
-            entity.ReceiverAttentionSnapshot   = request.SnapshotAttention;
+            // Dikkatine kullanıcı girişi — harf tercihine tabi
+            entity.ReceiverAttentionSnapshot   = _textNormalization.Normalize(request.SnapshotAttention);
             entity.ReceiverCitySnapshot        = request.SnapshotCity;
             entity.ReceiverDistrictSnapshot    = request.SnapshotDistrict;
             entity.ReceiverPhoneSnapshot       = request.SnapshotPhone;

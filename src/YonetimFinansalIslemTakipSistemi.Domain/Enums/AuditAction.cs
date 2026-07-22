@@ -30,5 +30,13 @@ public enum AuditAction
     CargoMailPrepared,
 
     // Ayarlar modülü
-    MailSettingsUpdated
+    MailSettingsUpdated,
+
+    // Kullanıcı tercihleri — harf duyarlılığı vb.
+    UserPreferenceUpdated,
+
+    // WhatsApp rehberi (ortak)
+    WhatsAppContactCreated,
+    WhatsAppContactUpdated,
+    WhatsAppContactDeleted
 }

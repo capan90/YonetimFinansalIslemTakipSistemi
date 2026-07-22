@@ -38,20 +38,24 @@ public class DeleteCargoShipmentHandler
             return OperationResult<bool>.Fail("Kargo kaydı bulunamadı.");
 
         var dir = entity.Direction == CargoShipmentDirection.Incoming ? "Gelen" : "Giden";
-        var oldValues = $"Yön: {dir} | Tarih: {entity.ShipmentDate:dd.MM.yyyy}";
+        // Numara audit'te korunur — geri alma numarayı entity'den düşse bile izi burada kalır
+        var oldValues = $"Yön: {dir} | No: {entity.ShipmentNumber ?? "-"} | Tarih: {entity.ShipmentDate:dd.MM.yyyy}";
 
         entity.IsDeleted       = true;
         entity.DeletedAt       = DateTime.UtcNow;
         entity.DeletedByUserId = request.DeletedByUserId;
 
-        await _repository.UpdateAsync(entity);
+        // Soft delete + (yalnızca son numaraysa) sayaç geri alma — tek transaction'da.
+        // Aradaki silinmiş numaralar asla yeniden kullanılmaz.
+        var reclaimed = await _repository.SoftDeleteWithNumberReclaimAsync(entity);
 
         await _auditLogService.WriteAsync(
             AuditAction.CargoShipmentDeleted,
             _userContext.UserId,
             _userContext.FullName,
             "CargoShipment", entity.Id,
-            oldValues, null);
+            oldValues,
+            reclaimed is not null ? "Son numara geri alındı — sonraki kayıtta yeniden kullanılacak" : null);
 
         // Silme sonrası dashboard cache geçersiz
         _cache.Invalidate();

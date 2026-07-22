@@ -29,8 +29,7 @@ public class CreateCargoShipmentRequest
     public string? ReceivedBy   { get; set; }
     public string? VehiclePlate { get; set; }
     public string? TrackingNumber { get; set; }
-    /// <summary>Manuel girilmişse kullanılır; boşsa handler şablondan üretir.</summary>
-    public string? TrackingUrl { get; set; }
+    // TrackingUrl alınmaz: portal/takip bağlantısının tek kaynağı CargoCompany.PortalUrl
     public CargoShipmentStatus Status { get; set; } = CargoShipmentStatus.Draft;
     public string? Notes { get; set; }
     public Guid CreatedByUserId { get; set; }

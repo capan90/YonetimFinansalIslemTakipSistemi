@@ -29,6 +29,11 @@ public class CargoCompanyEditViewModel : INotifyPropertyChanged
     public string WindowTitle => IsEditMode ? "Kargo Firması Düzenle" : "Yeni Kargo Firması";
 
     public string Name                { get => _name;                set { _name                = value; OnPropertyChanged(); } }
+
+    /// <summary>
+    /// Eski takip şablonu — UI'dan kaldırıldı, tek bağlantı kaynağı PortalUrl.
+    /// Mevcut kayıtlardaki değer kaybolmasın diye passthrough olarak taşınır.
+    /// </summary>
     public string TrackingUrlTemplate { get => _trackingUrlTemplate; set { _trackingUrlTemplate = value; OnPropertyChanged(); } }
     public string Phone               { get => _phone;               set { _phone               = value; OnPropertyChanged(); } }
     public string Website             { get => _website;             set { _website             = value; OnPropertyChanged(); } }

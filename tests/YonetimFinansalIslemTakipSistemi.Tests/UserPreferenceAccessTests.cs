@@ -55,6 +55,43 @@ public class UserPreferenceAccessTests
     }
 
     [Fact]
+    public async Task SadeceKargoYetkiliKullanici_TercihKaydeder_VeKargoKaydindaUygulanir()
+    {
+        // Yalnızca kargo yetkisi olan kullanıcı (CanAccessSettings yok, finans ekranı yok):
+        // Kargo ana ekranındaki Yardım → Kullanıcı Ayarlarım girişi aynı handler'ı kullanır
+        var user = new FakeUserContext();
+        user.SetUser(Guid.NewGuid(), "Kargo Kullanıcısı", new HashSet<PermissionType>
+        {
+            PermissionType.CanViewCargoModule,
+            PermissionType.CanManageOutgoingCargo
+        });
+        Assert.False(user.HasPermission(PermissionType.CanAccessSettings));
+
+        var save = new SaveUserPreferenceHandler(
+            new FakeUserPreferenceRepository(), new FakeAuditLogService(), user, user);
+        var saved = await save.HandleAsync(TextCasePreference.Uppercase);
+        Assert.True(saved.Success);
+
+        // Tercih anında aktif — sonraki kargo kaydında açıklama büyük harfe dönüşür
+        var repo = new FakeCargoShipmentRepository();
+        var create = new Application.Features.CargoShipment.Commands.CreateCargoShipment.CreateCargoShipmentHandler(
+            repo, new FakeAuditLogService(), user, new FakeCargoDashboardCache(),
+            new Application.Services.UserTextNormalizationService(user), new FakeSystemLogService());
+
+        var result = await create.HandleAsync(
+            new Application.Features.CargoShipment.Commands.CreateCargoShipment.CreateCargoShipmentRequest
+            {
+                Direction    = CargoShipmentDirection.Outgoing,
+                ShipmentDate = DateTime.Today,
+                Status       = CargoShipmentStatus.Prepared,
+                Notes        = "acil gönderi istanbul"
+            });
+
+        Assert.True(result.Success);
+        Assert.Equal("ACİL GÖNDERİ İSTANBUL", repo.Added.Single().Notes);
+    }
+
+    [Fact]
     public async Task FarkliKullanicilar_AyniAltyapiylaFarkliTercihKaydeder()
     {
         var repo = new FakeUserPreferenceRepository();

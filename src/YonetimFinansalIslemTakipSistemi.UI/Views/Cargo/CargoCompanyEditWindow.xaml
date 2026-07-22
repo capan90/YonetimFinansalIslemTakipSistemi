@@ -12,13 +12,8 @@
         <Label Content="Firma Adı *:" Margin="0,0,0,2"/>
         <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
-        <Label Content="Takip Linki Şablonu:" Margin="0,0,0,2"/>
-        <TextBox Text="{Binding TrackingUrlTemplate, UpdateSourceTrigger=PropertyChanged}"
-                 ToolTip="Takip numarasının geleceği yere {0} yazılır. Örn: https://kargo.com/takip/{0}"
-                 Margin="0,0,0,2"/>
-        <TextBlock Text="Takip numarasının geleceği yere {0} yazılır. Örn: https://kargo.com/takip/{0}"
-                   FontSize="10" Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,8"/>
-
+        <!-- Takip Linki Şablonu alanı kaldırıldı: portal ve takip için tek kaynak PortalUrl.
+             Eski şablon verisi DB'de korunur; VM passthrough ile üzerine yazılmaz. -->
         <Label Content="Telefon:" Margin="0,0,0,2"/>
         <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}"
                  MaxLength="20"
@@ -29,11 +24,11 @@
         <Label Content="Website:" Margin="0,0,0,2"/>
         <TextBox Text="{Binding Website, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
 
-        <Label Content="Kargo Portal Bağlantısı:" Margin="0,0,0,2"/>
+        <Label Content="Kargo Portal / Takip Bağlantısı:" Margin="0,0,0,2"/>
         <TextBox Text="{Binding PortalUrl, UpdateSourceTrigger=PropertyChanged}"
-                 ToolTip="Firmanın self-servis/işlem portalı adresi. Yalnızca http/https kabul edilir; boş bırakılabilir."
+                 ToolTip="Firmanın portal/takip adresi — tüm kargo ekranlarındaki tek bağlantı kaynağı. Yalnızca http/https; boş bırakılabilir."
                  Margin="0,0,0,2"/>
-        <TextBlock Text="Kargo işlem ekranındaki 'Portalı Aç' butonu bu adresi kullanır."
+        <TextBlock Text="Kargo ekranlarındaki 'Portalı / Takibi Aç' butonu bu adresi kullanır."
                    FontSize="10" Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,8"/>
 
         <Label Content="Notlar:" Margin="0,0,0,2"/>

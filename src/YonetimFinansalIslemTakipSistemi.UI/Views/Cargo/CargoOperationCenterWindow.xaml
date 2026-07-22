@@ -161,14 +161,14 @@
                 </StackPanel>
             </Button>
 
-            <!-- Takip Linkini Aç -->
+            <!-- Portalı / Takibi Aç — tek kaynak: firma PortalUrl (DTO'da birleşik gelir) -->
             <Button x:Name="TrackButton"
                     Style="{StaticResource OpCard}"
                     Click="TrackButton_Click"
-                    ToolTip="Kargo firmasının takip sayfasını tarayıcıda açar">
+                    ToolTip="Kargo firmasının portal/takip sayfasını tarayıcıda açar">
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                     <TextBlock Text="🔗" FontSize="22" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Takip&#x0a;Linkini Aç" FontSize="11"
+                    <TextBlock Text="Portalı /&#x0a;Takibi Aç" FontSize="11"
                                HorizontalAlignment="Center" TextAlignment="Center"/>
                 </StackPanel>
             </Button>

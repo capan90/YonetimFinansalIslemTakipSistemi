@@ -30,7 +30,10 @@ public static class CargoLabelBuilder
             // Kargo firması adı: FK navigasyonu — CompanyDirectory değil
             CargoCompany    = shipment.CargoCompany?.Name,
             TrackingNumber  = shipment.TrackingNumber,
-            TrackingUrl     = shipment.TrackingUrl,
+            // Tek bağlantı kaynağı: firma PortalUrl; eski kayıtlarda saklı TrackingUrl korunur
+            TrackingUrl     = !string.IsNullOrWhiteSpace(shipment.TrackingUrl)
+                                ? shipment.TrackingUrl
+                                : shipment.CargoCompany?.PortalUrl,
 
             Sender          = shipment.SenderName,
             VehiclePlate    = shipment.VehiclePlate,

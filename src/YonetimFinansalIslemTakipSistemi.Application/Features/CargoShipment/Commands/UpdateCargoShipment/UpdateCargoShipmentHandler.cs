@@ -9,7 +9,6 @@ namespace YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Co
 public class UpdateCargoShipmentHandler
 {
     private readonly ICargoShipmentRepository    _repository;
-    private readonly ICargoCompanyRepository     _cargoCompanyRepository;
     private readonly IAuditLogService            _auditLogService;
     private readonly IUserContext                _userContext;
     private readonly ICargoDashboardCacheService _cache;
@@ -17,14 +16,12 @@ public class UpdateCargoShipmentHandler
 
     public UpdateCargoShipmentHandler(
         ICargoShipmentRepository    repository,
-        ICargoCompanyRepository     cargoCompanyRepository,
         IAuditLogService            auditLogService,
         IUserContext                userContext,
         ICargoDashboardCacheService cache,
         IUserTextNormalizationService textNormalization)
     {
         _repository             = repository;
-        _cargoCompanyRepository = cargoCompanyRepository;
         _auditLogService        = auditLogService;
         _userContext            = userContext;
         _cache                  = cache;
@@ -55,16 +52,6 @@ public class UpdateCargoShipmentHandler
         // Sadece değişen alanları audit'e yaz — ileride Timeline bu formatı kullanacak
         var (oldValues, newValues) = BuildAuditDiff(entity, request);
 
-        // Takip URL'i yeniden hesapla
-        // Manuel URL varsa doğrudan kullan; boşsa şablon + takip numarasından üret
-        string? trackingUrl = string.IsNullOrWhiteSpace(request.TrackingUrl) ? null : request.TrackingUrl.Trim();
-        if (trackingUrl is null && request.CargoCompanyId.HasValue && !string.IsNullOrWhiteSpace(request.TrackingNumber))
-        {
-            var company = await _cargoCompanyRepository.GetByIdAsync(request.CargoCompanyId.Value);
-            if (company is not null && !string.IsNullOrWhiteSpace(company.TrackingUrlTemplate))
-                trackingUrl = string.Format(company.TrackingUrlTemplate, request.TrackingNumber.Trim());
-        }
-
         // ShipmentNumber otomatik üretilir ve değiştirilemez — request'ten alınmaz, mevcut değer korunur
         entity.Direction          = request.Direction;
         entity.ShipmentDate       = DateTime.SpecifyKind(request.ShipmentDate.Date, DateTimeKind.Utc);
@@ -80,7 +67,8 @@ public class UpdateCargoShipmentHandler
         entity.ReceivedBy         = _textNormalization.Normalize(request.ReceivedBy);
         entity.VehiclePlate       = _textNormalization.Normalize(request.VehiclePlate);
         entity.TrackingNumber     = request.TrackingNumber?.Trim();
-        entity.TrackingUrl        = trackingUrl;
+        // TrackingUrl: eski kayıtlardaki değer korunur; yeni üretim yok —
+        // portal/takip bağlantısının tek kaynağı CargoCompany.PortalUrl
         entity.Status             = request.Status;
         entity.NotificationStatus = request.NotificationStatus;
         entity.Notes              = _textNormalization.Normalize(request.Notes);

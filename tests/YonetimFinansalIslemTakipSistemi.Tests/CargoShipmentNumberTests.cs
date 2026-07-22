@@ -21,7 +21,6 @@ public class CargoShipmentNumberTests
         user.GrantAll();
         var handler = new CreateCargoShipmentHandler(
             repo,
-            new FakeCargoCompanyRepository(),
             new FakeAuditLogService(),
             user,
             new FakeCargoDashboardCache(),
@@ -122,7 +121,6 @@ public class CargoShipmentNumberTests
 
         var handler = new UpdateCargoShipmentHandler(
             repo,
-            new FakeCargoCompanyRepository(),
             new FakeAuditLogService(),
             user,
             new FakeCargoDashboardCache(),

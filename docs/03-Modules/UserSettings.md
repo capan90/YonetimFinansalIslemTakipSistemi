@@ -51,8 +51,11 @@ otomatik kargo numarası, takip numarası, posta kodu, sayısal/sistemsel kodlar
 anında uygulanır.
 
 Harf duyarlılığı **kişisel** bir ayardır; `CanAccessSettings` gibi sistem ayarı yetkisi
-**gerektirmez**. İki menü girişi aynı pencereyi ve aynı handler altyapısını kullanır:
+**gerektirmez** ve Ayarlar menüsünde YER ALMAZ. Uygulamanın iki ana penceresinde de aynı
+giriş bulunur; ikisi de aynı `TextCaseSettingsWindow` penceresini ve aynı handler
+altyapısını kullanır, tercih aynı `user_preferences` kaydına yazılır:
 
-- **Yardım → Kullanıcı Ayarlarım → Harf Duyarlılığı** — her giriş yapmış kullanıcı erişebilir.
-- **Ayarlar → Harf Duyarlılığı** — Ayarlar menüsünü görebilen (CanAccessSettings) kullanıcılar
-  için kısayol olarak korunmuştur.
+- **MainWindow → Yardım → Kullanıcı Ayarlarım → Harf Duyarlılığı** — finans/genel kullanıcılar.
+- **CargoDashboardWindow → Yardım → Kullanıcı Ayarlarım → Harf Duyarlılığı** — yalnızca kargo
+  yetkili kullanıcılar; finans ekranına geçmeleri gerekmez. (Kargo Yardım menüsündeki teknik
+  öğeler `CanAccessHelpMenu` iznine tabidir; Kullanıcı Ayarlarım izinsiz görünür.)

@@ -67,13 +67,19 @@ Her gelen veya giden kargo kaydı.
 
 ---
 
-## Kargo Portal Bağlantısı (2026-07-22)
+## Kargo Portal / Takip Bağlantısı (2026-07-22, tek kaynak)
 
-- `CargoCompany.PortalUrl`: firmaya ait self-servis/işlem portalı; kodda firma adına
-  göre hard-code edilmez, kayıt üzerinden yönetilir
+- Çalışma zamanı **tek bağlantı kaynağı `CargoCompany.PortalUrl`'dir** ("Kargo Portal /
+  Takip Bağlantısı"); firma adına göre hard-code edilmez, yalnızca Kargo Firmaları
+  ekranından düzenlenir (mevcut yönetim yetkisi)
 - Doğrulama: yalnızca `http`/`https` (`UrlValidator`), boş bırakılabilir
-- Kargo düzenleme ekranında seçili firmanın bağlantısı salt okunur gösterilir;
-  "Portalı Aç" varsayılan tarayıcıda açar
+- Kargo ekleme/düzenleme, liste ("Portal / Takip" kolonu) ve Operasyon Merkezi
+  ("Portalı / Takibi Aç") aynı değeri kullanır; URL boşsa buton pasif/link gizli
+- Bağlantıyı açmak için kargo ekranına erişim yeterlidir; yönetim yetkisi istenmez
+- Eski yapılar: `CargoCompany.TrackingUrlTemplate` UI'dan ve çalışma zamanından
+  kaldırıldı (kolon/veri korunur, VM passthrough); kayıt bazlı `CargoShipment.TrackingUrl`
+  artık üretilmez — eski kayıtlarda saklı değer korunur ve gösterimde öncelik alır,
+  boşsa firma PortalUrl'ine düşülür (DTO/builder seviyesinde)
 - Yurtiçi Kargo varsayılan bağlantısı migration/seed ile gelir; değişiklikler
   `CargoCompanyUpdated` audit'inde izlenir
 

@@ -350,13 +350,18 @@ public partial class CargoDashboardWindow : Window
         NavFirmaRehberiButton.Visibility   = canRehber   ? Visibility.Visible : Visibility.Collapsed;
         NavKargoFirmalariButton.Visibility = canFirmalar ? Visibility.Visible : Visibility.Collapsed;
 
-        // Yardım menüsü görünürlük kontrolü
+        // Yardım menüsü her kullanıcıda görünür: Kullanıcı Ayarlarım (Harf Duyarlılığı)
+        // kişisel ayardır, izin gerektirmez. Teknik öğeler izinle tek tek gizlenir —
+        // CanAccessHelpMenu kapsamı genişletilmez.
         var canHelp = ctx.HasPermission(PermissionType.CanAccessHelpMenu);
-        MenuYardim.Visibility = canHelp ? Visibility.Visible : Visibility.Collapsed;
+        MenuYardim.Visibility = Visibility.Visible;
+        var helpVisibility = canHelp ? Visibility.Visible : Visibility.Collapsed;
+        MenuItemCheckUpdates.Visibility = helpVisibility;
+        MenuItemPersonalMail.Visibility = helpVisibility;
+        MenuItemLogFolder.Visibility    = helpVisibility;
 
-        // Navigasyon çubuğu görünürlüğü: Herhangi bir menü veya buton görünecekse göster
-        NavBar.Visibility = (canGelen || canGiden || canRehber || canFirmalar || canHelp)
-            ? Visibility.Visible : Visibility.Collapsed;
+        // Navigasyon çubuğu: Yardım menüsü artık her zaman görünür olduğundan çubuk da görünür
+        NavBar.Visibility = Visibility.Visible;
     }
 
     private void NavGelenButton_Click(object sender, RoutedEventArgs e)
@@ -376,6 +381,15 @@ public partial class CargoDashboardWindow : Window
     private void OpenPersonalMailSettings_Click(object sender, RoutedEventArgs e)
     {
         new Views.Settings.MailSettingsWindow(_services, isPersonal: true) { Owner = this }.ShowDialog();
+    }
+
+    /// <summary>
+    /// Kişisel Harf Duyarlılığı ayarı — MainWindow ile aynı pencere/handler altyapısı.
+    /// Yalnızca kargo yetkili kullanıcı finans ekranına geçmeden tercihini yönetebilir.
+    /// </summary>
+    private void OpenTextCaseSettings_Click(object sender, RoutedEventArgs e)
+    {
+        new Views.Settings.TextCaseSettingsWindow(_services) { Owner = this }.ShowDialog();
     }
 
 

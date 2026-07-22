@@ -8,7 +8,6 @@ namespace YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Co
 public class CreateCargoShipmentHandler
 {
     private readonly ICargoShipmentRepository    _repository;
-    private readonly ICargoCompanyRepository     _cargoCompanyRepository;
     private readonly IAuditLogService            _auditLogService;
     private readonly IUserContext                _userContext;
     private readonly ICargoDashboardCacheService _cache;
@@ -17,7 +16,6 @@ public class CreateCargoShipmentHandler
 
     public CreateCargoShipmentHandler(
         ICargoShipmentRepository    repository,
-        ICargoCompanyRepository     cargoCompanyRepository,
         IAuditLogService            auditLogService,
         IUserContext                userContext,
         ICargoDashboardCacheService cache,
@@ -25,7 +23,6 @@ public class CreateCargoShipmentHandler
         ISystemLogService           systemLog)
     {
         _repository             = repository;
-        _cargoCompanyRepository = cargoCompanyRepository;
         _auditLogService        = auditLogService;
         _userContext            = userContext;
         _cache                  = cache;
@@ -48,15 +45,8 @@ public class CreateCargoShipmentHandler
         if (request.ShipmentDate == default)
             return OperationResult<CreateCargoShipmentResponse>.Fail("Kargo tarihi zorunludur.");
 
-        // Manuel URL varsa doğrudan kullan; boşsa şablon + takip numarasından üret
-        string? trackingUrl = string.IsNullOrWhiteSpace(request.TrackingUrl) ? null : request.TrackingUrl.Trim();
-        if (trackingUrl is null && request.CargoCompanyId.HasValue && !string.IsNullOrWhiteSpace(request.TrackingNumber))
-        {
-            var company = await _cargoCompanyRepository.GetByIdAsync(request.CargoCompanyId.Value);
-            if (company is not null && !string.IsNullOrWhiteSpace(company.TrackingUrlTemplate))
-                trackingUrl = string.Format(company.TrackingUrlTemplate, request.TrackingNumber.Trim());
-        }
-
+        // Takip/portal bağlantısı için tek kaynak CargoCompany.PortalUrl'dir;
+        // kayıt bazlı TrackingUrl artık üretilmez (eski kayıtlardaki değerler korunur)
         var entity = new Domain.Entities.CargoShipment
         {
             Id                  = Guid.NewGuid(),
@@ -89,7 +79,6 @@ public class CreateCargoShipmentHandler
             ReceivedBy          = _textNormalization.Normalize(request.ReceivedBy),
             VehiclePlate        = _textNormalization.Normalize(request.VehiclePlate),
             TrackingNumber      = request.TrackingNumber?.Trim(),
-            TrackingUrl         = trackingUrl,
             Status              = request.Status,
             NotificationStatus  = CargoNotificationStatus.NotNotified,
             Notes               = _textNormalization.Normalize(request.Notes),

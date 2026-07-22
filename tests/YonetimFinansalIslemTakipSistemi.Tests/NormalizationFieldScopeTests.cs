@@ -70,7 +70,7 @@ public class NormalizationFieldScopeTests
         var user = new FakeUserContext { TextCasePreference = TextCasePreference.Uppercase };
         user.GrantAll();
         var handler = new CreateCargoShipmentHandler(
-            repo, new FakeCargoCompanyRepository(), new FakeAuditLogService(),
+            repo, new FakeAuditLogService(),
             user, new FakeCargoDashboardCache(), new UserTextNormalizationService(user),
             new FakeSystemLogService());
 
@@ -81,8 +81,7 @@ public class NormalizationFieldScopeTests
             Status         = CargoShipmentStatus.Prepared,
             VehiclePlate   = "34 abc 123",
             SenderName     = "ışıl hanım",
-            TrackingNumber = "TrK-0042x",
-            TrackingUrl    = "https://Kargo.com/Takip/TrK-0042x"
+            TrackingNumber = "TrK-0042x"
         });
 
         Assert.True(result.Success);
@@ -91,6 +90,5 @@ public class NormalizationFieldScopeTests
         Assert.Equal("34 ABC 123", entity.VehiclePlate);   // plaka dönüştürülür
         Assert.Equal("IŞIL HANIM", entity.SenderName);
         Assert.Equal("TrK-0042x", entity.TrackingNumber);  // kod alanı dönüştürülmez
-        Assert.Equal("https://Kargo.com/Takip/TrK-0042x", entity.TrackingUrl); // URL dönüştürülmez
     }
 }

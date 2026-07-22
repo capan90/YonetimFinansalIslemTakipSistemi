@@ -75,10 +75,8 @@
                           Header="Görünüm Ayarları"
                           ToolTip="Uygulama temasını (açık / koyu) değiştirin."
                           Click="OpenAppearanceSettings_Click"/>
-                <MenuItem x:Name="MenuItemHarfDuyarliligi"
-                          Header="Harf Duyarlılığı"
-                          ToolTip="Girdiğiniz metinlerin BÜYÜK/küçük harf dönüşüm tercihini belirleyin (kullanıcı bazlı)."
-                          Click="OpenTextCaseSettings_Click"/>
+                <!-- Harf Duyarlılığı bilinçli olarak burada DEĞİL: kişisel ayardır,
+                     Yardım → Kullanıcı Ayarlarım altından yetkisiz erişilir -->
                 <Separator/>
                 <MenuItem x:Name="MenuItemSistemSagligi"
                           Header="Sistem Sağlığı"

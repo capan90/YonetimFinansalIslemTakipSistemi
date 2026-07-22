@@ -130,8 +130,9 @@
                                     Binding="{Binding VehiclePlate}"
                                     Width="90"/>
 
-                <!-- TrackingUrl tıklanabilir bağlantı olarak gösterilir -->
-                <DataGridTemplateColumn Header="Takip Linki" Width="80">
+                <!-- Tek bağlantı kaynağı: firma PortalUrl (eski kayıtlarda saklı TrackingUrl korunur);
+                     DTO seviyesinde birleştirilir -->
+                <DataGridTemplateColumn Header="Portal / Takip" Width="85">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock>

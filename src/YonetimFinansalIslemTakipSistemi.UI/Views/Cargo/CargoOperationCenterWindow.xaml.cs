@@ -148,10 +148,14 @@ public partial class CargoOperationCenterWindow : Window
 
     private void TrackButton_Click(object sender, RoutedEventArgs e)
     {
+        // DTO'daki bağlantı tek kaynaktan gelir: firma PortalUrl (eski kayıtta saklı TrackingUrl)
         var url = _dto.TrackingUrl;
         if (string.IsNullOrWhiteSpace(url))
         {
-            _dialogService.ShowWarning("Bu kargo için takip linki bulunmamaktadır.", "Takip Et");
+            _dialogService.ShowWarning(
+                "Bu kargo için portal/takip bağlantısı bulunmamaktadır.\n" +
+                "Bağlantı, Kargo Firmaları ekranındaki 'Kargo Portal / Takip Bağlantısı' alanından tanımlanır.",
+                "Portalı / Takibi Aç");
             return;
         }
         try
@@ -160,7 +164,7 @@ public partial class CargoOperationCenterWindow : Window
         }
         catch (Exception ex)
         {
-            _dialogService.ShowError($"Takip linki açılamadı: {ex.Message}");
+            _dialogService.ShowError($"Portal/takip bağlantısı açılamadı: {ex.Message}");
         }
     }
 

@@ -41,7 +41,6 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
     private string _receivedBy    = string.Empty;
     private string _vehiclePlate  = string.Empty;
     private string _trackingNumber = string.Empty;
-    private string _trackingUrl    = string.Empty;
     private string _notes                 = string.Empty;
     private string _attentionContactInput = string.Empty;
     private CargoCompanyDto? _selectedCargoCompany;
@@ -81,19 +80,7 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
     public string TrackingNumber
     {
         get => _trackingNumber;
-        set
-        {
-            _trackingNumber = value;
-            OnPropertyChanged();
-            // TrackingUrl boşsa otomatik üret; kullanıcı manuel girmişse dokunma
-            if (string.IsNullOrWhiteSpace(TrackingUrl))
-                TryAutoFillTrackingUrl();
-        }
-    }
-    public string TrackingUrl
-    {
-        get => _trackingUrl;
-        set { _trackingUrl = value; OnPropertyChanged(); }
+        set { _trackingNumber = value; OnPropertyChanged(); }
     }
     public string Notes  { get => _notes; set { _notes = value; OnPropertyChanged(); } }
 
@@ -114,15 +101,14 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
         {
             _selectedCargoCompany = value;
             OnPropertyChanged();
-            // Portal bağlantısı seçili firmanın kaydından gelir — firma adına if/else yazılmaz
+            // Portal/takip bağlantısı seçili firmanın kaydından gelir — tek kaynak
+            // CargoCompany.PortalUrl; firma adına if/else yazılmaz
             OnPropertyChanged(nameof(SelectedCompanyPortalUrl));
             OnPropertyChanged(nameof(HasPortalUrl));
-            if (string.IsNullOrWhiteSpace(TrackingUrl))
-                TryAutoFillTrackingUrl();
         }
     }
 
-    /// <summary>Seçili kargo firmasının portal bağlantısı; UI'da salt okunur gösterilir.</summary>
+    /// <summary>Seçili kargo firmasının portal/takip bağlantısı; UI'da salt okunur gösterilir.</summary>
     public string? SelectedCompanyPortalUrl => _selectedCargoCompany?.PortalUrl;
 
     public bool HasPortalUrl => !string.IsNullOrWhiteSpace(SelectedCompanyPortalUrl);
@@ -317,9 +303,7 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
         DeliveredBy            = dto.DeliveredBy    ?? string.Empty;
         ReceivedBy             = dto.ReceivedBy     ?? string.Empty;
         VehiclePlate           = dto.VehiclePlate   ?? string.Empty;
-        _trackingNumber        = dto.TrackingNumber ?? string.Empty; // backing field: TrackingUrl auto-fill tetiklenmesin
-        TrackingUrl            = dto.TrackingUrl    ?? string.Empty;
-        OnPropertyChanged(nameof(TrackingNumber));
+        TrackingNumber         = dto.TrackingNumber ?? string.Empty;
         Notes                  = dto.Notes          ?? string.Empty;
         SelectedShipmentType        = dto.ShipmentTypeDisplay ?? "Evrak";
         SelectedPriority            = dto.PriorityDisplay;
@@ -349,7 +333,7 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
     }
 
     /// <summary>
-    /// Kopyala: ID/ShipmentNumber/audit/TrackingNumber/TrackingUrl/Status/NotificationStatus sıfırlanır,
+    /// Kopyala: ID/ShipmentNumber/audit/TrackingNumber/Status/NotificationStatus sıfırlanır,
     /// geri kalan operasyonel alanlar kaynak kayıttan doldurulur.
     /// </summary>
     public async Task InitializeForCopyAsync(CargoShipmentDto source)
@@ -363,9 +347,7 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
         DeliveredBy        = string.Empty;
         ReceivedBy         = string.Empty;
         VehiclePlate       = source.VehiclePlate ?? string.Empty;
-        _trackingNumber    = string.Empty; // TrackingUrl auto-fill tetiklenmesin
-        TrackingUrl        = string.Empty;
-        OnPropertyChanged(nameof(TrackingNumber));
+        TrackingNumber     = string.Empty;
         Notes              = source.Notes ?? string.Empty;
         SelectedShipmentType       = source.ShipmentTypeDisplay ?? "Evrak";
         SelectedPriority           = source.PriorityDisplay;
@@ -453,14 +435,6 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
             ReceiverName = d.CompanyName;
     }
 
-    private void TryAutoFillTrackingUrl()
-    {
-        if (_selectedCargoCompany is null) return;
-        if (string.IsNullOrWhiteSpace(_selectedCargoCompany.TrackingUrlTemplate)) return;
-        if (string.IsNullOrWhiteSpace(_trackingNumber)) return;
-        TrackingUrl = string.Format(_selectedCargoCompany.TrackingUrlTemplate, _trackingNumber.Trim());
-    }
-
     private async Task ExecuteSaveAsync()
     {
         ErrorMessage = null;
@@ -488,7 +462,6 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
                 ReceivedBy         = NullIfEmpty(ReceivedBy),
                 VehiclePlate       = NullIfEmpty(VehiclePlate),
                 TrackingNumber     = NullIfEmpty(TrackingNumber),
-                TrackingUrl        = NullIfEmpty(TrackingUrl),
                 Status             = status,
                 NotificationStatus = notificationStatus,
                 Notes              = NullIfEmpty(Notes),
@@ -536,7 +509,6 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
                 ReceivedBy         = NullIfEmpty(ReceivedBy),
                 VehiclePlate       = NullIfEmpty(VehiclePlate),
                 TrackingNumber     = NullIfEmpty(TrackingNumber),
-                TrackingUrl        = NullIfEmpty(TrackingUrl),
                 Status             = status,
                 Notes              = NullIfEmpty(Notes),
                 CreatedByUserId    = _userContext.UserId

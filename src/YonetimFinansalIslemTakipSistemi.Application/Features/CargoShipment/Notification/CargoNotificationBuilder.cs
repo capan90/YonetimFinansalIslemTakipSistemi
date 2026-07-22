@@ -25,7 +25,10 @@ public static class CargoNotificationBuilder
             // Kargo firması: navigasyon (etiket mimarisiyle tutarlı)
             CargoCompany    = shipment.CargoCompany?.Name,
             TrackingNumber  = shipment.TrackingNumber,
-            TrackingUrl     = shipment.TrackingUrl,
+            // Tek bağlantı kaynağı: firma PortalUrl; eski kayıtlarda saklı TrackingUrl korunur
+            TrackingUrl     = !string.IsNullOrWhiteSpace(shipment.TrackingUrl)
+                                ? shipment.TrackingUrl
+                                : shipment.CargoCompany?.PortalUrl,
 
             Sender          = shipment.SenderName,
             ShipmentDate    = shipment.ShipmentDate,

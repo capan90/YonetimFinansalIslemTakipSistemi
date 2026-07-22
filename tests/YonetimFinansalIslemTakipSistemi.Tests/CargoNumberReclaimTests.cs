@@ -24,7 +24,7 @@ public class CargoNumberReclaimTests
         user.GrantAll();
 
         var create = new CreateCargoShipmentHandler(
-            repo, new FakeCargoCompanyRepository(), audit, user,
+            repo, audit, user,
             new FakeCargoDashboardCache(), new UserTextNormalizationService(user), new FakeSystemLogService());
         var delete = new DeleteCargoShipmentHandler(repo, audit, user, new FakeCargoDashboardCache(), new FakeSystemLogService());
         return (create, delete, repo, audit);

@@ -93,7 +93,10 @@ public class GetCargoShipmentListHandler
                 ReceivedBy           = x.ReceivedBy,
                 VehiclePlate         = x.VehiclePlate,
                 TrackingNumber       = x.TrackingNumber,
-                TrackingUrl          = x.TrackingUrl,
+                // Tek bağlantı kaynağı: firma PortalUrl; eski kayıtlarda saklı TrackingUrl korunur
+                TrackingUrl          = !string.IsNullOrWhiteSpace(x.TrackingUrl)
+                                        ? x.TrackingUrl
+                                        : x.CargoCompany?.PortalUrl,
                 Status                    = x.Status,
                 StatusDisplay             = DisplayStatus(x.Status, x.Direction),
                 NotificationStatus        = x.NotificationStatus,

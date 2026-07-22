@@ -56,9 +56,17 @@
                             </Style>
                         </Menu.Resources>
                         <MenuItem Header="Yardım ▾" Foreground="White" Background="#2E5F9F" BorderBrush="#3B7BC8" BorderThickness="1" Padding="12,5" Height="28">
-                            <MenuItem Header="Güncellemeleri Denetle" Click="CheckUpdates_Click" Foreground="Black"/>
-                            <MenuItem Header="Mail Ayarlarım" Click="OpenPersonalMailSettings_Click" Foreground="Black"/>
-                            <MenuItem Header="Log Klasörünü Aç" Click="OpenLogDirectory_Click" Foreground="Black"/>
+                            <!-- Teknik yardım öğeleri CanAccessHelpMenu iznine tabidir (code-behind) -->
+                            <MenuItem x:Name="MenuItemCheckUpdates" Header="Güncellemeleri Denetle" Click="CheckUpdates_Click" Foreground="Black"/>
+                            <MenuItem x:Name="MenuItemPersonalMail" Header="Mail Ayarlarım" Click="OpenPersonalMailSettings_Click" Foreground="Black"/>
+                            <MenuItem x:Name="MenuItemLogFolder" Header="Log Klasörünü Aç" Click="OpenLogDirectory_Click" Foreground="Black"/>
+                            <!-- Kişisel kullanıcı ayarları: izin gerektirmez — yalnızca kargo yetkili
+                                 kullanıcı da kendi harf tercihine buradan erişir (MainWindow'a geçmeden) -->
+                            <MenuItem Header="Kullanıcı Ayarlarım" Foreground="Black">
+                                <MenuItem Header="Harf Duyarlılığı"
+                                          Click="OpenTextCaseSettings_Click" Foreground="Black"
+                                          ToolTip="Girdiğiniz metinlerin BÜYÜK/küçük harf dönüşüm tercihini belirleyin (kişisel ayar)."/>
+                            </MenuItem>
                         </MenuItem>
                     </Menu>
 

@@ -115,11 +115,11 @@
             <TextBox Grid.Column="0"
                      Text="{Binding SelectedCompanyPortalUrl, Mode=OneWay}"
                      IsReadOnly="True" Background="#F1F5F9" Foreground="#475569"
-                     ToolTip="Kargo firmasının portal bağlantısı — Kargo Firmaları ekranından düzenlenir"/>
+                     ToolTip="Kargo firmasının portal/takip bağlantısı — yalnızca Kargo Firmaları ekranından düzenlenir"/>
             <Button Grid.Column="2"
-                    Content="Portalı Aç" Width="80" Height="22"
+                    Content="Portalı / Takibi Aç" Width="115" Height="22"
                     VerticalAlignment="Center"
-                    ToolTip="Portal bağlantısını varsayılan tarayıcıda açar"
+                    ToolTip="Firmanın portal/takip bağlantısını varsayılan tarayıcıda açar"
                     Click="OpenPortalButton_Click"/>
         </Grid>
 
@@ -404,14 +404,8 @@
             </StackPanel>
         </Grid>
 
-        <Label Content="Takip Linki:" Margin="0,0,0,2"
-               ToolTip="Kargo firmasının URL şablonu varsa Takip No ile otomatik doldurulur. Boşsa manuel giriniz."/>
-        <TextBox Text="{Binding TrackingUrl, UpdateSourceTrigger=PropertyChanged}"
-                 Margin="0,0,0,8"
-                 Foreground="#1565C0"
-                 Background="#F0F8FF"
-                 ToolTip="Boş ise Kargo Firması şablonu + Takip No ile otomatik üretilir. Manuel giriş otomatik üretimi devre dışı bırakır."/>
-
+        <!-- Takip Linki alanı kaldırıldı: portal/takip bağlantısının tek kaynağı
+             seçili firmanın PortalUrl'i; üstteki "Portalı / Takibi Aç" satırı kullanılır -->
         <Label Content="Notlar:" Margin="0,0,0,2"/>
         <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}"
                  Height="48" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"

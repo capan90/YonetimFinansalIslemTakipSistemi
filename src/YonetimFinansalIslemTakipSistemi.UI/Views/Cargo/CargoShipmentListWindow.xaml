@@ -58,7 +58,7 @@
             </StackPanel>
         </DockPanel>
 
-        <!-- Araç çubuğu — 2. satır: Tek Operasyon butonu -->
+        <!-- Araç çubuğu — 2. satır: Operasyon + Excel içe aktarma -->
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,6">
             <Button x:Name="OperationButton"
                     Content="⚡ Operasyon" Width="120" Margin="0,0,0,0"
@@ -66,6 +66,11 @@
                     IsEnabled="{Binding HasSelected}"
                     Click="OperationButton_Click"
                     ToolTip="Seçili kargo için operasyon merkezini açar: Etiket, WhatsApp, Mail, Takip, Durum Değiştir"/>
+            <Button x:Name="ImportButton"
+                    Content="📥 Excel'den İçe Aktar" Width="165" Margin="8,0,0,0"
+                    Style="{StaticResource SecondaryButton}"
+                    Click="ImportButton_Click"
+                    ToolTip="Excel dosyasından toplu kargo kaydı oluşturur: analiz → önizleme → onay → içe aktarma"/>
         </StackPanel>
 
         <!-- Liste + boş durum mesajı -->

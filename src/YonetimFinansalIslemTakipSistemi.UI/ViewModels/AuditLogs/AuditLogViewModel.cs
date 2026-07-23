@@ -91,6 +91,7 @@ public class AuditLogViewModel : INotifyPropertyChanged
         Actions.Add(new AuditActionOption(AuditAction.WhatsAppContactUpdated,  "WhatsApp Kişisi Güncellendi"));
         Actions.Add(new AuditActionOption(AuditAction.WhatsAppContactDeleted,  "WhatsApp Kişisi Silindi"));
         Actions.Add(new AuditActionOption(AuditAction.ReportExported,          "Rapor Dışa Aktarıldı"));
+        Actions.Add(new AuditActionOption(AuditAction.CargoImportCompleted,    "Kargo Toplu İçe Aktarma"));
         FilterAction = Actions[0];
 
         // "Tüm Kullanıcılar" constructor'da eklenir — DataContext atanmadan önce hazır olur

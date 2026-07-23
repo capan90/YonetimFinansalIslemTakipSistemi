@@ -46,6 +46,7 @@ public partial class CargoShipmentListWindow : Window
         CopyButton.Visibility   = manageVisibility;
         EditButton.Visibility   = manageVisibility;
         DeleteButton.Visibility = manageVisibility;
+        ImportButton.Visibility = manageVisibility;
 
         Loaded += async (_, _) => await _vm.LoadAsync();
     }
@@ -55,6 +56,14 @@ public partial class CargoShipmentListWindow : Window
         var form = new CargoShipmentEditWindow(_services) { Owner = this };
         await form.PrepareNewAsync(_vm.Direction);
         if (form.ShowDialog() == true) await _vm.LoadAsync();
+    }
+
+    private async void ImportButton_Click(object sender, RoutedEventArgs e)
+    {
+        var wizard = new CargoImportWindow(_services, _vm.Direction) { Owner = this };
+        wizard.ShowDialog();
+        // X ile kapatılsa bile içe aktarma yapıldıysa liste yenilenir
+        if (wizard.ImportCompleted) await _vm.LoadAsync();
     }
 
     private async void CopyButton_Click(object sender, RoutedEventArgs e)

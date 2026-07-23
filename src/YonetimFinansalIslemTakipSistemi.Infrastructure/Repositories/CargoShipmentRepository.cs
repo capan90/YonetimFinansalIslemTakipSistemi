@@ -100,6 +100,90 @@ public class CargoShipmentRepository : ICargoShipmentRepository
         }
     }
 
+    public async Task AddRangeWithAutoNumberAsync(IReadOnlyList<CargoShipment> entities)
+    {
+        if (entities.Count == 0) return;
+
+        var direction = entities[0].Direction;
+        if (entities.Any(e => e.Direction != direction))
+            throw new ArgumentException("Toplu içe aktarmada tüm kayıtlar aynı yönde olmalıdır.", nameof(entities));
+
+        // AddWithAutoNumberAsync ile aynı atomik desen; fark: sayaç TEK seferde +N
+        // artırılarak numara aralığı rezerve edilir ve tüm kayıtlar tek transaction'da
+        // eklenir (ya hep ya hiç). Rollback'te sayaç artışı da geri döner — boşluk oluşmaz.
+        // Sayaç satırı kilidi commit'e kadar tutulur; eşzamanlı tekil eklemeler kısa süre bekler.
+        for (var attempt = 1; ; attempt++)
+        {
+            await using var tx = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                await _context.Database.ExecuteSqlAsync($@"
+                    INSERT INTO cargo_number_counters (""Direction"", ""LastValue"")
+                    VALUES ({(int)direction}, {entities.Count})
+                    ON CONFLICT (""Direction"")
+                    DO UPDATE SET ""LastValue"" = cargo_number_counters.""LastValue"" + {entities.Count}");
+
+                var last = await _context.CargoNumberCounters
+                    .AsNoTracking()
+                    .Where(c => c.Direction == direction)
+                    .Select(c => c.LastValue)
+                    .SingleAsync();
+
+                var first = last - entities.Count + 1;
+                for (var i = 0; i < entities.Count; i++)
+                    entities[i].ShipmentNumber = CargoNumberFormatter.Format(direction, first + i);
+
+                await _context.CargoShipments.AddRangeAsync(entities);
+                await _context.SaveChangesAsync();
+                await tx.CommitAsync();
+                return;
+            }
+            catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.UndefinedTable)
+            {
+                throw new Application.Common.DataStoreException(
+                    "Veritabanı şeması güncel değil: 'cargo_number_counters' tablosu bulunamadı. " +
+                    "Lütfen uygulamayı yeniden başlatın (migration açılışta uygulanır) veya " +
+                    "'20260722083350_AddUserPrefsWhatsAppDirectoryAndCargoCounters' migration'ını uygulayın.", ex);
+            }
+            catch (DbUpdateException ex) when (attempt < 3 && ex.InnerException is PostgresException { SqlState: "23505" })
+            {
+                // Sayaç mevcut verinin gerisindeyse unique index yakalar — senkronla ve yeniden dene
+                foreach (var entity in entities)
+                    _context.Entry(entity).State = EntityState.Detached;
+                await tx.RollbackAsync();
+                await ResyncCounterAsync(direction);
+
+                await _systemLog.LogWarningAsync(
+                    "CargoNumber",
+                    $"Toplu içe aktarmada numara çakışması yakalandı; sayaç yeniden senkronlandı (deneme {attempt}, yön {direction}).",
+                    source: nameof(CargoShipmentRepository));
+            }
+        }
+    }
+
+    public async Task<IReadOnlyList<CargoShipment>> GetActiveForImportCheckAsync(
+        CargoShipmentDirection direction, DateTime fromUtc, DateTime toUtc)
+        => await _context.CargoShipments
+            .AsNoTracking()
+            .Where(x => x.Direction == direction
+                     && x.ShipmentDate >= fromUtc
+                     && x.ShipmentDate <= toUtc)
+            .ToListAsync();
+
+    public async Task<IReadOnlyList<CargoShipment>> GetByTrackingNumbersAsync(
+        CargoShipmentDirection direction, IReadOnlyCollection<string> trackingNumbers)
+    {
+        // Karşılaştırma anahtarı: TRIM + UPPER — analiz tarafındaki normalize ile aynı
+        var keys = trackingNumbers.Select(t => t.Trim().ToUpperInvariant()).ToList();
+
+        return await _context.CargoShipments
+            .AsNoTracking()
+            .Where(x => x.Direction == direction
+                     && x.TrackingNumber != null
+                     && keys.Contains(x.TrackingNumber.Trim().ToUpper()))
+            .ToListAsync();
+    }
+
     public async Task<long?> SoftDeleteWithNumberReclaimAsync(CargoShipment entity)
     {
         // İş kuralı: yalnızca yönün EN SON numarası silinirse numara geri kullanılabilir;

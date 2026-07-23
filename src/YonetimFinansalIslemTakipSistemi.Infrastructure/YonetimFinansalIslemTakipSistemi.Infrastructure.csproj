@@ -10,7 +10,8 @@
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.1" />
-    <PackageReference Include="ClosedXML" Version="*" />
+    <!-- Sürüm pinli: import/export davranışının sürüm sürprizi yaşamaması için -->
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.*" />
     <!-- Design paketi yalnızca migration araçları içindir; çalışma zamanında dağıtılmaz. -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.1">

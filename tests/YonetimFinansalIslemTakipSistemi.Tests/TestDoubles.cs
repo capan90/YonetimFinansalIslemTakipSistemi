@@ -78,9 +78,32 @@ internal sealed class FakeSystemLogService : ISystemLogService
 
 internal sealed class FakeCargoDashboardCache : ICargoDashboardCacheService
 {
+    public int InvalidateCount { get; private set; }
+
     public Application.Features.CargoShipment.Queries.GetCargoDashboard.CargoDashboardDto? Get() => null;
     public void Set(Application.Features.CargoShipment.Queries.GetCargoDashboard.CargoDashboardDto dto) { }
-    public void Invalidate() { }
+    public void Invalidate() => InvalidateCount++;
+}
+
+internal sealed class FakeCompanyDirectoryRepository : ICompanyDirectoryRepository
+{
+    public List<CompanyDirectory> Items { get; } = [];
+
+    public Task<CompanyDirectory?> GetByIdAsync(Guid id)
+        => Task.FromResult(Items.FirstOrDefault(x => x.Id == id && !x.IsDeleted));
+
+    public Task<CompanyDirectory?> GetByIdWithTrackingAsync(Guid id) => GetByIdAsync(id);
+
+    public Task<IReadOnlyList<CompanyDirectory>> GetAllAsync()
+        => Task.FromResult<IReadOnlyList<CompanyDirectory>>(Items.Where(x => !x.IsDeleted).ToList());
+
+    public Task AddAsync(CompanyDirectory entity)
+    {
+        Items.Add(entity);
+        return Task.CompletedTask;
+    }
+
+    public Task UpdateAsync(CompanyDirectory entity) => Task.CompletedTask;
 }
 
 /// <summary>
@@ -137,6 +160,62 @@ internal sealed class FakeCargoShipmentRepository : ICargoShipmentRepository
             Added.Add(entity);
         }
         return Task.CompletedTask;
+    }
+
+    public Task AddRangeWithAutoNumberAsync(IReadOnlyList<CargoShipment> entities)
+    {
+        if (entities.Count == 0) return Task.CompletedTask;
+
+        var direction = entities[0].Direction;
+        if (entities.Any(e => e.Direction != direction))
+            throw new ArgumentException("Toplu içe aktarmada tüm kayıtlar aynı yönde olmalıdır.", nameof(entities));
+
+        // Gerçek repo gibi: sayaç tek seferde +N artar, aralık dağıtılır, hepsi atomik
+        lock (_counterLock)
+        {
+            if (FailNextAddRange)
+            {
+                FailNextAddRange = false;
+                throw new InvalidOperationException("Simulated batch failure");
+            }
+
+            var last  = _counters.GetValueOrDefault(direction) + entities.Count;
+            _counters[direction] = last;
+            var first = last - entities.Count + 1;
+
+            for (var i = 0; i < entities.Count; i++)
+            {
+                entities[i].ShipmentNumber = CargoNumberFormatter.Format(direction, first + i);
+                if (!_usedNumbers.Add(entities[i].ShipmentNumber!))
+                    throw new InvalidOperationException($"Duplicate shipment number: {entities[i].ShipmentNumber}");
+                Added.Add(entities[i]);
+            }
+        }
+        return Task.CompletedTask;
+    }
+
+    /// <summary>true ise sıradaki toplu ekleme, transaction rollback'ini simüle ederek exception fırlatır.</summary>
+    public bool FailNextAddRange { get; set; }
+
+    public Task<IReadOnlyList<CargoShipment>> GetActiveForImportCheckAsync(
+        CargoShipmentDirection direction, DateTime fromUtc, DateTime toUtc)
+        => Task.FromResult<IReadOnlyList<CargoShipment>>(AllRecords
+            .Where(x => !x.IsDeleted
+                     && x.Direction == direction
+                     && x.ShipmentDate >= fromUtc
+                     && x.ShipmentDate <= toUtc)
+            .ToList());
+
+    public Task<IReadOnlyList<CargoShipment>> GetByTrackingNumbersAsync(
+        CargoShipmentDirection direction, IReadOnlyCollection<string> trackingNumbers)
+    {
+        var keys = trackingNumbers.Select(t => t.Trim().ToUpperInvariant()).ToHashSet();
+        return Task.FromResult<IReadOnlyList<CargoShipment>>(AllRecords
+            .Where(x => !x.IsDeleted
+                     && x.Direction == direction
+                     && x.TrackingNumber is not null
+                     && keys.Contains(x.TrackingNumber.Trim().ToUpperInvariant()))
+            .ToList());
     }
 
     public Task<long?> SoftDeleteWithNumberReclaimAsync(CargoShipment entity)

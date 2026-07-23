@@ -45,5 +45,9 @@ public enum AuditAction
     UserLoggedOut,
 
     // Finansal veri dışa aktarımı (PDF/Excel) — uyum/izlenebilirlik gereği denetlenir
-    ReportExported
+    ReportExported,
+
+    // Kargo toplu içe aktarma (Excel vb. dosyadan) — özet kaydı; satır bazlı
+    // kayıtlar ayrıca CargoShipmentCreated olarak yazılır
+    CargoImportCompleted
 }

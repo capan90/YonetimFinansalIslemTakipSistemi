@@ -73,6 +73,7 @@ public class GetAuditLogsHandler
         AuditAction.WhatsAppContactDeleted  => "WhatsApp Kişisi Silindi",
         AuditAction.UserLoggedOut           => "Çıkış Yapıldı",
         AuditAction.ReportExported          => "Rapor Dışa Aktarıldı",
+        AuditAction.CargoImportCompleted    => "Kargo Toplu İçe Aktarma",
         _                                   => action.ToString()
     };
 }

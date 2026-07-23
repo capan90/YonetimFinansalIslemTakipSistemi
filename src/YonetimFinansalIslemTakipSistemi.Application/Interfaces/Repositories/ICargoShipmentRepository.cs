@@ -19,6 +19,24 @@ public interface ICargoShipmentRepository
     Task AddWithAutoNumberAsync(CargoShipment entity);
 
     /// <summary>
+    /// Toplu içe aktarma: TÜM kayıtlar tek transaction'da eklenir (ya hep ya hiç).
+    /// Sayaç bir kez +N artırılarak numara aralığı rezerve edilir; rollback'te
+    /// sayaç artışı da geri döner. Tüm kayıtlar aynı yönde olmalıdır.
+    /// </summary>
+    Task AddRangeWithAutoNumberAsync(IReadOnlyList<CargoShipment> entities);
+
+    /// <summary>
+    /// İçe aktarma mükerrer kontrolü: verilen tarih aralığındaki (sınırlar dahil)
+    /// aktif kayıtlar. Navigation include edilmez — yalnızca anahtar alanlar okunur.
+    /// </summary>
+    Task<IReadOnlyList<CargoShipment>> GetActiveForImportCheckAsync(
+        CargoShipmentDirection direction, DateTime fromUtc, DateTime toUtc);
+
+    /// <summary>İçe aktarma mükerrer kontrolü: takip numarası eşleşen aktif kayıtlar (yön filtreli).</summary>
+    Task<IReadOnlyList<CargoShipment>> GetByTrackingNumbersAsync(
+        CargoShipmentDirection direction, IReadOnlyCollection<string> trackingNumbers);
+
+    /// <summary>
     /// Kaydı soft delete eder; yalnızca yönün EN SON üretilen numarası siliniyorsa
     /// (sayaç = kayıt numarası ve daha yüksek numaralı kayıt yoksa) sayaç aynı
     /// transaction içinde bir geri alınır ve numara sonraki kayıtta yeniden kullanılabilir.

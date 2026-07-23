@@ -59,6 +59,9 @@ public static class ServiceRegistration
         services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
         services.AddScoped<IAuditLogService, AuditLogService>();
         services.AddScoped<IReportExportService, ReportExportService>();
+        // İçe aktarma: okuyucu format bağımsız sözleşmenin Excel implementasyonudur
+        services.AddScoped<ICargoImportFileReader, ExcelCargoImportReader>();
+        services.AddScoped<ICargoImportTemplateService, ExcelCargoImportTemplateService>();
         services.AddScoped<IUserGridLayoutService, UserGridLayoutService>();
         services.AddScoped<IDatabaseConnectionTestService, DatabaseConnectionTestService>();
         services.AddScoped<IHealthCheckService, HealthCheckService>();

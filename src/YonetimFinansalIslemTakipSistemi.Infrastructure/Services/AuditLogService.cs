@@ -8,8 +8,13 @@ namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Services;
 public class AuditLogService : IAuditLogService
 {
     private readonly IAuditLogRepository _repository;
+    private readonly ISystemLogService   _systemLog;
 
-    public AuditLogService(IAuditLogRepository repository) => _repository = repository;
+    public AuditLogService(IAuditLogRepository repository, ISystemLogService systemLog)
+    {
+        _repository = repository;
+        _systemLog  = systemLog;
+    }
 
     public async Task WriteAsync(AuditAction action, Guid userId, string userName,
                                 string entityType, Guid? entityId,
@@ -29,6 +34,20 @@ public class AuditLogService : IAuditLogService
             Timestamp    = DateTime.UtcNow
         };
 
-        await _repository.AddAsync(log);
+        // Audit ve asıl mutasyon ayrı commit'lerdir: mutasyon DB'ye yazıldıktan sonra
+        // audit hatasının yukarı taşınması, kullanıcının işlemi başarısız sanıp
+        // tekrar denemesine (mükerrer kayıt) yol açar. Bu yüzden audit hatası ana
+        // işlemi asla bloke etmez; kayıp audit System Log'a Error olarak düşer.
+        // (SystemLogService kendi DB hatasında Serilog dosyasına düşer — döngü riski yok.)
+        try
+        {
+            await _repository.AddAsync(log);
+        }
+        catch (Exception ex)
+        {
+            await _systemLog.LogErrorAsync("Audit",
+                $"Audit kaydı yazılamadı: {action} | {entityType} | Kullanıcı: {userName}",
+                ex, source: nameof(AuditLogService));
+        }
     }
 }

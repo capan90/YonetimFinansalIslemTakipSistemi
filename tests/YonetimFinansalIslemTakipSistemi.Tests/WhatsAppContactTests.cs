@@ -12,6 +12,8 @@ public class WhatsAppContactTests
     {
         var repo = new FakeWhatsAppContactRepository();
         var user = new FakeUserContext { TextCasePreference = preference };
+        // Sprint 17: ortak rehber yazma yetkisi guard'ı — testler yetkili kullanıcıyla çalışır
+        user.GrantAll();
         var handler = new CreateWhatsAppContactHandler(
             repo, new FakeAuditLogService(), user, new UserTextNormalizationService(user));
         return (handler, repo, user);

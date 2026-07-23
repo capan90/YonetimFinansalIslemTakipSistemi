@@ -38,5 +38,12 @@ public enum AuditAction
     // WhatsApp rehberi (ortak)
     WhatsAppContactCreated,
     WhatsAppContactUpdated,
-    WhatsAppContactDeleted
+    WhatsAppContactDeleted,
+
+    // DİKKAT: Action kolonu int saklanır — yeni değerler HER ZAMAN sona eklenir,
+    // araya ekleme mevcut kayıtların anlamını kaydırır.
+    UserLoggedOut,
+
+    // Finansal veri dışa aktarımı (PDF/Excel) — uyum/izlenebilirlik gereği denetlenir
+    ReportExported
 }

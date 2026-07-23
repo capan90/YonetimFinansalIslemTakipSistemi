@@ -74,7 +74,6 @@ public class CreateUserHandler
     {
         if (string.IsNullOrWhiteSpace(request.FullName))  return "Ad Soyad boş olamaz.";
         if (string.IsNullOrWhiteSpace(request.UserName))  return "Kullanıcı adı boş olamaz.";
-        if (string.IsNullOrWhiteSpace(request.Password))  return "Şifre boş olamaz.";
-        return null;
+        return PasswordPolicy.Validate(request.Password);
     }
 }

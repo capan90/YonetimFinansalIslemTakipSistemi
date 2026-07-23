@@ -272,3 +272,110 @@ internal sealed class FakeWhatsAppContactRepository : IWhatsAppContactRepository
 
     public Task UpdateAsync(WhatsAppContact entity) => Task.CompletedTask;
 }
+
+/// <summary>Harf dönüşümü uygulamayan basit normalizasyon — yalnızca trim (Preserve davranışı).</summary>
+internal sealed class FakeTextNormalizationService : IUserTextNormalizationService
+{
+    public string? Normalize(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+}
+
+internal sealed class FakeCashTransactionRepository : ICashTransactionRepository
+{
+    public List<CashTransaction> Items { get; } = [];
+
+    public Task<CashTransaction?> GetByIdAsync(Guid id)
+        => Task.FromResult(Items.FirstOrDefault(x => x.Id == id && !x.IsDeleted));
+
+    public Task AddAsync(CashTransaction transaction)
+    {
+        Items.Add(transaction);
+        return Task.CompletedTask;
+    }
+
+    public Task UpdateAsync(CashTransaction transaction) => Task.CompletedTask;
+
+    public Task DeleteAsync(Guid id)
+    {
+        var entity = Items.FirstOrDefault(x => x.Id == id);
+        if (entity is not null) entity.IsDeleted = true;
+        return Task.CompletedTask;
+    }
+
+    public Task<IReadOnlyList<CashTransaction>> GetFilteredAsync(
+        DateTime? from, DateTime? to,
+        TransactionType? type, CurrencyType? currency)
+    {
+        var query = Items.Where(x => !x.IsDeleted);
+        if (from.HasValue)     query = query.Where(x => x.TransactionDate >= from.Value);
+        if (to.HasValue)       query = query.Where(x => x.TransactionDate <= to.Value);
+        if (type.HasValue)     query = query.Where(x => x.TransactionType == type.Value);
+        if (currency.HasValue) query = query.Where(x => x.CurrencyType == currency.Value);
+        return Task.FromResult<IReadOnlyList<CashTransaction>>(query.ToList());
+    }
+
+    public Task<IReadOnlyList<CashTransaction>> GetAllForBalanceAsync()
+        => Task.FromResult<IReadOnlyList<CashTransaction>>(Items
+            .Where(x => !x.IsDeleted)
+            .OrderBy(x => x.TransactionDate).ThenBy(x => x.CreatedAt).ThenBy(x => x.Id)
+            .ToList());
+
+    public Task<List<Application.Features.Reports.Queries.GetReport.CurrencyReportData>> GetReportDataAsync(
+        DateTime? startUtc, DateTime? endExclusiveUtc,
+        TransactionType? transactionType = null, CurrencyType? currencyType = null,
+        string? descriptionContains = null)
+        => Task.FromResult(new List<Application.Features.Reports.Queries.GetReport.CurrencyReportData>());
+
+    public Task<IReadOnlyList<CashTransaction>> GetFilteredForReportDetailAsync(
+        DateTime? startUtc, DateTime? endExclusiveUtc,
+        TransactionType? transactionType, CurrencyType? currencyType, string? descriptionContains)
+        => Task.FromResult<IReadOnlyList<CashTransaction>>([]);
+}
+
+internal sealed class FakeUserRepository : IUserRepository
+{
+    public List<User> Items { get; } = [];
+
+    public Task<User?> GetByIdAsync(Guid id)
+        => Task.FromResult(Items.FirstOrDefault(x => x.Id == id && !x.IsDeleted));
+
+    public Task<User?> GetByUserNameAsync(string userName)
+        => Task.FromResult(Items.FirstOrDefault(x =>
+            !x.IsDeleted && string.Equals(x.UserName, userName, StringComparison.OrdinalIgnoreCase)));
+
+    public Task<IReadOnlyList<User>> GetAllAsync()
+        => Task.FromResult<IReadOnlyList<User>>(Items.Where(x => !x.IsDeleted).ToList());
+
+    public Task AddAsync(User user)
+    {
+        Items.Add(user);
+        return Task.CompletedTask;
+    }
+
+    public Task UpdateAsync(User user) => Task.CompletedTask;
+
+    public Task DeleteAsync(Guid id)
+    {
+        var entity = Items.FirstOrDefault(x => x.Id == id);
+        if (entity is not null) entity.IsDeleted = true;
+        return Task.CompletedTask;
+    }
+}
+
+internal sealed class FakeUserPermissionRepository : IUserPermissionRepository
+{
+    public Dictionary<Guid, HashSet<PermissionType>> Map { get; } = [];
+
+    public Task<IReadOnlySet<PermissionType>> GetByUserIdAsync(Guid userId)
+        => Task.FromResult<IReadOnlySet<PermissionType>>(
+            Map.TryGetValue(userId, out var set) ? set : new HashSet<PermissionType>());
+
+    public Task UpdateAsync(Guid userId, IEnumerable<PermissionType> permissions)
+    {
+        Map[userId] = [.. permissions];
+        return Task.CompletedTask;
+    }
+
+    public Task<bool> AnyOtherActiveUserHasPermissionAsync(PermissionType permission, Guid excludeUserId)
+        => Task.FromResult(Map.Any(kv => kv.Key != excludeUserId && kv.Value.Contains(permission)));
+}

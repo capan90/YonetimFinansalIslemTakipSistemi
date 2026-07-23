@@ -15,7 +15,8 @@
     Geri yüklenecek .backup dosyasının tam yolu. (Zorunlu)
 
 .PARAMETER Database
-    Hedef veritabanı adı. Varsayılan: yonetim_db
+    Hedef veritabanı adı. (Zorunlu — yanlış DB'ye restore riskine karşı varsayılan yoktur.
+    Gerçek ortamlar: yonetim_dev = geliştirme, yonetim_finansal = üretim)
 
 .PARAMETER Host
     Sunucu adresi. Varsayılan: localhost
@@ -27,15 +28,16 @@
     Veritabanı kullanıcısı. Varsayılan: postgres
 
 .EXAMPLE
-    .\scripts\Restore-Database.ps1 -BackupFile "Backups\yonetim_db_20260624_090000.backup"
-    .\scripts\Restore-Database.ps1 -BackupFile "D:\backups\yonetim_db_20260624_090000.backup" -Host prod-server
+    .\scripts\Restore-Database.ps1 -BackupFile "Backups\yonetim_finansal_20260624_090000.backup" -Database yonetim_dev
+    .\scripts\Restore-Database.ps1 -BackupFile "D:\backups\yonetim_finansal_20260624_090000.backup" -Database yonetim_finansal -Host prod-server
 #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
     [string]$BackupFile,
 
-    [string]$Database = "yonetim_db",
+    [Parameter(Mandatory = $true)]
+    [string]$Database,
     [string]$Host     = "localhost",
     [string]$Port     = "5432",
     [string]$Username = "postgres"

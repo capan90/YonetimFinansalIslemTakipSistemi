@@ -35,7 +35,7 @@ public class QuickUpdateCargoStatusHandler
         if (entity is null)
             return OperationResult<bool>.Fail("Kargo kaydı bulunamadı.");
 
-        if (!CargoStatusTransitions.IsAllowed(entity.Status, request.NewStatus))
+        if (!CargoStatusTransitions.IsAllowed(entity.Status, request.NewStatus, entity.Direction))
             return OperationResult<bool>.Fail(
                 $"'{DisplayStatus(entity.Status)}' durumundan '{DisplayStatus(request.NewStatus)}' durumuna geçiş geçersizdir.");
 

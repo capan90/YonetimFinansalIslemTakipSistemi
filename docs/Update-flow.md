@@ -4,7 +4,7 @@
 
 V1: ClickOnce + UNC ağ klasörü dağıtımı.
 
-Startup güncelleme kontrolü → ClickOnce Foreground manifest (sıfır kod).
+Startup güncelleme kontrolü → uygulama içinden `StartupUpdateChecker` (ana ekran yüklendikten sonra, süreç başına bir kez).
 Manuel güncelleme kontrolü → UNC'deki `version.json` okunur, `IUpdateService` üzerinden yönetilir.
 
 `System.Deployment.Application` .NET 9'da mevcut değildir ve kullanılmaz.
@@ -27,12 +27,18 @@ Manuel güncelleme kontrolü → UNC'deki `version.json` okunur, `IUpdateService
 
 ## Startup Güncelleme Kontrolü
 
-Kod yazılmaz.
+`StartupUpdateChecker.RunOnceAsync` (UI/Services) ana pencere (`MainWindow` veya
+`CargoDashboardWindow`) yüklendikten sonra süreç başına bir kez çalışır:
 
-`pubxml` içindeki `<UpdateMode>Foreground</UpdateMode>` ayarı ClickOnce launcher'a uygulamanın
-açılmadan önce UNC klasöründeki manifest ile kendi manifestini karşılaştırmasını söyler.
-Yeni sürüm varsa ClickOnce kendi dialogunu gösterir; `<UpdateRequired>false</UpdateRequired>`
-olduğundan kullanıcı güncellemeyi erteleyebilir.
+- ClickOnce kurulumu değilse sessizce atlanır.
+- `version.json` okunamazsa veya sürüm güncelse kullanıcı rahatsız edilmez (hatalar loglanır).
+- Yeni sürüm varsa manuel akışla aynı çift onay diyalogları gösterilir; onayda
+  `.application` başlatılır ve uygulama kapanır.
+
+> Not: `pubxml` içindeki `<UpdateMode>Foreground</UpdateMode>` yalnızca Visual Studio
+> tabanlı publish'te anlamlıdır. `Publish-ClickOnce.ps1` (dotnet-mage) deployment
+> manifest'ine update aboneliği yazmadığından ClickOnce'un kendi startup kontrolü
+> devreye girmez; bu nedenle kontrol uygulama içinden yapılır.
 
 ---
 
@@ -101,12 +107,13 @@ Import-Certificate -FilePath "YonetimApp.cer" -CertStoreLocation "Cert:\LocalMac
 2. csproj <AssemblyVersion> artır (örn. 1.0.0.0 → 1.0.0.1)
    pubxml  <PublishVersion>  ile senkron tut
 
-3. # Lokal test
-   .\Publish-ClickOnce.ps1 -Version "1.0.0.1" -Sign $true
+3. # Lokal test (Development ayarlarıyla — bilinçli onay gerekir)
+   .\Publish-ClickOnce.ps1 -Version "1.0.0.1" -Sign $true -LocalTest
 
-   # Üretim (farklı UNC)
+   # Üretim (farklı UNC) — -Environment "Production" ZORUNLU:
+   # dev seed kullanıcısını kapatır ve appsettings.Production.json'ı devreye alır
    $env:YONETIM_UPDATE_PATH = "\\SUNUCU\YonetimPublish\"
-   .\Publish-ClickOnce.ps1 -Version "1.0.0.1" -Sign $true
+   .\Publish-ClickOnce.ps1 -Version "1.0.0.1" -Sign $true -Environment "Production"
 
    → dotnet publish (flat output) + dotnet-mage (manifest + imzalama) + version.json UNC'ye yazılır
    → ProviderURL: YONETIM_UPDATE_PATH set ise o UNC; set değilse \\localhost\YonetimPublish\
@@ -116,7 +123,11 @@ Import-Certificate -FilePath "YonetimApp.cer" -CertStoreLocation "Cert:\LocalMac
 
 ### Kritik Kural
 
-Migration **publish öncesi** uygulanır. Uygulama startup'ta migration çalıştırmaz.
+Migration **publish öncesi** elle uygulanır (adım 1). Ek güvenlik ağı olarak uygulama
+startup'ta `DatabaseMigrator.ApplyAsync()` ile bekleyen migration'ları da uygular
+(`App.xaml.cs`); publish öncesi adım atlanmışsa ilk açılan istemci şemayı günceller.
+Eski istemciler yeni şemayla uyumsuz kalabileceği için migration içeren sürümlerde
+publish öncesi uygulama esastır — startup migration yalnızca yedek mekanizmadır.
 DevDataSeeder migration runner değildir.
 
 ### `dotnet publish /p:PublishProfile=ClickOnce` Neden Çalışmıyor?
@@ -153,6 +164,7 @@ UNC kaynağı `YONETIM_UPDATE_PATH` env var'dan gelir; set edilmemişse `\\local
 | 3 | Kurulu sürüm, güncelleme var, her iki onayda Hayır | Hiçbir şey olmaz |
 | 4 | Kurulu sürüm, güncelleme var, her iki onayda Evet | .application açılır, uygulama kapanır |
 | 5 | UNC erişilemiyor | Warning: "Güncelleme sunucusuna erişilemiyor." |
-| 6 | Startup, yeni sürüm | ClickOnce dialog → Güncelle → yeni sürüm yüklenir |
+| 6 | Startup (login sonrası), yeni sürüm | Çift onay dialogu → Evet → .application açılır, uygulama kapanır |
 | 7 | Startup, güncel | Dialog çıkmaz, uygulama normal açılır |
-| 8 | Startup, ağ yok | UpdateRequired=false → ClickOnce atlar, uygulama açılır |
+| 8 | Startup, ağ yok | Dialog çıkmaz (hata loglanır), uygulama normal çalışır |
+| 9 | Logout → tekrar login | Startup kontrolü tekrarlanmaz (süreç başına bir kez) |

@@ -29,7 +29,10 @@ public partial class ReportWindow : Window
         new ReportPreviewWindow(
                 _vm.LastReportDto,
                 _services.GetRequiredService<IReportExportService>(),
-                _services.GetRequiredService<IDialogService>())
+                _services.GetRequiredService<IDialogService>(),
+                _services.GetRequiredService<IAuditLogService>(),
+                _services.GetRequiredService<ISystemLogService>(),
+                _services.GetRequiredService<IUserContext>())
             { Owner = this }
             .ShowDialog();
     }

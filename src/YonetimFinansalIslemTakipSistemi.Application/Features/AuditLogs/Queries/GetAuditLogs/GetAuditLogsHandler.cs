@@ -66,6 +66,13 @@ public class GetAuditLogsHandler
         AuditAction.CargoLabelPrinted       => "Kargo Etiketi Yazdırıldı",
         AuditAction.CargoWhatsAppPrepared   => "WhatsApp Mesajı Hazırlandı",
         AuditAction.CargoMailPrepared       => "Mail Mesajı Hazırlandı",
+        AuditAction.MailSettingsUpdated     => "Mail Ayarları Güncellendi",
+        AuditAction.UserPreferenceUpdated   => "Kullanıcı Tercihi Güncellendi",
+        AuditAction.WhatsAppContactCreated  => "WhatsApp Kişisi Oluşturuldu",
+        AuditAction.WhatsAppContactUpdated  => "WhatsApp Kişisi Güncellendi",
+        AuditAction.WhatsAppContactDeleted  => "WhatsApp Kişisi Silindi",
+        AuditAction.UserLoggedOut           => "Çıkış Yapıldı",
+        AuditAction.ReportExported          => "Rapor Dışa Aktarıldı",
         _                                   => action.ToString()
     };
 }

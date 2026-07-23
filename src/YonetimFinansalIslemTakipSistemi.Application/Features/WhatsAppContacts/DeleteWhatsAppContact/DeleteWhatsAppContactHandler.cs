@@ -27,6 +27,10 @@ public class DeleteWhatsAppContactHandler
 
     public async Task<OperationResult<bool>> HandleAsync(Guid id)
     {
+        // Ortak rehber: yazma yetkisi kargo/firma rehberi yönetim izinlerinden birini gerektirir
+        if (!WhatsAppContactPermissions.CanModify(_userContext))
+            return OperationResult<bool>.Fail("Bu işlem için yetkiniz bulunmamaktadır.");
+
         var entity = await _repository.GetByIdAsync(id);
         if (entity is null)
             return OperationResult<bool>.Fail("Rehber kaydı bulunamadı.");

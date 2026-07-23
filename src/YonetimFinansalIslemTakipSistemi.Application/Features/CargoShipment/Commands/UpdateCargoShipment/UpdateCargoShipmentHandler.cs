@@ -44,8 +44,8 @@ public class UpdateCargoShipmentHandler
         if (entity is null)
             return OperationResult<bool>.Fail("Kargo kaydı bulunamadı.");
 
-        // Durum geçiş kontrolü — geçersiz geçişler reddedilir
-        if (!CargoStatusTransitions.IsAllowed(entity.Status, request.Status))
+        // Durum geçiş kontrolü — geçersiz geçişler reddedilir (yön bazlı kural seti)
+        if (!CargoStatusTransitions.IsAllowed(entity.Status, request.Status, entity.Direction))
             return OperationResult<bool>.Fail(
                 $"'{DisplayStatus(entity.Status)}' durumundan '{DisplayStatus(request.Status)}' durumuna geçiş geçersizdir.");
 

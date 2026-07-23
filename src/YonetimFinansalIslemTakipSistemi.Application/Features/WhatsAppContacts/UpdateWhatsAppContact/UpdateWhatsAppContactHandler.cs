@@ -30,6 +30,10 @@ public class UpdateWhatsAppContactHandler
 
     public async Task<OperationResult<bool>> HandleAsync(UpdateWhatsAppContactRequest request)
     {
+        // Ortak rehber: yazma yetkisi kargo/firma rehberi yönetim izinlerinden birini gerektirir
+        if (!WhatsAppContactPermissions.CanModify(_userContext))
+            return OperationResult<bool>.Fail("Bu işlem için yetkiniz bulunmamaktadır.");
+
         if (string.IsNullOrWhiteSpace(request.FullName))
             return OperationResult<bool>.Fail("Ad Soyad / Kayıt Adı zorunludur.");
 

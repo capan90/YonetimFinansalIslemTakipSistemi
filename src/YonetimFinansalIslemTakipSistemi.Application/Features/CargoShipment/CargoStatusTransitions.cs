@@ -36,11 +36,16 @@ public static class CargoStatusTransitions
         [CargoShipmentStatus.HandedToCargo]      = [],
     };
 
-    /// <summary>Aynı duruma kalmak her zaman geçerlidir.</summary>
-    public static bool IsAllowed(CargoShipmentStatus from, CargoShipmentStatus to)
+    /// <summary>
+    /// Aynı duruma kalmak her zaman geçerlidir. Yön zorunludur: gelen ve giden
+    /// kargo ayrı durum makineleri kullanır — yönsüz doğrulama gelen kargonun
+    /// geçerli geçişlerini (örn. Waiting→Received) yanlışlıkla reddeder.
+    /// </summary>
+    public static bool IsAllowed(CargoShipmentStatus from, CargoShipmentStatus to, CargoShipmentDirection direction)
     {
         if (from == to) return true;
-        return _allowed.TryGetValue(from, out var allowed) && Array.IndexOf(allowed, to) >= 0;
+        var map = direction == CargoShipmentDirection.Incoming ? _allowedIncoming : _allowed;
+        return map.TryGetValue(from, out var allowed) && Array.IndexOf(allowed, to) >= 0;
     }
 
     /// <summary>Mevcut durumdan geçilebilecek durumlar (mevcut durum dahil). Yön bilgisi gerektirmez.</summary>

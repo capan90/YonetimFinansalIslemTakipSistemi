@@ -1,4 +1,9 @@
-# Backup ve Kurtarma Kılavuzu
+﻿# Backup ve Kurtarma Kılavuzu
+
+> **Veritabanı adları:** Geliştirme ortamı `yonetim_dev` (localhost), üretim ortamı
+> `yonetim_finansal` (10.0.0.169) kullanır — bkz. `Environment-Configuration.md`.
+> Aşağıdaki örneklerde üretim adı `yonetim_finansal` kullanılmıştır; geliştirmede
+> `yonetim_dev` yazın. Script parametre verilmezse DB adını bağlantı dizesinden çözer.
 
 ## Gereksinimler
 
@@ -18,7 +23,7 @@ Proje kökünden:
 .\scripts\Backup-Database.ps1
 ```
 
-Varsayılan çıktı: `Backups\yonetim_db_20260624_143000.backup`
+Varsayılan çıktı: `Backups\yonetim_finansal_20260624_143000.backup`
 
 #### Özel konum veya sunucu:
 
@@ -31,7 +36,7 @@ Varsayılan çıktı: `Backups\yonetim_db_20260624_143000.backup`
 
 ```powershell
 $env:PGPASSWORD = "SIFRE"
-pg_dump --host=localhost --port=5432 --username=postgres --dbname=yonetim_db --format=custom --file="yonetim_db_backup.backup"
+pg_dump --host=localhost --port=5432 --username=postgres --dbname=yonetim_finansal --format=custom --file="yonetim_finansal_backup.backup"
 $env:PGPASSWORD = ""
 ```
 
@@ -44,7 +49,7 @@ $env:PGPASSWORD = ""
 | Script varsayılan | `<proje-kökü>\Backups\` |
 | Özel parametre | `-BackupDirectory` ile belirtilen klasör |
 
-Dosya adı formatı: `yonetim_db_yyyyMMdd_HHmmss.backup`
+Dosya adı formatı: `yonetim_finansal_yyyyMMdd_HHmmss.backup`
 
 > **Not:** `Backups/` klasörü ve `*.backup` dosyaları `.gitignore` ile versiyon kontrolünden hariç tutulmuştur.
 > Backup dosyalarını ayrı bir fiziksel konuma veya ağ sürücüsüne kopyalayın.
@@ -81,9 +86,10 @@ Bu script:
 ### Script ile Restore
 
 ```powershell
-.\scripts\Restore-Database.ps1 -BackupFile "Backups\yonetim_db_20260624_143000.backup"
+.\scripts\Restore-Database.ps1 -BackupFile "Backups\yonetim_finansal_20260624_143000.backup" -Database yonetim_finansal
 ```
 
+`-Database` parametresi zorunludur (yanlış veritabanına restore riskine karşı varsayılan yoktur).
 Script çalışmadan önce tüm bağlantı bilgilerini gösterir ve **"RESTORE"** yazmanızı ister.
 
 ### Sıfırdan Restore (Veritabanı Yeniden Oluşturarak)
@@ -92,8 +98,8 @@ Mevcut verilerle çakışma durumunda önce veritabanını yeniden oluşturun:
 
 ```sql
 -- psql ile bağlanın (postgres kullanıcısı veya superuser):
-DROP DATABASE IF EXISTS yonetim_db;
-CREATE DATABASE yonetim_db;
+DROP DATABASE IF EXISTS yonetim_finansal;
+CREATE DATABASE yonetim_finansal;
 ```
 
 Ardından restore scriptini çalıştırın.
@@ -102,7 +108,7 @@ Ardından restore scriptini çalıştırın.
 
 ```powershell
 $env:PGPASSWORD = "SIFRE"
-pg_restore --host=localhost --port=5432 --username=postgres --dbname=yonetim_db --verbose "Backups\yonetim_db_20260624_143000.backup"
+pg_restore --host=localhost --port=5432 --username=postgres --dbname=yonetim_finansal --verbose "Backups\yonetim_finansal_20260624_143000.backup"
 $env:PGPASSWORD = ""
 ```
 
@@ -132,7 +138,7 @@ $env:PGPASSWORD = ""
 Backup dosyasının geçerli olduğunu doğrulamak için:
 
 ```powershell
-pg_restore --list "Backups\yonetim_db_20260624_143000.backup"
+pg_restore --list "Backups\yonetim_finansal_20260624_143000.backup"
 ```
 
 Bu komut veriyi restore etmez; sadece backup içeriğini listeler.

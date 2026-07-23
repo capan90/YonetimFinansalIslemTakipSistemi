@@ -93,6 +93,9 @@ public partial class MainWindow : Window
             ApplyBalanceColumnVisibility();
             await _listVm.LoadTransactionsAsync();
             RefreshMenuVisibility(userContext);
+
+            // Açılışta güncelleme kontrolü — ekran yüklendikten sonra, kullanıcıyı bloklamadan
+            await Services.StartupUpdateChecker.RunOnceAsync(_services, _dialogService);
         };
     }
 
@@ -540,10 +543,21 @@ public partial class MainWindow : Window
         await _listVm.LoadTransactionsAsync();
     }
 
-    private void Logout_Click(object sender, RoutedEventArgs e)
+    private async void Logout_Click(object sender, RoutedEventArgs e)
     {
         if (!_dialogService.ShowConfirmation("Oturumu kapatmak istediğinize emin misiniz?", "Çıkış Yap"))
             return;
+
+        // Çıkış audit'i — pencere (ve DbContext scope'u) kapanmadan önce yazılır;
+        // audit yazılamasa bile logout engellenmez
+        try
+        {
+            var userContext = _services.GetRequiredService<IUserContext>();
+            await _services.GetRequiredService<IAuditLogService>().WriteAsync(
+                AuditAction.UserLoggedOut, userContext.UserId, userContext.FullName,
+                "User", userContext.UserId);
+        }
+        catch { /* audit hatası çıkışı engellemez; kritik hatalar global handler'da loglanır */ }
 
         IsLogoutRequested = true;
         Close();

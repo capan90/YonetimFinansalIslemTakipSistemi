@@ -44,6 +44,17 @@ public class UpdateUserHandler
                 return OperationResult<bool>.Fail("Son aktif kullanıcı pasifleştirilemez.");
         }
 
+        // Şifre yalnızca yeni değer girilmişse güncellenir; boş bırakılırsa mevcut hash korunur.
+        // Politika kontrolü, izlenen entity'ye dokunmadan ÖNCE yapılır — Fail dönüşünde
+        // DbContext'te kaydedilmemiş değişiklik kalmamalı (scope oturum boyunca yaşar).
+        var passwordChanged = !string.IsNullOrWhiteSpace(request.NewPassword);
+        if (passwordChanged)
+        {
+            var passwordError = PasswordPolicy.Validate(request.NewPassword!);
+            if (passwordError is not null)
+                return OperationResult<bool>.Fail(passwordError);
+        }
+
         // Mutation öncesi alan değerlerini sakla — diff için
         var prevFullName = user.FullName;
         var prevIsActive = user.IsActive;
@@ -52,8 +63,6 @@ public class UpdateUserHandler
         user.IsActive  = request.IsActive;
         user.UpdatedAt = DateTime.UtcNow;
 
-        // Şifre yalnızca yeni değer girilmişse güncellenir; boş bırakılırsa mevcut hash korunur
-        var passwordChanged = !string.IsNullOrWhiteSpace(request.NewPassword);
         if (passwordChanged)
             user.PasswordHash = _hasher.Hash(request.NewPassword!);
 

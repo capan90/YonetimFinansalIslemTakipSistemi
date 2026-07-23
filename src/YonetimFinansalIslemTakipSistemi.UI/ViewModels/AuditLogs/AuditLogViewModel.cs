@@ -67,6 +67,7 @@ public class AuditLogViewModel : INotifyPropertyChanged
         Actions.Add(new AuditActionOption(AuditAction.UserUpdated,         "Kullanıcı Güncellendi"));
         Actions.Add(new AuditActionOption(AuditAction.UserDeleted,         "Kullanıcı Silindi"));
         Actions.Add(new AuditActionOption(AuditAction.UserLoggedIn,        "Giriş Yapıldı"));
+        Actions.Add(new AuditActionOption(AuditAction.UserLoggedOut,       "Çıkış Yapıldı"));
         Actions.Add(new AuditActionOption(AuditAction.PermissionUpdated,   "Yetki Güncellendi"));
         Actions.Add(new AuditActionOption(AuditAction.ExchangeRateCreated, "Döviz Kuru Eklendi"));
         Actions.Add(new AuditActionOption(AuditAction.ExchangeRateUpdated, "Döviz Kuru Güncellendi"));
@@ -83,6 +84,13 @@ public class AuditLogViewModel : INotifyPropertyChanged
         Actions.Add(new AuditActionOption(AuditAction.CargoLabelPrinted,       "Kargo Etiketi Yazdırıldı"));
         Actions.Add(new AuditActionOption(AuditAction.CargoWhatsAppPrepared,   "WhatsApp Mesajı Hazırlandı"));
         Actions.Add(new AuditActionOption(AuditAction.CargoMailPrepared,       "Mail Mesajı Hazırlandı"));
+        // Ayarlar / tercih / WhatsApp rehberi
+        Actions.Add(new AuditActionOption(AuditAction.MailSettingsUpdated,     "Mail Ayarları Güncellendi"));
+        Actions.Add(new AuditActionOption(AuditAction.UserPreferenceUpdated,   "Kullanıcı Tercihi Güncellendi"));
+        Actions.Add(new AuditActionOption(AuditAction.WhatsAppContactCreated,  "WhatsApp Kişisi Oluşturuldu"));
+        Actions.Add(new AuditActionOption(AuditAction.WhatsAppContactUpdated,  "WhatsApp Kişisi Güncellendi"));
+        Actions.Add(new AuditActionOption(AuditAction.WhatsAppContactDeleted,  "WhatsApp Kişisi Silindi"));
+        Actions.Add(new AuditActionOption(AuditAction.ReportExported,          "Rapor Dışa Aktarıldı"));
         FilterAction = Actions[0];
 
         // "Tüm Kullanıcılar" constructor'da eklenir — DataContext atanmadan önce hazır olur

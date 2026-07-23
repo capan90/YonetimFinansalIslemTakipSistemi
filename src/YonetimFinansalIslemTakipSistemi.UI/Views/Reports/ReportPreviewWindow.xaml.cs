@@ -16,16 +16,25 @@ public partial class ReportPreviewWindow : Window
     private readonly ReportDto            _report;
     private readonly IReportExportService _exportService;
     private readonly IDialogService       _dialogService;
+    private readonly IAuditLogService     _auditLogService;
+    private readonly ISystemLogService    _systemLog;
+    private readonly IUserContext         _userContext;
 
     public ReportPreviewWindow(
         ReportDto            report,
         IReportExportService exportService,
-        IDialogService       dialogService)
+        IDialogService       dialogService,
+        IAuditLogService     auditLogService,
+        ISystemLogService    systemLog,
+        IUserContext         userContext)
     {
         InitializeComponent();
-        _report        = report;
-        _exportService = exportService;
-        _dialogService = dialogService;
+        _report          = report;
+        _exportService   = exportService;
+        _dialogService   = dialogService;
+        _auditLogService = auditLogService;
+        _systemLog       = systemLog;
+        _userContext     = userContext;
 
         PopulateView();
     }
@@ -226,14 +235,24 @@ public partial class ReportPreviewWindow : Window
         {
             export(filePath);
             partial = null;
+
+            // Finansal veri dışa aktarımı denetlenir; WriteAsync hata fırlatmaz, akışı bloklamaz
+            _ = _auditLogService.WriteAsync(
+                AuditAction.ReportExported,
+                _userContext.UserId, _userContext.FullName,
+                "Report", null,
+                null, $"Dosya: {Path.GetFileName(filePath)} | {FormatDateRange(_report)}");
+
             _dialogService.ShowSuccess($"Rapor başarıyla kaydedildi.\n{filePath}");
         }
         catch (IOException ex) when ((ex.HResult & 0xFFFF) == 32)
         {
             _dialogService.ShowError("Dosya başka bir program tarafından kullanılıyor. Kapatıp tekrar deneyin.");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            // Export hataları görünmez kalmasın — teşhis için sistem loguna yazılır
+            _ = _systemLog.LogErrorAsync("Report", "Rapor dışa aktarma başarısız", ex, source: nameof(ReportPreviewWindow));
             _dialogService.ShowError("Dosya kaydedilirken beklenmeyen bir hata oluştu.");
         }
         finally

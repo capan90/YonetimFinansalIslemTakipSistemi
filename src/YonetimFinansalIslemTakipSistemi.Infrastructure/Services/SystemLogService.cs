@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using YonetimFinansalIslemTakipSistemi.Application.Features.SystemLogs;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Entities;
@@ -18,11 +19,15 @@ namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Services;
 public sealed class SystemLogService : ISystemLogService
 {
     private readonly IServiceProvider _services;
+    private readonly ILogger<SystemLogService> _logger;
     private static readonly string?  _appVersion =
         Assembly.GetEntryAssembly()?.GetName().Version?.ToString();
 
-    public SystemLogService(IServiceProvider services)
-        => _services = services;
+    public SystemLogService(IServiceProvider services, ILogger<SystemLogService> logger)
+    {
+        _services = services;
+        _logger   = logger;
+    }
 
     public Task LogInfoAsync(string category, string message, string? source = null)
         => WriteAsync(SystemLogLevel.Info, category, message, null, source);
@@ -102,8 +107,11 @@ public sealed class SystemLogService : ISystemLogService
                 PageSize   = query.PageSize
             };
         }
-        catch
+        catch (Exception ex)
         {
+            // Boş sonuç "log yok" gibi görünür — teşhis izi dosya loguna bırakılır
+            // (DB'ye yazılmaz: arama hatası DB kaynaklıysa döngü oluşmasın)
+            _logger.LogWarning(ex, "Sistem logu araması başarısız — boş sonuç dönülüyor");
             return new PagedSystemLogResultDto { Page = query.Page, PageSize = query.PageSize };
         }
     }

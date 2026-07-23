@@ -38,10 +38,16 @@ public partial class CargoDashboardWindow : Window
                 PopulateFilterCombos();
                 await LoadCargoCompaniesAsync();
                 await LoadDashboardAsync();
+
+                // Açılışta güncelleme kontrolü — ekran yüklendikten sonra, kullanıcıyı bloklamadan
+                await Services.StartupUpdateChecker.RunOnceAsync(_services, _dialogService);
             }
             catch (Exception ex)
             {
-                _dialogService.ShowError($"Dashboard yüklenirken hata oluştu:\n{ex.Message}", "Dashboard Hatası");
+                // Teknik detay diyaloga yazılmaz (bağlantı bilgisi sızabilir); log'a gider
+                _ = _services.GetRequiredService<ISystemLogService>()
+                    .LogErrorAsync("Cargo", "Dashboard yüklenirken hata oluştu", ex, source: nameof(CargoDashboardWindow));
+                _dialogService.ShowError("Dashboard yüklenirken hata oluştu. Ayrıntılar sistem loguna kaydedildi.", "Dashboard Hatası");
             }
         };
     }
@@ -214,7 +220,10 @@ public partial class CargoDashboardWindow : Window
         }
         catch (Exception ex)
         {
-            _dialogService.ShowError($"Rapor alınırken hata oluştu:\n{ex.Message}", "Rapor Hatası");
+            // Npgsql mesajları sunucu/şema bilgisi sızdırabilir — detay log'a, kullanıcıya jenerik mesaj
+            _ = _services.GetRequiredService<ISystemLogService>()
+                .LogErrorAsync("Cargo", "Kargo raporu alınırken hata oluştu", ex, source: nameof(CargoDashboardWindow));
+            _dialogService.ShowError("Rapor alınırken hata oluştu. Ayrıntılar sistem loguna kaydedildi.", "Rapor Hatası");
         }
     }
 
@@ -314,7 +323,9 @@ public partial class CargoDashboardWindow : Window
         }
         catch (Exception ex)
         {
-            _dialogService.ShowError($"PDF oluşturulamadı: {ex.Message}", "PDF Hatası");
+            _ = _services.GetRequiredService<ISystemLogService>()
+                .LogErrorAsync("Cargo", "Kargo raporu PDF oluşturulamadı", ex, source: nameof(CargoDashboardWindow));
+            _dialogService.ShowError("PDF oluşturulamadı. Ayrıntılar sistem loguna kaydedildi.", "PDF Hatası");
         }
     }
 
@@ -480,10 +491,20 @@ public partial class CargoDashboardWindow : Window
 
     public bool IsLogoutRequested { get; private set; }
 
-    private void Logout_Click(object sender, RoutedEventArgs e)
+    private async void Logout_Click(object sender, RoutedEventArgs e)
     {
         if (!_dialogService.ShowConfirmation("Oturumu kapatmak istediğinize emin misiniz?", "Çıkış Yap"))
             return;
+
+        // Çıkış audit'i — MainWindow.Logout_Click ile aynı desen
+        try
+        {
+            var userContext = _services.GetRequiredService<IUserContext>();
+            await _services.GetRequiredService<IAuditLogService>().WriteAsync(
+                AuditAction.UserLoggedOut, userContext.UserId, userContext.FullName,
+                "User", userContext.UserId);
+        }
+        catch { /* audit hatası çıkışı engellemez */ }
 
         IsLogoutRequested = true;
         Close();

@@ -26,25 +26,34 @@
     Varsayilan $false yalnizca build/manifest ciktisini dogrulamak icindir.
 
 .EXAMPLE
-    # Lokal test -- imzali
-    .\Publish-ClickOnce.ps1 -Version "1.0.0.1" -Sign $true
+    # Lokal test -- imzali (Development ayarlariyla, bilincli onay)
+    .\Publish-ClickOnce.ps1 -Version "1.0.0.1" -Sign $true -LocalTest
 
-    # Uretim -- imzali
+    # Uretim -- imzali (-Environment zorunlu)
     $env:YONETIM_UPDATE_PATH = "\\SUNUCU\YonetimPublish\"
-    .\Publish-ClickOnce.ps1 -Version "1.0.0.1" -Sign $true
+    .\Publish-ClickOnce.ps1 -Version "1.0.0.1" -Sign $true -Environment "Production"
 
     # Yalnizca cikti dogrulama -- imzasiz
-    .\Publish-ClickOnce.ps1 -Version "1.0.0.1" -Sign $false
+    .\Publish-ClickOnce.ps1 -Version "1.0.0.1" -Sign $false -LocalTest
 #>
 param(
     [string]$Version = "1.0.0.0",
     [bool]$Sign = $false,
     # Yayimlanan pakete gomulecek ortam adi (orn. "Production").
-    # Bos birakilirsa appsettings.json icindeki AppEnvironment degeri korunur (lokal test).
-    [string]$Environment = ""
+    # Bos birakilirsa appsettings.json icindeki AppEnvironment degeri korunur (lokal test);
+    # bu durumda -LocalTest switch'i zorunludur.
+    [string]$Environment = "",
+    # Ortam belirtmeden (Development ayarlariyla) publish'e bilincli izin verir.
+    [switch]$LocalTest
 )
 
 $ErrorActionPreference = "Stop"
+
+# Guvenlik kapisi: ortam belirtilmeden yapilan publish, Development ayarlariyla
+# (dev seed kullanicisi dahil) paket uretir. Bu yalnizca bilincli lokal test icin kabul edilir.
+if ([string]::IsNullOrWhiteSpace($Environment) -and -not $LocalTest) {
+    throw "Ortam belirtilmedi. Uretim icin: -Environment 'Production'. Lokal test icin: -LocalTest switch'i ile bilincli onay verin."
+}
 
 # UNC base: env var doluysa onu kullan, yoksa localhost
 $UncBase = $env:YONETIM_UPDATE_PATH

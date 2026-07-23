@@ -17,8 +17,13 @@ public class AesSecretProtector : ISecretProtector
 
     public AesSecretProtector(IConfiguration configuration)
     {
-        // SecretKey Base64 veya düz metin olabilir; SHA-256 ile her zaman 32 byte'a normalize edilir
-        var raw = configuration["Encryption:SecretKey"]
+        // SecretKey Base64 veya düz metin olabilir; SHA-256 ile her zaman 32 byte'a normalize edilir.
+        // Öncelik: env var > appsettings — repo'daki anahtar yerine üretimde makine bazlı
+        // anahtar kullanılabilsin (SMTP şifresindeki YONETIM_SMTP_PASSWORD deseniyle aynı).
+        // DİKKAT: Anahtar değişirse DB'de kayıtlı şifreli değerler çözülemez; mail şifresi
+        // yeniden kaydedilmelidir (MailSettingsService bu durumu loglayıp null döner).
+        var raw = Environment.GetEnvironmentVariable("YONETIM_ENCRYPTION_KEY")
+                  ?? configuration["Encryption:SecretKey"]
                   ?? "YonetimSistemiDefaultKey2025!Fallback";
         _key = SHA256.HashData(Encoding.UTF8.GetBytes(raw));
     }

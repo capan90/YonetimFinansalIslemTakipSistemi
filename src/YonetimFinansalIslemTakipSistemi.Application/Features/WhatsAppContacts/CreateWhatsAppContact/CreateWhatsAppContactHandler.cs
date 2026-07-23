@@ -32,6 +32,11 @@ public class CreateWhatsAppContactHandler
 
     public async Task<OperationResult<WhatsAppContactDto>> HandleAsync(CreateWhatsAppContactRequest request)
     {
+        // Ortak rehber kargo bildirim akışının parçasıdır: yazma yetkisi,
+        // kargo yönetimi veya firma rehberi yönetimi izinlerinden birini gerektirir
+        if (!WhatsAppContactPermissions.CanModify(_userContext))
+            return OperationResult<WhatsAppContactDto>.Fail("Bu işlem için yetkiniz bulunmamaktadır.");
+
         if (string.IsNullOrWhiteSpace(request.FullName))
             return OperationResult<WhatsAppContactDto>.Fail("Ad Soyad / Kayıt Adı zorunludur.");
 

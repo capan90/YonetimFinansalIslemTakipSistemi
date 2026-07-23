@@ -48,8 +48,12 @@ public class MailSettingsService : IMailSettingsService
 
             return await GetInternalAsync(repo, "Mail:");
         }
-        catch
+        catch (Exception ex)
         {
+            // Mail yalnızca bildirim amaçlı: hata akışı bloklamaz ama SMTP yanlış
+            // yapılandırma teşhisi için Serilog dosyasına iz bırakılır (DB'ye değil —
+            // hata DB kaynaklıysa döngü oluşmasın)
+            _logger.LogWarning(ex, "Mail ayarları okunamadı (GetAsync)");
             return null;
         }
     }
@@ -62,8 +66,9 @@ public class MailSettingsService : IMailSettingsService
             var repo = scope.ServiceProvider.GetRequiredService<IApplicationSettingRepository>();
             return await GetInternalAsync(repo, "Mail:");
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogWarning(ex, "Mail ayarları okunamadı (GetGlobalAsync)");
             return null;
         }
     }
@@ -76,8 +81,9 @@ public class MailSettingsService : IMailSettingsService
             var repo = scope.ServiceProvider.GetRequiredService<IApplicationSettingRepository>();
             return await GetInternalAsync(repo, $"UserMail:{userId}:");
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogWarning(ex, "Kişisel mail ayarları okunamadı (GetPersonalOnlyAsync)");
             return null;
         }
     }

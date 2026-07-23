@@ -7,7 +7,7 @@
     (backup, health check, security audit) yalnizca CAGIRIR; onlari degistirmez.
 
     Adimlar:
-      A) PostgreSQL Backup   -> Scripts\Backup-YonetimDatabase.ps1
+      A) PostgreSQL Backup   -> Scripts\Backup-Database.ps1
       B) Health Check        -> Security\HealthCheck.ps1
       C) Security Audit      -> Security\SecurityAudit.ps1 (server modu)
       D) Cleanup             -> eski log/report + fazla ClickOnce publish versiyonlari
@@ -287,7 +287,12 @@ catch { Write-Log "Log klasoru olusturulamadi: $($_.Exception.Message)" "Red" }
 Write-Log ""
 Write-Log "[A] PostgreSQL Backup" "Cyan"
 try {
-    $backupScript = Join-Path $ScriptsPath "Backup-YonetimDatabase.ps1"
+    # Repodaki gercek script adi Backup-Database.ps1; eski sunucu kurulumlarinda
+    # Backup-YonetimDatabase.ps1 adiyla kopyalanmis olabilir — ikisi de denenir.
+    $backupScript = Join-Path $ScriptsPath "Backup-Database.ps1"
+    if (-not (Test-Path $backupScript)) {
+        $backupScript = Join-Path $ScriptsPath "Backup-YonetimDatabase.ps1"
+    }
     if (-not (Test-Path $backupScript)) {
         Add-Result "Backup" "FAIL" "Backup script bulunamadi: $backupScript"
     }

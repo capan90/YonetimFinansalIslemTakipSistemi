@@ -92,7 +92,7 @@ public partial class CargoOperationCenterWindow : Window
         catch (Exception ex)
         {
             Serilog.Log.Error(ex, "Kargo etiketi önizlenirken beklenmedik hata oluştu. Kargo ID: {ShipmentId}", _dto.Id);
-            _dialogService.ShowError($"Etiket oluşturulurken beklenmeyen bir hata oluştu:\n{ex.Message}");
+            _dialogService.ShowError("Etiket oluşturulurken beklenmeyen bir hata oluştu. Ayrıntılar log dosyasına kaydedildi.");
         }
     }
 

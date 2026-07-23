@@ -8,6 +8,19 @@
     <converters:SystemLogLevelToColorConverter  x:Key="LevelToForegroundConverter" />
     <converters:BoolToStatusColorConverter      x:Key="BoolToStatusColorConverter"/>
 
+    <!-- ── Boş liste (empty state) metni ─────────────────────────────────────
+         Kullanım: DataGrid'in üzerine bindirilen TextBlock bu stile BasedOn olur;
+         görünürlük tetikleyicisi (Items.Count=0) ElementName gerektirdiği için
+         pencere içinde tanımlanır. -->
+    <Style x:Key="EmptyStateText" TargetType="TextBlock">
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment"   Value="Center"/>
+        <Setter Property="Foreground"          Value="#94A3B8"/>
+        <Setter Property="FontSize"            Value="13"/>
+        <Setter Property="IsHitTestVisible"    Value="False"/>
+        <Setter Property="Visibility"          Value="Collapsed"/>
+    </Style>
+
     <!-- ── Sabit Renk Fırçaları (StaticResource ile referans verilen mevcut isimler) ── -->
     <!-- Not: Tema fırçaları (Theme.*) ayrı LightTheme/DarkTheme.xaml dosyalarındadır -->
     <SolidColorBrush x:Key="Brush.Primary"       Color="#1E3A5F"/>

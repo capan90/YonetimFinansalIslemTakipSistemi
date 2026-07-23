@@ -30,18 +30,14 @@ public class GetCargoShipmentListHandler
         if (!_userContext.HasPermission(viewPermission) && !_userContext.HasPermission(managePermission))
             return [];
 
-        var all = await _repository.GetByDirectionAsync(query.Direction);
-
-        IEnumerable<Domain.Entities.CargoShipment> filtered = all;
-
-        if (query.DateFrom.HasValue)
-            filtered = filtered.Where(x => x.ShipmentDate >= query.DateFrom.Value.Date);
-        if (query.DateTo.HasValue)
-            filtered = filtered.Where(x => x.ShipmentDate <= query.DateTo.Value.Date);
-        if (query.Status.HasValue)
-            filtered = filtered.Where(x => x.Status == query.Status.Value);
-        if (query.Priority.HasValue)
-            filtered = filtered.Where(x => x.Priority == query.Priority.Value);
+        // Tarih/durum/öncelik filtreleri SQL'de uygulanır (tüm yön verisi belleğe çekilmez);
+        // GetFilteredReportAsync rapor ile aynı sorguyu paylaşır — ayrı sorgu kodu yok.
+        // Serbest metin araması Türkçe OrdinalIgnoreCase semantiği için bellekte kalır.
+        IEnumerable<Domain.Entities.CargoShipment> filtered =
+            await _repository.GetFilteredReportAsync(
+                query.DateFrom, query.DateTo, query.Direction,
+                cargoCompanyId: null, status: query.Status,
+                notificationStatus: null, priority: query.Priority);
 
         if (!string.IsNullOrWhiteSpace(query.Keyword))
         {

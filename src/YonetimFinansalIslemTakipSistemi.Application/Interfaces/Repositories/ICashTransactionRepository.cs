@@ -12,16 +12,9 @@ public interface ICashTransactionRepository
 {
     Task<CashTransaction?> GetByIdAsync(Guid id);
 
-    Task<IReadOnlyList<CashTransaction>> GetAllAsync();
-
-    /// <summary>İşlem tipine göre filtrele (Giriş, Çıkış)</summary>
-    Task<IReadOnlyList<CashTransaction>> GetByTypeAsync(TransactionType type);
-
-    /// <summary>Para birimine göre filtrele (TRY, USD, EUR)</summary>
-    Task<IReadOnlyList<CashTransaction>> GetByCurrencyAsync(CurrencyType currency);
-
-    /// <summary>Tarih aralığına göre filtrele; rapor ekranı için kullanılır.</summary>
-    Task<IReadOnlyList<CashTransaction>> GetByDateRangeAsync(DateTime from, DateTime to);
+    // NOT: GetAllAsync / GetByTypeAsync / GetByCurrencyAsync / GetByDateRangeAsync
+    // hiçbir handler tarafından kullanılmadığı için kaldırıldı (Sprint 16 temizliği).
+    // Filtreli erişim GetFilteredAsync üzerinden yapılır.
 
     Task AddAsync(CashTransaction transaction);
 

@@ -35,8 +35,10 @@
             </TextBlock.Style>
         </TextBlock>
 
-        <!-- Kullanıcı listesi -->
-        <DataGrid ItemsSource="{Binding Users}"
+        <!-- Kullanıcı listesi + boş durum mesajı; çift tıklama = düzenle (liste standardı) -->
+        <Grid>
+        <DataGrid x:Name="MainGrid"
+                  ItemsSource="{Binding Users}"
                   SelectedItem="{Binding SelectedUser, Mode=TwoWay}"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
@@ -44,7 +46,8 @@
                   SelectionMode="Single"
                   GridLinesVisibility="Horizontal"
                   AlternatingRowBackground="#F5F5F5"
-                  HeadersVisibility="Column">
+                  HeadersVisibility="Column"
+                  MouseDoubleClick="EditButton_Click">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Ad Soyad"       Binding="{Binding FullName}"  Width="*"/>
                 <DataGridTextColumn Header="Kullanıcı Adı"  Binding="{Binding UserName}"  Width="150"/>
@@ -54,6 +57,18 @@
                                     Width="140"/>
             </DataGrid.Columns>
         </DataGrid>
+        <TextBlock Text="Gösterilecek kullanıcı bulunamadı">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateText}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Items.Count, ElementName=MainGrid}" Value="0">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+        </Grid>
 
     </DockPanel>
 </Window>

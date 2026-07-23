@@ -22,7 +22,8 @@
             <Button Content="Kaydet ve Uygula"
                     Click="Save_Click"
                     Width="130" Height="30"
-                    Style="{StaticResource PrimaryButton}"/>
+                    Style="{StaticResource PrimaryButton}"
+                    IsDefault="True"/>
             <Button Content="Kapat"
                     IsCancel="True"
                     Width="80" Height="30"

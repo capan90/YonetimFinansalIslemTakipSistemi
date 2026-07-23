@@ -21,7 +21,8 @@ public class AuditLogRepository : IAuditLogRepository
     public async Task<List<AuditLog>> GetFilteredAsync(
         Guid? userId, DateTime? from, DateTime? to, AuditAction? action)
     {
-        var query = _context.AuditLogs.AsQueryable();
+        // Salt okuma: denetim ekranı görüntülemesi, entity izlenmez
+        var query = _context.AuditLogs.AsNoTracking().AsQueryable();
 
         if (userId.HasValue)
             query = query.Where(x => x.UserId == userId.Value);

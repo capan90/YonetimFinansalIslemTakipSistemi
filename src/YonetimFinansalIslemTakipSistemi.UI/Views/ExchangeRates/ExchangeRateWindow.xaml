@@ -49,7 +49,8 @@
 
                 <StackPanel Grid.Column="9" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Content="Kaydet" Width="80" Margin="0,0,6,0"
-                            Command="{Binding SaveCommand}">
+                            Command="{Binding SaveCommand}"
+                            IsDefault="True">
                         <Button.Style>
                             <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
                                 <Style.Triggers>

@@ -33,7 +33,8 @@ public class UserPermissionViewModel : INotifyPropertyChanged
         {
             _selectedUser = value;
             OnPropertyChanged();
-            _ = LoadPermissionsAsync();
+            // Hata Forget ile UI'a taşınır — sessiz boş ekran yerine kullanıcı bilgilendirilir
+            LoadPermissionsAsync().Forget();
         }
     }
 

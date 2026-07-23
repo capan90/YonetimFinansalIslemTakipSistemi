@@ -19,7 +19,8 @@ public class ExchangeRateRepository : IExchangeRateRepository
     public async Task<IReadOnlyList<ExchangeRate>> GetFilteredAsync(
         DateTime? fromUtc, DateTime? toExclusiveUtc, CurrencyType? currency)
     {
-        var query = _context.ExchangeRates.AsQueryable();
+        // Salt okuma: liste görüntüleme; upsert akışı GetByDateAndCurrencyAsync (tracked) kullanır
+        var query = _context.ExchangeRates.AsNoTracking().AsQueryable();
 
         if (fromUtc.HasValue)        query = query.Where(e => e.RateDate >= fromUtc.Value);
         if (toExclusiveUtc.HasValue) query = query.Where(e => e.RateDate <  toExclusiveUtc.Value);

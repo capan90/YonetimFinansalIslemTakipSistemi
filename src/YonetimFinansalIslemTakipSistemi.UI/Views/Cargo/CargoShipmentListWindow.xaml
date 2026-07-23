@@ -68,7 +68,8 @@
                     ToolTip="Seçili kargo için operasyon merkezini açar: Etiket, WhatsApp, Mail, Takip, Durum Değiştir"/>
         </StackPanel>
 
-        <!-- Liste -->
+        <!-- Liste + boş durum mesajı -->
+        <Grid>
         <DataGrid x:Name="MainGrid"
                   ItemsSource="{Binding Items}"
                   SelectedItem="{Binding Selected, Mode=TwoWay}"
@@ -165,6 +166,18 @@
                                     Width="110"/>
             </DataGrid.Columns>
         </DataGrid>
+        <TextBlock Text="Gösterilecek kargo kaydı bulunamadı">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateText}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Items.Count, ElementName=MainGrid}" Value="0">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+        </Grid>
 
     </DockPanel>
 </Window>

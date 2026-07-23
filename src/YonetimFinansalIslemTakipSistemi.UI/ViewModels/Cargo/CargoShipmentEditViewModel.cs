@@ -136,7 +136,8 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
             if (value is not null && _direction == CargoShipmentDirection.Outgoing)
                 FillFromDirectory(value);
             // Firma değişince dikkatine listesi güncellenir; varsayılan = firmanın mevcut AttentionTo
-            _ = LoadAttentionContactsAsync(value?.Id, defaultInput: value?.AttentionTo);
+            // (metot kendi içinde hatayı yutar — form çalışmaya devam eder; Forget yine de güvence sağlar)
+            LoadAttentionContactsAsync(value?.Id, defaultInput: value?.AttentionTo).Forget();
         }
     }
 

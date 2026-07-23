@@ -113,10 +113,6 @@ internal sealed class FakeCargoShipmentRepository : ICargoShipmentRepository
 
     public Task<CargoShipment?> GetByIdWithIncludesAsync(Guid id) => GetByIdAsync(id);
 
-    public Task<IReadOnlyList<CargoShipment>> GetByDirectionAsync(CargoShipmentDirection direction)
-        => Task.FromResult<IReadOnlyList<CargoShipment>>(
-            Existing.Where(x => x.Direction == direction).ToList());
-
     public Task AddAsync(CargoShipment entity)
     {
         Added.Add(entity);
@@ -189,7 +185,22 @@ internal sealed class FakeCargoShipmentRepository : ICargoShipmentRepository
         DateTime? dateFrom, DateTime? dateTo, CargoShipmentDirection? direction,
         Guid? cargoCompanyId, CargoShipmentStatus? status,
         CargoNotificationStatus? notificationStatus, CargoShipmentPriority? priority)
-        => Task.FromResult<IReadOnlyList<CargoShipment>>([]);
+    {
+        // Gerçek repository'nin SQL filtre/sıralamasını in-memory taklit eder
+        var query = AllRecords.Where(x => !x.IsDeleted);
+        if (dateFrom.HasValue)           query = query.Where(x => x.ShipmentDate >= dateFrom.Value.Date);
+        if (dateTo.HasValue)             query = query.Where(x => x.ShipmentDate <= dateTo.Value.Date);
+        if (direction.HasValue)          query = query.Where(x => x.Direction == direction.Value);
+        if (cargoCompanyId.HasValue)     query = query.Where(x => x.CargoCompanyId == cargoCompanyId.Value);
+        if (status.HasValue)             query = query.Where(x => x.Status == status.Value);
+        if (notificationStatus.HasValue) query = query.Where(x => x.NotificationStatus == notificationStatus.Value);
+        if (priority.HasValue)           query = query.Where(x => x.Priority == priority.Value);
+
+        return Task.FromResult<IReadOnlyList<CargoShipment>>(query
+            .OrderByDescending(x => x.ShipmentDate)
+            .ThenByDescending(x => x.CreatedAt)
+            .ToList());
+    }
 }
 
 internal sealed class FakeCargoCompanyRepository : ICargoCompanyRepository

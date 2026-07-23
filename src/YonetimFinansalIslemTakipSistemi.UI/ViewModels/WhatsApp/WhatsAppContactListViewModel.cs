@@ -43,8 +43,8 @@ public class WhatsAppContactListViewModel : INotifyPropertyChanged
         {
             _selectedCompany = value;
             OnPropertyChanged();
-            // Firma filtresi seçilince liste otomatik yenilenir
-            _ = LoadAsync();
+            // Firma filtresi seçilince liste otomatik yenilenir; hata Forget ile UI'a taşınır
+            LoadAsync().Forget();
         }
     }
 
@@ -55,7 +55,7 @@ public class WhatsAppContactListViewModel : INotifyPropertyChanged
         {
             _includeInactive = value;
             OnPropertyChanged();
-            _ = LoadAsync();
+            LoadAsync().Forget();
         }
     }
 

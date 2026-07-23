@@ -23,7 +23,8 @@
                     Content="Kaydet"
                     Click="Save_Click"
                     Width="110" Height="30"
-                    Style="{StaticResource PrimaryButton}"/>
+                    Style="{StaticResource PrimaryButton}"
+                    IsDefault="True"/>
             <Button Content="Kapat"
                     IsCancel="True"
                     Width="80" Height="30"

@@ -29,14 +29,6 @@ public class CargoShipmentRepository : ICargoShipmentRepository
             .Include(x => x.CompanyDirectory)
             .FirstOrDefaultAsync(x => x.Id == id);
 
-    public async Task<IReadOnlyList<CargoShipment>> GetByDirectionAsync(CargoShipmentDirection direction)
-        => await _context.CargoShipments
-            .AsNoTracking()
-            .Include(x => x.CargoCompany)
-            .Include(x => x.CompanyDirectory)
-            .Where(x => x.Direction == direction)
-            .ToListAsync();
-
     public async Task AddAsync(CargoShipment entity)
     {
         await _context.CargoShipments.AddAsync(entity);

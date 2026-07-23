@@ -23,24 +23,6 @@ public class CashTransactionRepository : ICashTransactionRepository
     public async Task<CashTransaction?> GetByIdAsync(Guid id)
         => await _context.CashTransactions.FirstOrDefaultAsync(x => x.Id == id);
 
-    public async Task<IReadOnlyList<CashTransaction>> GetAllAsync()
-        => await _context.CashTransactions.ToListAsync();
-
-    public async Task<IReadOnlyList<CashTransaction>> GetByTypeAsync(TransactionType type)
-        => await _context.CashTransactions
-            .Where(x => x.TransactionType == type)
-            .ToListAsync();
-
-    public async Task<IReadOnlyList<CashTransaction>> GetByCurrencyAsync(CurrencyType currency)
-        => await _context.CashTransactions
-            .Where(x => x.CurrencyType == currency)
-            .ToListAsync();
-
-    public async Task<IReadOnlyList<CashTransaction>> GetByDateRangeAsync(DateTime from, DateTime to)
-        => await _context.CashTransactions
-            .Where(x => x.TransactionDate >= from && x.TransactionDate <= to)
-            .ToListAsync();
-
     public async Task AddAsync(CashTransaction transaction)
     {
         await _context.CashTransactions.AddAsync(transaction);
@@ -67,7 +49,8 @@ public class CashTransactionRepository : ICashTransactionRepository
     public async Task<IReadOnlyList<CashTransaction>> GetFilteredAsync(
         DateTime? from, DateTime? to, TransactionType? type, CurrencyType? currency)
     {
-        var query = _context.CashTransactions.AsQueryable();
+        // Salt okuma: liste DTO'ya dönüştürülür, entity izlenmez
+        var query = _context.CashTransactions.AsNoTracking().AsQueryable();
 
         if (from.HasValue)     query = query.Where(x => x.TransactionDate >= from.Value);
         if (to.HasValue)       query = query.Where(x => x.TransactionDate <= to.Value);
@@ -81,6 +64,7 @@ public class CashTransactionRepository : ICashTransactionRepository
 
     public async Task<IReadOnlyList<CashTransaction>> GetAllForBalanceAsync()
         => await _context.CashTransactions
+            .AsNoTracking()
             .OrderBy(x => x.TransactionDate)
             .ThenBy(x => x.CreatedAt)
             .ThenBy(x => x.Id)
@@ -124,7 +108,8 @@ public class CashTransactionRepository : ICashTransactionRepository
         CurrencyType?    currencyType,
         string?          descriptionContains)
     {
-        var query = _context.CashTransactions.AsQueryable();
+        // Salt okuma: rapor detayı DTO'ya dönüştürülür, entity izlenmez
+        var query = _context.CashTransactions.AsNoTracking().AsQueryable();
 
         if (startUtc.HasValue)        query = query.Where(t => t.TransactionDate >= startUtc.Value);
         if (endExclusiveUtc.HasValue) query = query.Where(t => t.TransactionDate <  endExclusiveUtc.Value);

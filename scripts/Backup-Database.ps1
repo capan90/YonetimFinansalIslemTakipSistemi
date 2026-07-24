@@ -14,8 +14,11 @@
 .PARAMETER Database
     Veritabanı adı. Belirtilmezse bağlantı dizesinden okunur.
 
-.PARAMETER Host
+.PARAMETER DbHost
     Sunucu adresi. Belirtilmezse bağlantı dizesinden okunur.
+    NOT: Parametre adı DbHost'tur — PowerShell'de $Host salt-okunur otomatik
+    değişkendir ve param adı olarak kullanılamaz. Geriye dönük uyumluluk için
+    -Host takma adı da kabul edilir.
 
 .PARAMETER Port
     Port. Belirtilmezse bağlantı dizesinden okunur; o da yoksa 5432.
@@ -29,12 +32,13 @@
 .EXAMPLE
     .\scripts\Backup-Database.ps1
     .\scripts\Backup-Database.ps1 -BackupDirectory "D:\DBBackups"
-    .\scripts\Backup-Database.ps1 -Host prod-server -Database yonetim_db -Username yonetim_app -BackupDirectory "\\server\backups"
+    .\scripts\Backup-Database.ps1 -DbHost prod-server -Database yonetim_finansal -Username yonetim_app -BackupDirectory "\\server\backups"
 #>
 [CmdletBinding()]
 param(
     [string]$Database        = "",
-    [string]$Host            = "",
+    [Alias('Host')]
+    [string]$DbHost          = "",
     [string]$Port            = "",
     [string]$Username        = "",
     [string]$BackupDirectory = "Backups"
@@ -83,7 +87,7 @@ function Resolve-Param([string]$explicit, [string]$key, [string]$fallback) {
     return $fallback
 }
 
-$dbHost = Resolve-Param $Host     "host"     "localhost"
+$dbHost = Resolve-Param $DbHost   "host"     "localhost"
 $dbPort = Resolve-Param $Port     "port"     "5432"
 $dbName = Resolve-Param $Database "database" "yonetim_db"
 $dbUser = Resolve-Param $Username "username" "postgres"

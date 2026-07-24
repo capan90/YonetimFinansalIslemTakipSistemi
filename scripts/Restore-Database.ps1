@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     PostgreSQL veritabanını bir .backup dosyasından geri yükler.
 
@@ -18,8 +18,10 @@
     Hedef veritabanı adı. (Zorunlu — yanlış DB'ye restore riskine karşı varsayılan yoktur.
     Gerçek ortamlar: yonetim_dev = geliştirme, yonetim_finansal = üretim)
 
-.PARAMETER Host
+.PARAMETER DbHost
     Sunucu adresi. Varsayılan: localhost
+    NOT: Parametre adı DbHost'tur — PowerShell'de $Host salt-okunur otomatik
+    değişkendir ve param adı olarak kullanılamaz. -Host takma adı da kabul edilir.
 
 .PARAMETER Port
     Port. Varsayılan: 5432
@@ -29,7 +31,7 @@
 
 .EXAMPLE
     .\scripts\Restore-Database.ps1 -BackupFile "Backups\yonetim_finansal_20260624_090000.backup" -Database yonetim_dev
-    .\scripts\Restore-Database.ps1 -BackupFile "D:\backups\yonetim_finansal_20260624_090000.backup" -Database yonetim_finansal -Host prod-server
+    .\scripts\Restore-Database.ps1 -BackupFile "D:\backups\yonetim_finansal_20260624_090000.backup" -Database yonetim_finansal -DbHost prod-server
 #>
 [CmdletBinding()]
 param(
@@ -38,7 +40,8 @@ param(
 
     [Parameter(Mandatory = $true)]
     [string]$Database,
-    [string]$Host     = "localhost",
+    [Alias('Host')]
+    [string]$DbHost   = "localhost",
     [string]$Port     = "5432",
     [string]$Username = "postgres"
 )
@@ -53,7 +56,7 @@ Write-Host "!!         DİKKAT — RİSKLİ İŞLEM      !!"
 Write-Host "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 Write-Host ""
 Write-Host "Bu işlem aşağıdaki veritabanını ETKİLEYECEKTİR:"
-Write-Host "  Sunucu    : $Host`:$Port"
+Write-Host "  Sunucu    : $DbHost`:$Port"
 Write-Host "  Veritabanı: $Database"
 Write-Host "  Kullanıcı : $Username"
 Write-Host "  Backup    : $BackupFile"
@@ -64,8 +67,8 @@ Write-Host "  2. Hedef veritabanının hazır olması"
 Write-Host "  3. Mevcut veriler üzerine yazılacağının bilinmesi"
 Write-Host ""
 Write-Host "Hedef veritabanını sıfırdan restore etmek için (manuel adımlar):"
-Write-Host "  -- psql -h $Host -p $Port -U $Username -c 'DROP DATABASE IF EXISTS $Database;'"
-Write-Host "  -- psql -h $Host -p $Port -U $Username -c 'CREATE DATABASE $Database;'"
+Write-Host "  -- psql -h $DbHost -p $Port -U $Username -c 'DROP DATABASE IF EXISTS $Database;'"
+Write-Host "  -- psql -h $DbHost -p $Port -U $Username -c 'CREATE DATABASE $Database;'"
 Write-Host ""
 
 # Backup dosyası kontrolü
@@ -108,7 +111,7 @@ Write-Host ""
 Write-Host "Restore başlatılıyor..."
 
 $pgArgs = @(
-    "--host=$Host",
+    "--host=$DbHost",
     "--port=$Port",
     "--username=$Username",
     "--dbname=$Database",

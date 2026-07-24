@@ -94,6 +94,7 @@ public class AuditLogViewModel : INotifyPropertyChanged
         Actions.Add(new AuditActionOption(AuditAction.CargoImportCompleted,    "Kargo Toplu İçe Aktarma"));
         Actions.Add(new AuditActionOption(AuditAction.DirectoryImportCompleted, "Firma Rehberi Toplu İçe Aktarma"));
         Actions.Add(new AuditActionOption(AuditAction.WhatsAppImportCompleted, "WhatsApp Rehberi Toplu İçe Aktarma"));
+        Actions.Add(new AuditActionOption(AuditAction.CashImportCompleted,     "Finans Toplu İçe Aktarma"));
         FilterAction = Actions[0];
 
         // "Tüm Kullanıcılar" constructor'da eklenir — DataContext atanmadan önce hazır olur

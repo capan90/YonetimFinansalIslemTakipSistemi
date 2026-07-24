@@ -29,6 +29,18 @@ public class CashTransactionRepository : ICashTransactionRepository
         await _context.SaveChangesAsync();
     }
 
+    public async Task AddRangeAsync(IReadOnlyList<CashTransaction> transactions)
+    {
+        if (transactions.Count == 0) return;
+
+        // Toplu import ya hep ya hiç (UserPermissionRepository.UpdateAsync deseni) —
+        // finansal veri kısmi durumda bırakılamaz
+        await using var tx = await _context.Database.BeginTransactionAsync();
+        await _context.CashTransactions.AddRangeAsync(transactions);
+        await _context.SaveChangesAsync();
+        await tx.CommitAsync();
+    }
+
     public async Task UpdateAsync(CashTransaction transaction)
     {
         _context.CashTransactions.Update(transaction);

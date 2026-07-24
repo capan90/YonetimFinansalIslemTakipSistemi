@@ -76,6 +76,7 @@ public class GetAuditLogsHandler
         AuditAction.CargoImportCompleted    => "Kargo Toplu İçe Aktarma",
         AuditAction.DirectoryImportCompleted => "Firma Rehberi Toplu İçe Aktarma",
         AuditAction.WhatsAppImportCompleted => "WhatsApp Rehberi Toplu İçe Aktarma",
+        AuditAction.CashImportCompleted     => "Finans Toplu İçe Aktarma",
         _                                   => action.ToString()
     };
 }

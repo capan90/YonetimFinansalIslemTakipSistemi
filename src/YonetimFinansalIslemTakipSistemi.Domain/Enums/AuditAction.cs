@@ -55,5 +55,8 @@ public enum AuditAction
     DirectoryImportCompleted,
 
     // WhatsApp rehberi toplu içe aktarma özeti (satırlar WhatsAppContactCreated/Updated)
-    WhatsAppImportCompleted
+    WhatsAppImportCompleted,
+
+    // Finans toplu içe aktarma özeti (satırlar TransactionCreated)
+    CashImportCompleted
 }

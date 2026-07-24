@@ -18,6 +18,9 @@ public interface ICashTransactionRepository
 
     Task AddAsync(CashTransaction transaction);
 
+    /// <summary>Toplu içe aktarma: TÜM kayıtlar tek transaction'da eklenir (ya hep ya hiç).</summary>
+    Task AddRangeAsync(IReadOnlyList<CashTransaction> transactions);
+
     Task UpdateAsync(CashTransaction transaction);
 
     /// <summary>Fiziksel silme değil; BaseEntity.IsDeleted alanını işaretler.</summary>

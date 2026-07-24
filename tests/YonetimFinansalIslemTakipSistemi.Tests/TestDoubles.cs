@@ -412,6 +412,20 @@ internal sealed class FakeCashTransactionRepository : ICashTransactionRepository
         return Task.CompletedTask;
     }
 
+    /// <summary>true ise sıradaki toplu ekleme, transaction rollback'ini simüle ederek exception fırlatır.</summary>
+    public bool FailNextAddRange { get; set; }
+
+    public Task AddRangeAsync(IReadOnlyList<CashTransaction> transactions)
+    {
+        if (FailNextAddRange)
+        {
+            FailNextAddRange = false;
+            throw new InvalidOperationException("Simulated import failure");
+        }
+        Items.AddRange(transactions);
+        return Task.CompletedTask;
+    }
+
     public Task UpdateAsync(CashTransaction transaction) => Task.CompletedTask;
 
     public Task DeleteAsync(Guid id)

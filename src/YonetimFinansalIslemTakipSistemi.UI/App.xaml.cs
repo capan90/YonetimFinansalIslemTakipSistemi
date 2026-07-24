@@ -53,6 +53,7 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Comman
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.QuickUpdateCargoStatus;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Queries.GetCargoShipmentList;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Import;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Import;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CompanyDirectory.Import;
 using YonetimFinansalIslemTakipSistemi.Application.Features.WhatsAppContacts.Import;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Label.GenerateCargoLabel;
@@ -244,8 +245,11 @@ public partial class App : System.Windows.Application
         services.AddScoped<ImportDirectoryEntriesHandler>();
         services.AddScoped<AnalyzeWhatsAppImportHandler>();
         services.AddScoped<ImportWhatsAppContactsHandler>();
+        services.AddScoped<AnalyzeCashImportHandler>();
+        services.AddScoped<ImportCashTransactionsHandler>();
         services.AddTransient<ViewModels.Import.DirectoryImportViewModel>();
         services.AddTransient<ViewModels.Import.WhatsAppImportViewModel>();
+        services.AddTransient<ViewModels.Import.CashImportViewModel>();
         services.AddScoped<GenerateCargoLabelHandler>();
         // ILabelRenderer: Singleton — renderer durumsuz, her session paylaşabilir
         services.AddSingleton<ILabelRenderer, QuestPdfLabelRenderer>();

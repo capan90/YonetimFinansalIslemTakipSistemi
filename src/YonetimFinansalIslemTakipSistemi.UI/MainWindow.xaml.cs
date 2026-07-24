@@ -452,9 +452,10 @@ public partial class MainWindow : Window
         MenuItemDbTest.Visibility           = canAccessSettings ? Visibility.Visible : Visibility.Collapsed;
         MenuItemLogKlasor.Visibility        = canAccessSettings ? Visibility.Visible : Visibility.Collapsed;
 
-        // İşlem kopyalama — create yetkisi gerekir
+        // İşlem kopyalama ve toplu içe aktarma — create yetkisi gerekir
         var canCreate = userContext.HasPermission(PermissionType.CanCreateTransaction);
         CopyTransactionButton.Visibility = canCreate ? Visibility.Visible : Visibility.Collapsed;
+        CashImportButton.Visibility      = canCreate ? Visibility.Visible : Visibility.Collapsed;
     }
 
     // ── İşlem Butonları ───────────────────────────────────────────────────────
@@ -463,6 +464,15 @@ public partial class MainWindow : Window
     {
         var form = new CashTransactionFormWindow(_services) { Owner = this };
         if (form.ShowDialog() == true)
+            await _listVm.LoadTransactionsAsync();
+    }
+
+    private async void CashImportButton_Click(object sender, RoutedEventArgs e)
+    {
+        var wizard = new Views.CashTransactions.CashImportWindow(_services) { Owner = this };
+        wizard.ShowDialog();
+        // X ile kapatılsa bile içe aktarma yapıldıysa liste + bakiye barı yenilenir
+        if (wizard.ImportCompleted)
             await _listVm.LoadTransactionsAsync();
     }
 

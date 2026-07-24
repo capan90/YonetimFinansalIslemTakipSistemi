@@ -189,6 +189,12 @@
                             Style="{StaticResource PrimaryButton}"
                             ToolTip="Yeni bir nakit işlem kaydı oluşturur."
                             Click="NewTransactionButton_Click"/>
+                    <Button x:Name="CashImportButton"
+                            Content="📥 Excel'den İçe Aktar"
+                            Width="160" Margin="0,0,6,0"
+                            Style="{StaticResource SecondaryButton}"
+                            ToolTip="Excel dosyasından toplu finans işlemi oluşturur: analiz → önizleme → onay → içe aktarma"
+                            Click="CashImportButton_Click"/>
                     <Button Content="Düzenle"
                             Width="80" Margin="0,0,6,0"
                             Style="{StaticResource SecondaryButton}"

@@ -142,6 +142,12 @@ public class ExcelCargoImportTemplateService : ICargoImportTemplateService
                 .Select(c => (c.Header, c.Required)).ToList(),
             ["Ali Veli", "0532 123 45 67", "Örnek Firma A.Ş."]);
 
+    public void CreateCashTemplate(string filePath)
+        => Write(filePath, "Finans",
+            Application.Features.CashTransactions.Import.CashImportColumnMap.Columns
+                .Select(c => (c.Header, c.Required)).ToList(),
+            [DateTime.Today.ToString("dd.MM.yyyy"), "Market alışverişi", "", "150", "TL", "M. Yasav"]);
+
     private static void Write(string filePath, string sheetName,
         IReadOnlyList<(string Header, bool Required)> columns, IReadOnlyList<string> exampleRow)
     {

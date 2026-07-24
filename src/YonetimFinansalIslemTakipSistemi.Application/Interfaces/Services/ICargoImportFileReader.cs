@@ -25,4 +25,7 @@ public interface ICargoImportTemplateService
 
     /// <summary>WhatsApp rehberi şablonu.</summary>
     void CreateWhatsAppTemplate(string filePath);
+
+    /// <summary>Finans işlem şablonu.</summary>
+    void CreateCashTemplate(string filePath);
 }

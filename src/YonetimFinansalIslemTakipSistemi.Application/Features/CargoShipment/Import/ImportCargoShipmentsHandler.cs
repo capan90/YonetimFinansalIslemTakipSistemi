@@ -163,29 +163,31 @@ public class ImportCargoShipmentsHandler
                 : "Kayıtlar oluşturulamadı — hiçbir satır içe aktarılmadı. Teknik ayrıntı Sistem Loglarına kaydedildi.");
         }
 
-        // ── Audit: satır bazlı + özet. Audit hatası import'u geri almaz (AuditLogService hataya dayanıklı). ──
+        // ── Audit: satır bazlı + özet TEK toplu yazımla (kayıt başına round-trip UI'ı dondurur).
+        //    Audit hatası import'u geri almaz (AuditLogService hataya dayanıklı). ──
         var directionText = request.Direction == CargoShipmentDirection.Incoming ? "Gelen" : "Giden";
-
-        foreach (var entity in entities)
-        {
-            await _auditLogService.WriteAsync(
-                AuditAction.CargoShipmentCreated,
-                _userContext.UserId, _userContext.FullName,
-                "CargoShipment", entity.Id,
-                null,
-                $"Yön: {directionText} | No: {entity.ShipmentNumber} | Tarih: {entity.ShipmentDate:dd.MM.yyyy} | Kaynak: {request.SourceName}");
-        }
-
         var importId = Guid.NewGuid();
         var first    = entities[0].ShipmentNumber;
         var last     = entities[^1].ShipmentNumber;
 
-        await _auditLogService.WriteAsync(
+        request.Progress?.Report(new ImportProgress("Denetim kayıtları yazılıyor", entities.Count, entities.Count));
+
+        var auditEntries = entities.Select(entity => new AuditEntry(
+            AuditAction.CargoShipmentCreated,
+            _userContext.UserId, _userContext.FullName,
+            "CargoShipment", entity.Id,
+            null,
+            $"Yön: {directionText} | No: {entity.ShipmentNumber} | Tarih: {entity.ShipmentDate:dd.MM.yyyy} | Kaynak: {request.SourceName}"))
+            .ToList();
+
+        auditEntries.Add(new AuditEntry(
             AuditAction.CargoImportCompleted,
             _userContext.UserId, _userContext.FullName,
             "CargoImport", importId,
             null,
-            $"Dosya: {request.SourceName} | Yön: {directionText} | {entities.Count} kayıt | Numara: {first} – {last}");
+            $"Dosya: {request.SourceName} | Yön: {directionText} | {entities.Count} kayıt | Numara: {first} – {last}"));
+
+        await _auditLogService.WriteRangeAsync(auditEntries);
 
         await _systemLog.LogInfoAsync("CargoImport",
             $"Toplu içe aktarma tamamlandı: {request.SourceName} → {entities.Count} kayıt ({first} – {last}).",

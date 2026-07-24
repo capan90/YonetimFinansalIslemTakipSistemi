@@ -18,6 +18,14 @@ public class AuditLogRepository : IAuditLogRepository
         await _context.SaveChangesAsync();
     }
 
+    public async Task AddRangeAsync(IReadOnlyList<AuditLog> logs)
+    {
+        // Toplu import: binlerce kayıt tek SaveChanges ile yazılır — kayıt başına
+        // round-trip UI'ı dondurur
+        await _context.AuditLogs.AddRangeAsync(logs);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task<List<AuditLog>> GetFilteredAsync(
         Guid? userId, DateTime? from, DateTime? to, AuditAction? action)
     {

@@ -38,11 +38,19 @@
                             Click="NavFirmaRehberiButton_Click"/>
                     <Button x:Name="NavKargoFirmalariButton"
                             Content="Kargo Firmaları"
-                            Height="28" Padding="12,0" Margin="0,0,0,0"
+                            Height="28" Padding="12,0" Margin="0,0,6,0"
                             Foreground="White" Background="#2E5F9F"
                             BorderBrush="#3B7BC8" BorderThickness="1"
                             Cursor="Hand"
                             Click="NavKargoFirmalariButton_Click"/>
+                    <Button x:Name="NavWhatsAppRehberiButton"
+                            Content="WhatsApp Rehberi"
+                            Height="28" Padding="12,0" Margin="0,0,0,0"
+                            Foreground="White" Background="#2E5F9F"
+                            BorderBrush="#3B7BC8" BorderThickness="1"
+                            Cursor="Hand"
+                            ToolTip="Tüm kullanıcıların ortak kullandığı WhatsApp alıcı rehberi."
+                            Click="NavWhatsAppRehberiButton_Click"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">

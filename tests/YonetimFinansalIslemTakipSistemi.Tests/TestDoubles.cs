@@ -48,6 +48,14 @@ internal sealed class FakeAuditLogService : IAuditLogService
             Entries.Add((action, oldValues, newValues));
         return Task.CompletedTask;
     }
+
+    public Task WriteRangeAsync(IReadOnlyList<AuditEntry> entries)
+    {
+        lock (Entries)
+            foreach (var e in entries)
+                Entries.Add((e.Action, e.OldValues, e.NewValues));
+        return Task.CompletedTask;
+    }
 }
 
 internal sealed class FakeSystemLogService : ISystemLogService

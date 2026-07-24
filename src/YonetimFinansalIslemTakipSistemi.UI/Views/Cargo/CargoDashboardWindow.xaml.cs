@@ -360,6 +360,10 @@ public partial class CargoDashboardWindow : Window
         NavGidenButton.Visibility          = canGiden    ? Visibility.Visible : Visibility.Collapsed;
         NavFirmaRehberiButton.Visibility   = canRehber   ? Visibility.Visible : Visibility.Collapsed;
         NavKargoFirmalariButton.Visibility = canFirmalar ? Visibility.Visible : Visibility.Collapsed;
+        // Ortak WhatsApp rehberi: görüntüleme tüm kargo kullanıcılarına açık
+        // (MainWindow'daki menü kuralıyla aynı); yazma işlemleri handler guard'ı +
+        // liste ekranındaki buton görünürlüğüyle korunur
+        NavWhatsAppRehberiButton.Visibility = Visibility.Visible;
 
         // Yardım menüsü her kullanıcıda görünür: Kullanıcı Ayarlarım (Harf Duyarlılığı)
         // kişisel ayardır, izin gerektirmez. Teknik öğeler izinle tek tek gizlenir —
@@ -386,6 +390,9 @@ public partial class CargoDashboardWindow : Window
 
     private void NavKargoFirmalariButton_Click(object sender, RoutedEventArgs e)
         => new CargoCompanyListWindow(_services) { Owner = this }.ShowDialog();
+
+    private void NavWhatsAppRehberiButton_Click(object sender, RoutedEventArgs e)
+        => new Views.WhatsApp.WhatsAppContactListWindow(_services) { Owner = this }.ShowDialog();
 
     // ── Pencere Kapat ─────────────────────────────────────────────────────
 

@@ -47,7 +47,7 @@ public class WhatsAppImportTests
         var systemLog = new FakeSystemLogService();
 
         return new Env(
-            new AnalyzeWhatsAppImportHandler(reader, repo, user, systemLog),
+            new AnalyzeWhatsAppImportHandler(reader, repo, user, systemLog, new FakeTextNormalizationService()),
             new ImportWhatsAppContactsHandler(repo, audit, systemLog, user, new FakeTextNormalizationService()),
             reader, repo, audit, user);
     }

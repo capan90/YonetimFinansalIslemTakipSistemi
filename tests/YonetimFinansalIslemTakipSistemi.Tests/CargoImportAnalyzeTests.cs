@@ -58,7 +58,8 @@ public class CargoImportAnalyzeTests
         cargoRepo.Items.Add(new CargoCompany { Id = Guid.NewGuid(), Name = "Hızlı Kargo", IsActive = true });
 
         var handler = new AnalyzeCargoImportHandler(
-            reader, directories, cargoRepo, shipments, user, new FakeSystemLogService());
+            reader, directories, cargoRepo, shipments, user, new FakeSystemLogService(),
+            new FakeTextNormalizationService());
 
         return new Env(handler, reader, directories, cargoRepo, shipments, acmeId);
     }

@@ -124,7 +124,8 @@ public class CargoImportEndToEndIntegrationTests
             var cache = new FakeCargoDashboardCache();
 
             var analyze = new AnalyzeCargoImportHandler(
-                new ExcelCargoImportReader(), directoryRepo, cargoRepo, shipmentRepo, user, systemLog);
+                new ExcelCargoImportReader(), directoryRepo, cargoRepo, shipmentRepo, user, systemLog,
+                new FakeTextNormalizationService());
 
             // ── 1) Analiz ──
             var analysis = await analyze.HandleAsync(new AnalyzeCargoImportRequest
@@ -207,7 +208,7 @@ public class CargoImportEndToEndIntegrationTests
                     new CompanyDirectoryRepository(ctx2),
                     new CargoCompanyRepository(ctx2),
                     new CargoShipmentRepository(ctx2, systemLog),
-                    user, systemLog);
+                    user, systemLog, new FakeTextNormalizationService());
 
                 var second = await analyze2.HandleAsync(new AnalyzeCargoImportRequest
                 {

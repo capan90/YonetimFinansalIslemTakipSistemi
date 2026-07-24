@@ -43,7 +43,7 @@ public class DirectoryImportTests
         var systemLog = new FakeSystemLogService();
 
         return new Env(
-            new AnalyzeDirectoryImportHandler(reader, repo, user, systemLog),
+            new AnalyzeDirectoryImportHandler(reader, repo, user, systemLog, new FakeTextNormalizationService()),
             new ImportDirectoryEntriesHandler(repo, audit, systemLog, user, new FakeTextNormalizationService()),
             reader, repo, audit, systemLog, user);
     }
@@ -79,6 +79,30 @@ public class DirectoryImportTests
         Assert.Equal("Acme A.Ş.", row.CompanyName);
         Assert.Equal("Ali Veli", row.ContactPerson);
         Assert.Equal("0216 111 11 11", row.Phone);
+    }
+
+    [Fact]
+    public async Task KullaniciBuyukHarfSectiyse_OnizlemeVerisiTercihineGoreDonusur()
+    {
+        // Gerçek normalizasyon servisiyle: harf tercihi analiz aşamasında uygulanır,
+        // önizleme verinin kaydedilecek halini gösterir (telefon/e-posta muaf)
+        var reader = new FakeImportFileReader();
+        var repo   = new FakeCompanyDirectoryRepository();
+        var user   = new FakeUserContext { TextCasePreference = TextCasePreference.Uppercase };
+        user.GrantAll();
+        var handler = new AnalyzeDirectoryImportHandler(
+            reader, repo, user, new FakeSystemLogService(),
+            new Application.Services.UserTextNormalizationService(user));
+
+        reader.Document = Doc(["acme lojistik a.ş.", "ali veli", "sanayi cad. 5", "istanbul", "0216 111 11 11", null]);
+
+        var result = await handler.HandleAsync(AnalyzeRequest());
+
+        var row = Assert.Single(result.Data!.Rows);
+        Assert.Equal("ACME LOJİSTİK A.Ş.", row.CompanyName); // tr-TR: i→İ
+        Assert.Equal("ALİ VELİ", row.ContactPerson);
+        Assert.Equal("İSTANBUL", row.City);
+        Assert.Equal("0216 111 11 11", row.Phone); // telefon harf dönüşümünden muaf
     }
 
     [Fact]

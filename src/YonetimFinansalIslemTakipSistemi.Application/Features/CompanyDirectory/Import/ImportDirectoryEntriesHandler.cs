@@ -110,21 +110,24 @@ public class ImportDirectoryEntriesHandler
                 "Kayıtlar oluşturulamadı — hiçbir satır içe aktarılmadı. Teknik ayrıntı Sistem Loglarına kaydedildi.");
         }
 
-        foreach (var entity in entities)
-        {
-            await _auditLogService.WriteAsync(
-                AuditAction.CompanyDirectoryCreated,
-                _userContext.UserId, _userContext.FullName,
-                "CompanyDirectory", entity.Id,
-                null, $"Firma: {entity.CompanyName} | Adres: {entity.AddressLine} | Kaynak: {request.SourceName}");
-        }
-
+        // Audit toplu yazılır — kayıt başına round-trip binlerce satırda UI'ı dondurur
         var importId = Guid.NewGuid();
-        await _auditLogService.WriteAsync(
+        request.Progress?.Report(new ImportProgress("Denetim kayıtları yazılıyor", entities.Count, entities.Count));
+
+        var auditEntries = entities.Select(entity => new AuditEntry(
+            AuditAction.CompanyDirectoryCreated,
+            _userContext.UserId, _userContext.FullName,
+            "CompanyDirectory", entity.Id,
+            null, $"Firma: {entity.CompanyName} | Adres: {entity.AddressLine} | Kaynak: {request.SourceName}"))
+            .ToList();
+
+        auditEntries.Add(new AuditEntry(
             AuditAction.DirectoryImportCompleted,
             _userContext.UserId, _userContext.FullName,
             "DirectoryImport", importId,
-            null, $"Dosya: {request.SourceName} | {entities.Count} firma kaydı");
+            null, $"Dosya: {request.SourceName} | {entities.Count} firma kaydı"));
+
+        await _auditLogService.WriteRangeAsync(auditEntries);
 
         await _systemLog.LogInfoAsync("DirectoryImport",
             $"Rehber toplu içe aktarma tamamlandı: {request.SourceName} → {entities.Count} firma.",

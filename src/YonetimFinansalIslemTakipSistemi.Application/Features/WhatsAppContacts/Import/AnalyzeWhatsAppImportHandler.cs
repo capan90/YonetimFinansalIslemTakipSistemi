@@ -18,17 +18,20 @@ public class AnalyzeWhatsAppImportHandler
     private readonly IWhatsAppContactRepository _repository;
     private readonly IUserContext               _userContext;
     private readonly ISystemLogService          _systemLog;
+    private readonly IUserTextNormalizationService _textNormalization;
 
     public AnalyzeWhatsAppImportHandler(
         ICargoImportFileReader     reader,
         IWhatsAppContactRepository repository,
         IUserContext               userContext,
-        ISystemLogService          systemLog)
+        ISystemLogService          systemLog,
+        IUserTextNormalizationService textNormalization)
     {
-        _reader      = reader;
-        _repository  = repository;
-        _userContext = userContext;
-        _systemLog   = systemLog;
+        _reader            = reader;
+        _repository        = repository;
+        _userContext       = userContext;
+        _systemLog         = systemLog;
+        _textNormalization = textNormalization;
     }
 
     public async Task<OperationResult<WhatsAppImportAnalysisResult>> HandleAsync(AnalyzeWhatsAppImportRequest request)
@@ -128,7 +131,7 @@ public class AnalyzeWhatsAppImportHandler
         });
     }
 
-    private static WhatsAppImportRowDto BuildRow(
+    private WhatsAppImportRowDto BuildRow(
         ImportDocumentRow docRow, IReadOnlyDictionary<Column, int> indexes)
     {
         var row = new WhatsAppImportRowDto { RowNumber = docRow.RowNumber };
@@ -138,9 +141,11 @@ public class AnalyzeWhatsAppImportHandler
                 ? TextNormalizer.CollapseOrNull(docRow.Cells[i])
                 : null;
 
-        string? Text(Column column)
+        // Kullanıcının harf duyarlılığı tercihi analizde uygulanır — önizleme,
+        // verinin KAYDEDİLECEK halini gösterir (telefon muaf)
+        string? CaseText(Column column)
         {
-            var value = Cell(column);
+            var value = _textNormalization.Normalize(Cell(column));
             var def   = Definition(column);
             if (value is not null && value.Length > def.MaxLength)
             {
@@ -150,7 +155,7 @@ public class AnalyzeWhatsAppImportHandler
             return value;
         }
 
-        row.FullName = Text(Column.AdSoyad);
+        row.FullName = CaseText(Column.AdSoyad);
         if (row.FullName is null)
             row.AddError(Definition(Column.AdSoyad).Header, "Ad Soyad boş olamaz.");
 
@@ -167,8 +172,8 @@ public class AnalyzeWhatsAppImportHandler
                     $"Geçerli bir Türkiye cep numarası değil: '{phoneText}' (örn: 0532 123 45 67).");
         }
 
-        row.Company     = Text(Column.Firma);
-        row.Description = Text(Column.Aciklama);
+        row.Company     = CaseText(Column.Firma);
+        row.Description = CaseText(Column.Aciklama);
         return row;
     }
 }

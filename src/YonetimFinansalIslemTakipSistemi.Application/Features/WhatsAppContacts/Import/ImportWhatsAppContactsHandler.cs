@@ -119,26 +119,31 @@ public class ImportWhatsAppContactsHandler
                 "Kayıtlar oluşturulamadı — hiçbir satır içe aktarılmadı. Teknik ayrıntı Sistem Loglarına kaydedildi.");
         }
 
-        foreach (var entity in toAdd)
-            await _auditLogService.WriteAsync(
-                AuditAction.WhatsAppContactCreated,
-                _userContext.UserId, _userContext.FullName,
-                "WhatsAppContact", entity.Id,
-                null, $"Ad: {entity.FullName} | Telefon: {entity.Phone} | Kaynak: {request.SourceName}");
-
-        foreach (var entity in toUpdate)
-            await _auditLogService.WriteAsync(
-                AuditAction.WhatsAppContactUpdated,
-                _userContext.UserId, _userContext.FullName,
-                "WhatsAppContact", entity.Id,
-                "Silinmiş kayıt", $"Geri yüklendi — Ad: {entity.FullName} | Telefon: {entity.Phone} | Kaynak: {request.SourceName}");
-
+        // Audit toplu yazılır — kayıt başına round-trip UI'ı dondurur
         var importId = Guid.NewGuid();
-        await _auditLogService.WriteAsync(
+        request.Progress?.Report(new ImportProgress("Denetim kayıtları yazılıyor", request.Rows.Count, request.Rows.Count));
+
+        var auditEntries = new List<AuditEntry>(toAdd.Count + toUpdate.Count + 1);
+
+        auditEntries.AddRange(toAdd.Select(entity => new AuditEntry(
+            AuditAction.WhatsAppContactCreated,
+            _userContext.UserId, _userContext.FullName,
+            "WhatsAppContact", entity.Id,
+            null, $"Ad: {entity.FullName} | Telefon: {entity.Phone} | Kaynak: {request.SourceName}")));
+
+        auditEntries.AddRange(toUpdate.Select(entity => new AuditEntry(
+            AuditAction.WhatsAppContactUpdated,
+            _userContext.UserId, _userContext.FullName,
+            "WhatsAppContact", entity.Id,
+            "Silinmiş kayıt", $"Geri yüklendi — Ad: {entity.FullName} | Telefon: {entity.Phone} | Kaynak: {request.SourceName}")));
+
+        auditEntries.Add(new AuditEntry(
             AuditAction.WhatsAppImportCompleted,
             _userContext.UserId, _userContext.FullName,
             "WhatsAppImport", importId,
-            null, $"Dosya: {request.SourceName} | {toAdd.Count + toUpdate.Count} kişi ({toUpdate.Count} geri yükleme)");
+            null, $"Dosya: {request.SourceName} | {toAdd.Count + toUpdate.Count} kişi ({toUpdate.Count} geri yükleme)"));
+
+        await _auditLogService.WriteRangeAsync(auditEntries);
 
         await _systemLog.LogInfoAsync("WhatsAppImport",
             $"WhatsApp rehberi toplu içe aktarma tamamlandı: {request.SourceName} → {toAdd.Count} yeni, {toUpdate.Count} geri yükleme.",

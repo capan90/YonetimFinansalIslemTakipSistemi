@@ -50,4 +50,35 @@ public class AuditLogService : IAuditLogService
                 ex, source: nameof(AuditLogService));
         }
     }
+
+    public async Task WriteRangeAsync(IReadOnlyList<AuditEntry> entries)
+    {
+        if (entries.Count == 0) return;
+
+        var logs = entries.Select(e => new AuditLog
+        {
+            Id           = Guid.NewGuid(),
+            UserId       = e.UserId,
+            UserName     = e.UserName,
+            Action       = e.Action,
+            EntityType   = e.EntityType,
+            EntityId     = e.EntityId,
+            OldValues    = e.OldValues,
+            NewValues    = e.NewValues,
+            ComputerName = Environment.MachineName,
+            Timestamp    = DateTime.UtcNow
+        }).ToList();
+
+        // WriteAsync ile aynı politika: audit hatası ana işlemi asla bloke etmez
+        try
+        {
+            await _repository.AddRangeAsync(logs);
+        }
+        catch (Exception ex)
+        {
+            await _systemLog.LogErrorAsync("Audit",
+                $"Toplu audit yazılamadı ({entries.Count} kayıt): {entries[0].Action} | {entries[0].EntityType}",
+                ex, source: nameof(AuditLogService));
+        }
+    }
 }

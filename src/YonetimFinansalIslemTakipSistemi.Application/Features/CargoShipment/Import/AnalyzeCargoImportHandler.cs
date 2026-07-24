@@ -20,6 +20,7 @@ public class AnalyzeCargoImportHandler
     private readonly ICargoShipmentRepository    _shipmentRepository;
     private readonly IUserContext                _userContext;
     private readonly ISystemLogService           _systemLog;
+    private readonly IUserTextNormalizationService _textNormalization;
 
     public AnalyzeCargoImportHandler(
         ICargoImportFileReader      reader,
@@ -27,7 +28,8 @@ public class AnalyzeCargoImportHandler
         ICargoCompanyRepository     cargoCompanyRepository,
         ICargoShipmentRepository    shipmentRepository,
         IUserContext                userContext,
-        ISystemLogService           systemLog)
+        ISystemLogService           systemLog,
+        IUserTextNormalizationService textNormalization)
     {
         _reader                 = reader;
         _directoryRepository    = directoryRepository;
@@ -35,6 +37,7 @@ public class AnalyzeCargoImportHandler
         _shipmentRepository     = shipmentRepository;
         _userContext            = userContext;
         _systemLog              = systemLog;
+        _textNormalization      = textNormalization;
     }
 
     public async Task<OperationResult<CargoImportAnalysisResult>> HandleAsync(AnalyzeCargoImportRequest request)
@@ -114,7 +117,7 @@ public class AnalyzeCargoImportHandler
         });
     }
 
-    private static CargoImportRowDto BuildRow(
+    private CargoImportRowDto BuildRow(
         ImportDocumentRow docRow,
         IReadOnlyDictionary<Column, int> indexes,
         CompanyNameResolver directoryResolver,
@@ -132,6 +135,20 @@ public class AnalyzeCargoImportHandler
         string? Text(Column column)
         {
             var value = Cell(column);
+            var def   = Definition(column);
+            if (value is not null && value.Length > def.MaxLength)
+            {
+                row.AddWarning(def.Header, $"Değer {def.MaxLength} karakterle sınırlandırıldı.");
+                value = value[..def.MaxLength];
+            }
+            return value;
+        }
+
+        // Kullanıcının harf duyarlılığı tercihi analizde uygulanır — önizleme,
+        // verinin KAYDEDİLECEK halini gösterir (takip no gibi kod alanları muaf)
+        string? CaseText(Column column)
+        {
+            var value = _textNormalization.Normalize(Cell(column));
             var def   = Definition(column);
             if (value is not null && value.Length > def.MaxLength)
             {
@@ -244,14 +261,14 @@ public class AnalyzeCargoImportHandler
             row.Priority = priority ?? CargoShipmentPriority.Normal;
         }
 
-        row.SenderName     = Text(Column.Gonderen);
-        row.ReceiverName   = Text(Column.Alici);
+        row.SenderName     = CaseText(Column.Gonderen);
+        row.ReceiverName   = CaseText(Column.Alici);
         row.TrackingNumber = Text(Column.TakipNo);
-        row.VehiclePlate   = Text(Column.AracPlakasi);
-        row.Notes          = Text(Column.Not);
+        row.VehiclePlate   = CaseText(Column.AracPlakasi);
+        row.Notes          = CaseText(Column.Not);
 
         // Dikkatine kolonu doluysa rehberdeki varsayılanın önüne geçer
-        var attention = Text(Column.Dikkatine);
+        var attention = CaseText(Column.Dikkatine);
         if (attention is not null)
             row.ReceiverAttentionSnapshot = attention;
 

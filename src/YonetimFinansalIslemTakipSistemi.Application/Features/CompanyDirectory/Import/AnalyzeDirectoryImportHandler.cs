@@ -19,17 +19,20 @@ public class AnalyzeDirectoryImportHandler
     private readonly ICompanyDirectoryRepository _repository;
     private readonly IUserContext                _userContext;
     private readonly ISystemLogService           _systemLog;
+    private readonly IUserTextNormalizationService _textNormalization;
 
     public AnalyzeDirectoryImportHandler(
         ICargoImportFileReader      reader,
         ICompanyDirectoryRepository repository,
         IUserContext                userContext,
-        ISystemLogService           systemLog)
+        ISystemLogService           systemLog,
+        IUserTextNormalizationService textNormalization)
     {
-        _reader      = reader;
-        _repository  = repository;
-        _userContext = userContext;
-        _systemLog   = systemLog;
+        _reader            = reader;
+        _repository        = repository;
+        _userContext       = userContext;
+        _systemLog         = systemLog;
+        _textNormalization = textNormalization;
     }
 
     public async Task<OperationResult<DirectoryImportAnalysisResult>> HandleAsync(AnalyzeDirectoryImportRequest request)
@@ -123,7 +126,7 @@ public class AnalyzeDirectoryImportHandler
         });
     }
 
-    private static DirectoryImportRowDto BuildRow(
+    private DirectoryImportRowDto BuildRow(
         ImportDocumentRow docRow, IReadOnlyDictionary<Column, int> indexes)
     {
         var row = new DirectoryImportRowDto { RowNumber = docRow.RowNumber };
@@ -145,18 +148,32 @@ public class AnalyzeDirectoryImportHandler
             return value;
         }
 
-        row.CompanyName = Text(Column.FirmaAdi);
+        // Kullanıcının harf duyarlılığı tercihi analizde uygulanır — önizleme,
+        // verinin KAYDEDİLECEK halini gösterir (telefon/e-posta/posta kodu muaf)
+        string? CaseText(Column column)
+        {
+            var value = _textNormalization.Normalize(Cell(column));
+            var def   = Definition(column);
+            if (value is not null && value.Length > def.MaxLength)
+            {
+                row.AddWarning(def.Header, $"Değer {def.MaxLength} karakterle sınırlandırıldı.");
+                value = value[..def.MaxLength];
+            }
+            return value;
+        }
+
+        row.CompanyName = CaseText(Column.FirmaAdi);
         if (row.CompanyName is null)
             row.AddError(Definition(Column.FirmaAdi).Header, "Firma adı boş olamaz.");
 
-        row.ContactPerson = Text(Column.YetkiliKisi);
-        row.AttentionTo   = Text(Column.Dikkatine);
-        row.AddressLine   = Text(Column.Adres);
-        row.District      = Text(Column.Ilce);
-        row.City          = Text(Column.Il);
+        row.ContactPerson = CaseText(Column.YetkiliKisi);
+        row.AttentionTo   = CaseText(Column.Dikkatine);
+        row.AddressLine   = CaseText(Column.Adres);
+        row.District      = CaseText(Column.Ilce);
+        row.City          = CaseText(Column.Il);
         row.PostalCode    = Text(Column.PostaKodu);
         row.Email         = Text(Column.Eposta);
-        row.Notes         = Text(Column.Not);
+        row.Notes         = CaseText(Column.Not);
 
         // Telefon: 50 karakteri aşan karışık içerik (çoklu numara + açıklama) kaybedilmez —
         // Not alanına taşınır, telefon boş bırakılır (mevcut rehber dosyası bu durumu üretiyor)

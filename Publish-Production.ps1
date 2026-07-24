@@ -2,7 +2,15 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$Version,
 
-    [int]$KeepLastVersions = 5
+    [int]$KeepLastVersions = 5,
+
+    # Dosyalarin kopyalanacagi yol. Bos birakilirsa paylasim yolu kullanilir.
+    # YonetimPublish paylasimina yazma izni yalnizca yukseltilmis (admin) oturumda
+    # gelir; normal oturumdan yayin icin ayni klasorun fiziksel yolu verilebilir:
+    #   -CopyTargetPath "\\10.0.0.169\C$\Apps\Yonetim\Publish"
+    # ProviderURL ve dogrulama HER ZAMAN paylasim yolu uzerinden yapilir --
+    # istemcilerin gordugu adres degismez.
+    [string]$CopyTargetPath = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -11,6 +19,8 @@ $ServerPublishPath = "\\10.0.0.169\YonetimPublish"
 $LocalPublishPath = "C:\Apps\Yonetim\Publish"
 $ManifestName = "YonetimFinansalIslemTakipSistemi.UI.application"
 $ProviderUrl = "$ServerPublishPath\$ManifestName"
+
+$CopyTarget = if ([string]::IsNullOrWhiteSpace($CopyTargetPath)) { $ServerPublishPath } else { $CopyTargetPath }
 
 $PublishLogsDir = ".\logs\publish"
 $PublishHistoryFile = ".\logs\publish\PublishHistory.json"
@@ -95,6 +105,7 @@ try {
     Write-Step "Version       : $Version"
     Write-Step "Local Publish : $LocalPublishPath"
     Write-Step "Server Publish: $ServerPublishPath"
+    Write-Step "Copy Target   : $CopyTarget"
     Write-Step "Provider URL  : $ProviderUrl"
     Write-Step "Log File      : $PublishLogFile"
     Write-Step ""
@@ -126,6 +137,22 @@ try {
     if (-not (Test-Path $ServerPublishPath)) {
         throw "Server publish yolu bulunamadi: $ServerPublishPath"
     }
+    if (-not (Test-Path $CopyTarget)) {
+        throw "Kopyalama hedefi bulunamadi: $CopyTarget"
+    }
+
+    # Yazma izni onceden dogrulanir; aksi halde hata robocopy adiminda ortaya cikar
+    $WriteProbe = Join-Path $CopyTarget "_publish-write-probe.tmp"
+    try {
+        Set-Content -Path $WriteProbe -Value "probe" -ErrorAction Stop
+        Remove-Item $WriteProbe -Force -ErrorAction Stop
+    }
+    catch {
+        throw "Kopyalama hedefine yazilamiyor: $CopyTarget`n" +
+              "Cozum 1: PowerShell'i 'Yonetici olarak' calistirin.`n" +
+              "Cozum 2: -CopyTargetPath ile klasorun fiziksel yolunu verin " +
+              "(orn. \\10.0.0.169\C`$\Apps\Yonetim\Publish)."
+    }
 
     Write-Step "[2/8] Clean / Build / Test..." "Yellow"
     dotnet clean 2>&1 | Tee-Object -FilePath $PublishLogFile -Append
@@ -145,8 +172,8 @@ try {
         -ApplicationFilesPath (Join-Path $LocalPublishPath "Application Files") `
         -Keep $KeepLastVersions
 
-    Write-Step "[5/8] Sunucuya kopyalaniyor..." "Yellow"
-    robocopy $LocalPublishPath $ServerPublishPath /MIR /R:3 /W:5 2>&1 |
+    Write-Step "[5/8] Sunucuya kopyalaniyor... ($CopyTarget)" "Yellow"
+    robocopy $LocalPublishPath $CopyTarget /MIR /R:3 /W:5 2>&1 |
         Tee-Object -FilePath $PublishLogFile -Append
 
     $RoboExitCode = $LASTEXITCODE

@@ -50,20 +50,21 @@ public class ImportDirectoryEntriesHandler
             return OperationResult<DirectoryImportResult>.Fail(
                 "Hatalı satırlar içe aktarılamaz. Önizlemeyi yenileyin.");
 
-        // Yeniden doğrulama: önizleme sonrası başka kullanıcı aynı adla firma eklemiş olabilir.
+        // Yeniden doğrulama: önizleme sonrası başka kullanıcı aynı ad+telefonla firma
+        // eklemiş olabilir (anahtar analizle aynı — aynı ad farklı numara serbesttir).
         // Kullanıcının bilinçli dahil ettiği (önizlemede işaretli) mükerrerler engellenmez.
-        var existingNames = (await _repository.GetAllAsync())
-            .Select(d => CompanyNameResolver.Normalize(d.CompanyName))
+        var existingKeys = (await _repository.GetAllAsync())
+            .Select(d => DirectoryDuplicateKey.Build(d.CompanyName, d.Phone))
             .ToHashSet();
 
         var newConflicts = request.Rows.Count(r =>
             r.DuplicateReason is null &&
             r.CompanyName is not null &&
-            existingNames.Contains(CompanyNameResolver.Normalize(r.CompanyName)));
+            existingKeys.Contains(DirectoryDuplicateKey.Build(r.CompanyName, r.Phone)));
 
         if (newConflicts > 0)
             return OperationResult<DirectoryImportResult>.Fail(
-                $"Önizlemeden sonra rehbere aynı adla {newConflicts} firma eklendi. " +
+                $"Önizlemeden sonra rehbere aynı ad ve telefonla {newConflicts} firma eklendi. " +
                 "Hiçbir kayıt oluşturulmadı — dosyayı yeniden analiz edin.");
 
         var entities  = new List<Domain.Entities.CompanyDirectory>(request.Rows.Count);

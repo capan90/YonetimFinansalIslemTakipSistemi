@@ -133,6 +133,30 @@ public class DirectoryImportTests
     }
 
     [Fact]
+    public async Task AyniAd_FarkliTelefon_MukerrerSayilmaz()
+    {
+        // İş gerçeği: bir firmanın muhasebe/depo gibi birden çok hattı olabilir —
+        // aynı ad farklı numarayla ayrı kayıt olarak içe aktarılır
+        var env = Build();
+        env.Repo.Items.Add(new CompanyDirectory
+        {
+            Id = Guid.NewGuid(), CompanyName = "Acme A.Ş.", AddressLine = "-",
+            Phone = "0216 111 11 11", IsActive = true
+        });
+        env.Reader.Document = Doc(
+            ["Acme A.Ş.", "Muhasebe", null, null, "0216 222 22 22", null],  // DB'dekiyle aynı ad, farklı no
+            ["Acme A.Ş.", "Depo",     null, null, "0216 333 33 33", null],  // dosya içi aynı ad, farklı no
+            ["Acme A.Ş.", null,       null, null, "02161111111",    null]); // DB'dekiyle aynı ad + AYNI no (biçim farklı)
+
+        var result = await env.Analyze.HandleAsync(AnalyzeRequest());
+
+        var rows = result.Data!.Rows;
+        Assert.Equal(CargoImportRowStatus.Valid, rows[0].Status);
+        Assert.Equal(CargoImportRowStatus.Valid, rows[1].Status);
+        Assert.Equal(CargoImportRowStatus.Duplicate, rows[2].Status); // rakam bazlı eşleşme
+    }
+
+    [Fact]
     public async Task DosyaIciVeDbMukerrer_NormalizeAdlaYakalanir()
     {
         var env = Build();

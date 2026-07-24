@@ -63,13 +63,14 @@ public class AnalyzeDirectoryImportHandler
                 $"Dosyada zorunlu kolonlar eksik: {string.Join(", ", match.MissingRequired)}. " +
                 "\"Şablon İndir\" ile doğru başlıklı şablonu kullanabilirsiniz.");
 
-        // Mevcut rehber bir kez yüklenir — mükerrer kontrolü bellekte yapılır
+        // Mevcut rehber bir kez yüklenir — mükerrer kontrolü bellekte yapılır.
+        // Anahtar: ad + telefon (aynı firmanın farklı numaraları ayrı kayıt olabilir)
         var existing = await _repository.GetAllAsync();
-        var existingByName = new Dictionary<string, string>();
+        var existingByKey = new Dictionary<string, string>();
         foreach (var dir in existing)
         {
-            var key = CompanyNameResolver.Normalize(dir.CompanyName);
-            if (key.Length > 0) existingByName.TryAdd(key, dir.CompanyName);
+            var key = DirectoryDuplicateKey.Build(dir.CompanyName, dir.Phone);
+            if (!key.StartsWith('|')) existingByKey.TryAdd(key, dir.CompanyName);
         }
 
         var rows      = new List<DirectoryImportRowDto>();
@@ -86,25 +87,26 @@ public class AnalyzeDirectoryImportHandler
 
             var row = BuildRow(docRow, match.Indexes);
 
-            // Mükerrer: normalize firma adı (yalnızca hatasız satırlar için)
+            // Mükerrer: firma adı + telefon (yalnızca hatasız satırlar için).
+            // Aynı ad + FARKLI numara geçerlidir — bir firmanın birden çok hattı olabilir.
             if (row.Messages.All(m => m.IsWarning) && row.CompanyName is not null)
             {
-                var key = CompanyNameResolver.Normalize(row.CompanyName);
+                var key = DirectoryDuplicateKey.Build(row.CompanyName, row.Phone);
                 if (seenNames.TryGetValue(key, out var firstRow))
                 {
                     row.DuplicateReason = new DuplicateReason
                     {
                         Kind             = DuplicateKind.SimilarInFile,
                         MatchedRowNumber = firstRow,
-                        Description      = $"Aynı firma adı dosyada {firstRow}. satırda da var."
+                        Description      = $"Aynı firma adı ve telefon dosyada {firstRow}. satırda da var."
                     };
                 }
-                else if (existingByName.TryGetValue(key, out var existingName))
+                else if (existingByKey.TryGetValue(key, out var existingName))
                 {
                     row.DuplicateReason = new DuplicateReason
                     {
                         Kind        = DuplicateKind.SimilarInDatabase,
-                        Description = $"Firma rehberde zaten kayıtlı: '{existingName}'."
+                        Description = $"Firma aynı telefonla rehberde zaten kayıtlı: '{existingName}'."
                     };
                 }
                 else

@@ -2,6 +2,22 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Import
 
 namespace YonetimFinansalIslemTakipSistemi.Application.Features.CompanyDirectory.Import;
 
+/// <summary>
+/// Rehber mükerrer anahtarı: normalize firma adı + telefonun yalnızca rakamları.
+/// Aynı firma FARKLI numaralarla birden çok kez kaydedilebilir (iş gerçeği:
+/// bir firmanın muhasebe/depo/yetkili gibi ayrı hatları olur); mükerrer sayılması
+/// için hem ad hem numara aynı olmalıdır.
+/// </summary>
+public static class DirectoryDuplicateKey
+{
+    public static string Build(string? companyName, string? phone)
+        => $"{CargoShipment.Import.CompanyNameResolver.Normalize(companyName)}|{PhoneDigits(phone)}";
+
+    /// <summary>"0216 111 11 11" ile "02161111111" aynı anahtara iner.</summary>
+    public static string PhoneDigits(string? phone)
+        => phone is null ? string.Empty : new string(phone.Where(char.IsDigit).ToArray());
+}
+
 /// <summary>Firma rehberi içe aktarma satırı — durum mantığı ImportRowBase'ten gelir.</summary>
 public sealed class DirectoryImportRowDto : ImportRowBase
 {

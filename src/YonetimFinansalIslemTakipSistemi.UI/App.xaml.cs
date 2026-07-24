@@ -53,6 +53,8 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Comman
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.QuickUpdateCargoStatus;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Queries.GetCargoShipmentList;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Import;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CompanyDirectory.Import;
+using YonetimFinansalIslemTakipSistemi.Application.Features.WhatsAppContacts.Import;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Label.GenerateCargoLabel;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Notification.GenerateCargoNotification;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Notification.MarkCargoNotificationPrepared;
@@ -235,9 +237,15 @@ public partial class App : System.Windows.Application
         services.AddScoped<DeleteCargoShipmentHandler>();
         services.AddScoped<QuickUpdateCargoStatusHandler>();
         services.AddScoped<GetCargoShipmentListHandler>();
-        // Excel içe aktarma sihirbazı
+        // Excel içe aktarma sihirbazları (kargo gönderi / firma rehberi / WhatsApp rehberi)
         services.AddScoped<AnalyzeCargoImportHandler>();
         services.AddScoped<ImportCargoShipmentsHandler>();
+        services.AddScoped<AnalyzeDirectoryImportHandler>();
+        services.AddScoped<ImportDirectoryEntriesHandler>();
+        services.AddScoped<AnalyzeWhatsAppImportHandler>();
+        services.AddScoped<ImportWhatsAppContactsHandler>();
+        services.AddTransient<ViewModels.Import.DirectoryImportViewModel>();
+        services.AddTransient<ViewModels.Import.WhatsAppImportViewModel>();
         services.AddScoped<GenerateCargoLabelHandler>();
         // ILabelRenderer: Singleton — renderer durumsuz, her session paylaşabilir
         services.AddSingleton<ILabelRenderer, QuestPdfLabelRenderer>();

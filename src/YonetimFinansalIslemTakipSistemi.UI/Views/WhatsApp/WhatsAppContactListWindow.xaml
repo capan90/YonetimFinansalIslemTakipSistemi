@@ -21,6 +21,10 @@
                         Style="{StaticResource DangerButton}"
                         IsEnabled="{Binding HasSelected}"
                         Click="DeleteButton_Click"/>
+                <Button x:Name="ImportButton" Content="📥 Excel'den İçe Aktar" Width="160" Margin="6,0,0,0"
+                        Style="{StaticResource SecondaryButton}"
+                        Click="ImportButton_Click"
+                        ToolTip="Excel dosyasından toplu kişi kaydı oluşturur: analiz → önizleme → onay → içe aktarma"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBox Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}"

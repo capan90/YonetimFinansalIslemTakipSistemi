@@ -27,7 +27,13 @@ public enum DuplicateKind
     SimilarInFile,
 
     /// <summary>Aynı tarih + firma + kargo firması veritabanında kayıtlı (olası).</summary>
-    SimilarInDatabase
+    SimilarInDatabase,
+
+    /// <summary>Alanın kesin doğal anahtarı (örn. WhatsApp telefonu) dosya içinde tekrar etti.</summary>
+    ExactKeyInFile,
+
+    /// <summary>Alanın kesin doğal anahtarı veritabanında kayıtlı.</summary>
+    ExactKeyInDatabase
 }
 
 /// <summary>
@@ -47,7 +53,10 @@ public sealed class DuplicateReason
     /// <summary>Dosya içi eşleşmede ilk geçtiği satır numarası.</summary>
     public int? MatchedRowNumber { get; init; }
 
-    public bool IsExact => Kind is DuplicateKind.TrackingNumberInFile or DuplicateKind.TrackingNumberInDatabase;
+    public bool IsExact => Kind is DuplicateKind.TrackingNumberInFile
+                                or DuplicateKind.TrackingNumberInDatabase
+                                or DuplicateKind.ExactKeyInFile
+                                or DuplicateKind.ExactKeyInDatabase;
 }
 
 /// <summary>
@@ -55,10 +64,8 @@ public sealed class DuplicateReason
 /// Import handler'ı yalnızca bu DTO'yu bilir — kaynak formatından bağımsızdır
 /// (ileride REST/ERP kaynakları da bu DTO'yu üretip aynı import akışını kullanır).
 /// </summary>
-public sealed class CargoImportRowDto
+public sealed class CargoImportRowDto : ImportRowBase
 {
-    public required int RowNumber { get; init; }
-
     // Parse edilmiş / çözümlenmiş alanlar
     public DateTime ShipmentDate { get; set; }
     public Guid?  CompanyDirectoryId { get; set; }
@@ -81,31 +88,4 @@ public sealed class CargoImportRowDto
     public string? ReceiverDistrictSnapshot { get; set; }
     public string? ReceiverPhoneSnapshot { get; set; }
     public string? ReceiverEmailSnapshot { get; set; }
-
-    // Durum
-    public CargoImportRowStatus Status { get; set; } = CargoImportRowStatus.Valid;
-    public List<CargoImportRowMessage> Messages { get; } = [];
-    public DuplicateReason? DuplicateReason { get; set; }
-
-    /// <summary>Error veya kesin mükerrer satırlar hiçbir koşulda içe aktarılamaz.</summary>
-    public bool CanInclude => Status != CargoImportRowStatus.Error
-                              && (DuplicateReason is null || !DuplicateReason.IsExact);
-
-    /// <summary>Valid/Warning varsayılan dahil; mükerrerler varsayılan hariç.</summary>
-    public bool IncludedByDefault => CanInclude && Status != CargoImportRowStatus.Duplicate;
-
-    public void AddError(string column, string message)
-        => Messages.Add(new CargoImportRowMessage(column, message, IsWarning: false));
-
-    public void AddWarning(string column, string message)
-        => Messages.Add(new CargoImportRowMessage(column, message, IsWarning: true));
-
-    /// <summary>Mesajlara ve mükerrer durumuna göre nihai durumu belirler (Error > Duplicate > Warning > Valid).</summary>
-    public void ResolveStatus()
-    {
-        if (Messages.Any(m => !m.IsWarning))      Status = CargoImportRowStatus.Error;
-        else if (DuplicateReason is not null)     Status = CargoImportRowStatus.Duplicate;
-        else if (Messages.Count > 0)              Status = CargoImportRowStatus.Warning;
-        else                                      Status = CargoImportRowStatus.Valid;
-    }
 }

@@ -1,0 +1,148 @@
+<Window x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.Cargo.DirectoryImportWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Firma Rehberi — Excel'den İçe Aktar" Height="640" Width="1150"
+        WindowStartupLocation="CenterOwner"
+        Icon="pack://application:,,,/Assets/AppIcon.ico">
+
+    <Grid Margin="10">
+
+        <!-- ADIM 1: Dosya Seç -->
+        <Border x:Name="StepFilePanel" Visibility="Visible">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="560">
+                <TextBlock FontSize="16" FontWeight="SemiBold"
+                           Text="Excel Dosyasından Toplu Firma Kaydı" Margin="0,0,0,10"
+                           HorizontalAlignment="Center"/>
+                <TextBlock TextWrapping="Wrap" Foreground="#555" Margin="0,0,0,4"
+                           Text="Seçtiğiniz .xlsx dosyası analiz edilir, firmalar önizlemede doğrulanır ve onayınızla rehbere topluca eklenir. Aynı ada sahip firmalar mükerrer olarak işaretlenir."/>
+                <TextBlock TextWrapping="Wrap" Foreground="#555" Margin="0,0,0,16"
+                           Text="Zorunlu kolon: Firma Adı. Desteklenen diğer kolonlar: Yetkili Kişi, Dikkatine, Adres, İlçe, İl, Posta Kodu, Telefon, E-posta, Not. Adres boşsa '-' olarak kaydedilir."/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Şablon İndir" Width="130" Margin="0,0,10,0"
+                            Style="{StaticResource SecondaryButton}"
+                            Click="TemplateButton_Click"/>
+                    <Button Content="📥 Excel Dosyası Seç" Width="180"
+                            Style="{StaticResource PrimaryButton}"
+                            Click="SelectFileButton_Click"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- ADIM 2: Önizleme -->
+        <DockPanel x:Name="StepPreviewPanel" Visibility="Collapsed">
+            <TextBlock DockPanel.Dock="Top" FontSize="14" FontWeight="SemiBold"
+                       Text="Önizleme — içe aktarılacak firmaları kontrol edin" Margin="0,0,0,6"/>
+
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <TextBlock Text="Göster:" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="#555"/>
+                    <ComboBox ItemsSource="{Binding FilterOptions}"
+                              SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
+                              Width="160"/>
+                </StackPanel>
+                <TextBlock Text="{Binding AnalysisSummary}" TextWrapping="Wrap"
+                           VerticalAlignment="Center" Foreground="#333"/>
+            </DockPanel>
+
+            <DockPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Content="Geri" Width="70" Margin="0,0,8,0"
+                            Style="{StaticResource SecondaryButton}" Click="BackButton_Click"/>
+                    <Button Content="{Binding ImportButtonText}" MinWidth="170"
+                            Style="{StaticResource PrimaryButton}"
+                            IsEnabled="{Binding CanImport}"
+                            Click="ImportButton_Click"/>
+                </StackPanel>
+                <TextBlock Foreground="#777" VerticalAlignment="Center" TextWrapping="Wrap"
+                           Text="Hatalı satırlar içe aktarılamaz. Mükerrer şüphesi taşıyan satırları onay kutusuyla dahil edebilirsiniz."/>
+            </DockPanel>
+
+            <DataGrid ItemsSource="{Binding FilteredRows}"
+                      AutoGenerateColumns="False" IsReadOnly="False"
+                      CanUserAddRows="False" CanUserDeleteRows="False"
+                      SelectionMode="Single" RowHeight="30"
+                      GridLinesVisibility="Horizontal"
+                      HorizontalGridLinesBrush="#E2E8F0"
+                      BorderBrush="#E2E8F0" BorderThickness="1"
+                      HeadersVisibility="Column">
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding StatusText}" Value="Geçerli">
+                                <Setter Property="Background" Value="#F1F8E9"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding StatusText}" Value="Uyarılı">
+                                <Setter Property="Background" Value="#FFF8E1"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding StatusText}" Value="Hatalı">
+                                <Setter Property="Background" Value="#FDECEA"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding StatusText}" Value="Mükerrer">
+                                <Setter Property="Background" Value="#FFF3E0"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.RowStyle>
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="Dahil" Width="50">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding Included, UpdateSourceTrigger=PropertyChanged}"
+                                          IsEnabled="{Binding CanToggle}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Satır"   Binding="{Binding RowNumber}"      Width="50"  IsReadOnly="True"/>
+                    <DataGridTextColumn Header=""        Binding="{Binding StatusGlyph}"    Width="34"  IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Durum"   Binding="{Binding StatusText}"     Width="75"  IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Firma"   Binding="{Binding CompanyDisplay}" Width="220" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Yetkili" Binding="{Binding ContactDisplay}" Width="120" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Telefon" Binding="{Binding PhoneDisplay}"   Width="120" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="İl"      Binding="{Binding CityDisplay}"    Width="80"  IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Açıklama / Hatalar" Binding="{Binding MessagesText}" Width="*" IsReadOnly="True">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="ToolTip" Value="{Binding MessagesText}"/>
+                                <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+
+        <!-- ADIM 3: İşlem sürüyor -->
+        <Border x:Name="StepProgressPanel" Visibility="Collapsed">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="420">
+                <TextBlock x:Name="ProgressTitle" FontSize="15" FontWeight="SemiBold"
+                           Text="Dosya analiz ediliyor…" Margin="0,0,0,12"
+                           HorizontalAlignment="Center"/>
+                <ProgressBar Height="18"
+                             Value="{Binding ProgressValue, Mode=OneWay}"
+                             Maximum="{Binding ProgressMax, Mode=OneWay}"
+                             IsIndeterminate="{Binding ProgressIndeterminate, Mode=OneWay}"/>
+                <TextBlock Text="{Binding ProgressText}" Margin="0,8,0,0"
+                           HorizontalAlignment="Center" Foreground="#555"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ADIM 4: Sonuç -->
+        <Border x:Name="StepSummaryPanel" Visibility="Collapsed">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="560">
+                <Border Background="#E8F5E9" BorderBrush="#81C784" BorderThickness="1"
+                        CornerRadius="6" Padding="16" Margin="0,0,0,14">
+                    <StackPanel>
+                        <TextBlock FontSize="16" FontWeight="SemiBold"
+                                   Foreground="#2E7D32" Text="İçe aktarma tamamlandı"/>
+                        <TextBlock x:Name="SummaryMainText" FontSize="13" Margin="0,8,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+                <TextBlock x:Name="SummaryDetailText" TextWrapping="Wrap" Foreground="#555" Margin="0,0,0,16"/>
+                <Button Content="Kapat" Width="110" HorizontalAlignment="Center"
+                        Style="{StaticResource PrimaryButton}" Click="CloseButton_Click"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

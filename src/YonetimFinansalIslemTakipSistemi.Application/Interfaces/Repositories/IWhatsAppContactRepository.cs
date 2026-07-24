@@ -17,4 +17,16 @@ public interface IWhatsAppContactRepository
 
     Task AddAsync(WhatsAppContact entity);
     Task UpdateAsync(WhatsAppContact entity);
+
+    /// <summary>
+    /// İçe aktarma mükerrer kontrolü: soft delete dahil TÜM kayıtlar
+    /// (silinmiş numara import'ta geri yüklenir — create akışıyla aynı kural).
+    /// </summary>
+    Task<IReadOnlyList<WhatsAppContact>> GetAllForImportAsync();
+
+    /// <summary>
+    /// Toplu içe aktarma: yeni kayıtlar + geri yüklenen (soft delete'ten dönen)
+    /// kayıtlar TEK transaction'da kaydedilir (ya hep ya hiç).
+    /// </summary>
+    Task SaveImportAsync(IReadOnlyList<WhatsAppContact> toAdd, IReadOnlyList<WhatsAppContact> toUpdate);
 }

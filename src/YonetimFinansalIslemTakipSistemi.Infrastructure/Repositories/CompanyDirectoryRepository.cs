@@ -31,4 +31,15 @@ public class CompanyDirectoryRepository : ICompanyDirectoryRepository
         _context.CompanyDirectories.Update(entity);
         await _context.SaveChangesAsync();
     }
+
+    public async Task AddRangeAsync(IReadOnlyList<CompanyDirectory> entities)
+    {
+        if (entities.Count == 0) return;
+
+        // Toplu import ya hep ya hiç (UserPermissionRepository.UpdateAsync deseni)
+        await using var tx = await _context.Database.BeginTransactionAsync();
+        await _context.CompanyDirectories.AddRangeAsync(entities);
+        await _context.SaveChangesAsync();
+        await tx.CommitAsync();
+    }
 }

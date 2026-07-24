@@ -49,5 +49,11 @@ public enum AuditAction
 
     // Kargo toplu içe aktarma (Excel vb. dosyadan) — özet kaydı; satır bazlı
     // kayıtlar ayrıca CargoShipmentCreated olarak yazılır
-    CargoImportCompleted
+    CargoImportCompleted,
+
+    // Firma rehberi toplu içe aktarma özeti (satırlar CompanyDirectoryCreated)
+    DirectoryImportCompleted,
+
+    // WhatsApp rehberi toplu içe aktarma özeti (satırlar WhatsAppContactCreated/Updated)
+    WhatsAppImportCompleted
 }

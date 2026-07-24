@@ -74,6 +74,8 @@ public class GetAuditLogsHandler
         AuditAction.UserLoggedOut           => "Çıkış Yapıldı",
         AuditAction.ReportExported          => "Rapor Dışa Aktarıldı",
         AuditAction.CargoImportCompleted    => "Kargo Toplu İçe Aktarma",
+        AuditAction.DirectoryImportCompleted => "Firma Rehberi Toplu İçe Aktarma",
+        AuditAction.WhatsAppImportCompleted => "WhatsApp Rehberi Toplu İçe Aktarma",
         _                                   => action.ToString()
     };
 }

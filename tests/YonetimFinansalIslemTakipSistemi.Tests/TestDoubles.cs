@@ -104,6 +104,20 @@ internal sealed class FakeCompanyDirectoryRepository : ICompanyDirectoryReposito
     }
 
     public Task UpdateAsync(CompanyDirectory entity) => Task.CompletedTask;
+
+    /// <summary>true ise sıradaki toplu ekleme, transaction rollback'ini simüle ederek exception fırlatır.</summary>
+    public bool FailNextAddRange { get; set; }
+
+    public Task AddRangeAsync(IReadOnlyList<CompanyDirectory> entities)
+    {
+        if (FailNextAddRange)
+        {
+            FailNextAddRange = false;
+            throw new InvalidOperationException("Simulated import failure");
+        }
+        Items.AddRange(entities);
+        return Task.CompletedTask;
+    }
 }
 
 /// <summary>
@@ -350,6 +364,24 @@ internal sealed class FakeWhatsAppContactRepository : IWhatsAppContactRepository
     }
 
     public Task UpdateAsync(WhatsAppContact entity) => Task.CompletedTask;
+
+    public Task<IReadOnlyList<WhatsAppContact>> GetAllForImportAsync()
+        => Task.FromResult<IReadOnlyList<WhatsAppContact>>(Items.ToList()); // soft delete dahil
+
+    /// <summary>true ise sıradaki toplu kayıt, transaction rollback'ini simüle ederek exception fırlatır.</summary>
+    public bool FailNextSaveImport { get; set; }
+
+    public Task SaveImportAsync(IReadOnlyList<WhatsAppContact> toAdd, IReadOnlyList<WhatsAppContact> toUpdate)
+    {
+        if (FailNextSaveImport)
+        {
+            FailNextSaveImport = false;
+            throw new InvalidOperationException("Simulated import failure");
+        }
+        Items.AddRange(toAdd);
+        // toUpdate zaten Items içindeki referanslardır — mutasyonları görünür
+        return Task.CompletedTask;
+    }
 }
 
 /// <summary>Harf dönüşümü uygulamayan basit normalizasyon — yalnızca trim (Preserve davranışı).</summary>

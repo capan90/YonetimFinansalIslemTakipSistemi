@@ -25,6 +25,12 @@ public partial class WhatsAppContactListWindow : Window
         _dialogService = services.GetRequiredService<IDialogService>();
         DataContext    = _vm;
 
+        // İçe aktarma toplu yazma işlemidir — Sprint 17 rehber yazma guard'ıyla aynı kural
+        var userContext = services.GetRequiredService<Application.Interfaces.Services.IUserContext>();
+        ImportButton.Visibility =
+            Application.Features.WhatsAppContacts.WhatsAppContactPermissions.CanModify(userContext)
+                ? Visibility.Visible : Visibility.Collapsed;
+
         Loaded += async (_, _) => await _vm.LoadAsync();
     }
 
@@ -33,6 +39,14 @@ public partial class WhatsAppContactListWindow : Window
         var form = new WhatsAppContactEditWindow(_services) { Owner = this };
         if (form.ShowDialog() == true)
             await _vm.LoadAsync();
+    }
+
+    private async void ImportButton_Click(object sender, RoutedEventArgs e)
+    {
+        var wizard = new WhatsAppImportWindow(_services) { Owner = this };
+        wizard.ShowDialog();
+        // X ile kapatılsa bile içe aktarma yapıldıysa liste yenilenir
+        if (wizard.ImportCompleted) await _vm.LoadAsync();
     }
 
     private async void EditButton_Click(object sender, RoutedEventArgs e)

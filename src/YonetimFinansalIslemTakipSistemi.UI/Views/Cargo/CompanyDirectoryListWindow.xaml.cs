@@ -30,6 +30,7 @@ public partial class CompanyDirectoryListWindow : Window
         NewButton.Visibility    = manageVisibility;
         EditButton.Visibility   = manageVisibility;
         DeleteButton.Visibility = manageVisibility;
+        ImportButton.Visibility = manageVisibility;
 
         Loaded += async (_, _) => await _vm.LoadAsync();
     }
@@ -39,6 +40,14 @@ public partial class CompanyDirectoryListWindow : Window
         var form = new CompanyDirectoryEditWindow(_services) { Owner = this };
         if (form.ShowDialog() == true)
             await _vm.LoadAsync();
+    }
+
+    private async void ImportButton_Click(object sender, RoutedEventArgs e)
+    {
+        var wizard = new DirectoryImportWindow(_services) { Owner = this };
+        wizard.ShowDialog();
+        // X ile kapatılsa bile içe aktarma yapıldıysa liste yenilenir
+        if (wizard.ImportCompleted) await _vm.LoadAsync();
     }
 
     private async void EditButton_Click(object sender, RoutedEventArgs e)

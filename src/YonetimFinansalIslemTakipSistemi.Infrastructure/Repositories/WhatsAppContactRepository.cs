@@ -58,4 +58,26 @@ public class WhatsAppContactRepository : IWhatsAppContactRepository
         _context.WhatsAppContacts.Update(entity);
         await _context.SaveChangesAsync();
     }
+
+    public async Task<IReadOnlyList<WhatsAppContact>> GetAllForImportAsync()
+        // Soft delete dahil: silinmiş numara import'ta geri yüklenir (create akışıyla aynı)
+        => await _context.WhatsAppContacts
+            .IgnoreQueryFilters()
+            .ToListAsync();
+
+    public async Task SaveImportAsync(
+        IReadOnlyList<WhatsAppContact> toAdd, IReadOnlyList<WhatsAppContact> toUpdate)
+    {
+        // Toplu import ya hep ya hiç: ekleme ve geri yüklemeler tek transaction'da
+        // (UserPermissionRepository.UpdateAsync deseni)
+        await using var tx = await _context.Database.BeginTransactionAsync();
+
+        if (toAdd.Count > 0)
+            await _context.WhatsAppContacts.AddRangeAsync(toAdd);
+        foreach (var entity in toUpdate)
+            _context.WhatsAppContacts.Update(entity);
+
+        await _context.SaveChangesAsync();
+        await tx.CommitAsync();
+    }
 }

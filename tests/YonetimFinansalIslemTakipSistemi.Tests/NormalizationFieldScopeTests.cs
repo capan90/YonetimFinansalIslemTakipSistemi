@@ -24,6 +24,8 @@ public class NormalizationFieldScopeTests
             => Task.FromResult<IReadOnlyList<CompanyDirectory>>(Items.ToList());
         public Task AddAsync(CompanyDirectory entity) { Items.Add(entity); return Task.CompletedTask; }
         public Task UpdateAsync(CompanyDirectory entity) => Task.CompletedTask;
+        public Task AddRangeAsync(IReadOnlyList<CompanyDirectory> entities)
+        { Items.AddRange(entities); return Task.CompletedTask; }
     }
 
     [Fact]

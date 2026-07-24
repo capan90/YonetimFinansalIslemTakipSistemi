@@ -134,8 +134,8 @@
             <ComboBox Grid.Column="0"
                       ItemsSource="{Binding CompanyDirectories}"
                       SelectedItem="{Binding SelectedCompanyDirectory, Mode=TwoWay}"
-                      DisplayMemberPath="CompanyName"
-                      ToolTip="Giden kargoda seçilen firmanın adres/iletişim bilgileri otomatik doldurulur."/>
+                      DisplayMemberPath="DisplayLabel"
+                      ToolTip="Giden kargoda seçilen firmanın adres/iletişim bilgileri otomatik doldurulur. Aynı firmanın farklı adres/telefon kayıtları ilçe/il ve telefonla ayırt edilir."/>
             <Button x:Name="AddDirectoryButton" Grid.Column="2"
                     Content="+" Width="26" Height="22"
                     VerticalAlignment="Center"

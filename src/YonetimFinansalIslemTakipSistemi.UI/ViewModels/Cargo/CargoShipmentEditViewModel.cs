@@ -94,6 +94,14 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
     /// <summary>Seçili firmaya ait geçmiş dikkatine kişileri (son kullanılan önce).</summary>
     public ObservableCollection<string> AttentionContacts { get; } = [];
 
+    // Firma seçimi programatik yapıldığında (Initialize/Copy) setter'daki fire-and-forget yükleme bastırılır.
+    private bool _suppressAttentionReload;
+
+    // Oturum boyunca tek DbContext paylaşılır; eşzamanlı sorgu
+    // "A second operation was started on this context instance" hatasına yol açar.
+    private bool _attentionLoading;
+    private (Guid? CompanyDirectoryId, string? DefaultInput)? _pendingAttentionRequest;
+
     public CargoCompanyDto? SelectedCargoCompany
     {
         get => _selectedCargoCompany;
@@ -137,7 +145,11 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
                 FillFromDirectory(value);
             // Firma değişince dikkatine listesi güncellenir; varsayılan = firmanın mevcut AttentionTo
             // (metot kendi içinde hatayı yutar — form çalışmaya devam eder; Forget yine de güvence sağlar)
-            LoadAttentionContactsAsync(value?.Id, defaultInput: value?.AttentionTo).Forget();
+            // Düzenleme/kopyalama başlatılırken çağıran kendi yüklemesini await ettiği için
+            // buradaki fire-and-forget bastırılır: aksi halde aynı DbContext üzerinde iki sorgu
+            // yarışır ve dikkatine listesi sessizce boş kalır.
+            if (!_suppressAttentionReload)
+                LoadAttentionContactsAsync(value?.Id, defaultInput: value?.AttentionTo).Forget();
         }
     }
 
@@ -318,13 +330,24 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
         SelectedCargoCompany = dto.CargoCompanyId.HasValue
             ? CargoCompanies.FirstOrDefault(x => x.Id == dto.CargoCompanyId.Value)
             : null;
-        SelectedCompanyDirectory = dto.CompanyDirectoryId.HasValue
-            ? CompanyDirectories.FirstOrDefault(x => x.Id == dto.CompanyDirectoryId.Value)
-            : null;
+        // Yükleme aşağıda snapshot ile açıkça yapılır — setter'ın kendi yüklemesi bastırılır
+        _suppressAttentionReload = true;
+        try
+        {
+            SelectedCompanyDirectory = dto.CompanyDirectoryId.HasValue
+                ? CompanyDirectories.FirstOrDefault(x => x.Id == dto.CompanyDirectoryId.Value)
+                : null;
+        }
+        finally
+        {
+            _suppressAttentionReload = false;
+        }
 
         // Dikkatine: mevcut kargo kaydındaki snapshot değerini yükle (firma AttentionTo'yu override edebilir)
         if (dto.CompanyDirectoryId.HasValue)
             await LoadAttentionContactsAsync(dto.CompanyDirectoryId, defaultInput: dto.ReceiverAttentionSnapshot);
+        else
+            AttentionContacts.Clear();
         AttentionContactInput = dto.ReceiverAttentionSnapshot ?? string.Empty;
 
         OnPropertyChanged(nameof(WindowTitle));
@@ -385,8 +408,37 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
     /// <summary>
     /// Firma için geçmiş dikkatine kişilerini yükler.
     /// Setter'dan fire-and-forget olarak çağrılır; defaultInput verilmişse AttentionContactInput de güncellenir.
+    /// Yükleme sürerken gelen istek kuyruğa alınır (paylaşılan DbContext'te eşzamanlı sorgu çalıştırılmaz);
+    /// yalnızca en son istek uygulanır.
     /// </summary>
     private async Task LoadAttentionContactsAsync(Guid? companyDirectoryId, string? defaultInput = null)
+    {
+        if (_attentionLoading)
+        {
+            _pendingAttentionRequest = (companyDirectoryId, defaultInput);
+            return;
+        }
+
+        _attentionLoading = true;
+        try
+        {
+            var request = (CompanyDirectoryId: companyDirectoryId, DefaultInput: defaultInput);
+            while (true)
+            {
+                await LoadAttentionContactsCoreAsync(request.CompanyDirectoryId, request.DefaultInput);
+                if (_pendingAttentionRequest is null) break;
+
+                request = _pendingAttentionRequest.Value;
+                _pendingAttentionRequest = null;
+            }
+        }
+        finally
+        {
+            _attentionLoading = false;
+        }
+    }
+
+    private async Task LoadAttentionContactsCoreAsync(Guid? companyDirectoryId, string? defaultInput)
     {
         AttentionContacts.Clear();
         if (companyDirectoryId is null) return;

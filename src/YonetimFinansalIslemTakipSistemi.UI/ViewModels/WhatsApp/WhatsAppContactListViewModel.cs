@@ -19,6 +19,15 @@ public class WhatsAppContactListViewModel : INotifyPropertyChanged
     private string _selectedCompany = AllCompanies;
     private bool _includeInactive;
 
+    // Firma ComboBox'ının kaynağı yenilenirken WPF SelectedItem'ı null'a düşürür ve bunu
+    // TwoWay binding ile geri yazar. Bu geri yazma yeniden yükleme tetiklememelidir.
+    private bool _suppressCompanyReload;
+
+    // Oturum boyunca tek DbContext paylaşılır; eşzamanlı sorgu
+    // "A second operation was started on this context instance" hatasına yol açar.
+    private bool _isLoading;
+    private bool _reloadRequested;
+
     public ObservableCollection<WhatsAppContactDto> Items { get; } = [];
     public ObservableCollection<string> CompanyOptions { get; } = [AllCompanies];
 
@@ -41,7 +50,15 @@ public class WhatsAppContactListViewModel : INotifyPropertyChanged
         get => _selectedCompany;
         set
         {
-            _selectedCompany = value;
+            // Liste yenilenirken gelen null geri yazması yok sayılır; nihai değeri
+            // RefreshCompanyOptionsAsync belirler. Aksi halde
+            // Load → CompanyOptions.Clear() → setter → Load ... sonsuz döngüsü oluşur.
+            if (_suppressCompanyReload) return;
+
+            var normalized = string.IsNullOrEmpty(value) ? AllCompanies : value;
+            if (normalized == _selectedCompany) return;
+
+            _selectedCompany = normalized;
             OnPropertyChanged();
             // Firma filtresi seçilince liste otomatik yenilenir; hata Forget ile UI'a taşınır
             LoadAsync().Forget();
@@ -53,6 +70,8 @@ public class WhatsAppContactListViewModel : INotifyPropertyChanged
         get => _includeInactive;
         set
         {
+            if (_includeInactive == value) return;
+
             _includeInactive = value;
             OnPropertyChanged();
             LoadAsync().Forget();
@@ -67,7 +86,31 @@ public class WhatsAppContactListViewModel : INotifyPropertyChanged
         SearchCommand = new RelayCommand(async () => await LoadAsync());
     }
 
+    /// <summary>
+    /// Listeyi yeniler. Yükleme sürerken gelen istekler kuyruğa alınır (tek DbContext
+    /// paylaşıldığı için eşzamanlı sorgu çalıştırılmaz), böylece son istek de uygulanır.
+    /// </summary>
     public async Task LoadAsync()
+    {
+        if (_isLoading) { _reloadRequested = true; return; }
+
+        _isLoading = true;
+        try
+        {
+            do
+            {
+                _reloadRequested = false;
+                await LoadCoreAsync();
+            }
+            while (_reloadRequested);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task LoadCoreAsync()
     {
         var company = _selectedCompany == AllCompanies ? null : _selectedCompany;
 
@@ -78,11 +121,17 @@ public class WhatsAppContactListViewModel : INotifyPropertyChanged
             IncludeInactive = IncludeInactive
         });
 
+        // Yenileme sonrası seçim korunur; aksi halde DataGrid seçimi düşer ve
+        // Düzenle/Sil butonları pasifleşir.
+        var previousId = _selected?.Id;
+
         Items.Clear();
         foreach (var c in contacts)
             Items.Add(c);
 
         await RefreshCompanyOptionsAsync();
+
+        Selected = previousId is null ? null : Items.FirstOrDefault(i => i.Id == previousId.Value);
     }
 
     /// <summary>Firma filtresi seçenekleri tüm rehberden türetilir (arama filtresinden bağımsız).</summary>
@@ -97,14 +146,30 @@ public class WhatsAppContactListViewModel : INotifyPropertyChanged
             .OrderBy(c => c)
             .ToList();
 
-        var current = _selectedCompany;
-        CompanyOptions.Clear();
-        CompanyOptions.Add(AllCompanies);
-        foreach (var c in companies)
-            CompanyOptions.Add(c);
+        // Seçenekler değişmediyse koleksiyona dokunulmaz: Clear() ComboBox seçimini
+        // null'a düşürüp gereksiz yeniden yükleme zinciri başlatır.
+        if (CompanyOptions.Count == companies.Count + 1 &&
+            CompanyOptions.Skip(1).SequenceEqual(companies))
+            return;
 
-        // Seçim listede kaldıysa koru; kalktıysa "Tümü"ye dön (setter'ı tetiklemeden)
-        _selectedCompany = CompanyOptions.Contains(current) ? current : AllCompanies;
+        var current = _selectedCompany;
+
+        _suppressCompanyReload = true;
+        try
+        {
+            CompanyOptions.Clear();
+            CompanyOptions.Add(AllCompanies);
+            foreach (var c in companies)
+                CompanyOptions.Add(c);
+
+            // Seçim listede kaldıysa koru; kalktıysa "Tümü"ye dön (setter'ı tetiklemeden)
+            _selectedCompany = CompanyOptions.Contains(current) ? current : AllCompanies;
+        }
+        finally
+        {
+            _suppressCompanyReload = false;
+        }
+
         OnPropertyChanged(nameof(SelectedCompany));
     }
 

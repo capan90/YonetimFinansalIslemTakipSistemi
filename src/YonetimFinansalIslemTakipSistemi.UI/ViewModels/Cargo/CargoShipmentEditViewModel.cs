@@ -100,8 +100,10 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
 
     // Oturum boyunca tek DbContext paylaşılır; eşzamanlı sorgu
     // "A second operation was started on this context instance" hatasına yol açar.
-    private bool _attentionLoading;
-    private (Guid? CompanyDirectoryId, string? DefaultInput)? _pendingAttentionRequest;
+    // Kuyruk mantığı ReloadCoordinator'da; en son argümanlar _attentionArgs'ta tutulur
+    // (parametreli senaryo: delege bu alanı okur → kuyruğa alınan tekrar en son firmayı yükler).
+    private readonly ReloadCoordinator _attentionCoordinator = new();
+    private (Guid? CompanyDirectoryId, string? DefaultInput) _attentionArgs;
 
     public CargoCompanyDto? SelectedCargoCompany
     {
@@ -412,31 +414,13 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
     /// Yükleme sürerken gelen istek kuyruğa alınır (paylaşılan DbContext'te eşzamanlı sorgu çalıştırılmaz);
     /// yalnızca en son istek uygulanır.
     /// </summary>
-    private async Task LoadAttentionContactsAsync(Guid? companyDirectoryId, string? defaultInput = null)
+    private Task LoadAttentionContactsAsync(Guid? companyDirectoryId, string? defaultInput = null)
     {
-        if (_attentionLoading)
-        {
-            _pendingAttentionRequest = (companyDirectoryId, defaultInput);
-            return;
-        }
-
-        _attentionLoading = true;
-        try
-        {
-            var request = (CompanyDirectoryId: companyDirectoryId, DefaultInput: defaultInput);
-            while (true)
-            {
-                await LoadAttentionContactsCoreAsync(request.CompanyDirectoryId, request.DefaultInput);
-                if (_pendingAttentionRequest is null) break;
-
-                request = _pendingAttentionRequest.Value;
-                _pendingAttentionRequest = null;
-            }
-        }
-        finally
-        {
-            _attentionLoading = false;
-        }
+        // En son argümanlar saklanır; delege bunları okuduğundan kuyruğa alınan tekrar
+        // (hızlı firma değişiminde) her zaman EN SON seçili firmayı yükler.
+        _attentionArgs = (companyDirectoryId, defaultInput);
+        return _attentionCoordinator.RunAsync(
+            () => LoadAttentionContactsCoreAsync(_attentionArgs.CompanyDirectoryId, _attentionArgs.DefaultInput));
     }
 
     private async Task LoadAttentionContactsCoreAsync(Guid? companyDirectoryId, string? defaultInput)

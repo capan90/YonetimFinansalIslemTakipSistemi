@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Features.WhatsAppContacts;
 using YonetimFinansalIslemTakipSistemi.Application.Features.WhatsAppContacts.GetWhatsAppContactList;
 using YonetimFinansalIslemTakipSistemi.UI.Common;
@@ -25,8 +26,8 @@ public class WhatsAppContactListViewModel : INotifyPropertyChanged
 
     // Oturum boyunca tek DbContext paylaşılır; eşzamanlı sorgu
     // "A second operation was started on this context instance" hatasına yol açar.
-    private bool _isLoading;
-    private bool _reloadRequested;
+    // Kuyruk mantığı ReloadCoordinator'da toplanır (elle bayrak yönetimi yok).
+    private readonly ReloadCoordinator _loadCoordinator = new();
 
     public ObservableCollection<WhatsAppContactDto> Items { get; } = [];
     public ObservableCollection<string> CompanyOptions { get; } = [AllCompanies];
@@ -89,26 +90,9 @@ public class WhatsAppContactListViewModel : INotifyPropertyChanged
     /// <summary>
     /// Listeyi yeniler. Yükleme sürerken gelen istekler kuyruğa alınır (tek DbContext
     /// paylaşıldığı için eşzamanlı sorgu çalıştırılmaz), böylece son istek de uygulanır.
+    /// LoadCoreAsync güncel filtre alanlarını okuduğundan kuyruğa alınan tekrar en son durumu uygular.
     /// </summary>
-    public async Task LoadAsync()
-    {
-        if (_isLoading) { _reloadRequested = true; return; }
-
-        _isLoading = true;
-        try
-        {
-            do
-            {
-                _reloadRequested = false;
-                await LoadCoreAsync();
-            }
-            while (_reloadRequested);
-        }
-        finally
-        {
-            _isLoading = false;
-        }
-    }
+    public Task LoadAsync() => _loadCoordinator.RunAsync(LoadCoreAsync);
 
     private async Task LoadCoreAsync()
     {

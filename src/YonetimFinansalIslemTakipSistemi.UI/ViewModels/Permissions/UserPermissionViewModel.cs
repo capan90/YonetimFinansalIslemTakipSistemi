@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Permissions.Commands.UpdateUserPermissions;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Permissions.Queries.GetUserPermissions;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Queries.GetUsers;
@@ -23,6 +24,10 @@ public class UserPermissionViewModel : INotifyPropertyChanged
 
     private UserDto? _selectedUser;
 
+    // Kullanıcı seçimi hızlı değiştirilirse (paylaşılan DbContext) eşzamanlı sorgu oluşabilir;
+    // yükleme ReloadCoordinator ile seri hale getirilir. LoadPermissionsAsync güncel _selectedUser'ı okur.
+    private readonly ReloadCoordinator _permissionsCoordinator = new();
+
     public ObservableCollection<UserDto>             Users   { get; } = new();
     public ObservableCollection<PermissionCheckItem> Perms   { get; } = new();
 
@@ -34,7 +39,7 @@ public class UserPermissionViewModel : INotifyPropertyChanged
             _selectedUser = value;
             OnPropertyChanged();
             // Hata Forget ile UI'a taşınır — sessiz boş ekran yerine kullanıcı bilgilendirilir
-            LoadPermissionsAsync().Forget();
+            _permissionsCoordinator.RunAsync(LoadPermissionsAsync).Forget();
         }
     }
 

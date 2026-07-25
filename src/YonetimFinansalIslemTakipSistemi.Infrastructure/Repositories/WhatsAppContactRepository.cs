@@ -5,20 +5,26 @@ using YonetimFinansalIslemTakipSistemi.Infrastructure.Persistence;
 
 namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Repositories;
 
+// Sprint 21: İşlem başına taze DbContext (IDbContextFactory) → paylaşılan context
+// eşzamanlılık hatası ("A second operation was started...") ortadan kalkar.
 public class WhatsAppContactRepository : IWhatsAppContactRepository
 {
-    private readonly AppDbContext _context;
+    private readonly IDbContextFactory<AppDbContext> _factory;
 
-    public WhatsAppContactRepository(AppDbContext context) => _context = context;
+    public WhatsAppContactRepository(IDbContextFactory<AppDbContext> factory) => _factory = factory;
 
     public async Task<WhatsAppContact?> GetByIdAsync(Guid id)
-        => await _context.WhatsAppContacts.FirstOrDefaultAsync(x => x.Id == id);
+    {
+        await using var ctx = await _factory.CreateDbContextAsync();
+        return await ctx.WhatsAppContacts.FirstOrDefaultAsync(x => x.Id == id);
+    }
 
     public async Task<WhatsAppContact?> GetByPhoneAsync(string normalizedPhone, bool includeDeleted)
     {
+        await using var ctx = await _factory.CreateDbContextAsync();
         var query = includeDeleted
-            ? _context.WhatsAppContacts.IgnoreQueryFilters()
-            : _context.WhatsAppContacts;
+            ? ctx.WhatsAppContacts.IgnoreQueryFilters()
+            : ctx.WhatsAppContacts;
 
         return await query.FirstOrDefaultAsync(x => x.Phone == normalizedPhone);
     }
@@ -26,7 +32,8 @@ public class WhatsAppContactRepository : IWhatsAppContactRepository
     public async Task<IReadOnlyList<WhatsAppContact>> GetListAsync(
         string? search, string? company, bool includeInactive)
     {
-        var query = _context.WhatsAppContacts.AsNoTracking().AsQueryable();
+        await using var ctx = await _factory.CreateDbContextAsync();
+        var query = ctx.WhatsAppContacts.AsNoTracking().AsQueryable();
 
         if (!includeInactive)
             query = query.Where(x => x.IsActive);
@@ -49,35 +56,40 @@ public class WhatsAppContactRepository : IWhatsAppContactRepository
 
     public async Task AddAsync(WhatsAppContact entity)
     {
-        await _context.WhatsAppContacts.AddAsync(entity);
-        await _context.SaveChangesAsync();
+        await using var ctx = await _factory.CreateDbContextAsync();
+        await ctx.WhatsAppContacts.AddAsync(entity);
+        await ctx.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(WhatsAppContact entity)
     {
-        _context.WhatsAppContacts.Update(entity);
-        await _context.SaveChangesAsync();
+        await using var ctx = await _factory.CreateDbContextAsync();
+        ctx.WhatsAppContacts.Update(entity);
+        await ctx.SaveChangesAsync();
     }
 
     public async Task<IReadOnlyList<WhatsAppContact>> GetAllForImportAsync()
+    {
         // Soft delete dahil: silinmiş numara import'ta geri yüklenir (create akışıyla aynı)
-        => await _context.WhatsAppContacts
+        await using var ctx = await _factory.CreateDbContextAsync();
+        return await ctx.WhatsAppContacts
             .IgnoreQueryFilters()
             .ToListAsync();
+    }
 
     public async Task SaveImportAsync(
         IReadOnlyList<WhatsAppContact> toAdd, IReadOnlyList<WhatsAppContact> toUpdate)
     {
         // Toplu import ya hep ya hiç: ekleme ve geri yüklemeler tek transaction'da
-        // (UserPermissionRepository.UpdateAsync deseni)
-        await using var tx = await _context.Database.BeginTransactionAsync();
+        await using var ctx = await _factory.CreateDbContextAsync();
+        await using var tx = await ctx.Database.BeginTransactionAsync();
 
         if (toAdd.Count > 0)
-            await _context.WhatsAppContacts.AddRangeAsync(toAdd);
+            await ctx.WhatsAppContacts.AddRangeAsync(toAdd);
         foreach (var entity in toUpdate)
-            _context.WhatsAppContacts.Update(entity);
+            ctx.WhatsAppContacts.Update(entity);
 
-        await _context.SaveChangesAsync();
+        await ctx.SaveChangesAsync();
         await tx.CommitAsync();
     }
 }

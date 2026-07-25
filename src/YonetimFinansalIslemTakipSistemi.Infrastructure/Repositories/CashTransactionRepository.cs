@@ -10,59 +10,64 @@ namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Repositories;
 /// <summary>
 /// ICashTransactionRepository'nin EF Core + PostgreSQL implementasyonu.
 /// Soft delete sorgulardan otomatik filtrelenir (AppDbContext global query filter).
+/// Sprint 21: işlem başına taze DbContext (IDbContextFactory) → paylaşılan context çakışması yok.
 /// </summary>
 public class CashTransactionRepository : ICashTransactionRepository
 {
-    private readonly AppDbContext _context;
+    private readonly IDbContextFactory<AppDbContext> _factory;
 
-    public CashTransactionRepository(AppDbContext context)
-    {
-        _context = context;
-    }
+    public CashTransactionRepository(IDbContextFactory<AppDbContext> factory) => _factory = factory;
 
     public async Task<CashTransaction?> GetByIdAsync(Guid id)
-        => await _context.CashTransactions.FirstOrDefaultAsync(x => x.Id == id);
+    {
+        await using var ctx = await _factory.CreateDbContextAsync();
+        return await ctx.CashTransactions.FirstOrDefaultAsync(x => x.Id == id);
+    }
 
     public async Task AddAsync(CashTransaction transaction)
     {
-        await _context.CashTransactions.AddAsync(transaction);
-        await _context.SaveChangesAsync();
+        await using var ctx = await _factory.CreateDbContextAsync();
+        await ctx.CashTransactions.AddAsync(transaction);
+        await ctx.SaveChangesAsync();
     }
 
     public async Task AddRangeAsync(IReadOnlyList<CashTransaction> transactions)
     {
         if (transactions.Count == 0) return;
 
-        // Toplu import ya hep ya hiç (UserPermissionRepository.UpdateAsync deseni) —
-        // finansal veri kısmi durumda bırakılamaz
-        await using var tx = await _context.Database.BeginTransactionAsync();
-        await _context.CashTransactions.AddRangeAsync(transactions);
-        await _context.SaveChangesAsync();
+        // Toplu import ya hep ya hiç — finansal veri kısmi durumda bırakılamaz
+        await using var ctx = await _factory.CreateDbContextAsync();
+        await using var tx = await ctx.Database.BeginTransactionAsync();
+        await ctx.CashTransactions.AddRangeAsync(transactions);
+        await ctx.SaveChangesAsync();
         await tx.CommitAsync();
     }
 
     public async Task UpdateAsync(CashTransaction transaction)
     {
-        _context.CashTransactions.Update(transaction);
-        await _context.SaveChangesAsync();
+        await using var ctx = await _factory.CreateDbContextAsync();
+        ctx.CashTransactions.Update(transaction);
+        await ctx.SaveChangesAsync();
     }
 
     /// <summary>Fiziksel silme yapmaz; kaydı soft-delete olarak işaretler.</summary>
     public async Task DeleteAsync(Guid id)
     {
-        var entity = await _context.CashTransactions.FirstOrDefaultAsync(x => x.Id == id);
+        await using var ctx = await _factory.CreateDbContextAsync();
+        var entity = await ctx.CashTransactions.FirstOrDefaultAsync(x => x.Id == id);
         if (entity is null) return;
 
         entity.IsDeleted = true;
         entity.DeletedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
+        await ctx.SaveChangesAsync();
     }
 
     public async Task<IReadOnlyList<CashTransaction>> GetFilteredAsync(
         DateTime? from, DateTime? to, TransactionType? type, CurrencyType? currency)
     {
         // Salt okuma: liste DTO'ya dönüştürülür, entity izlenmez
-        var query = _context.CashTransactions.AsNoTracking().AsQueryable();
+        await using var ctx = await _factory.CreateDbContextAsync();
+        var query = ctx.CashTransactions.AsNoTracking().AsQueryable();
 
         if (from.HasValue)     query = query.Where(x => x.TransactionDate >= from.Value);
         if (to.HasValue)       query = query.Where(x => x.TransactionDate <= to.Value);
@@ -75,12 +80,15 @@ public class CashTransactionRepository : ICashTransactionRepository
     }
 
     public async Task<IReadOnlyList<CashTransaction>> GetAllForBalanceAsync()
-        => await _context.CashTransactions
+    {
+        await using var ctx = await _factory.CreateDbContextAsync();
+        return await ctx.CashTransactions
             .AsNoTracking()
             .OrderBy(x => x.TransactionDate)
             .ThenBy(x => x.CreatedAt)
             .ThenBy(x => x.Id)
             .ToListAsync();
+    }
 
     public async Task<List<CurrencyReportData>> GetReportDataAsync(
         DateTime?        startUtc,
@@ -89,7 +97,8 @@ public class CashTransactionRepository : ICashTransactionRepository
         CurrencyType?    currencyType       = null,
         string?          descriptionContains = null)
     {
-        var query = _context.CashTransactions.AsQueryable();
+        await using var ctx = await _factory.CreateDbContextAsync();
+        var query = ctx.CashTransactions.AsQueryable();
 
         // Yarı-açık aralık: >= start, < endExclusive
         if (startUtc.HasValue)         query = query.Where(t => t.TransactionDate >= startUtc.Value);
@@ -121,7 +130,8 @@ public class CashTransactionRepository : ICashTransactionRepository
         string?          descriptionContains)
     {
         // Salt okuma: rapor detayı DTO'ya dönüştürülür, entity izlenmez
-        var query = _context.CashTransactions.AsNoTracking().AsQueryable();
+        await using var ctx = await _factory.CreateDbContextAsync();
+        var query = ctx.CashTransactions.AsNoTracking().AsQueryable();
 
         if (startUtc.HasValue)        query = query.Where(t => t.TransactionDate >= startUtc.Value);
         if (endExclusiveUtc.HasValue) query = query.Where(t => t.TransactionDate <  endExclusiveUtc.Value);

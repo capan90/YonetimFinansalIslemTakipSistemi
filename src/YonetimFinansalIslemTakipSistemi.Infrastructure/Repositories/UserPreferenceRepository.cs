@@ -5,24 +5,30 @@ using YonetimFinansalIslemTakipSistemi.Infrastructure.Persistence;
 
 namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Repositories;
 
+// Sprint 21: işlem başına taze DbContext (IDbContextFactory).
 public class UserPreferenceRepository : IUserPreferenceRepository
 {
-    private readonly AppDbContext _context;
+    private readonly IDbContextFactory<AppDbContext> _factory;
 
-    public UserPreferenceRepository(AppDbContext context) => _context = context;
+    public UserPreferenceRepository(IDbContextFactory<AppDbContext> factory) => _factory = factory;
 
     public async Task<UserPreference?> GetByUserIdAsync(Guid userId)
-        => await _context.UserPreferences.FirstOrDefaultAsync(x => x.UserId == userId);
+    {
+        await using var ctx = await _factory.CreateDbContextAsync();
+        return await ctx.UserPreferences.FirstOrDefaultAsync(x => x.UserId == userId);
+    }
 
     public async Task AddAsync(UserPreference entity)
     {
-        await _context.UserPreferences.AddAsync(entity);
-        await _context.SaveChangesAsync();
+        await using var ctx = await _factory.CreateDbContextAsync();
+        await ctx.UserPreferences.AddAsync(entity);
+        await ctx.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(UserPreference entity)
     {
-        _context.UserPreferences.Update(entity);
-        await _context.SaveChangesAsync();
+        await using var ctx = await _factory.CreateDbContextAsync();
+        ctx.UserPreferences.Update(entity);
+        await ctx.SaveChangesAsync();
     }
 }

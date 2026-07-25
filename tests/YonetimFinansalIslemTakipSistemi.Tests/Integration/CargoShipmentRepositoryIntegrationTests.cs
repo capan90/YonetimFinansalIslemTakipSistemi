@@ -51,7 +51,7 @@ public class CargoShipmentRepositoryIntegrationTests
         var counters = await SnapshotCountersAsync(ctx);
         try
         {
-            var repo = new CargoShipmentRepository(ctx, new NoOpSystemLogService());
+            var repo = new CargoShipmentRepository(IntegrationDb.TryCreateFactory()!, new NoOpSystemLogService());
             var baseSeq = counters.GetValueOrDefault((int)CargoShipmentDirection.Outgoing);
 
             var first  = NewShipment(CargoShipmentDirection.Outgoing);
@@ -80,7 +80,7 @@ public class CargoShipmentRepositoryIntegrationTests
         var counters = await SnapshotCountersAsync(ctx);
         try
         {
-            var repo = new CargoShipmentRepository(ctx, new NoOpSystemLogService());
+            var repo = new CargoShipmentRepository(IntegrationDb.TryCreateFactory()!, new NoOpSystemLogService());
             var baseSeq = counters.GetValueOrDefault((int)CargoShipmentDirection.Outgoing);
 
             var s1 = NewShipment(CargoShipmentDirection.Outgoing);
@@ -127,12 +127,10 @@ public class CargoShipmentRepositoryIntegrationTests
         var counters = await SnapshotCountersAsync(ctx);
         try
         {
-            // Gerçek eşzamanlılık: iki bağımsız context/connection aynı anda numara ister;
-            // sayaç satır kilidi ikisini serileştirmelidir
-            await using var ctxA = IntegrationDb.TryCreateContext()!;
-            await using var ctxB = IntegrationDb.TryCreateContext()!;
-            var repoA = new CargoShipmentRepository(ctxA, new NoOpSystemLogService());
-            var repoB = new CargoShipmentRepository(ctxB, new NoOpSystemLogService());
+            // Gerçek eşzamanlılık: iki repository aynı anda numara ister; her repo işlem başına
+            // kendi context/connection'ını açar (Sprint 21) → sayaç satır kilidi ikisini serileştirmelidir
+            var repoA = new CargoShipmentRepository(IntegrationDb.TryCreateFactory()!, new NoOpSystemLogService());
+            var repoB = new CargoShipmentRepository(IntegrationDb.TryCreateFactory()!, new NoOpSystemLogService());
 
             var a = NewShipment(CargoShipmentDirection.Incoming);
             var b = NewShipment(CargoShipmentDirection.Incoming);

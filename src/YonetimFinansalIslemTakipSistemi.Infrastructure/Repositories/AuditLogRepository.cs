@@ -6,31 +6,35 @@ using YonetimFinansalIslemTakipSistemi.Infrastructure.Persistence;
 
 namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Repositories;
 
+// Sprint 21: işlem başına taze DbContext (IDbContextFactory).
 public class AuditLogRepository : IAuditLogRepository
 {
-    private readonly AppDbContext _context;
+    private readonly IDbContextFactory<AppDbContext> _factory;
 
-    public AuditLogRepository(AppDbContext context) => _context = context;
+    public AuditLogRepository(IDbContextFactory<AppDbContext> factory) => _factory = factory;
 
     public async Task AddAsync(AuditLog log)
     {
-        await _context.AuditLogs.AddAsync(log);
-        await _context.SaveChangesAsync();
+        await using var ctx = await _factory.CreateDbContextAsync();
+        await ctx.AuditLogs.AddAsync(log);
+        await ctx.SaveChangesAsync();
     }
 
     public async Task AddRangeAsync(IReadOnlyList<AuditLog> logs)
     {
         // Toplu import: binlerce kayıt tek SaveChanges ile yazılır — kayıt başına
         // round-trip UI'ı dondurur
-        await _context.AuditLogs.AddRangeAsync(logs);
-        await _context.SaveChangesAsync();
+        await using var ctx = await _factory.CreateDbContextAsync();
+        await ctx.AuditLogs.AddRangeAsync(logs);
+        await ctx.SaveChangesAsync();
     }
 
     public async Task<List<AuditLog>> GetFilteredAsync(
         Guid? userId, DateTime? from, DateTime? to, AuditAction? action)
     {
         // Salt okuma: denetim ekranı görüntülemesi, entity izlenmez
-        var query = _context.AuditLogs.AsNoTracking().AsQueryable();
+        await using var ctx = await _factory.CreateDbContextAsync();
+        var query = ctx.AuditLogs.AsNoTracking().AsQueryable();
 
         if (userId.HasValue)
             query = query.Where(x => x.UserId == userId.Value);

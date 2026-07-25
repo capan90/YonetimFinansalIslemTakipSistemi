@@ -5,18 +5,17 @@ using YonetimFinansalIslemTakipSistemi.Infrastructure.Persistence;
 
 namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Repositories;
 
+// Sprint 21: işlem başına taze DbContext (IDbContextFactory).
 public class UserGridLayoutRepository : IUserGridLayoutRepository
 {
-    private readonly AppDbContext _context;
+    private readonly IDbContextFactory<AppDbContext> _factory;
 
-    public UserGridLayoutRepository(AppDbContext context)
-    {
-        _context = context;
-    }
+    public UserGridLayoutRepository(IDbContextFactory<AppDbContext> factory) => _factory = factory;
 
     public async Task<string?> GetLayoutJsonAsync(Guid userId, string screenKey)
     {
-        var layout = await _context.UserGridLayouts
+        await using var ctx = await _factory.CreateDbContextAsync();
+        var layout = await ctx.UserGridLayouts
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.UserId == userId && x.ScreenKey == screenKey);
         return layout?.LayoutJson;
@@ -24,12 +23,13 @@ public class UserGridLayoutRepository : IUserGridLayoutRepository
 
     public async Task SaveLayoutJsonAsync(Guid userId, string screenKey, string layoutJson)
     {
-        var existing = await _context.UserGridLayouts
+        await using var ctx = await _factory.CreateDbContextAsync();
+        var existing = await ctx.UserGridLayouts
             .FirstOrDefaultAsync(x => x.UserId == userId && x.ScreenKey == screenKey);
 
         if (existing is null)
         {
-            _context.UserGridLayouts.Add(new UserGridLayout
+            ctx.UserGridLayouts.Add(new UserGridLayout
             {
                 Id         = Guid.NewGuid(),
                 UserId     = userId,
@@ -44,17 +44,18 @@ public class UserGridLayoutRepository : IUserGridLayoutRepository
             existing.UpdatedAt  = DateTime.UtcNow;
         }
 
-        await _context.SaveChangesAsync();
+        await ctx.SaveChangesAsync();
     }
 
     public async Task DeleteLayoutAsync(Guid userId, string screenKey)
     {
-        var existing = await _context.UserGridLayouts
+        await using var ctx = await _factory.CreateDbContextAsync();
+        var existing = await ctx.UserGridLayouts
             .FirstOrDefaultAsync(x => x.UserId == userId && x.ScreenKey == screenKey);
 
         if (existing is null) return;
 
-        _context.UserGridLayouts.Remove(existing);
-        await _context.SaveChangesAsync();
+        ctx.UserGridLayouts.Remove(existing);
+        await ctx.SaveChangesAsync();
     }
 }

@@ -9,36 +9,46 @@ using YonetimFinansalIslemTakipSistemi.Infrastructure.Persistence;
 
 namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Repositories;
 
+// Sprint 21: işlem başına taze DbContext (IDbContextFactory) → paylaşılan context çakışması yok.
+// Sayaç/transaction/retry mantığı tek metot içinde tek ctx kullanır (atomiklik korunur).
 public class CargoShipmentRepository : ICargoShipmentRepository
 {
-    private readonly AppDbContext _context;
+    private readonly IDbContextFactory<AppDbContext> _factory;
     private readonly ISystemLogService _systemLog;
 
-    public CargoShipmentRepository(AppDbContext context, ISystemLogService systemLog)
+    public CargoShipmentRepository(IDbContextFactory<AppDbContext> factory, ISystemLogService systemLog)
     {
-        _context   = context;
+        _factory   = factory;
         _systemLog = systemLog;
     }
 
     public async Task<CargoShipment?> GetByIdAsync(Guid id)
-        => await _context.CargoShipments.FirstOrDefaultAsync(x => x.Id == id);
+    {
+        await using var ctx = await _factory.CreateDbContextAsync();
+        return await ctx.CargoShipments.FirstOrDefaultAsync(x => x.Id == id);
+    }
 
     public async Task<CargoShipment?> GetByIdWithIncludesAsync(Guid id)
-        => await _context.CargoShipments
+    {
+        await using var ctx = await _factory.CreateDbContextAsync();
+        return await ctx.CargoShipments
             .Include(x => x.CargoCompany)
             .Include(x => x.CompanyDirectory)
             .FirstOrDefaultAsync(x => x.Id == id);
+    }
 
     public async Task AddAsync(CargoShipment entity)
     {
-        await _context.CargoShipments.AddAsync(entity);
-        await _context.SaveChangesAsync();
+        await using var ctx = await _factory.CreateDbContextAsync();
+        await ctx.CargoShipments.AddAsync(entity);
+        await ctx.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(CargoShipment entity)
     {
-        _context.CargoShipments.Update(entity);
-        await _context.SaveChangesAsync();
+        await using var ctx = await _factory.CreateDbContextAsync();
+        ctx.CargoShipments.Update(entity);
+        await ctx.SaveChangesAsync();
     }
 
     public async Task AddWithAutoNumberAsync(CargoShipment entity)
@@ -47,21 +57,23 @@ public class CargoShipmentRepository : ICargoShipmentRepository
         //  - UPDATE ... RETURNING satır kilidiyle eşzamanlı eklemeleri sıraya sokar (mükerrer imkansız)
         //  - insert başarısız olursa rollback sayaç artışını da geri alır (numara boşa gitmez)
         //  - sayaç kayıt tablosundan bağımsızdır: soft delete edilen numaralar asla yeniden kullanılmaz
+        // ctx metot başında bir kez açılır; tüm retry denemeleri aynı ctx üzerinde çalışır.
+        await using var ctx = await _factory.CreateDbContextAsync();
         for (var attempt = 1; ; attempt++)
         {
-            await using var tx = await _context.Database.BeginTransactionAsync();
+            await using var tx = await ctx.Database.BeginTransactionAsync();
             try
             {
                 // NOT: INSERT ... RETURNING, EF SqlQuery ile okunamaz (non-composable SQL);
                 // artış ExecuteSql ile yapılır, değer aynı transaction içinde ayrıca okunur.
                 // Upsert satır kilidi commit'e kadar tutulur → okuma ve eşzamanlılık güvenlidir.
-                await _context.Database.ExecuteSqlAsync($@"
+                await ctx.Database.ExecuteSqlAsync($@"
                     INSERT INTO cargo_number_counters (""Direction"", ""LastValue"")
                     VALUES ({(int)entity.Direction}, 1)
                     ON CONFLICT (""Direction"")
                     DO UPDATE SET ""LastValue"" = cargo_number_counters.""LastValue"" + 1");
 
-                var seq = await _context.CargoNumberCounters
+                var seq = await ctx.CargoNumberCounters
                     .AsNoTracking()
                     .Where(c => c.Direction == entity.Direction)
                     .Select(c => c.LastValue)
@@ -69,8 +81,8 @@ public class CargoShipmentRepository : ICargoShipmentRepository
 
                 entity.ShipmentNumber = CargoNumberFormatter.Format(entity.Direction, seq);
 
-                await _context.CargoShipments.AddAsync(entity);
-                await _context.SaveChangesAsync();
+                await ctx.CargoShipments.AddAsync(entity);
+                await ctx.SaveChangesAsync();
                 await tx.CommitAsync();
                 return;
             }
@@ -87,9 +99,9 @@ public class CargoShipmentRepository : ICargoShipmentRepository
             {
                 // Sayaç mevcut verinin gerisindeyse (ör. elle taşınmış kayıt) unique index yakalar.
                 // Sayaç mevcut max'a senkronlanır ve yeniden denenir.
-                _context.Entry(entity).State = EntityState.Detached;
+                ctx.Entry(entity).State = EntityState.Detached;
                 await tx.RollbackAsync();
-                await ResyncCounterAsync(entity.Direction);
+                await ResyncCounterAsync(ctx, entity.Direction);
 
                 // Normal akışta hiç yaşanmaması gereken bir durum — teknik iz bırakılır
                 await _systemLog.LogWarningAsync(
@@ -112,18 +124,19 @@ public class CargoShipmentRepository : ICargoShipmentRepository
         // artırılarak numara aralığı rezerve edilir ve tüm kayıtlar tek transaction'da
         // eklenir (ya hep ya hiç). Rollback'te sayaç artışı da geri döner — boşluk oluşmaz.
         // Sayaç satırı kilidi commit'e kadar tutulur; eşzamanlı tekil eklemeler kısa süre bekler.
+        await using var ctx = await _factory.CreateDbContextAsync();
         for (var attempt = 1; ; attempt++)
         {
-            await using var tx = await _context.Database.BeginTransactionAsync();
+            await using var tx = await ctx.Database.BeginTransactionAsync();
             try
             {
-                await _context.Database.ExecuteSqlAsync($@"
+                await ctx.Database.ExecuteSqlAsync($@"
                     INSERT INTO cargo_number_counters (""Direction"", ""LastValue"")
                     VALUES ({(int)direction}, {entities.Count})
                     ON CONFLICT (""Direction"")
                     DO UPDATE SET ""LastValue"" = cargo_number_counters.""LastValue"" + {entities.Count}");
 
-                var last = await _context.CargoNumberCounters
+                var last = await ctx.CargoNumberCounters
                     .AsNoTracking()
                     .Where(c => c.Direction == direction)
                     .Select(c => c.LastValue)
@@ -133,8 +146,8 @@ public class CargoShipmentRepository : ICargoShipmentRepository
                 for (var i = 0; i < entities.Count; i++)
                     entities[i].ShipmentNumber = CargoNumberFormatter.Format(direction, first + i);
 
-                await _context.CargoShipments.AddRangeAsync(entities);
-                await _context.SaveChangesAsync();
+                await ctx.CargoShipments.AddRangeAsync(entities);
+                await ctx.SaveChangesAsync();
                 await tx.CommitAsync();
                 return;
             }
@@ -149,9 +162,9 @@ public class CargoShipmentRepository : ICargoShipmentRepository
             {
                 // Sayaç mevcut verinin gerisindeyse unique index yakalar — senkronla ve yeniden dene
                 foreach (var entity in entities)
-                    _context.Entry(entity).State = EntityState.Detached;
+                    ctx.Entry(entity).State = EntityState.Detached;
                 await tx.RollbackAsync();
-                await ResyncCounterAsync(direction);
+                await ResyncCounterAsync(ctx, direction);
 
                 await _systemLog.LogWarningAsync(
                     "CargoNumber",
@@ -163,12 +176,15 @@ public class CargoShipmentRepository : ICargoShipmentRepository
 
     public async Task<IReadOnlyList<CargoShipment>> GetActiveForImportCheckAsync(
         CargoShipmentDirection direction, DateTime fromUtc, DateTime toUtc)
-        => await _context.CargoShipments
+    {
+        await using var ctx = await _factory.CreateDbContextAsync();
+        return await ctx.CargoShipments
             .AsNoTracking()
             .Where(x => x.Direction == direction
                      && x.ShipmentDate >= fromUtc
                      && x.ShipmentDate <= toUtc)
             .ToListAsync();
+    }
 
     public async Task<IReadOnlyList<CargoShipment>> GetByTrackingNumbersAsync(
         CargoShipmentDirection direction, IReadOnlyCollection<string> trackingNumbers)
@@ -176,7 +192,8 @@ public class CargoShipmentRepository : ICargoShipmentRepository
         // Karşılaştırma anahtarı: TRIM + UPPER — analiz tarafındaki normalize ile aynı
         var keys = trackingNumbers.Select(t => t.Trim().ToUpperInvariant()).ToList();
 
-        return await _context.CargoShipments
+        await using var ctx = await _factory.CreateDbContextAsync();
+        return await ctx.CargoShipments
             .AsNoTracking()
             .Where(x => x.Direction == direction
                      && x.TrackingNumber != null
@@ -191,7 +208,8 @@ public class CargoShipmentRepository : ICargoShipmentRepository
         var seq = CargoNumberFormatter.TryParseSequence(entity.ShipmentNumber, entity.Direction);
         long? reclaimed = null;
 
-        await using var tx = await _context.Database.BeginTransactionAsync();
+        await using var ctx = await _factory.CreateDbContextAsync();
+        await using var tx = await ctx.Database.BeginTransactionAsync();
 
         if (seq is not null)
         {
@@ -201,7 +219,7 @@ public class CargoShipmentRepository : ICargoShipmentRepository
             // create'leri (aynı sayaç satırındaki ON CONFLICT UPDATE) commit'e kadar bekletir:
             //  - sayaç, silinen kaydın sıra değerine eşitse VE
             //  - aynı yönde (soft delete dahil) daha yüksek numaralı kayıt yoksa → sayaç 1 geri alınır
-            var affected = await _context.Database.ExecuteSqlAsync($@"
+            var affected = await ctx.Database.ExecuteSqlAsync($@"
                 UPDATE cargo_number_counters c
                 SET ""LastValue"" = c.""LastValue"" - 1
                 WHERE c.""Direction"" = {(int)entity.Direction}
@@ -223,8 +241,8 @@ public class CargoShipmentRepository : ICargoShipmentRepository
 
         // Soft delete ve (varsa) sayaç geri alma aynı transaction'da:
         // rollback durumunda sayaç değişmeden kalır
-        _context.CargoShipments.Update(entity);
-        await _context.SaveChangesAsync();
+        ctx.CargoShipments.Update(entity);
+        await ctx.SaveChangesAsync();
         await tx.CommitAsync();
 
         if (reclaimed is not null)
@@ -238,10 +256,10 @@ public class CargoShipmentRepository : ICargoShipmentRepository
     }
 
     /// <summary>Sayacı, o yöndeki mevcut en büyük numara sırasına eşitler (defansif onarım).</summary>
-    private async Task ResyncCounterAsync(CargoShipmentDirection direction)
+    private static async Task ResyncCounterAsync(AppDbContext ctx, CargoShipmentDirection direction)
     {
         var prefix = CargoNumberFormatter.Prefix(direction);
-        await _context.Database.ExecuteSqlAsync($@"
+        await ctx.Database.ExecuteSqlAsync($@"
             UPDATE cargo_number_counters c
             SET ""LastValue"" = GREATEST(c.""LastValue"", COALESCE((
                 SELECT MAX(substring(""ShipmentNumber"" from 4)::bigint)
@@ -251,20 +269,26 @@ public class CargoShipmentRepository : ICargoShipmentRepository
     }
 
     public async Task<IReadOnlyList<CargoShipment>> GetAllActiveAsync()
-        => await _context.CargoShipments
+    {
+        await using var ctx = await _factory.CreateDbContextAsync();
+        return await ctx.CargoShipments
             .AsNoTracking()
             .Include(x => x.CargoCompany)
             .Include(x => x.CompanyDirectory)
             .ToListAsync();
+    }
 
     public async Task<IReadOnlyList<CargoShipment>> GetRecentAsync(int count)
-        => await _context.CargoShipments
+    {
+        await using var ctx = await _factory.CreateDbContextAsync();
+        return await ctx.CargoShipments
             .AsNoTracking()
             .Include(x => x.CargoCompany)
             .Include(x => x.CompanyDirectory)
             .OrderByDescending(x => x.CreatedAt)
             .Take(count)
             .ToListAsync();
+    }
 
     public async Task<IReadOnlyList<CargoShipment>> GetFilteredReportAsync(
         DateTime?                dateFrom,
@@ -275,7 +299,8 @@ public class CargoShipmentRepository : ICargoShipmentRepository
         CargoNotificationStatus? notificationStatus,
         CargoShipmentPriority?   priority)
     {
-        var query = _context.CargoShipments
+        await using var ctx = await _factory.CreateDbContextAsync();
+        var query = ctx.CargoShipments
             .AsNoTracking()
             .Include(x => x.CargoCompany)
             .Include(x => x.CompanyDirectory)

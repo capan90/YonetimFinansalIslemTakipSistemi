@@ -60,6 +60,44 @@ internal static class IntegrationDb
             .Options;
         return new AppDbContext(options);
     }
+
+    /// <summary>
+    /// Sprint 21: repository'ler artık IDbContextFactory alır. DB erişilebilirse
+    /// gerçek factory döner; değilse null (test atlanır).
+    /// </summary>
+    public static IDbContextFactory<AppDbContext>? TryCreateFactory()
+    {
+        var cs = ResolveConnectionString();
+        if (cs is null) return null;
+
+        try
+        {
+            var builder = new NpgsqlConnectionStringBuilder(cs) { Timeout = 3 };
+            using var probe = new NpgsqlConnection(builder.ConnectionString);
+            probe.Open();
+        }
+        catch
+        {
+            return null; // DB kapalı/erişilemez — integration testler atlanır
+        }
+
+        return new SimpleDbContextFactory(cs);
+    }
+}
+
+/// <summary>Test için minimal IDbContextFactory: her çağrıda taze context üretir (üretimdeki desenle aynı).</summary>
+internal sealed class SimpleDbContextFactory : IDbContextFactory<AppDbContext>
+{
+    private readonly DbContextOptions<AppDbContext> _options;
+
+    public SimpleDbContextFactory(string connectionString)
+    {
+        _options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseNpgsql(connectionString)
+            .Options;
+    }
+
+    public AppDbContext CreateDbContext() => new(_options);
 }
 
 /// <summary>Integration testlerde repository bağımlılığı için sessiz system log.</summary>

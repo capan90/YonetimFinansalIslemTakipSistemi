@@ -151,7 +151,9 @@ public partial class App : System.Windows.Application
         var services = new ServiceCollection();
         // IConfiguration'ı DI'a al — AesSecretProtector ve diğer servisler için
         services.AddSingleton<IConfiguration>(config);
-        services.AddInfrastructure(connectionString);
+        // EF SQL komut logu seviyesi: varsayılan Debug (gizli, log şişmez). SQL görmek için
+        // appsettings "Logging:EfCommandLevel" = "Information" yapılır.
+        services.AddInfrastructure(connectionString, ParseEfCommandLevel(config["Logging:EfCommandLevel"]));
 
         // SMTP bildirimi: env var YONETIM_SMTP_PASSWORD / YONETIM_SMTP_USERNAME şifre güvenliği sağlar
         var smtpOptions = BuildSmtpNotificationOptions(config);
@@ -527,12 +529,9 @@ public partial class App : System.Windows.Application
 
         return new LoggerConfiguration()
             .MinimumLevel.Is(ParseMinimumLevel(config["Logging:MinimumLevel"]))
-            // EF Core her SQL komutunu Information seviyesinde yazar; tek günde 100+ MB log üretebilir.
-            // Komut logları yalnızca hata ayıklamada gerekir → varsayılan olarak Warning'e çekilir.
-            // Gerektiğinde appsettings "Logging:EfCommandLevel" ile geçici olarak "Information" yapılabilir.
-            .MinimumLevel.Override(
-                "Microsoft.EntityFrameworkCore.Database.Command",
-                ParseMinimumLevel(config["Logging:EfCommandLevel"], LogEventLevel.Warning))
+            // NOT: EF Core SQL komut logu bastırma artık EF-native ConfigureWarnings ile yapılır
+            // (ServiceRegistration.AddInfrastructure — "Logging:EfCommandLevel"). Serilog SourceContext
+            // override'ı köprüde her zaman güvenilir eşleşmediğinden kaldırıldı.
             .Enrich.FromLogContext()
             .Enrich.WithMachineName()
             .Enrich.WithProperty("AppVersion", appVersion)
@@ -548,7 +547,7 @@ public partial class App : System.Windows.Application
             .CreateLogger();
     }
 
-    // Ayarda değer yoksa/tanınmazsa fallback döner (genel min. seviye için Information, EF komutları için Warning).
+    // Ayarda değer yoksa/tanınmazsa fallback döner (Serilog genel min. seviyesi).
     private static LogEventLevel ParseMinimumLevel(string? level, LogEventLevel fallback = LogEventLevel.Information)
         => level?.ToLowerInvariant() switch
         {
@@ -559,6 +558,18 @@ public partial class App : System.Windows.Application
             "error"       => LogEventLevel.Error,
             "fatal"       => LogEventLevel.Fatal,
             _             => fallback
+        };
+
+    // EF Core "CommandExecuted" olayının emit seviyesi. Varsayılan Debug = gizli (global min Information).
+    // "Information" yapılırsa SQL komutları loglanır (geçici hata ayıklama için).
+    private static Microsoft.Extensions.Logging.LogLevel ParseEfCommandLevel(string? level)
+        => level?.ToLowerInvariant() switch
+        {
+            "trace"       => Microsoft.Extensions.Logging.LogLevel.Trace,
+            "debug"       => Microsoft.Extensions.Logging.LogLevel.Debug,
+            "information" => Microsoft.Extensions.Logging.LogLevel.Information,
+            "warning"     => Microsoft.Extensions.Logging.LogLevel.Warning,
+            _             => Microsoft.Extensions.Logging.LogLevel.Debug
         };
 
     private static void ShowConnectionError()

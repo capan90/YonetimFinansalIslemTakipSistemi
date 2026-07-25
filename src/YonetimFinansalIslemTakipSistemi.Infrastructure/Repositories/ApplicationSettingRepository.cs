@@ -5,24 +5,34 @@ using YonetimFinansalIslemTakipSistemi.Infrastructure.Persistence;
 
 namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Repositories;
 
+// Sprint 21: işlem başına taze DbContext (IDbContextFactory).
 public class ApplicationSettingRepository : IApplicationSettingRepository
 {
-    private readonly AppDbContext _context;
+    private readonly IDbContextFactory<AppDbContext> _factory;
 
-    public ApplicationSettingRepository(AppDbContext context) => _context = context;
+    public ApplicationSettingRepository(IDbContextFactory<AppDbContext> factory) => _factory = factory;
 
     public async Task<ApplicationSetting?> GetByKeyAsync(string key)
-        => await _context.ApplicationSettings.FirstOrDefaultAsync(x => x.Key == key);
+    {
+        await using var ctx = await _factory.CreateDbContextAsync();
+        return await ctx.ApplicationSettings.FirstOrDefaultAsync(x => x.Key == key);
+    }
 
     public async Task<IReadOnlyList<ApplicationSetting>> GetByPrefixAsync(string prefix)
-        => await _context.ApplicationSettings
+    {
+        await using var ctx = await _factory.CreateDbContextAsync();
+        return await ctx.ApplicationSettings
             .Where(x => x.Key.StartsWith(prefix))
             .ToListAsync();
+    }
 
     public async Task UpsertAsync(string key, string? value, bool isEncrypted, Guid userId)
     {
+        // Okuma ve yazma aynı ctx üzerinde → tracking ile güncelleme çalışır (tek metot, tek transaction).
+        await using var ctx = await _factory.CreateDbContextAsync();
+
         // Silinmiş kayıtlar dahil — aynı key üzerinde restore mantığı var
-        var existing = await _context.ApplicationSettings
+        var existing = await ctx.ApplicationSettings
             .IgnoreQueryFilters()
             .FirstOrDefaultAsync(x => x.Key == key);
 
@@ -37,7 +47,7 @@ public class ApplicationSettingRepository : IApplicationSettingRepository
                 CreatedByUserId = userId,
                 CreatedAt       = DateTime.UtcNow,
             };
-            await _context.ApplicationSettings.AddAsync(entry);
+            await ctx.ApplicationSettings.AddAsync(entry);
         }
         else
         {
@@ -48,6 +58,6 @@ public class ApplicationSettingRepository : IApplicationSettingRepository
             existing.IsDeleted       = false; // soft-delete'ten geri al
         }
 
-        await _context.SaveChangesAsync();
+        await ctx.SaveChangesAsync();
     }
 }

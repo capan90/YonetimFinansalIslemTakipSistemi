@@ -5,27 +5,33 @@ using YonetimFinansalIslemTakipSistemi.Infrastructure.Persistence;
 
 namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Repositories;
 
+// Sprint 21: işlem başına taze DbContext (IDbContextFactory).
 public class CompanyAttentionContactRepository : ICompanyAttentionContactRepository
 {
-    private readonly AppDbContext _context;
+    private readonly IDbContextFactory<AppDbContext> _factory;
 
-    public CompanyAttentionContactRepository(AppDbContext context) => _context = context;
+    public CompanyAttentionContactRepository(IDbContextFactory<AppDbContext> factory) => _factory = factory;
 
     public async Task<List<CompanyAttentionContact>> GetByCompanyAsync(Guid companyDirectoryId)
-        => await _context.CompanyAttentionContacts
+    {
+        await using var ctx = await _factory.CreateDbContextAsync();
+        return await ctx.CompanyAttentionContacts
             .AsNoTracking()
             .Where(x => x.CompanyDirectoryId == companyDirectoryId)
             .ToListAsync();
+    }
 
     public async Task AddAsync(CompanyAttentionContact contact)
     {
-        await _context.CompanyAttentionContacts.AddAsync(contact);
-        await _context.SaveChangesAsync();
+        await using var ctx = await _factory.CreateDbContextAsync();
+        await ctx.CompanyAttentionContacts.AddAsync(contact);
+        await ctx.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(CompanyAttentionContact contact)
     {
-        _context.CompanyAttentionContacts.Update(contact);
-        await _context.SaveChangesAsync();
+        await using var ctx = await _factory.CreateDbContextAsync();
+        ctx.CompanyAttentionContacts.Update(contact);
+        await ctx.SaveChangesAsync();
     }
 }

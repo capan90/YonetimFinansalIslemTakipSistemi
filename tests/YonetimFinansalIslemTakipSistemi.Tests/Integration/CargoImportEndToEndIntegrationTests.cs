@@ -114,10 +114,12 @@ public class CargoImportEndToEndIntegrationTests
             filePath = CreateSampleExcel(directoryName, cargoCompanyName);
 
             // ── Gerçek servis zinciri (DI ile aynı bileşenler) ──
+            // Sprint 21: repository'ler IDbContextFactory alır (işlem başına taze context)
+            var factory       = IntegrationDb.TryCreateFactory()!;
             var systemLog     = new NoOpSystemLogService();
-            var shipmentRepo  = new CargoShipmentRepository(ctx, systemLog);
-            var directoryRepo = new CompanyDirectoryRepository(ctx);
-            var cargoRepo     = new CargoCompanyRepository(ctx);
+            var shipmentRepo  = new CargoShipmentRepository(factory, systemLog);
+            var directoryRepo = new CompanyDirectoryRepository(factory);
+            var cargoRepo     = new CargoCompanyRepository(factory);
             var user          = new FakeUserContext();
             user.GrantAll();
             var audit = new FakeAuditLogService();
@@ -200,14 +202,15 @@ public class CargoImportEndToEndIntegrationTests
             Assert.Equal(1, cache.InvalidateCount);
 
             // ── 4) Aynı dosya ikinci kez analiz edilirse: hepsi DB mükerreri olmalı ──
-            await using var ctx2 = IntegrationDb.TryCreateContext();
-            if (ctx2 is not null)
+            // Taze factory ile ikinci analiz zinciri (production'da da her handler kendi context'ini alır)
+            var factory2 = IntegrationDb.TryCreateFactory();
+            if (factory2 is not null)
             {
                 var analyze2 = new AnalyzeCargoImportHandler(
                     new ExcelCargoImportReader(),
-                    new CompanyDirectoryRepository(ctx2),
-                    new CargoCompanyRepository(ctx2),
-                    new CargoShipmentRepository(ctx2, systemLog),
+                    new CompanyDirectoryRepository(factory2),
+                    new CargoCompanyRepository(factory2),
+                    new CargoShipmentRepository(factory2, systemLog),
                     user, systemLog, new FakeTextNormalizationService());
 
                 var second = await analyze2.HandleAsync(new AnalyzeCargoImportRequest

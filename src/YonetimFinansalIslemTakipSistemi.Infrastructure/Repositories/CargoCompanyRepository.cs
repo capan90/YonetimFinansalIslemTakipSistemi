@@ -5,30 +5,42 @@ using YonetimFinansalIslemTakipSistemi.Infrastructure.Persistence;
 
 namespace YonetimFinansalIslemTakipSistemi.Infrastructure.Repositories;
 
+// Sprint 21: işlem başına taze DbContext (IDbContextFactory).
 public class CargoCompanyRepository : ICargoCompanyRepository
 {
-    private readonly AppDbContext _context;
+    private readonly IDbContextFactory<AppDbContext> _factory;
 
-    public CargoCompanyRepository(AppDbContext context) => _context = context;
+    public CargoCompanyRepository(IDbContextFactory<AppDbContext> factory) => _factory = factory;
 
     public async Task<CargoCompany?> GetByIdAsync(Guid id)
-        => await _context.CargoCompanies.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+    {
+        await using var ctx = await _factory.CreateDbContextAsync();
+        return await ctx.CargoCompanies.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+    }
 
     public async Task<CargoCompany?> GetByIdWithTrackingAsync(Guid id)
-        => await _context.CargoCompanies.FirstOrDefaultAsync(x => x.Id == id);
+    {
+        await using var ctx = await _factory.CreateDbContextAsync();
+        return await ctx.CargoCompanies.FirstOrDefaultAsync(x => x.Id == id);
+    }
 
     public async Task<IReadOnlyList<CargoCompany>> GetAllAsync()
-        => await _context.CargoCompanies.AsNoTracking().ToListAsync();
+    {
+        await using var ctx = await _factory.CreateDbContextAsync();
+        return await ctx.CargoCompanies.AsNoTracking().ToListAsync();
+    }
 
     public async Task AddAsync(CargoCompany entity)
     {
-        await _context.CargoCompanies.AddAsync(entity);
-        await _context.SaveChangesAsync();
+        await using var ctx = await _factory.CreateDbContextAsync();
+        await ctx.CargoCompanies.AddAsync(entity);
+        await ctx.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(CargoCompany entity)
     {
-        _context.CargoCompanies.Update(entity);
-        await _context.SaveChangesAsync();
+        await using var ctx = await _factory.CreateDbContextAsync();
+        ctx.CargoCompanies.Update(entity);
+        await ctx.SaveChangesAsync();
     }
 }

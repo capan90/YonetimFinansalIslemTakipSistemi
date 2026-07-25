@@ -527,6 +527,12 @@ public partial class App : System.Windows.Application
 
         return new LoggerConfiguration()
             .MinimumLevel.Is(ParseMinimumLevel(config["Logging:MinimumLevel"]))
+            // EF Core her SQL komutunu Information seviyesinde yazar; tek günde 100+ MB log üretebilir.
+            // Komut logları yalnızca hata ayıklamada gerekir → varsayılan olarak Warning'e çekilir.
+            // Gerektiğinde appsettings "Logging:EfCommandLevel" ile geçici olarak "Information" yapılabilir.
+            .MinimumLevel.Override(
+                "Microsoft.EntityFrameworkCore.Database.Command",
+                ParseMinimumLevel(config["Logging:EfCommandLevel"], LogEventLevel.Warning))
             .Enrich.FromLogContext()
             .Enrich.WithMachineName()
             .Enrich.WithProperty("AppVersion", appVersion)
@@ -534,20 +540,26 @@ public partial class App : System.Windows.Application
                 path: logPath,
                 rollingInterval: RollingInterval.Day,
                 outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] [{MachineName}] [v{AppVersion}] {Message:lj}{NewLine}{Exception}",
+                // Günlük dosya 20 MB'ı aşarsa yeni dosyaya döner; tek bir devasa dosya oluşmaz (RAM/açılış güvenliği).
+                fileSizeLimitBytes: 20 * 1024 * 1024,
+                rollOnFileSizeLimit: true,
                 retainedFileCountLimit: 30,
                 encoding: System.Text.Encoding.UTF8)
             .CreateLogger();
     }
 
-    private static LogEventLevel ParseMinimumLevel(string? level) => level?.ToLowerInvariant() switch
-    {
-        "verbose" => LogEventLevel.Verbose,
-        "debug"   => LogEventLevel.Debug,
-        "warning" => LogEventLevel.Warning,
-        "error"   => LogEventLevel.Error,
-        "fatal"   => LogEventLevel.Fatal,
-        _         => LogEventLevel.Information
-    };
+    // Ayarda değer yoksa/tanınmazsa fallback döner (genel min. seviye için Information, EF komutları için Warning).
+    private static LogEventLevel ParseMinimumLevel(string? level, LogEventLevel fallback = LogEventLevel.Information)
+        => level?.ToLowerInvariant() switch
+        {
+            "verbose"     => LogEventLevel.Verbose,
+            "debug"       => LogEventLevel.Debug,
+            "information" => LogEventLevel.Information,
+            "warning"     => LogEventLevel.Warning,
+            "error"       => LogEventLevel.Error,
+            "fatal"       => LogEventLevel.Fatal,
+            _             => fallback
+        };
 
     private static void ShowConnectionError()
     {

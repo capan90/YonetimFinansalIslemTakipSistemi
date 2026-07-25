@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Serilog;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Reports.Queries.GetReport;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.Domain.Extensions;
@@ -232,8 +233,10 @@ public class ReportViewModel : INotifyPropertyChanged
             }
             OnPropertyChanged(nameof(HasDetails));
         }
-        catch
+        catch (Exception ex)
         {
+            // Kullanıcıya genel mesaj gösterilir; tam hata teşhis için loglanır (aksi halde iz kalmaz)
+            Log.Warning(ex, "Rapor yüklenemedi");
             _dialogService.ShowError("Rapor yüklenirken beklenmeyen bir hata oluştu.");
         }
         finally

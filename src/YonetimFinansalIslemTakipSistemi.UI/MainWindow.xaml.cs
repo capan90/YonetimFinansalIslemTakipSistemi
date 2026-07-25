@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
@@ -199,8 +200,10 @@ public partial class MainWindow : Window
             await layoutService.SaveLayoutAsync(userContext.UserId, ScreenKey, json);
             _dialogService.ShowSuccess("Kolon tasarımı kaydedildi.");
         }
-        catch
+        catch (Exception ex)
         {
+            // DB yazma hatası — kullanıcıya bildirilir, teşhis için loglanır
+            Log.Warning(ex, "Kolon tasarımı kaydedilemedi (ScreenKey={ScreenKey})", ScreenKey);
             _dialogService.ShowError("Kolon tasarımı kaydedilemedi.");
         }
     }
@@ -230,8 +233,10 @@ public partial class MainWindow : Window
 
             _dialogService.ShowSuccess("Kolon tasarımı varsayılana döndürüldü.");
         }
-        catch
+        catch (Exception ex)
         {
+            // DB silme hatası — kullanıcıya bildirilir, teşhis için loglanır
+            Log.Warning(ex, "Kolon tasarımı sıfırlanamadı (ScreenKey={ScreenKey})", ScreenKey);
             _dialogService.ShowError("Kolon tasarımı sıfırlanamadı.");
         }
     }

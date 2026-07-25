@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Serilog;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoCompany.Queries.GetCargoCompanyList;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CompanyDirectory.Queries.GetCompanyDirectoryList;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment;
@@ -451,9 +452,11 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
             foreach (var c in contacts)
                 AttentionContacts.Add(c.Name);
         }
-        catch
+        catch (Exception ex)
         {
-            // Dikkatine listesi yüklenemedi — form çalışmaya devam eder, özellik sessizce devre dışı kalır
+            // Dikkatine listesi yüklenemedi — form çalışmaya devam eder, özellik devre dışı kalır.
+            // Sessizce yutulmaz: aksi halde (ör. DbContext eşzamanlılığı) sorun aylarca fark edilmez.
+            Log.Warning(ex, "Dikkatine listesi yüklenemedi (CompanyDirectoryId={CompanyDirectoryId})", companyDirectoryId);
         }
 
         if (defaultInput is not null)
@@ -580,9 +583,10 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
                     new EnsureCompanyAttentionContactRequest(
                         _selectedCompanyDirectory.Id, AttentionContactInput.Trim(), _userContext.UserId));
             }
-            catch
+            catch (Exception ex)
             {
-                // Dikkatine güncelleme başarısız — kargo başarıyla kaydedildi, non-fatal
+                // Dikkatine güncelleme başarısız — kargo başarıyla kaydedildi, non-fatal; yine de iz bırak
+                Log.Warning(ex, "Dikkatine kişisi tazelenemedi (CompanyDirectoryId={CompanyDirectoryId})", _selectedCompanyDirectory.Id);
             }
         }
 

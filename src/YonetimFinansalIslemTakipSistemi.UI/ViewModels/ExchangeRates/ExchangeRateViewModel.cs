@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using YonetimFinansalIslemTakipSistemi.Application.Features.ExchangeRates.Commands.CreateOrUpdateExchangeRate;
+using YonetimFinansalIslemTakipSistemi.Application.Features.ExchangeRates.Commands.FetchTcmbExchangeRates;
 using YonetimFinansalIslemTakipSistemi.Application.Features.ExchangeRates.Queries.GetExchangeRates;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
@@ -16,6 +17,7 @@ public class ExchangeRateViewModel : INotifyPropertyChanged
 {
     private readonly CreateOrUpdateExchangeRateHandler _saveHandler;
     private readonly GetExchangeRatesHandler           _loadHandler;
+    private readonly FetchTcmbExchangeRatesHandler     _tcmbHandler;
     private readonly IDialogService                    _dialogService;
 
     private DateTime? _rateDate = DateTime.Today;
@@ -90,19 +92,51 @@ public class ExchangeRateViewModel : INotifyPropertyChanged
     public ICommand SaveCommand      { get; }
     public ICommand LoadCommand      { get; }
     public ICommand ClearFormCommand { get; }
+    public ICommand FetchTcmbCommand { get; }
 
     public ExchangeRateViewModel(
         CreateOrUpdateExchangeRateHandler saveHandler,
         GetExchangeRatesHandler           loadHandler,
+        FetchTcmbExchangeRatesHandler     tcmbHandler,
         IDialogService                    dialogService)
     {
         _saveHandler   = saveHandler;
         _loadHandler   = loadHandler;
+        _tcmbHandler   = tcmbHandler;
         _dialogService = dialogService;
 
         SaveCommand      = new RelayCommand(async () => await SaveAsync());
         LoadCommand      = new RelayCommand(async () => await LoadAsync());
         ClearFormCommand = new RelayCommand(ClearForm);
+        FetchTcmbCommand = new RelayCommand(async () => await FetchFromTcmbAsync());
+    }
+
+    /// <summary>
+    /// Seçili tarih için TCMB'den USD+EUR kurlarını çeker ve kaydeder (mevcut upsert akışı).
+    /// Hafta sonu/tatilde son iş gününün kuru döner. Yetki kontrolü handler'da.
+    /// </summary>
+    private async Task FetchFromTcmbAsync()
+    {
+        FormError = null;
+        IsLoading = true;
+        try
+        {
+            var result = await _tcmbHandler.HandleAsync(RateDate ?? DateTime.Today);
+            if (!result.Success)
+            {
+                FormError = result.ErrorMessage;
+                return;
+            }
+
+            _dialogService.ShowSuccess("Başarılı",
+                $"TCMB'den {result.Data!.SavedCount} kur kaydedildi " +
+                $"({result.Data.RateDate:dd.MM.yyyy}).");
+            await LoadAsync();
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     public async Task LoadAsync()

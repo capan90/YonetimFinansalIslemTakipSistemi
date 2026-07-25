@@ -48,6 +48,19 @@
                          VerticalAlignment="Center" Margin="0,0,10,0" Padding="4,3"/>
 
                 <StackPanel Grid.Column="9" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="TCMB'den Çek" Width="110" Margin="0,0,6,0"
+                            Command="{Binding FetchTcmbCommand}"
+                            ToolTip="Seçili tarih için USD ve EUR kurlarını TCMB'den çeker ve kaydeder (hafta sonu/tatilde son iş günü)">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                     <Button Content="Kaydet" Width="80" Margin="0,0,6,0"
                             Command="{Binding SaveCommand}"
                             IsDefault="True">

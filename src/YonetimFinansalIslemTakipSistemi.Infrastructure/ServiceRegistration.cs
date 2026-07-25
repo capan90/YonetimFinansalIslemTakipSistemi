@@ -76,6 +76,11 @@ public static class ServiceRegistration
         // Dashboard cache — Singleton: tüm oturumlarda tek önbellek
         services.AddSingleton<ICargoDashboardCacheService, InMemoryCargoDashboardCacheService>();
 
+        // TCMB kur kaynağı — Singleton: durumsuz; tek uzun ömürlü HttpClient (socket tükenmesini önler).
+        // TCMB günlük XML servisi ücretsiz ve anahtarsızdır; yalnızca manuel "TCMB'den Çek" ile çağrılır.
+        services.AddSingleton<IExchangeRateSource>(_ =>
+            new TcmbExchangeRateSource(new HttpClient { Timeout = TimeSpan.FromSeconds(15) }));
+
         services.AddScoped<IAuthenticationService, DatabaseAuthenticationService>();
         services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
         services.AddScoped<IAuditLogService, AuditLogService>();

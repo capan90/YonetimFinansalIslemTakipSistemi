@@ -21,6 +21,7 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.Permissions.Commands
 using YonetimFinansalIslemTakipSistemi.Application.Features.Reports.Queries.GetReport;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Permissions.Queries.GetUserPermissions;
 using YonetimFinansalIslemTakipSistemi.Application.Features.ExchangeRates.Commands.CreateOrUpdateExchangeRate;
+using YonetimFinansalIslemTakipSistemi.Application.Features.ExchangeRates.Commands.FetchTcmbExchangeRates;
 using YonetimFinansalIslemTakipSistemi.Application.Features.ExchangeRates.Queries.GetExchangeRates;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Users.Queries.GetUsers;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
@@ -223,6 +224,8 @@ public partial class App : System.Windows.Application
         // ExchangeRate handler'lar
         services.AddScoped<CreateOrUpdateExchangeRateHandler>();
         services.AddScoped<GetExchangeRatesHandler>();
+        // TCMB'den çekim — kaynağı çağırıp upsert handler'ıyla kaydeder
+        services.AddScoped<FetchTcmbExchangeRatesHandler>();
 
         // Kargo Katip handler'lar
         services.AddScoped<CreateCompanyDirectoryHandler>();

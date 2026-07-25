@@ -55,6 +55,14 @@ if ([string]::IsNullOrWhiteSpace($Environment) -and -not $LocalTest) {
     throw "Ortam belirtilmedi. Uretim icin: -Environment 'Production'. Lokal test icin: -LocalTest switch'i ile bilincli onay verin."
 }
 
+# Kimlik kapisi: IMZASIZ paketin PublicKeyToken'i 0000...'dir; imzali paketten (gercek sertifika
+# thumbprint) FARKLI bir ClickOnce kimligi olusturur. Uretimde imzasiz yayin, kullanicida mevcut
+# kurulumu guncellemek yerine AYRI bir uygulama olarak kurar (Baslat Menusu'nde "- 1" kopyasi,
+# gorev cubugu pin'i kirilir). Bu yuzden Production her zaman imzali olmali.
+if ($Environment -eq "Production" -and -not $Sign) {
+    throw "Production yayini imzasiz yapilamaz (-Sign `$true zorunlu). Imzasiz paket farkli ClickOnce kimligi uretir; kullanicida guncelleme yerine yeni uygulama olusur."
+}
+
 # UNC base: env var doluysa onu kullan, yoksa localhost
 $UncBase = $env:YONETIM_UPDATE_PATH
 if ([string]::IsNullOrWhiteSpace($UncBase)) {

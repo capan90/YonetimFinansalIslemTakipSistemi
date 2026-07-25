@@ -87,10 +87,25 @@ public partial class App : System.Windows.Application
     /// </summary>
     public static string LogDirectory { get; private set; } = string.Empty;
 
+    // ClickOnce uygulaması her sürümde farklı versiyonlu klasörden (%LocalAppData%\Apps\2.0\<hash>\...)
+    // çalışır. Görev çubuğu, sabit bir AppUserModelID atanmazsa pencereyi bu değişken exe yoluyla
+    // gruplar; güncelleme sonrası yol değişince kullanıcının sabitlediği (pinlediği) simge kırılır ve
+    // uygulama ayrı bir simge olarak açılır. Sabit AUMID bu gruplamayı sürümden bağımsız kılar.
+    private const string AppUserModelId = "ErdemSoftTekstil.YonetimFinansalIslemTakip";
+
+    [System.Runtime.InteropServices.DllImport("shell32.dll", PreserveSig = false)]
+    private static extern void SetCurrentProcessExplicitAppUserModelID(
+        [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPWStr)] string appID);
+
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
+        // Görev çubuğu kimliği ilk pencereden ÖNCE sabitlenmeli (sonra atamak etkisiz kalır).
+        // Başarısız olursa uygulama akışı engellenmez — yalnızca pin gruplaması iyileştirmesidir.
+        try { SetCurrentProcessExplicitAppUserModelID(AppUserModelId); }
+        catch (Exception ex) { Log.Warning(ex, "AppUserModelID ayarlanamadı (pin gruplaması)"); }
 
         // Global handler'lar logger kurulmadan önce kaydedilir.
         // Logger henüz hazır değilse Serilog'un varsayılan sessiz logger'ı devreye girer.

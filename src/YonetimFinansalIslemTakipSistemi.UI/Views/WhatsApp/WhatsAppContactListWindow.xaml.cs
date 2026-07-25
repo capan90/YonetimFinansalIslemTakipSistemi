@@ -25,11 +25,17 @@ public partial class WhatsAppContactListWindow : Window
         _dialogService = services.GetRequiredService<IDialogService>();
         DataContext    = _vm;
 
-        // İçe aktarma toplu yazma işlemidir — Sprint 17 rehber yazma guard'ıyla aynı kural
+        // Yazma butonları (Yeni/Düzenle/Sil/İçe Aktar) yalnızca rehber yazma yetkisi olanlara gösterilir.
+        // Handler'lar zaten guard'lı; buton gizleme UX tutarlılığı içindir (CargoCompany/CompanyDirectory
+        // liste ekranlarıyla aynı desen — yetkisiz kullanıcıya "yapamazsın" butonu gösterilmez).
         var userContext = services.GetRequiredService<Application.Interfaces.Services.IUserContext>();
-        ImportButton.Visibility =
+        var manageVisibility =
             Application.Features.WhatsAppContacts.WhatsAppContactPermissions.CanModify(userContext)
                 ? Visibility.Visible : Visibility.Collapsed;
+        NewButton.Visibility    = manageVisibility;
+        EditButton.Visibility   = manageVisibility;
+        DeleteButton.Visibility = manageVisibility;
+        ImportButton.Visibility = manageVisibility;
 
         Loaded += async (_, _) => await _vm.LoadAsync();
     }

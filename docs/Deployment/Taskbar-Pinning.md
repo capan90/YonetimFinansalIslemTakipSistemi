@@ -60,27 +60,40 @@ Pin artık yol-tabanlı değil kimlik-tabanlı olur → güncellemeler pin'i kı
 (`\\10.0.0.169\YonetimPublish\...`) ile yayınlanır. Localhost/imzasız test paketleri
 kullanıcı makinelerine **asla** kurulmaz.
 
-### C) Kullanıcı tarafı — doğru kısayolu sabitle
+### C) Kullanıcı tarafı — doğru şeyi sabitle
 
-Kullanıcı **çalışan uygulamayı** değil, **sabit yoldaki kısayolu** sabitlemelidir.
+**Birincil mekanizma A maddesidir (uygulama tarafı AUMID).** Uygulama sabit AUMID
+bildirdiği için, kullanıcı **çalışan uygulamayı** görev çubuğuna sabitlediğinde Windows
+pin'i sürümlü exe yoluna değil bu sabit kimliğe bağlar; güncelleme sonrası uygulama aynı
+AUMID ile açılır ve pin korunur.
 
-`tools/Installer/Create-PinnableShortcut.ps1` masaüstünde, ClickOnce başlatıcısına
-(`.appref-ms`) işaret eden ve uygulamayla aynı AUMID'i taşıyan bir kısayol oluşturur.
-Kullanıcı bir kez bu kısayola **sağ tık → Görev çubuğuna sabitle** yapar; sonraki tüm
-güncellemelerde pin çalışmaya devam eder.
+Ek olarak `tools/Installer/Create-PinnableShortcut.ps1`, masaüstünde ClickOnce
+başlatıcısına (`.appref-ms`) işaret eden **sabit yollu** bir kısayol oluşturur (uygulama
+ikonuyla). Bu kısayol her zaman güncel sürümü açar ve sabitlenebilir.
 
 ```powershell
 # Kurulumdan ve uygulama en az bir kez açıldıktan SONRA, kullanıcı oturumunda:
 powershell -ExecutionPolicy Bypass -File .\Create-PinnableShortcut.ps1
 ```
 
-## Doğrulama (gerçek istemcide, manuel)
+> **Kısayol AUMID damgası — en iyi çaba:** Script, kısayola uygulamayla aynı AUMID'i
+> yazmayı dener ve **geri okuyup doğrular**. Bazı Windows sürümlerinde `.appref-ms` hedefli
+> `.lnk` üzerine AUMID kalıcı yazılamaz; script bunu açıkça bildirir ("doğrulanamadı").
+> Bu durumda kısayol yine çalışır, ancak gruplama garantisi için birincil mekanizma
+> (uygulama tarafı AUMID) geçerlidir — kullanıcı çalışan uygulamayı sabitleyebilir.
+
+## Doğrulama (gerçek istemcide, manuel — bu adım zorunlu)
 
 1. İstemciye üretim (imzalı) sürümü kur, uygulamayı bir kez aç.
-2. `Create-PinnableShortcut.ps1` çalıştır → masaüstü kısayolunu görev çubuğuna sabitle.
+2. Görev çubuğuna sabitle: ya **çalışan uygulamayı** (A mekanizması) ya da masaüstü kısayolunu.
 3. Sürümü artırıp yeniden yayınla; istemcide **Güncellemeleri Denetle** ile güncelle.
 4. **Beklenen:** görev çubuğundaki pin aynı kalır; güncel sürüm bu pin üzerinden açılır,
    ayrı/ikinci bir simge oluşmaz.
+5. **Eğer pin hâlâ kırılıyorsa** (uygulama kapalıyken pin'e tıklayınca açılmıyorsa): sonraki
+   adım, ana pencereye `PKEY_AppUserModel_RelaunchCommand` ayarlamaktır (dfshim/.appref-ms
+   üzerinden yeniden başlatma) — bu, gerçek istemcideki gözleme göre eklenecektir.
 
-> Not: A ve B kod/scriptte doğrulandı (derleme + parse). Görev çubuğu davranışının kendisi
-> yalnızca gerçek ClickOnce kurulumu + manuel sabitleme ile teyit edilebilir.
+> Not: A (uygulama AUMID) ve B (imza kapısı) kod/scriptte doğrulandı; açılışta AUMID
+> hatasız atanıyor. Görev çubuğu davranışının kendisi yalnızca gerçek ClickOnce kurulumu +
+> manuel sabitleme + güncelleme ile teyit edilebilir. Kısayol AUMID damgası ortama bağlıdır
+> (yukarıdaki not).

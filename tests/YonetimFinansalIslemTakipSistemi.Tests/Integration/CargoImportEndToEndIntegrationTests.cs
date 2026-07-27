@@ -14,6 +14,7 @@ namespace YonetimFinansalIslemTakipSistemi.Tests.Integration;
 /// → ImportCargoShipmentsHandler → gerçek dev PostgreSQL (sayaç, transaction, unique index).
 /// DB erişilemiyorsa test işlem yapmadan geçer. Test kendi verisini oluşturur ve temizler.
 /// </summary>
+[Collection("LiveDatabase")] // CargoShipmentRepositoryIntegrationTests ile seri çalışır (flaky önlenir)
 public class CargoImportEndToEndIntegrationTests
 {
     private const string TestMarker = "__import_e2e_test__";

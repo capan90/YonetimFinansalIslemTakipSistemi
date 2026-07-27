@@ -63,6 +63,11 @@ $shortcut.Description = "Yonetim Finansal Islem Takip Sistemi"
 if ($iconPath) { $shortcut.IconLocation = "$iconPath,0" }
 $shortcut.Save()
 
+# WScript COM nesnesi .lnk dosyasini kilitli tutabilir; AUMID yazimindan ONCE serbest birak.
+[System.Runtime.InteropServices.Marshal]::ReleaseComObject($shortcut) | Out-Null
+$shortcut = $null
+[GC]::Collect(); [GC]::WaitForPendingFinalizers()
+
 Write-Host "[OK] Kisayol olusturuldu: $shortcutPath" -ForegroundColor Green
 Write-Host "     Hedef: $apprefPath" -ForegroundColor Gray
 
@@ -82,7 +87,7 @@ public static class ShortcutAumid
     public static void Set(string lnkPath, string aumid)
     {
         var link = (IPersistFile)new ShellLink();
-        link.Load(lnkPath, 0); // STGM_READ
+        link.Load(lnkPath, 0x00000002); // STGM_READWRITE (property store yazimi icin READ yetmez)
         var store = (IPropertyStore)link;
 
         var key = AumidKey; // ref icin yerel kopya (static readonly ref gecilemez)
@@ -93,6 +98,18 @@ public static class ShortcutAumid
         pv.Clear();
 
         link.Save(lnkPath, true);
+    }
+
+    // Yazimdan sonra dogrulama: gerçekten kalici oldu mu?
+    public static string Get(string lnkPath)
+    {
+        var link = (IPersistFile)new ShellLink();
+        link.Load(lnkPath, 0);
+        var store = (IPropertyStore)link;
+        var key = AumidKey;
+        PropVariant pv;
+        store.GetValue(ref key, out pv);
+        return pv.GetStringValue();
     }
 
     [ComImport, Guid("00021401-0000-0000-C000-000000000046")]
@@ -137,6 +154,10 @@ public static class ShortcutAumid
             vt = 31; // VT_LPWSTR
             p  = Marshal.StringToCoTaskMemUni(val);
         }
+        public string GetStringValue()
+        {
+            return p == IntPtr.Zero ? "" : (Marshal.PtrToStringUni(p) ?? "");
+        }
         public void Clear()
         {
             if (p != IntPtr.Zero) { Marshal.FreeCoTaskMem(p); p = IntPtr.Zero; }
@@ -147,10 +168,20 @@ public static class ShortcutAumid
 "@ -ErrorAction Stop
 
     [ShortcutAumid]::Set($shortcutPath, $AppUserModelId)
-    Write-Host "[OK] AppUserModelID damgalandi: $AppUserModelId" -ForegroundColor Green
+
+    # Gercekten kalici oldu mu? Geri okuyup dogrula (sessiz basarisizliga karsi).
+    $readBack = [ShortcutAumid]::Get($shortcutPath)
+    if ($readBack -eq $AppUserModelId) {
+        Write-Host "[OK] AppUserModelID damgalandi ve dogrulandi: $AppUserModelId" -ForegroundColor Green
+    }
+    else {
+        Write-Host "[UYARI] AppUserModelID yazildi ancak geri okumada dogrulanamadi (okunan: '$readBack')." -ForegroundColor Yellow
+        Write-Host "        Kisayol yine calisir; birincil mekanizma uygulama tarafi AUMID'dir (App.OnStartup)." -ForegroundColor Yellow
+    }
 }
 catch {
     Write-Host "[UYARI] AppUserModelID damgalanamadi (kisayol yine calisir): $($_.Exception.Message)" -ForegroundColor Yellow
+    Write-Host "        Birincil mekanizma uygulama tarafi AUMID'dir (App.OnStartup)." -ForegroundColor Yellow
 }
 
 Write-Host ""

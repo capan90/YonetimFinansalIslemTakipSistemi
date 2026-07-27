@@ -12,6 +12,7 @@ namespace YonetimFinansalIslemTakipSistemi.Tests.Integration;
 /// DB erişilemiyorsa testler işlem yapmadan geçer (offline/CI kırılmaz).
 /// Testler kendi oluşturduğu kayıtları siler ve sayaçları eski değerine geri yükler.
 /// </summary>
+[Collection("LiveDatabase")] // aynı DB'yi kullanan diğer integration sınıfıyla seri çalışır (flaky önlenir)
 public class CargoShipmentRepositoryIntegrationTests
 {
     private const string TestMarker = "__integration_test__";

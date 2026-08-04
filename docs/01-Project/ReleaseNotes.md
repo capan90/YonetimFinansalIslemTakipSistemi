@@ -4,6 +4,42 @@ En son sürüm üstte. Her sürüm `v1.0.0.xx` formatındadır.
 
 ---
 
+## v1.0.1.2 (2026-08-04) — Mail Rehberi, Çoklu Alıcı, İsim Önerileri
+
+> ⚠ **Bu sürüm migration içerir:** `20260804112346_AddMailContacts`.
+> Yayından önce production DB yedeği alınmalı ve migration elle uygulanmalıdır.
+> Yalnızca yeni `mail_contacts` tablosunu oluşturur, mevcut tablolara dokunmaz.
+
+**Eklendi:**
+- **Mail Rehberi** (Kargo Takip → Mail Rehberi): ortak alıcı/CC rehberi. "Varsayılan CC"
+  işaretli kişiler kargo mail bildirimi ekranı açılınca CC alanına otomatik eklenir.
+  Gönderim sonrası son kullanım tazelenir, sık kullanılanlar listede üste çıkar.
+- Mail ekranında **Alıcı ve CC birden fazla adres** kabul eder (`;` / `,` / boşluk).
+  "📇 Rehber" butonu ile rehberden çoklu seçim; seçilenler mevcut adreslerin üzerine eklenir.
+- Gönderen / Alıcı / Teslim Eden / Teslim Alan alanlarına **geçmiş kayıtlardan otomatik öneri**
+  (yön bazlı, son kullanılan üstte). Yeni isim serbestçe yazılabilir.
+- Kargo Türü, Kargo Firması ve Firma Rehberi ComboBox'larına **"— Seçim yok —"** satırı —
+  yanlış yapılan seçim artık geri temizlenebiliyor.
+- Kargo Dashboard'daki 6 özet kartın tamamına ne saydığını anlatan tooltip.
+
+**Düzeltildi:**
+- Alıcı alanına ikinci kişi yazılamıyordu; SMTP gönderici tek adres kabul ediyordu.
+- Geçersiz e-posta yazıldığında yalnızca "gönderilemedi" deniyordu; artık **hangi adresin**
+  hatalı olduğu alanın altında gösteriliyor ve gönder butonu pasifleşiyor.
+- "Toplam Bekleyen" kartı, gelen kargoda fiilen kapanmış `Personele Teslim Edildi`
+  kayıtlarını da sayıyordu — sayımdan çıkarıldı.
+- Dashboard kartı ile kargo raporu "Bekleyen"i ayrı yerlerde hesaplıyordu; tanım
+  `CargoShipmentStatusRules` altında tek kaynağa alındı.
+- Kayıtta kargo türü boşken form "Evrak" gösteriyordu.
+
+**Teknik:**
+- `EmailAddressHelper` — adres ayrıştırma/normalize/doğrulama için tek nokta.
+- `TextNormalizer.TurkishIgnoreCase` — `OrdinalIgnoreCase` "YILMAZ" ile "Yılmaz"ı ayrı
+  sayıp öneri listesini ikizliyordu.
+- Test: 302 (+38). Build: 0 hata / 0 uyarı.
+
+---
+
 ## v1.0.0.21 (2026-06-29) — ClickOnce Encoding Fix
 
 **Düzeltildi:**

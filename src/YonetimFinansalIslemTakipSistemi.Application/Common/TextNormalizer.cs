@@ -53,4 +53,13 @@ public static class TextNormalizer
         var s = CollapseSpaces(value);
         return s.Length == 0 ? null : s;
     }
+
+    /// <summary>
+    /// Türkçe farkında, büyük/küçük harf duyarsız karşılaştırıcı.
+    /// OrdinalIgnoreCase "YILMAZ" ile "Yılmaz"ı FARKLI sayar (I↔ı eşleşmez); öneri
+    /// listelerinde bu, aynı ismin iki kez görünmesine yol açar. Kullanıcıya gösterilen
+    /// isim listelerinde tekilleştirme bu karşılaştırıcıyla yapılmalıdır.
+    /// </summary>
+    public static readonly StringComparer TurkishIgnoreCase =
+        StringComparer.Create(TrCulture, ignoreCase: true);
 }

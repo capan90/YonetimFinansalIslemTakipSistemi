@@ -150,6 +150,43 @@ Etiket PDF'de "DİKKATİNE: [ContactPerson]" satırı öne çıkarılır (font b
 
 ---
 
+## Gönderi / Teslim İsim Önerileri (2026-08-04)
+
+`Gönderen`, `Teslim Eden`, `Alıcı`, `Teslim Alan` alanları düzenlenebilir ComboBox'tır
+(Dikkatine alanıyla aynı desen). Öneriler **geçmiş kargo kayıtlarından** türetilir —
+ayrı rehber tablosu ve kullanıcı bakımı yoktur, liste kullanıldıkça kendini besler.
+
+- Handler: `GetCargoPartySuggestionsHandler`
+- Repository: `ICargoShipmentRepository.GetPartyNameHistoryAsync` — entity yüklemez,
+  yalnızca 4 isim kolonu + `CreatedAt` projekte edilir
+- Öneriler **yön bazlıdır** (gelen/giden isim kümeleri karışmaz)
+- Taranan kayıt: son 500; alan başına gösterilen: en fazla 30
+- Tekilleştirme Türkçe farkındadır (`TextNormalizer.TurkishIgnoreCase`):
+  `OrdinalIgnoreCase` "YILMAZ" ile "Yılmaz"ı farklı sayıp listeyi ikizlerle doldururdu
+- Listede olmayan yeni isim serbestçe yazılabilir
+
+---
+
+## ComboBox Boş Seçimi (2026-08-04)
+
+Kargo ekleme/düzenleme formunda **DB'de nullable olan** alanlarda listenin başına
+`— Seçim yok —` satırı eklenir; seçim böylece geri temizlenebilir (önceden bir firma
+seçildikten sonra temizlemenin hiçbir yolu yoktu).
+
+| Alan | Boş seçim | Gerekçe |
+|------|-----------|---------|
+| Kargo Türü | ✅ | `CargoShipment.ShipmentType` nullable |
+| Kargo Firması | ✅ | `CargoCompanyId` nullable |
+| Firma Rehberi | ✅ | `CompanyDirectoryId` nullable |
+| Durum / Öncelik / Bildirim Durumu | ❌ | Kolonlar NOT NULL — boş seçim şema değişikliği ister |
+
+Uygulama: koleksiyonun başına sentinel DTO (`Id = Guid.Empty`) eklenir; ViewModel setter'ı
+sentinel'i `null`'a çevirir. Liste tipi ve `DisplayMemberPath` bozulmaz.
+
+Liste/filtre ekranlarında zaten `(Tümü)` seçeneği vardır; oralarda değişiklik yapılmadı.
+
+---
+
 ## Kargo Etiketi PDF
 
 `QuestPdfLabelRenderer` ile üretilir.
@@ -185,9 +222,16 @@ Status → `WhatsApp Hazır` olarak güncellenir.
 - `Body`: HTML formatında bildirim içeriği
 
 `CargoNotificationPreviewWindow` (Mail modu):
-1. Konu ve içerik önizlenir.
-2. "Mail Gönder" butonu — şu an için hazır değil, V2'de aktif edilecek.
-3. Status → `Mail Hazır` olarak güncellenir.
+1. Alıcı firma e-postasıyla dolar; **"Varsayılan CC"** işaretli mail rehberi kişileri
+   CC alanına otomatik eklenir.
+2. Alıcı ve CC **birden fazla adres** kabul eder (`;` / `,` / boşluk ile ayrılır).
+   "📇 Rehber" butonu ortak mail rehberinden çoklu seçim yapar; seçilenler mevcut
+   metnin üzerine eklenir.
+3. Geçersiz adres varsa gönder butonu pasifleşir ve hatalı adres adıyla gösterilir.
+4. Gönderim başarılı olursa kullanılan adreslerin `LastUsedAt` bilgisi tazelenir ve
+   Status → `Mail Hazır` olarak güncellenir.
+
+Detay: [`docs/03-Modules/Mail.md`](Mail.md) → "Mail Rehberi (Ortak)"
 
 **Not:** Bildirim anında `ReceiverEmailSnapshot` kaydedilir — firma e-postası sonradan değişse bile gönderilen adres korunur.
 
@@ -226,6 +270,23 @@ Status filtresi ComboBox → seçim anında liste yenilenir.
 
 Gelen / giden kargo sayıları, durum dağılımı, son sevkiyatlar.
 
+### Özet Kart Tanımları (2026-08-04'te netleştirildi)
+
+Her kartın üzerine gelindiğinde ne saydığını anlatan tooltip görünür.
+
+| Kart | Kapsam |
+|------|--------|
+| Bugün Gelen / Giden | Gönderim tarihi bugün olan kayıtlar |
+| **Toplam Bekleyen** | `CargoShipmentStatusRules.IsPending` — Teslim Edildi, **Personele Teslim Edildi** ve İptal dışındaki tüm kayıtlar (gelen + giden, tarih filtresi yok) |
+| Bildirim Bekleyen | Bildirim hazırlanmamış + aktif durumdaki kargolar |
+| Acil Bekleyen | Önceliği Acil/Çok Acil olan, teslim edilmemiş ve iptal edilmemiş kargolar |
+| Bugün Teslim | Bugün "Teslim Edildi" durumuna geçenler |
+
+**Not:** "Bekleyen" tanımı Dashboard kartı ile kargo raporunda **ortaktır**
+(`CargoShipmentStatusRules.IsPending`). İki ekranın farklı sayı göstermemesi için kural
+tek kaynakta toplanmıştır. `Personele Teslim Edildi` önceden bekleyen sayılıyordu; gelen
+kargoda bu durum kaydın operasyonel olarak kapandığı andır, bu yüzden sayımdan çıkarıldı.
+
 ---
 
 ## Kargo Raporu ve PDF Export
@@ -246,6 +307,8 @@ Gelen / giden kargo sayıları, durum dağılımı, son sevkiyatlar.
 | Giden kargo CRUD | CanManageOutgoingCargo |
 | Firma rehberi CRUD | CanManageCompanyDirectory |
 | Kargo firmaları CRUD | CanManageCargoCompanies |
+| WhatsApp / Mail rehberi okuma | (izin yok — oturum yeterli) |
+| WhatsApp / Mail rehberi CRUD | CanManageIncomingCargo **veya** CanManageOutgoingCargo **veya** CanManageCompanyDirectory |
 
 ---
 
@@ -264,4 +327,5 @@ CompanyDirectoryCreated, CompanyDirectoryUpdated, CompanyDirectoryDeleted
 CargoCompanyCreated, CargoCompanyUpdated, CargoCompanyDeleted
 CargoShipmentCreated, CargoShipmentUpdated, CargoShipmentDeleted
 CargoWhatsAppPrepared, CargoMailPrepared
+MailContactCreated, MailContactUpdated, MailContactDeleted
 ```

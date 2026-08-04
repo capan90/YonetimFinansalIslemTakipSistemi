@@ -23,8 +23,11 @@ public class CargoSmtpMailSenderService : ICargoMailSenderService
     }
 
     public async Task<(bool Success, string? Error)> SendAsync(
-        string to, string? cc, string subject, string body)
+        IReadOnlyCollection<string> to, IReadOnlyCollection<string> cc, string subject, string body)
     {
+        if (to.Count == 0)
+            return (false, "En az bir alıcı adresi gereklidir.");
+
         var settings = await _mailSettings.GetAsync();
 
         if (settings is null || string.IsNullOrWhiteSpace(settings.SmtpHost))
@@ -43,8 +46,10 @@ public class CargoSmtpMailSenderService : ICargoMailSenderService
         {
             using var mail = new MailMessage();
             mail.From    = new MailAddress(settings.SenderEmail, settings.SenderName);
-            mail.To.Add(to);
-            if (!string.IsNullOrWhiteSpace(cc)) mail.CC.Add(cc);
+            // Çoklu alıcı: her adres ayrı MailAddress olarak eklenir. Tek string'i
+            // noktalı virgülle geçmek bazı SMTP sunucularında sessizce tek alıcıya düşüyordu.
+            foreach (var address in to) mail.To.Add(new MailAddress(address));
+            foreach (var address in cc) mail.CC.Add(new MailAddress(address));
             mail.Subject    = subject;
             mail.Body       = body;
             mail.IsBodyHtml = false;
@@ -60,18 +65,21 @@ public class CargoSmtpMailSenderService : ICargoMailSenderService
             if (!string.IsNullOrWhiteSpace(settings.Username))
                 client.Credentials = new NetworkCredential(settings.Username, settings.Password);
 
+            var toLog = string.Join("; ", to);
+            var ccLog = cc.Count > 0 ? string.Join("; ", cc) : "-";
+
             _logger.LogInformation(
-                "SMTP gönderim başlatılıyor → Host:{Host} Port:{Port} SSL:{Ssl} Gönderici:{From} Alıcı:{To}",
-                settings.SmtpHost, settings.SmtpPort, settings.EnableSsl, settings.SenderEmail, to);
+                "SMTP gönderim başlatılıyor → Host:{Host} Port:{Port} SSL:{Ssl} Gönderici:{From} Alıcı:{To} CC:{Cc}",
+                settings.SmtpHost, settings.SmtpPort, settings.EnableSsl, settings.SenderEmail, toLog, ccLog);
 
             await client.SendMailAsync(mail);
-            _logger.LogInformation("Kargo bildirim maili gönderildi → {To}", to);
+            _logger.LogInformation("Kargo bildirim maili gönderildi → {To} (CC: {Cc})", toLog, ccLog);
             return (true, null);
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Kargo bildirim maili gönderilemedi → {ExType}: {ExMsg} | Alıcı:{To}",
-                ex.GetType().Name, ex.Message, to);
+                ex.GetType().Name, ex.Message, string.Join("; ", to));
             return (false, ex.Message);
         }
     }

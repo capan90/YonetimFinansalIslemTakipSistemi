@@ -8,6 +8,7 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.CompanyDirectory.Que
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.CreateCargoShipment;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Commands.UpdateCargoShipment;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Queries.GetCargoPartySuggestions;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Queries.GetCargoShipmentList;
 using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CompanyAttentionContacts.EnsureCompanyAttentionContact;
@@ -26,6 +27,7 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
     private readonly GetCompanyDirectoryListHandler _directoryListHandler;
     private readonly GetCompanyAttentionContactsHandler _attentionContactsHandler;
     private readonly EnsureCompanyAttentionContactHandler _ensureAttentionContactHandler;
+    private readonly GetCargoPartySuggestionsHandler _partySuggestionsHandler;
     private readonly IUserContext _userContext;
 
     private Guid? _editTargetId;
@@ -72,10 +74,12 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
 
     /// <summary>Create başarılı olunca handler'ın ürettiği numara — başarı mesajında gösterilir.</summary>
     public string? SavedShipmentNumber { get; private set; }
-    public string SenderName      { get => _senderName;     set { _senderName    = value; OnPropertyChanged(); } }
-    public string ReceiverName    { get => _receiverName;   set { _receiverName  = value; OnPropertyChanged(); } }
-    public string DeliveredBy     { get => _deliveredBy;    set { _deliveredBy   = value; OnPropertyChanged(); } }
-    public string ReceivedBy      { get => _receivedBy;     set { _receivedBy    = value; OnPropertyChanged(); } }
+    // ?? string.Empty: düzenlenebilir ComboBox'ın Text binding'i seçim temizlendiğinde
+    // null gönderebilir (TextBox'ta bu durum oluşmuyordu)
+    public string SenderName      { get => _senderName;     set { _senderName    = value ?? string.Empty; OnPropertyChanged(); } }
+    public string ReceiverName    { get => _receiverName;   set { _receiverName  = value ?? string.Empty; OnPropertyChanged(); } }
+    public string DeliveredBy     { get => _deliveredBy;    set { _deliveredBy   = value ?? string.Empty; OnPropertyChanged(); } }
+    public string ReceivedBy      { get => _receivedBy;     set { _receivedBy    = value ?? string.Empty; OnPropertyChanged(); } }
     // Harf dönüşümü UI'da zorlanmaz; kayıt öncesi kullanıcı tercihine göre merkezi serviste yapılır
     public string VehiclePlate   { get => _vehiclePlate;   set { _vehiclePlate  = value ?? string.Empty; OnPropertyChanged(); } }
     public string TrackingNumber
@@ -110,7 +114,9 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
         get => _selectedCargoCompany;
         set
         {
-            _selectedCargoCompany = value;
+            // "— Seçim yok —" satırı seçilirse kayıt boşaltılır; OnPropertyChanged
+            // null'ı ComboBox'a geri yazar ve alan boş görünür
+            _selectedCargoCompany = ReferenceEquals(value, _noCargoCompany) ? null : value;
             OnPropertyChanged();
             // Portal/takip bağlantısı seçili firmanın kaydından gelir — tek kaynak
             // CargoCompany.PortalUrl; firma adına if/else yazılmaz
@@ -129,6 +135,9 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
         get => _selectedCompanyDirectory;
         set
         {
+            // "— Seçim yok —" satırı seçilirse firma bağlantısı kaldırılır;
+            // aşağıdaki otomatik doldurma/dikkatine yüklemesi de null ile çalışır
+            value = ReferenceEquals(value, _noCompanyDirectory) ? null : value;
             _selectedCompanyDirectory = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(HasDirectoryDetails));
@@ -221,8 +230,30 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
     public ObservableCollection<CargoCompanyDto> CargoCompanies { get; } = [];
     public ObservableCollection<CompanyDirectoryDto> CompanyDirectories { get; } = [];
 
+    // ── Gönderi / Teslim isim önerileri ───────────────────────────────────
+    // Geçmiş kargo kayıtlarından türetilir; kullanıcı listeden seçebilir veya
+    // yeni isim yazabilir (ComboBox IsEditable=True).
+    public ObservableCollection<string> SenderNameSuggestions   { get; } = [];
+    public ObservableCollection<string> ReceiverNameSuggestions { get; } = [];
+    public ObservableCollection<string> DeliveredBySuggestions  { get; } = [];
+    public ObservableCollection<string> ReceivedBySuggestions   { get; } = [];
+
+    /// <summary>
+    /// Opsiyonel ComboBox'larda seçimi geri temizlemek için listenin başına eklenen satır.
+    /// Seçildiğinde ilgili property null'a döner (DB kolonları zaten nullable).
+    /// </summary>
+    public const string NoSelectionLabel = "— Seçim yok —";
+
+    // Sentinel örnekler: liste tipini bozmadan "boş" satırı temsil ederler.
+    // Id = Guid.Empty olduğundan gerçek kayıtlarla asla eşleşmezler.
+    private static readonly CargoCompanyDto _noCargoCompany =
+        new() { Id = Guid.Empty, Name = NoSelectionLabel };
+
+    private static readonly CompanyDirectoryDto _noCompanyDirectory =
+        new() { Id = Guid.Empty, CompanyName = NoSelectionLabel };
+
     public IReadOnlyList<string> ShipmentTypeOptions { get; } =
-        ["Evrak", "Numune", "Fatura", "Sözleşme", "Yedek Parça", "Diğer"];
+        [NoSelectionLabel, "Evrak", "Numune", "Fatura", "Sözleşme", "Yedek Parça", "Diğer"];
 
     public IReadOnlyList<string> PriorityOptions { get; } =
         ["Normal", "Orta", "Acil", "Çok Acil"];
@@ -268,6 +299,7 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
         GetCompanyDirectoryListHandler directoryListHandler,
         GetCompanyAttentionContactsHandler attentionContactsHandler,
         EnsureCompanyAttentionContactHandler ensureAttentionContactHandler,
+        GetCargoPartySuggestionsHandler partySuggestionsHandler,
         IUserContext userContext)
     {
         _createHandler                = createHandler;
@@ -276,6 +308,7 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
         _directoryListHandler         = directoryListHandler;
         _attentionContactsHandler     = attentionContactsHandler;
         _ensureAttentionContactHandler = ensureAttentionContactHandler;
+        _partySuggestionsHandler      = partySuggestionsHandler;
         _userContext                  = userContext;
         SaveCommand                   = new RelayCommand(async () => await ExecuteSaveAsync());
     }
@@ -296,14 +329,48 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
         var companies = await _cargoCompanyListHandler.HandleAsync(
             new GetCargoCompanyListQuery { IsActive = true });
         CargoCompanies.Clear();
+        // Boş seçim satırı en üstte: kullanıcı yanlış seçtiği firmayı geri temizleyebilsin
+        CargoCompanies.Add(_noCargoCompany);
         foreach (var c in companies)
             CargoCompanies.Add(c);
 
         var dirs = await _directoryListHandler.HandleAsync(
             new GetCompanyDirectoryListQuery { IsActive = true });
         CompanyDirectories.Clear();
+        CompanyDirectories.Add(_noCompanyDirectory);
         foreach (var d in dirs)
             CompanyDirectories.Add(d);
+
+        await LoadPartySuggestionsAsync();
+    }
+
+    /// <summary>
+    /// Gönderen/Alıcı/Teslim Eden/Teslim Alan önerilerini geçmiş kayıtlardan yükler.
+    /// Öneri listesi ikincil bir kolaylıktır — hata olursa form normal çalışmaya devam eder.
+    /// </summary>
+    private async Task LoadPartySuggestionsAsync()
+    {
+        try
+        {
+            var s = await _partySuggestionsHandler.HandleAsync(
+                new GetCargoPartySuggestionsQuery(_direction));
+
+            Fill(SenderNameSuggestions,   s.SenderNames);
+            Fill(ReceiverNameSuggestions, s.ReceiverNames);
+            Fill(DeliveredBySuggestions,  s.DeliveredBy);
+            Fill(ReceivedBySuggestions,   s.ReceivedBy);
+        }
+        catch (Exception ex)
+        {
+            // Sessizce yutulmaz: aksi halde öneriler aylarca boş kalır ve kimse fark etmez
+            Log.Warning(ex, "Gönderi/teslim isim önerileri yüklenemedi (Direction={Direction})", _direction);
+        }
+
+        static void Fill(ObservableCollection<string> target, IReadOnlyList<string> source)
+        {
+            target.Clear();
+            foreach (var v in source) target.Add(v);
+        }
     }
 
     public async Task InitializeAsync(CargoShipmentDto dto)
@@ -321,7 +388,8 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
         VehiclePlate           = dto.VehiclePlate   ?? string.Empty;
         TrackingNumber         = dto.TrackingNumber ?? string.Empty;
         Notes                  = dto.Notes          ?? string.Empty;
-        SelectedShipmentType        = dto.ShipmentTypeDisplay ?? "Evrak";
+        // Kargo türü opsiyonel: kayıtta boşsa "Evrak" gibi görünmemeli
+        SelectedShipmentType        = dto.ShipmentTypeDisplay ?? NoSelectionLabel;
         SelectedPriority            = dto.PriorityDisplay;
         SelectedStatus              = dto.StatusDisplay;
         SelectedNotificationStatus  = DisplayNotificationStatus(dto.NotificationStatus);
@@ -376,7 +444,7 @@ public class CargoShipmentEditViewModel : INotifyPropertyChanged
         VehiclePlate       = source.VehiclePlate ?? string.Empty;
         TrackingNumber     = string.Empty;
         Notes              = source.Notes ?? string.Empty;
-        SelectedShipmentType       = source.ShipmentTypeDisplay ?? "Evrak";
+        SelectedShipmentType       = source.ShipmentTypeDisplay ?? NoSelectionLabel;
         SelectedPriority           = source.PriorityDisplay;
         // Kopyalama: yöne göre varsayılan durum
         SelectedStatus             = source.Direction == CargoShipmentDirection.Incoming ? "Teslim Alındı" : "Gönderime Hazır";

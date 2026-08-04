@@ -49,9 +49,10 @@
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Column="0">
                 <Label Content="Kargo Türü:" Margin="0,0,0,2"/>
+                <!-- Opsiyonel alan: "— Seçim yok —" ile boş bırakılabilir -->
                 <ComboBox ItemsSource="{Binding ShipmentTypeOptions}"
                           SelectedItem="{Binding SelectedShipmentType, Mode=TwoWay}"
-                          ToolTip="Gönderi içeriğinin türü: Evrak, Numune, Koli, Palet vb."/>
+                          ToolTip="Gönderi içeriğinin türü. Boş bırakmak için '— Seçim yok —' satırını seçin."/>
             </StackPanel>
             <StackPanel Grid.Column="2">
                 <Label Content="Öncelik:" Margin="0,0,0,2"/>
@@ -96,7 +97,7 @@
                       ItemsSource="{Binding CargoCompanies}"
                       SelectedItem="{Binding SelectedCargoCompany, Mode=TwoWay}"
                       DisplayMemberPath="Name"
-                      ToolTip="Seçilen firmanın takip URL şablonu otomatik takip linki üretmek için kullanılır"/>
+                      ToolTip="Seçilen firmanın portal/takip bağlantısı kullanılır. Seçimi kaldırmak için '— Seçim yok —' satırını seçin."/>
             <Button x:Name="AddCargoCompanyButton" Grid.Column="2"
                     Content="+" Width="26" Height="22"
                     VerticalAlignment="Center"
@@ -135,7 +136,7 @@
                       ItemsSource="{Binding CompanyDirectories}"
                       SelectedItem="{Binding SelectedCompanyDirectory, Mode=TwoWay}"
                       DisplayMemberPath="DisplayLabel"
-                      ToolTip="Giden kargoda seçilen firmanın adres/iletişim bilgileri otomatik doldurulur. Aynı firmanın farklı adres/telefon kayıtları ilçe/il ve telefonla ayırt edilir."/>
+                      ToolTip="Giden kargoda seçilen firmanın adres/iletişim bilgileri otomatik doldurulur. Aynı firmanın farklı adres/telefon kayıtları ilçe/il ve telefonla ayırt edilir. Seçimi kaldırmak için '— Seçim yok —' satırını seçin."/>
             <Button x:Name="AddDirectoryButton" Grid.Column="2"
                     Content="+" Width="26" Height="22"
                     VerticalAlignment="Center"
@@ -360,15 +361,24 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
+            <!-- 4 isim alanı da düzenlenebilir ComboBox: öneriler geçmiş kargo
+                 kayıtlarından gelir (yön bazlı), listede olmayan yeni isim serbestçe yazılabilir.
+                 "Dikkatine" alanındaki desenle aynıdır. -->
             <GroupBox Grid.Column="0" Header="Gönderi Bilgileri"
                       FontWeight="SemiBold" Padding="6,6,6,6">
                 <StackPanel>
                     <Label Content="Gönderen:" FontWeight="Normal" Margin="0,0,0,2"/>
-                    <TextBox Text="{Binding SenderName, UpdateSourceTrigger=PropertyChanged}"
-                             FontWeight="Normal" Margin="0,0,0,6"/>
+                    <ComboBox IsEditable="True"
+                              ItemsSource="{Binding SenderNameSuggestions}"
+                              Text="{Binding SenderName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              FontWeight="Normal" Margin="0,0,0,6"
+                              ToolTip="Daha önce kullandığınız isimler listelenir — seçebilir veya yeni isim yazabilirsiniz."/>
                     <Label Content="Teslim Eden:" FontWeight="Normal" Margin="0,0,0,2"/>
-                    <TextBox Text="{Binding DeliveredBy, UpdateSourceTrigger=PropertyChanged}"
-                             FontWeight="Normal"/>
+                    <ComboBox IsEditable="True"
+                              ItemsSource="{Binding DeliveredBySuggestions}"
+                              Text="{Binding DeliveredBy, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              FontWeight="Normal"
+                              ToolTip="Daha önce kullandığınız isimler listelenir — seçebilir veya yeni isim yazabilirsiniz."/>
                 </StackPanel>
             </GroupBox>
 
@@ -376,11 +386,17 @@
                       FontWeight="SemiBold" Padding="6,6,6,6">
                 <StackPanel>
                     <Label Content="Alıcı:" FontWeight="Normal" Margin="0,0,0,2"/>
-                    <TextBox Text="{Binding ReceiverName, UpdateSourceTrigger=PropertyChanged}"
-                             FontWeight="Normal" Margin="0,0,0,6"/>
+                    <ComboBox IsEditable="True"
+                              ItemsSource="{Binding ReceiverNameSuggestions}"
+                              Text="{Binding ReceiverName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              FontWeight="Normal" Margin="0,0,0,6"
+                              ToolTip="Daha önce kullandığınız isimler listelenir — seçebilir veya yeni isim yazabilirsiniz."/>
                     <Label Content="Teslim Alan:" FontWeight="Normal" Margin="0,0,0,2"/>
-                    <TextBox Text="{Binding ReceivedBy, UpdateSourceTrigger=PropertyChanged}"
-                             FontWeight="Normal"/>
+                    <ComboBox IsEditable="True"
+                              ItemsSource="{Binding ReceivedBySuggestions}"
+                              Text="{Binding ReceivedBy, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              FontWeight="Normal"
+                              ToolTip="Daha önce kullandığınız isimler listelenir — seçebilir veya yeni isim yazabilirsiniz."/>
                 </StackPanel>
             </GroupBox>
         </Grid>

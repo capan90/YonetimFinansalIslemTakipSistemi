@@ -22,6 +22,9 @@ public class AppDbContext : DbContext
     // Ortak WhatsApp rehberi
     public DbSet<WhatsAppContact>           WhatsAppContacts           => Set<WhatsAppContact>();
 
+    // Ortak mail rehberi — kargo bildirim maillerinde alıcı/CC seçimi
+    public DbSet<MailContact>               MailContacts               => Set<MailContact>();
+
     // Kullanıcı tercihleri (harf duyarlılığı vb.)
     public DbSet<UserPreference>            UserPreferences            => Set<UserPreference>();
 

@@ -134,7 +134,8 @@
                     <Border x:Name="CardTodayIncoming"
                             Width="160" Height="80" Margin="0,0,10,10"
                             Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1"
-                            CornerRadius="6" Padding="12,8">
+                            CornerRadius="6" Padding="12,8"
+                            ToolTip="Gönderim tarihi bugün olan gelen kargo sayısı.">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock x:Name="CardTodayIncomingVal"
                                        Text="—" FontSize="26" FontWeight="Bold"
@@ -147,7 +148,8 @@
                     <!-- Bugün Giden -->
                     <Border Width="160" Height="80" Margin="0,0,10,10"
                             Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1"
-                            CornerRadius="6" Padding="12,8">
+                            CornerRadius="6" Padding="12,8"
+                            ToolTip="Gönderim tarihi bugün olan giden kargo sayısı.">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock x:Name="CardTodayOutgoingVal"
                                        Text="—" FontSize="26" FontWeight="Bold"
@@ -157,10 +159,11 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- Toplam Bekleyen -->
+                    <!-- Toplam Bekleyen — tanım CargoShipmentStatusRules.IsPending ile ortak -->
                     <Border Width="160" Height="80" Margin="0,0,10,10"
                             Background="#FFF7ED" BorderBrush="#FED7AA" BorderThickness="1"
-                            CornerRadius="6" Padding="12,8">
+                            CornerRadius="6" Padding="12,8"
+                            ToolTip="Süreci hâlâ devam eden kargolar: Teslim Edildi, Personele Teslim Edildi ve İptal dışındaki tüm kayıtlar (gelen + giden, tarih filtresi uygulanmaz).">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock x:Name="CardPendingVal"
                                        Text="—" FontSize="26" FontWeight="Bold"
@@ -173,7 +176,8 @@
                     <!-- Bildirim Bekleyen -->
                     <Border Width="160" Height="80" Margin="0,0,10,10"
                             Background="#F5F3FF" BorderBrush="#DDD6FE" BorderThickness="1"
-                            CornerRadius="6" Padding="12,8">
+                            CornerRadius="6" Padding="12,8"
+                            ToolTip="Henüz WhatsApp/mail bildirimi hazırlanmamış aktif kargolar (Gönderime Hazır, Gönderildi, Teslim Alındı).">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock x:Name="CardNotifPendingVal"
                                        Text="—" FontSize="26" FontWeight="Bold"
@@ -186,7 +190,8 @@
                     <!-- Acil Bekleyen -->
                     <Border Width="160" Height="80" Margin="0,0,10,10"
                             Background="#FFF1F2" BorderBrush="#FECDD3" BorderThickness="1"
-                            CornerRadius="6" Padding="12,8">
+                            CornerRadius="6" Padding="12,8"
+                            ToolTip="Önceliği Acil veya Çok Acil olan, teslim edilmemiş ve iptal edilmemiş kargolar.">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock x:Name="CardUrgentVal"
                                        Text="—" FontSize="26" FontWeight="Bold"
@@ -199,7 +204,8 @@
                     <!-- Bugün Teslim -->
                     <Border Width="160" Height="80" Margin="0,0,10,10"
                             Background="#F0FDF4" BorderBrush="#86EFAC" BorderThickness="1"
-                            CornerRadius="6" Padding="12,8">
+                            CornerRadius="6" Padding="12,8"
+                            ToolTip="Bugün 'Teslim Edildi' durumuna geçen kargolar.">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock x:Name="CardTodayDeliveredVal"
                                        Text="—" FontSize="26" FontWeight="Bold"

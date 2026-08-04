@@ -3,6 +3,17 @@ using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 
 namespace YonetimFinansalIslemTakipSistemi.Application.Interfaces.Repositories;
 
+/// <summary>
+/// Gönderi/teslim isim önerileri için sadeleştirilmiş projeksiyon.
+/// Entity yerine yalnızca gerekli 4 kolon + tarih okunur; navigation include edilmez.
+/// </summary>
+public record CargoPartyNameRow(
+    string?  SenderName,
+    string?  ReceiverName,
+    string?  DeliveredBy,
+    string?  ReceivedBy,
+    DateTime CreatedAt);
+
 public interface ICargoShipmentRepository
 {
     Task<CargoShipment?> GetByIdAsync(Guid id);
@@ -51,6 +62,14 @@ public interface ICargoShipmentRepository
 
     /// <summary>En son oluşturulan <paramref name="count"/> kaydı ilişkileriyle döner.</summary>
     Task<IReadOnlyList<CargoShipment>> GetRecentAsync(int count);
+
+    /// <summary>
+    /// Gönderen/Alıcı/Teslim Eden/Teslim Alan alanları için geçmiş değerler —
+    /// kargo formundaki otomatik öneri listesini besler. Yalnızca ilgili yöndeki
+    /// en son <paramref name="maxRecords"/> kayıt, sadece isim kolonlarıyla okunur.
+    /// </summary>
+    Task<IReadOnlyList<CargoPartyNameRow>> GetPartyNameHistoryAsync(
+        CargoShipmentDirection direction, int maxRecords);
 
     /// <summary>Sunucu tarafı filtreli rapor verisi; metin filtreleme handler'da yapılır.</summary>
     Task<IReadOnlyList<CargoShipment>> GetFilteredReportAsync(

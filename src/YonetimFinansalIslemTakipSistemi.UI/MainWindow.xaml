@@ -59,6 +59,10 @@
                           Header="WhatsApp Rehberi"
                           ToolTip="Tüm kullanıcıların ortak kullandığı WhatsApp alıcı rehberi."
                           Click="OpenWhatsAppContacts_Click"/>
+                <MenuItem x:Name="MenuItemMailRehberi"
+                          Header="Mail Rehberi"
+                          ToolTip="Kargo bildirim maillerinde kullanılan ortak alıcı/CC rehberi. 'Varsayılan CC' işaretli kişiler her mailde otomatik eklenir."
+                          Click="OpenMailContacts_Click"/>
             </MenuItem>
 
             <!-- Ayarlar: mail + teknik/operasyonel işlemler -->

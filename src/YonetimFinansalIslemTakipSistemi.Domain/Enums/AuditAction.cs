@@ -58,5 +58,10 @@ public enum AuditAction
     WhatsAppImportCompleted,
 
     // Finans toplu içe aktarma özeti (satırlar TransactionCreated)
-    CashImportCompleted
+    CashImportCompleted,
+
+    // Mail rehberi (ortak) — kargo bildirim maillerinde alıcı/CC seçimi
+    MailContactCreated,
+    MailContactUpdated,
+    MailContactDeleted
 }

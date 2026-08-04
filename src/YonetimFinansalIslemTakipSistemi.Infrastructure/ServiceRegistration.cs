@@ -64,6 +64,9 @@ public static class ServiceRegistration
         // Ortak WhatsApp rehberi
         services.AddScoped<IWhatsAppContactRepository, WhatsAppContactRepository>();
 
+        // Ortak mail rehberi — kargo bildirim maillerinde alıcı/CC seçimi
+        services.AddScoped<IMailContactRepository, MailContactRepository>();
+
         // Kullanıcı tercihleri (harf duyarlılığı)
         services.AddScoped<IUserPreferenceRepository, UserPreferenceRepository>();
 

@@ -290,6 +290,24 @@ public class CargoShipmentRepository : ICargoShipmentRepository
             .ToListAsync();
     }
 
+    public async Task<IReadOnlyList<CargoPartyNameRow>> GetPartyNameHistoryAsync(
+        CargoShipmentDirection direction, int maxRecords)
+    {
+        await using var ctx = await _factory.CreateDbContextAsync();
+        // Öneri listesi için entity yüklenmez: yalnızca 4 isim kolonu + tarih projekte edilir.
+        // Hepsi boş olan kayıtlar sorgu seviyesinde elenir (öneriye katkısı yok).
+        return await ctx.CargoShipments
+            .AsNoTracking()
+            .Where(x => x.Direction == direction)
+            .Where(x => x.SenderName  != null || x.ReceiverName != null
+                     || x.DeliveredBy != null || x.ReceivedBy   != null)
+            .OrderByDescending(x => x.CreatedAt)
+            .Take(maxRecords)
+            .Select(x => new CargoPartyNameRow(
+                x.SenderName, x.ReceiverName, x.DeliveredBy, x.ReceivedBy, x.CreatedAt))
+            .ToListAsync();
+    }
+
     public async Task<IReadOnlyList<CargoShipment>> GetFilteredReportAsync(
         DateTime?                dateFrom,
         DateTime?                dateTo,

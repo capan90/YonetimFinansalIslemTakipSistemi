@@ -695,6 +695,11 @@ public partial class MainWindow : Window
         new Views.WhatsApp.WhatsAppContactListWindow(_services) { Owner = this }.ShowDialog();
     }
 
+    private void OpenMailContacts_Click(object sender, RoutedEventArgs e)
+    {
+        new Views.Mail.MailContactListWindow(_services) { Owner = this }.ShowDialog();
+    }
+
     // ── Ayarlar Menü Tıklamaları ──────────────────────────────────────────────
 
     private void OpenMailSettings_Click(object sender, RoutedEventArgs e)

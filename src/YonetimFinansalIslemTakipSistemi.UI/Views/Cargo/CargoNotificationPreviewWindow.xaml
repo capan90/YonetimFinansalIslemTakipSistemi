@@ -163,6 +163,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <!-- Gönderici (salt okunur) -->
@@ -174,35 +175,62 @@
                            FontStyle="Italic" Foreground="#555"
                            VerticalAlignment="Center" Margin="0,0,0,5"/>
 
-                <!-- Alıcı — düzenlenebilir: yalnızca o gönderim için kullanılır, DB'ye yazılmaz -->
+                <!-- Alıcı — birden fazla adres kabul eder (";" ile ayrılır).
+                     "Rehber" butonu ortak mail rehberinden çoklu seçim yapar ve
+                     seçilenleri mevcut adreslerin üzerine ekler. -->
                 <TextBlock Grid.Row="1" Grid.Column="0"
-                           Text="Alıcı:" FontWeight="SemiBold"
+                           Text="Alıcı *:" FontWeight="SemiBold"
                            VerticalAlignment="Center" Margin="0,0,6,5"/>
-                <TextBox   Grid.Row="1" Grid.Column="1"
-                           x:Name="ToTextBox"
-                           Padding="4,3" Margin="0,0,0,5"
-                           BorderThickness="1" BorderBrush="#CBD5E1"
-                           TextChanged="ToTextBox_TextChanged"
-                           ToolTip="Alıcı adresi yalnızca bu gönderim için kullanılır — DB'ye kaydedilmez"/>
+                <DockPanel Grid.Row="1" Grid.Column="1" Margin="0,0,0,5">
+                    <Button x:Name="ToPickButton"
+                            DockPanel.Dock="Right"
+                            Content="📇 Rehber" Width="80" Height="24" Margin="4,0,0,0"
+                            Padding="0" FontSize="11"
+                            Style="{StaticResource SecondaryButton}"
+                            Click="ToPickButton_Click"
+                            ToolTip="Mail rehberinden alıcı seç"/>
+                    <TextBox x:Name="ToTextBox"
+                             Padding="4,3"
+                             BorderThickness="1" BorderBrush="#CBD5E1"
+                             VerticalContentAlignment="Center"
+                             TextChanged="RecipientBoxes_TextChanged"
+                             ToolTip="Birden fazla adres yazabilirsiniz — noktalı virgül veya virgülle ayırın. Adresler yalnızca bu gönderim için kullanılır, DB'ye kaydedilmez."/>
+                </DockPanel>
 
-                <!-- CC (düzenlenebilir, DB'ye kaydedilmez) -->
+                <!-- CC — "Varsayılan CC" işaretli rehber kişileri açılışta otomatik dolar -->
                 <TextBlock Grid.Row="2" Grid.Column="0"
                            Text="CC:" FontWeight="SemiBold"
                            VerticalAlignment="Center" Margin="0,0,6,5"/>
-                <TextBox   Grid.Row="2" Grid.Column="1"
-                           x:Name="CcTextBox"
-                           Padding="4,3" Margin="0,0,0,5"
-                           BorderThickness="1" BorderBrush="#CBD5E1"
-                           ToolTip="İsteğe bağlı — birden fazla adres için noktalı virgül kullanın"/>
+                <DockPanel Grid.Row="2" Grid.Column="1" Margin="0,0,0,5">
+                    <Button x:Name="CcPickButton"
+                            DockPanel.Dock="Right"
+                            Content="📇 Rehber" Width="80" Height="24" Margin="4,0,0,0"
+                            Padding="0" FontSize="11"
+                            Style="{StaticResource SecondaryButton}"
+                            Click="CcPickButton_Click"
+                            ToolTip="Mail rehberinden CC seç"/>
+                    <TextBox x:Name="CcTextBox"
+                             Padding="4,3"
+                             BorderThickness="1" BorderBrush="#CBD5E1"
+                             VerticalContentAlignment="Center"
+                             TextChanged="RecipientBoxes_TextChanged"
+                             ToolTip="İsteğe bağlı — birden fazla adres için noktalı virgül kullanın. 'Varsayılan CC' işaretli rehber kişileri otomatik eklenir."/>
+                </DockPanel>
 
                 <!-- Konu (düzenlenebilir, önceden dolu) -->
                 <TextBlock Grid.Row="3" Grid.Column="0"
                            Text="Konu:" FontWeight="SemiBold"
-                           VerticalAlignment="Center" Margin="0,0,6,0"/>
+                           VerticalAlignment="Center" Margin="0,0,6,5"/>
                 <TextBox   Grid.Row="3" Grid.Column="1"
                            x:Name="SubjectTextBox"
-                           Padding="4,3"
+                           Padding="4,3" Margin="0,0,0,5"
                            BorderThickness="1" BorderBrush="#CBD5E1"/>
+
+                <!-- Adres doğrulama uyarısı: hangi adresin hatalı olduğunu anında gösterir -->
+                <TextBlock Grid.Row="4" Grid.Column="1"
+                           x:Name="RecipientWarningBlock"
+                           Foreground="#C2410C" FontSize="11" TextWrapping="Wrap"
+                           Visibility="Collapsed"/>
             </Grid>
         </Border>
 

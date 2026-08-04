@@ -52,10 +52,8 @@ public class GetCargoDashboardHandler
                 s.ShipmentDate.Date == today &&
                 s.Direction == CargoShipmentDirection.Outgoing),
 
-            // Teslim edilmemiş ve iptal edilmemiş
-            Pending = all.Count(s =>
-                s.Status != CargoShipmentStatus.Delivered &&
-                s.Status != CargoShipmentStatus.Cancelled),
+            // "Bekleyen" tanımı raporla ortak: CargoShipmentStatusRules.IsPending
+            Pending = all.Count(s => CargoShipmentStatusRules.IsPending(s.Status)),
 
             // Bildirim yapılmamış + aktif kargo durumu
             NotificationPending = all.Count(s =>

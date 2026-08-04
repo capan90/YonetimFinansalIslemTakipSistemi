@@ -90,6 +90,9 @@ public class AuditLogViewModel : INotifyPropertyChanged
         Actions.Add(new AuditActionOption(AuditAction.WhatsAppContactCreated,  "WhatsApp Kişisi Oluşturuldu"));
         Actions.Add(new AuditActionOption(AuditAction.WhatsAppContactUpdated,  "WhatsApp Kişisi Güncellendi"));
         Actions.Add(new AuditActionOption(AuditAction.WhatsAppContactDeleted,  "WhatsApp Kişisi Silindi"));
+        Actions.Add(new AuditActionOption(AuditAction.MailContactCreated,      "Mail Kişisi Oluşturuldu"));
+        Actions.Add(new AuditActionOption(AuditAction.MailContactUpdated,      "Mail Kişisi Güncellendi"));
+        Actions.Add(new AuditActionOption(AuditAction.MailContactDeleted,      "Mail Kişisi Silindi"));
         Actions.Add(new AuditActionOption(AuditAction.ReportExported,          "Rapor Dışa Aktarıldı"));
         Actions.Add(new AuditActionOption(AuditAction.CargoImportCompleted,    "Kargo Toplu İçe Aktarma"));
         Actions.Add(new AuditActionOption(AuditAction.DirectoryImportCompleted, "Firma Rehberi Toplu İçe Aktarma"));

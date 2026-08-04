@@ -282,6 +282,20 @@ internal sealed class FakeCargoShipmentRepository : ICargoShipmentRepository
     public Task<IReadOnlyList<CargoShipment>> GetRecentAsync(int count)
         => Task.FromResult<IReadOnlyList<CargoShipment>>(Existing.Take(count).ToList());
 
+    // Gerçek repository'nin projeksiyon + yön filtresi + CreatedAt DESC sıralamasını taklit eder
+    public Task<IReadOnlyList<CargoPartyNameRow>> GetPartyNameHistoryAsync(
+        CargoShipmentDirection direction, int maxRecords)
+        => Task.FromResult<IReadOnlyList<CargoPartyNameRow>>(
+            Existing
+                .Where(x => x.Direction == direction)
+                .Where(x => x.SenderName  != null || x.ReceiverName != null
+                         || x.DeliveredBy != null || x.ReceivedBy   != null)
+                .OrderByDescending(x => x.CreatedAt)
+                .Take(maxRecords)
+                .Select(x => new CargoPartyNameRow(
+                    x.SenderName, x.ReceiverName, x.DeliveredBy, x.ReceivedBy, x.CreatedAt))
+                .ToList());
+
     public Task<IReadOnlyList<CargoShipment>> GetFilteredReportAsync(
         DateTime? dateFrom, DateTime? dateTo, CargoShipmentDirection? direction,
         Guid? cargoCompanyId, CargoShipmentStatus? status,

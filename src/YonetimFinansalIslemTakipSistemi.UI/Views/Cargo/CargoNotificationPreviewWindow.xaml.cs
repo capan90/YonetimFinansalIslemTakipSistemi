@@ -1,9 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using YonetimFinansalIslemTakipSistemi.Application.Common;
+using YonetimFinansalIslemTakipSistemi.Application.Features.MailContacts.GetMailContactList;
+using YonetimFinansalIslemTakipSistemi.Application.Features.MailContacts.TouchMailContacts;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Notification;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Notification.MarkCargoNotificationPrepared;
 using YonetimFinansalIslemTakipSistemi.Application.Features.WhatsAppContacts;
@@ -11,6 +15,7 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.WhatsAppContacts.Get
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
+using YonetimFinansalIslemTakipSistemi.UI.Views.Mail;
 using YonetimFinansalIslemTakipSistemi.UI.Views.WhatsApp;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Cargo;
@@ -96,10 +101,16 @@ public partial class CargoNotificationPreviewWindow : Window
         MailFieldsPanel.Visibility = Visibility.Visible;
         MailSendButton.Visibility  = Visibility.Visible;
 
-        // Alıcı alanı boşsa veya geçersizse gönder butonu devre dışı; kullanıcı manuel doldurabilir
-        MailSendButton.IsEnabled = IsValidEmail(ToTextBox.Text.Trim());
+        // Rehber alanları biraz yer kapladığından pencere yükseltilir
+        Height = 700;
 
-        Loaded += async (_, _) => await LoadSenderEmailAsync();
+        UpdateRecipientState();
+
+        Loaded += async (_, _) =>
+        {
+            await LoadSenderEmailAsync();
+            await ApplyDefaultCcAsync();
+        };
     }
 
     private async Task LoadSenderEmailAsync()
@@ -107,6 +118,96 @@ public partial class CargoNotificationPreviewWindow : Window
         var mailSettings = _services.GetRequiredService<IMailSettingsService>();
         var settings     = await mailSettings.GetAsync();
         FromBlock.Text   = settings?.SenderEmail ?? settings?.Username ?? "(ayarlanmamış)";
+    }
+
+    /// <summary>
+    /// "Varsayılan CC" işaretli rehber kişilerini CC alanına ekler — her gönderimde
+    /// aynı adresleri elle yazma ihtiyacını ortadan kaldırır. Kullanıcı isterse siler.
+    /// Rehber okunamazsa ekran normal çalışmaya devam eder.
+    /// </summary>
+    private async Task ApplyDefaultCcAsync()
+    {
+        try
+        {
+            var handler   = _services.GetRequiredService<GetMailContactListHandler>();
+            var defaultCc = await handler.GetDefaultCcAsync();
+            if (defaultCc.Count == 0) return;
+
+            AppendAddresses(CcTextBox, defaultCc.Select(c => c.Email));
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Varsayılan CC listesi yüklenemedi — mail ekranı CC'siz açıldı");
+        }
+    }
+
+    // ── Mail rehberi seçimi ───────────────────────────────────────────────
+
+    private void ToPickButton_Click(object sender, RoutedEventArgs e)
+        => PickContactsInto(ToTextBox, "Rehberden Alıcı Seç");
+
+    private void CcPickButton_Click(object sender, RoutedEventArgs e)
+        => PickContactsInto(CcTextBox, "Rehberden CC Seç");
+
+    private void PickContactsInto(System.Windows.Controls.TextBox target, string title)
+    {
+        // Zaten yazılı adresler önceden işaretli gelir; kullanıcı seçimi görebilsin
+        var (existing, _) = EmailAddressHelper.Parse(target.Text);
+
+        var picker = new MailContactPickerWindow(_services, title, existing) { Owner = this };
+        if (picker.ShowDialog() != true) return;
+
+        // Seçim mevcut metnin yerine geçmez, üzerine eklenir: kullanıcının elle
+        // yazdığı adresler (rehberde olmayanlar) kaybolmaz.
+        AppendAddresses(target, picker.SelectedEmails);
+    }
+
+    /// <summary>Adresleri alana ekler; mükerrerleri eler ve "; " ile birleştirir.</summary>
+    private void AppendAddresses(System.Windows.Controls.TextBox target, IEnumerable<string> addresses)
+    {
+        var (existing, invalid) = EmailAddressHelper.Parse(target.Text);
+
+        var merged = new List<string>(existing);
+        var seen   = new HashSet<string>(existing, StringComparer.OrdinalIgnoreCase);
+        foreach (var address in addresses)
+        {
+            var normalized = EmailAddressHelper.Normalize(address);
+            if (normalized is not null && seen.Add(normalized))
+                merged.Add(normalized);
+        }
+
+        // Geçersiz girişler korunur — kullanıcı yazdığı şeyi düzeltebilsin
+        target.Text = EmailAddressHelper.Join(merged.Concat(invalid));
+    }
+
+    private void RecipientBoxes_TextChanged(object sender, TextChangedEventArgs e)
+        => UpdateRecipientState();
+
+    /// <summary>
+    /// Alıcı/CC alanlarını doğrular: gönder butonunu ayarlar ve hatalı adresi adıyla gösterir.
+    /// InitializeComponent sırasında da tetiklenebildiği için null kontrolleri gereklidir.
+    /// </summary>
+    private void UpdateRecipientState()
+    {
+        if (MailSendButton is null || RecipientWarningBlock is null) return;
+
+        var (toValid, toInvalid) = EmailAddressHelper.Parse(ToTextBox.Text);
+        var (_,       ccInvalid) = EmailAddressHelper.Parse(CcTextBox.Text);
+
+        var invalid = toInvalid.Concat(ccInvalid).ToList();
+
+        MailSendButton.IsEnabled = toValid.Count > 0 && invalid.Count == 0;
+
+        if (invalid.Count == 0)
+        {
+            RecipientWarningBlock.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        RecipientWarningBlock.Text = invalid.Count == 1
+            ? $"Geçersiz e-posta adresi: {invalid[0]}"
+            : $"Geçersiz e-posta adresleri: {string.Join(", ", invalid)}";
+        RecipientWarningBlock.Visibility = Visibility.Visible;
     }
 
     private void InitializeWhatsAppMode(CargoNotificationModel model)
@@ -341,8 +442,18 @@ public partial class CargoNotificationPreviewWindow : Window
 
     private async void MailSendButton_Click(object sender, RoutedEventArgs e)
     {
-        var to = ToTextBox.Text.Trim();
-        if (string.IsNullOrWhiteSpace(to))
+        var (to, toInvalid) = EmailAddressHelper.Parse(ToTextBox.Text);
+        var (cc, ccInvalid) = EmailAddressHelper.Parse(CcTextBox.Text);
+
+        if (toInvalid.Count > 0 || ccInvalid.Count > 0)
+        {
+            _dialogService.ShowWarning(
+                $"Şu adresler geçerli değil:\n{string.Join("\n", toInvalid.Concat(ccInvalid))}",
+                "Geçersiz Adres");
+            return;
+        }
+
+        if (to.Count == 0)
         {
             _dialogService.ShowWarning("Alıcı e-posta adresi girilmemiş.", "Mail Gönderilemedi");
             return;
@@ -352,7 +463,6 @@ public partial class CargoNotificationPreviewWindow : Window
         MailSendButton.Content   = "⏳ Mail Gönderiliyor...";
 
         var mailSender       = _services.GetRequiredService<ICargoMailSenderService>();
-        var cc               = string.IsNullOrWhiteSpace(CcTextBox.Text) ? null : CcTextBox.Text.Trim();
         var subject          = SubjectTextBox.Text.Trim();
         var (success, error) = await mailSender.SendAsync(to, cc, subject, _model.MessageBody);
 
@@ -365,9 +475,30 @@ public partial class CargoNotificationPreviewWindow : Window
             return;
         }
 
+        // Rehberdeki adreslerin "son kullanım" bilgisi tazelenir → sık kullanılanlar listede üste çıkar.
+        // Gönderim başarılı olduğu için bu adım hata verse de akış kesilmez.
+        await TouchUsedContactsAsync(to.Concat(cc));
+
         // Başarılı gönderim → bildirim durumunu otomatik güncelle, başarı bildirimi göster
-        await MarkPreparedAsync();
-        await ShowSuccessAndCloseAsync("Mail başarıyla gönderildi. Bildirim durumu güncellendi.");
+        await MarkPreparedAsync(EmailAddressHelper.Join(to));
+
+        var summary = to.Count == 1
+            ? "Mail başarıyla gönderildi. Bildirim durumu güncellendi."
+            : $"Mail {to.Count} alıcıya gönderildi. Bildirim durumu güncellendi.";
+        await ShowSuccessAndCloseAsync(summary);
+    }
+
+    private async Task TouchUsedContactsAsync(IEnumerable<string> usedEmails)
+    {
+        try
+        {
+            var handler = _services.GetRequiredService<TouchMailContactsHandler>();
+            await handler.HandleAsync(usedEmails);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Mail rehberi son kullanım bilgisi güncellenemedi");
+        }
     }
 
     // ── Ortak: durumu güncelle ────────────────────────────────────────────
@@ -393,31 +524,6 @@ public partial class CargoNotificationPreviewWindow : Window
     }
 
     private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
-
-    private void ToTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
-    {
-        if (MailSendButton is not null)
-        {
-            var email = ToTextBox.Text.Trim();
-            MailSendButton.IsEnabled = IsValidEmail(email);
-        }
-    }
-
-    private static bool IsValidEmail(string email)
-    {
-        if (string.IsNullOrWhiteSpace(email)) return false;
-        try
-        {
-            return System.Text.RegularExpressions.Regex.IsMatch(email, 
-                @"^[^@\s]+@[^@\s]+\.[^@\s]+$", 
-                System.Text.RegularExpressions.RegexOptions.IgnoreCase, 
-                TimeSpan.FromMilliseconds(250));
-        }
-        catch
-        {
-            return false;
-        }
-    }
 
     // ── Başarı bildirimi ──────────────────────────────────────────────────
 

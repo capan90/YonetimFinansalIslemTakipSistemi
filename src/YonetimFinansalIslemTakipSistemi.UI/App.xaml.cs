@@ -249,6 +249,8 @@ public partial class App : System.Windows.Application
         services.AddScoped<GetCompanyDirectoryListHandler>();
         services.AddScoped<GetCompanyAttentionContactsHandler>();
         services.AddScoped<EnsureCompanyAttentionContactHandler>();
+        // Gönderi/teslim isim önerileri — geçmiş kargo kayıtlarından türetilir
+        services.AddScoped<Application.Features.CargoShipment.Queries.GetCargoPartySuggestions.GetCargoPartySuggestionsHandler>();
         services.AddScoped<CreateCargoCompanyHandler>();
         services.AddScoped<UpdateCargoCompanyHandler>();
         services.AddScoped<DeleteCargoCompanyHandler>();
@@ -306,6 +308,15 @@ public partial class App : System.Windows.Application
         services.AddScoped<CreateWhatsAppContactHandler>();
         services.AddScoped<UpdateWhatsAppContactHandler>();
         services.AddScoped<DeleteWhatsAppContactHandler>();
+
+        // Ortak mail rehberi — mail bildirim ekranındaki alıcı/CC seçimi
+        services.AddScoped<Application.Features.MailContacts.GetMailContactList.GetMailContactListHandler>();
+        services.AddScoped<Application.Features.MailContacts.CreateMailContact.CreateMailContactHandler>();
+        services.AddScoped<Application.Features.MailContacts.UpdateMailContact.UpdateMailContactHandler>();
+        services.AddScoped<Application.Features.MailContacts.DeleteMailContact.DeleteMailContactHandler>();
+        services.AddScoped<Application.Features.MailContacts.TouchMailContacts.TouchMailContactsHandler>();
+        services.AddTransient<ViewModels.Mail.MailContactListViewModel>();
+        services.AddTransient<ViewModels.Mail.MailContactEditViewModel>();
 
         // ViewModels
         services.AddTransient<LoginViewModel>();

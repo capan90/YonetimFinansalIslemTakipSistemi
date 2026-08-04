@@ -71,9 +71,8 @@ public class GetCargoReportHandler
             TotalCount     = rowDtos.Count,
             IncomingCount  = rowDtos.Count(r => r.Direction == CargoShipmentDirection.Incoming),
             OutgoingCount  = rowDtos.Count(r => r.Direction == CargoShipmentDirection.Outgoing),
-            PendingCount   = rows.Count(s =>
-                s.Status != CargoShipmentStatus.Delivered &&
-                s.Status != CargoShipmentStatus.Cancelled),
+            // Dashboard kartıyla aynı tanım — tek kaynak: CargoShipmentStatusRules
+            PendingCount   = rows.Count(s => CargoShipmentStatusRules.IsPending(s.Status)),
             DeliveredCount = rows.Count(s => s.Status == CargoShipmentStatus.Delivered),
             FilterSummary  = BuildFilterSummary(query),
             DateFrom       = query.DateFrom,

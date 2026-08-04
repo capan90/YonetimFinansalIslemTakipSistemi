@@ -12,7 +12,13 @@
 
     <!-- ── Metin ──────────────────────────────────────────────────────────────── -->
     <SolidColorBrush x:Key="Theme.Text"                  Color="#F1F5F9"/>
+    <!-- Koyu yüzeyde (#1E293B) 5.0:1 — dekoratif soluk metin -->
     <SolidColorBrush x:Key="Theme.MutedText"             Color="#94A3B8"/>
+    <!-- Koyu temada etiket açık uçtan gelir: #CBD5E1 → yüzeyde 9.6:1 -->
+    <SolidColorBrush x:Key="Theme.LabelText"             Color="#CBD5E1"/>
+
+    <!-- ── Devre dışı ─────────────────────────────────────────────────────────── -->
+    <SolidColorBrush x:Key="Theme.DisabledBackground"    Color="#475569"/>
 
     <!-- ── Kenarlık / Input ───────────────────────────────────────────────────── -->
     <SolidColorBrush x:Key="Theme.Border"                Color="#334155"/>

@@ -1,33 +1,33 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:converters="clr-namespace:YonetimFinansalIslemTakipSistemi.UI.Converters">
 
-    <!-- ── Converter ─────────────────────────────────────────────────────────── -->
+    <!-- â”€â”€ Converter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <converters:DecimalToColorConverter         x:Key="BalanceToColor"/>
     <converters:SystemLogLevelToColorConverter  x:Key="LevelToBackgroundConverter"/>
     <converters:SystemLogLevelToColorConverter  x:Key="LevelToForegroundConverter" />
     <converters:BoolToStatusColorConverter      x:Key="BoolToStatusColorConverter"/>
 
-    <!-- ── Boş liste (empty state) metni ─────────────────────────────────────
-         Kullanım: DataGrid'in üzerine bindirilen TextBlock bu stile BasedOn olur;
-         görünürlük tetikleyicisi (Items.Count=0) ElementName gerektirdiği için
-         pencere içinde tanımlanır. -->
+    <!-- â”€â”€ BoÅŸ liste (empty state) metni â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+         KullanÄ±m: DataGrid'in Ã¼zerine bindirilen TextBlock bu stile BasedOn olur;
+         gÃ¶rÃ¼nÃ¼rlÃ¼k tetikleyicisi (Items.Count=0) ElementName gerektirdiÄŸi iÃ§in
+         pencere iÃ§inde tanÄ±mlanÄ±r. -->
     <Style x:Key="EmptyStateText" TargetType="TextBlock">
         <Setter Property="HorizontalAlignment" Value="Center"/>
         <Setter Property="VerticalAlignment"   Value="Center"/>
-        <Setter Property="Foreground"          Value="#94A3B8"/>
+        <Setter Property="Foreground"          Value="{DynamicResource Theme.MutedText}"/>
         <Setter Property="FontSize"            Value="13"/>
         <Setter Property="IsHitTestVisible"    Value="False"/>
         <Setter Property="Visibility"          Value="Collapsed"/>
     </Style>
 
-    <!-- ── Sabit Renk Fırçaları (StaticResource ile referans verilen mevcut isimler) ── -->
-    <!-- Not: Tema fırçaları (Theme.*) ayrı LightTheme/DarkTheme.xaml dosyalarındadır -->
+    <!-- â”€â”€ Sabit Renk FÄ±rÃ§alarÄ± (StaticResource ile referans verilen mevcut isimler) â”€â”€ -->
+    <!-- Not: Tema fÄ±rÃ§alarÄ± (Theme.*) ayrÄ± LightTheme/DarkTheme.xaml dosyalarÄ±ndadÄ±r -->
     <SolidColorBrush x:Key="Brush.Primary"       Color="#1E3A5F"/>
     <SolidColorBrush x:Key="Brush.Success"       Color="#2E7D32"/>
     <SolidColorBrush x:Key="Brush.Danger"        Color="#C62828"/>
     <SolidColorBrush x:Key="Brush.Secondary"     Color="#475569"/>
-    <SolidColorBrush x:Key="Brush.Disabled"      Color="#94A3B8"/>
+    <SolidColorBrush x:Key="Brush.Disabled"      Color="#64748B"/>
     <SolidColorBrush x:Key="Brush.Border"        Color="#E2E8F0"/>
     <SolidColorBrush x:Key="Brush.GridAlt"       Color="#F8FAFC"/>
     <SolidColorBrush x:Key="Brush.GridSelected"  Color="#DBEAFE"/>
@@ -35,7 +35,7 @@
     <SolidColorBrush x:Key="Brush.TextPrimary"   Color="#1A202C"/>
     <SolidColorBrush x:Key="Brush.TextSecondary" Color="#64748B"/>
 
-    <!-- ── Buton Stilleri ────────────────────────────────────────────────────── -->
+    <!-- â”€â”€ Buton Stilleri â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
 
     <Style x:Key="PrimaryButton" TargetType="Button">
         <Setter Property="Background"      Value="{DynamicResource Theme.Primary}"/>
@@ -65,8 +65,7 @@
                             <Setter TargetName="Bd" Property="Background" Value="#152C4A"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="Bd" Property="Background" Value="#94A3B8"/>
-                            <Setter TargetName="Bd" Property="Opacity"    Value="0.7"/>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Theme.DisabledBackground}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -102,8 +101,7 @@
                             <Setter TargetName="Bd" Property="Background" Value="#1E293B"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="Bd" Property="Background" Value="#94A3B8"/>
-                            <Setter TargetName="Bd" Property="Opacity"    Value="0.7"/>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Theme.DisabledBackground}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -139,8 +137,7 @@
                             <Setter TargetName="Bd" Property="Background" Value="#7F1010"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="Bd" Property="Background" Value="#94A3B8"/>
-                            <Setter TargetName="Bd" Property="Opacity"    Value="0.7"/>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Theme.DisabledBackground}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -148,7 +145,7 @@
         </Setter>
     </Style>
 
-    <!-- ── TextBox ──────────────────────────────────────────────────────────── -->
+    <!-- â”€â”€ TextBox â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <Style TargetType="{x:Type TextBox}">
         <Setter Property="Padding"                  Value="6,4"/>
         <Setter Property="BorderBrush"              Value="{DynamicResource Theme.InputBorder}"/>
@@ -164,7 +161,7 @@
         </Style.Triggers>
     </Style>
 
-    <!-- ── PasswordBox ──────────────────────────────────────────────────────── -->
+    <!-- â”€â”€ PasswordBox â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <Style TargetType="{x:Type PasswordBox}">
         <Setter Property="Padding"                  Value="6,4"/>
         <Setter Property="BorderBrush"              Value="{DynamicResource Theme.InputBorder}"/>
@@ -175,18 +172,18 @@
         <Setter Property="VerticalContentAlignment" Value="Center"/>
     </Style>
 
-    <!-- ── ComboBox ─────────────────────────────────────────────────────────── -->
+    <!-- â”€â”€ ComboBox â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <Style TargetType="{x:Type ComboBox}">
         <Setter Property="Background" Value="{DynamicResource Theme.InputBackground}"/>
         <Setter Property="Foreground" Value="{DynamicResource Theme.Text}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource Theme.InputBorder}"/>
     </Style>
 
-    <!-- ── DataGrid ──────────────────────────────────────────────────────────── -->
-    <!-- SelectionUnit="FullRow": tıklamada tüm satır hücreleri seçilir.
-         Seçim rengi DataGridCell trigger üzerinden uygulanır — AlternatingRowBackground
-         satıra local value koyduğu için DataGridRow trigger etkisiz kalır;
-         DataGridCell trigger local value taşımaz, dolayısıyla güvenilir çalışır. -->
+    <!-- â”€â”€ DataGrid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <!-- SelectionUnit="FullRow": tÄ±klamada tÃ¼m satÄ±r hÃ¼creleri seÃ§ilir.
+         SeÃ§im rengi DataGridCell trigger Ã¼zerinden uygulanÄ±r â€” AlternatingRowBackground
+         satÄ±ra local value koyduÄŸu iÃ§in DataGridRow trigger etkisiz kalÄ±r;
+         DataGridCell trigger local value taÅŸÄ±maz, dolayÄ±sÄ±yla gÃ¼venilir Ã§alÄ±ÅŸÄ±r. -->
     <Style TargetType="{x:Type DataGrid}">
         <Setter Property="HeadersVisibility"    Value="Column"/>
         <Setter Property="SelectionUnit"        Value="FullRow"/>

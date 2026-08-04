@@ -102,7 +102,7 @@
                             IsEnabled="{Binding CanGoNext}"/>
                 </StackPanel>
                 <TextBlock Text="{Binding PageInfo}"
-                           VerticalAlignment="Center" Foreground="#64748B"/>
+                           VerticalAlignment="Center" Foreground="{DynamicResource Theme.LabelText}"/>
             </DockPanel>
         </Border>
 

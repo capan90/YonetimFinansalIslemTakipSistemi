@@ -12,7 +12,17 @@
 
     <!-- ── Metin ──────────────────────────────────────────────────────────────── -->
     <SolidColorBrush x:Key="Theme.Text"                  Color="#1A202C"/>
+    <!-- MutedText yalnızca DEKORATİF soluk metin içindir (ipucu, zaman damgası).
+         Beyaz üzerinde 4.6:1 — AA'yı geçer ama etiket/başlık için zayıf kalır. -->
     <SolidColorBrush x:Key="Theme.MutedText"             Color="#64748B"/>
+    <!-- Etiket/başlık rolündeki ikincil metin: beyaz üzerinde 7.4:1 (AAA).
+         Kart etiketleri, form etiketleri ve sütun başlıkları bunu kullanır. -->
+    <SolidColorBrush x:Key="Theme.LabelText"             Color="#475569"/>
+
+    <!-- ── Devre dışı ─────────────────────────────────────────────────────────── -->
+    <!-- Beyaz metinle 4.6:1 (AA). Eski #94A3B8 + Opacity 0.7 kombinasyonu 2.1:1'e
+         düşüyordu — devre dışı buton yazısı okunmuyordu. -->
+    <SolidColorBrush x:Key="Theme.DisabledBackground"    Color="#64748B"/>
 
     <!-- ── Kenarlık / Input ───────────────────────────────────────────────────── -->
     <SolidColorBrush x:Key="Theme.Border"                Color="#E2E8F0"/>

@@ -130,7 +130,7 @@
                     </Border.Effect>
                     <StackPanel>
                         <TextBlock Text="TL BAKİYE"
-                                   Foreground="#64748B" FontSize="10" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource Theme.LabelText}" FontSize="11.5" FontWeight="SemiBold"
                                    Margin="0,0,0,4"/>
                         <TextBlock Text="{Binding TlBalance, StringFormat=N2}"
                                    FontSize="22" FontWeight="Bold"
@@ -146,7 +146,7 @@
                     </Border.Effect>
                     <StackPanel>
                         <TextBlock Text="USD BAKİYE"
-                                   Foreground="#64748B" FontSize="10" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource Theme.LabelText}" FontSize="11.5" FontWeight="SemiBold"
                                    Margin="0,0,0,4"/>
                         <TextBlock Text="{Binding UsdBalance, StringFormat=N2}"
                                    FontSize="22" FontWeight="Bold"
@@ -162,7 +162,7 @@
                     </Border.Effect>
                     <StackPanel>
                         <TextBlock Text="EUR BAKİYE"
-                                   Foreground="#64748B" FontSize="10" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource Theme.LabelText}" FontSize="11.5" FontWeight="SemiBold"
                                    Margin="0,0,0,4"/>
                         <TextBlock Text="{Binding EurBalance, StringFormat=N2}"
                                    FontSize="22" FontWeight="Bold"

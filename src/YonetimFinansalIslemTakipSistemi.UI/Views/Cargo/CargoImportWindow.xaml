@@ -22,9 +22,14 @@
                             Style="{StaticResource SecondaryButton}"
                             Click="TemplateButton_Click"
                             ToolTip="Doğru başlıklarla boş bir Excel şablonu kaydeder"/>
-                    <Button Content="📥 Excel Dosyası Seç" Width="180"
+                    <Button Width="180"
                             Style="{StaticResource PrimaryButton}"
-                            Click="SelectFileButton_Click"/>
+                            Click="SelectFileButton_Click">
+                        <StackPanel Style="{StaticResource IconTextPanel}">
+                            <Path Style="{StaticResource IconPath}" Data="{StaticResource Icon.Download}" Margin="0,0,6,0"/>
+                            <TextBlock Text="Excel Dosyası Seç"/>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
             </StackPanel>
         </Border>

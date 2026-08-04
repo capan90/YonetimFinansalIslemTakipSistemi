@@ -54,13 +54,11 @@
                         <ColumnDefinition Width="36"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0"
-                               Text="👤"
-                               FontFamily="Segoe UI Emoji"
-                               Style="{StaticResource Text.Body}"
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Center"
-                               Foreground="{DynamicResource Theme.MutedText}"/>
+                    <Path Grid.Column="0"
+                          Style="{StaticResource IconPath.Standalone}"
+                          Data="{StaticResource Icon.User}"
+                          HorizontalAlignment="Center"
+                          Stroke="{DynamicResource Theme.MutedText}"/>
                     <TextBox x:Name="UserNameBox"
                              Grid.Column="1"
                              Text="{Binding UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -104,13 +102,11 @@
                         <ColumnDefinition Width="36"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0"
-                               Text="🔒"
-                               FontFamily="Segoe UI Emoji"
-                               Style="{StaticResource Text.Body}"
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Center"
-                               Foreground="{DynamicResource Theme.MutedText}"/>
+                    <Path Grid.Column="0"
+                          Style="{StaticResource IconPath.Standalone}"
+                          Data="{StaticResource Icon.Lock}"
+                          HorizontalAlignment="Center"
+                          Stroke="{DynamicResource Theme.MutedText}"/>
                     <PasswordBox x:Name="PasswordBox"
                                  Grid.Column="1"
                                  BorderThickness="0" Padding="4,7"

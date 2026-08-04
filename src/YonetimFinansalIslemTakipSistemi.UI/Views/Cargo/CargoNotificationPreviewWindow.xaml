@@ -184,7 +184,7 @@
                 <DockPanel Grid.Row="1" Grid.Column="1" Margin="0,0,0,5">
                     <Button x:Name="ToPickButton"
                             DockPanel.Dock="Right"
-                            Content="📇 Rehber" Width="80" Height="24" Margin="4,0,0,0"
+                            Content="Rehber" Width="80" Height="24" Margin="4,0,0,0"
                             Padding="0" FontSize="12"
                             Style="{StaticResource SecondaryButton}"
                             Click="ToPickButton_Click"
@@ -204,7 +204,7 @@
                 <DockPanel Grid.Row="2" Grid.Column="1" Margin="0,0,0,5">
                     <Button x:Name="CcPickButton"
                             DockPanel.Dock="Right"
-                            Content="📇 Rehber" Width="80" Height="24" Margin="4,0,0,0"
+                            Content="Rehber" Width="80" Height="24" Margin="4,0,0,0"
                             Padding="0" FontSize="12"
                             Style="{StaticResource SecondaryButton}"
                             Click="CcPickButton_Click"
@@ -238,10 +238,15 @@
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
                     HorizontalAlignment="Right" Margin="0,8,0,0">
             <Button x:Name="CopyButton"
-                    Content="📋 Kopyala" Width="100" Margin="0,0,8,0"
+                    Width="105" Margin="0,0,8,0"
                     Style="{StaticResource SecondaryButton}"
                     Click="CopyButton_Click"
-                    ToolTip="Mesaj metnini panoya kopyalar"/>
+                    ToolTip="Mesaj metnini panoya kopyalar">
+                <StackPanel Style="{StaticResource IconTextPanel}">
+                    <Path Style="{StaticResource IconPath}" Data="{StaticResource Icon.Copy}" Margin="0,0,6,0"/>
+                    <TextBlock Text="Kopyala"/>
+                </StackPanel>
+            </Button>
 
             <!-- WhatsApp Web butonu: link açılınca durum otomatik güncellenir -->
             <Button x:Name="WhatsAppWebButton"

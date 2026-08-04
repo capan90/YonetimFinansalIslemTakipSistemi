@@ -63,7 +63,17 @@
                                 <Setter Property="Padding" Value="10,6"/>
                             </Style>
                         </Menu.Resources>
-                        <MenuItem Header="Yardım ▾" Foreground="White" Background="#2E5F9F" BorderBrush="#3B7BC8" BorderThickness="1" Padding="12,5" Height="28">
+                        <MenuItem Foreground="White" Background="#2E5F9F" BorderBrush="#3B7BC8" BorderThickness="1" Padding="12,5" Height="28">
+                            <MenuItem.Header>
+                                <!-- "▾" karakteri yerine vektör chevron: tema rengini alır,
+                                     DPI ölçeğinde metin taban çizgisine göre kaymaz -->
+                                <StackPanel Style="{StaticResource IconTextPanel}">
+                                    <TextBlock Text="Yardım" Margin="0,0,4,0"/>
+                                    <Path Style="{StaticResource IconPath}"
+                                          Data="{StaticResource Icon.ChevronDown}"
+                                          Width="12" Height="12" Stroke="White"/>
+                                </StackPanel>
+                            </MenuItem.Header>
                             <!-- Teknik yardım öğeleri CanAccessHelpMenu iznine tabidir (code-behind) -->
                             <MenuItem x:Name="MenuItemCheckUpdates" Header="Güncellemeleri Denetle" Click="CheckUpdates_Click" Foreground="Black"/>
                             <MenuItem x:Name="MenuItemPersonalMail" Header="Mail Ayarlarım" Click="OpenPersonalMailSettings_Click" Foreground="Black"/>

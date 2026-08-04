@@ -22,10 +22,15 @@
                         Style="{StaticResource DangerButton}"
                         IsEnabled="{Binding HasSelected}"
                         Click="DeleteButton_Click"/>
-                <Button x:Name="ImportButton" Content="📥 Excel'den İçe Aktar" Width="160" Margin="6,0,0,0"
+                <Button x:Name="ImportButton" Width="170" Margin="6,0,0,0"
                         Style="{StaticResource SecondaryButton}"
                         Click="ImportButton_Click"
-                        ToolTip="Excel dosyasından toplu firma kaydı oluşturur: analiz → önizleme → onay → içe aktarma"/>
+                        ToolTip="Excel dosyasından toplu firma kaydı oluşturur: analiz → önizleme → onay → içe aktarma">
+                    <StackPanel Style="{StaticResource IconTextPanel}">
+                        <Path Style="{StaticResource IconPath}" Data="{StaticResource Icon.Download}" Margin="0,0,6,0"/>
+                        <TextBlock Text="Excel'den İçe Aktar"/>
+                    </StackPanel>
+                </Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBox Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}"

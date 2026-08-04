@@ -61,16 +61,26 @@
         <!-- Araç çubuğu — 2. satır: Operasyon + Excel içe aktarma -->
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,6">
             <Button x:Name="OperationButton"
-                    Content="⚡ Operasyon" Width="120" Margin="0,0,0,0"
+                    Width="125" Margin="0,0,0,0"
                     Style="{StaticResource SecondaryButton}"
                     IsEnabled="{Binding HasSelected}"
                     Click="OperationButton_Click"
-                    ToolTip="Seçili kargo için operasyon merkezini açar: Etiket, WhatsApp, Mail, Takip, Durum Değiştir"/>
+                    ToolTip="Seçili kargo için operasyon merkezini açar: Etiket, WhatsApp, Mail, Takip, Durum Değiştir">
+                <StackPanel Style="{StaticResource IconTextPanel}">
+                    <Path Style="{StaticResource IconPath}" Data="{StaticResource Icon.Bolt}" Margin="0,0,6,0"/>
+                    <TextBlock Text="Operasyon"/>
+                </StackPanel>
+            </Button>
             <Button x:Name="ImportButton"
-                    Content="📥 Excel'den İçe Aktar" Width="165" Margin="8,0,0,0"
+                    Width="170" Margin="8,0,0,0"
                     Style="{StaticResource SecondaryButton}"
                     Click="ImportButton_Click"
-                    ToolTip="Excel dosyasından toplu kargo kaydı oluşturur: analiz → önizleme → onay → içe aktarma"/>
+                    ToolTip="Excel dosyasından toplu kargo kaydı oluşturur: analiz → önizleme → onay → içe aktarma">
+                <StackPanel Style="{StaticResource IconTextPanel}">
+                    <Path Style="{StaticResource IconPath}" Data="{StaticResource Icon.Download}" Margin="0,0,6,0"/>
+                    <TextBlock Text="Excel'den İçe Aktar"/>
+                </StackPanel>
+            </Button>
         </StackPanel>
 
         <!-- Liste + boş durum mesajı -->

@@ -7,6 +7,8 @@
             <ResourceDictionary.MergedDictionaries>
                 <!-- Bileşen stilleri ve converter'lar -->
                 <ResourceDictionary Source="Resources/AppStyles.xaml"/>
+                <!-- Vektör ikon geometrileri — emoji karakterlerinin yerini alır -->
+                <ResourceDictionary Source="Resources/Icons.xaml"/>
                 <!-- Varsayılan tema — IThemeService startup'ta kaydedilmiş temayı uygular -->
                 <ResourceDictionary Source="Resources/Themes/LightTheme.xaml"/>
             </ResourceDictionary.MergedDictionaries>

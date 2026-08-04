@@ -355,7 +355,6 @@
 
         <!-- Firma snapshot yenileme — yalnızca düzenleme modunda ve firma seçiliyse görünür -->
         <Button x:Name="RefreshSnapshotButton"
-                Content="🔄 Firma Bilgilerini Yenile"
                 HorizontalAlignment="Left"
                 Margin="0,0,0,8" Padding="6,3"
                 FontSize="12"
@@ -371,6 +370,10 @@
                     </Style.Triggers>
                 </Style>
             </Button.Style>
+            <StackPanel Style="{StaticResource IconTextPanel}">
+                <Path Style="{StaticResource IconPath}" Data="{StaticResource Icon.Refresh}" Margin="0,0,6,0"/>
+                <TextBlock Text="Firma Bilgilerini Yenile"/>
+            </StackPanel>
         </Button>
 
         <!-- Gönderi Bilgileri + Teslim Bilgileri — GroupBox olarak ayrılmış -->

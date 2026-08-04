@@ -88,30 +88,67 @@
                   RowHeight="30"
                   MouseDoubleClick="MainGrid_MouseDoubleClick">
             <DataGrid.Columns>
-                <!-- Öncelik: renkli badge -->
-                <DataGridTemplateColumn Header="Öncelik" Width="75">
+                <!-- Öncelik rozeti: yumuşak dolgu + koyu metin.
+                     Normal öncelik çoğunluktur — rozet çizilmez, sade metin kalır;
+                     böylece gerçekten acil olan satırlar listede öne çıkar. -->
+                <DataGridTemplateColumn Header="Öncelik" Width="80">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Border CornerRadius="3" Padding="4,1">
+                            <Border CornerRadius="3" Padding="6,1" HorizontalAlignment="Left">
                                 <Border.Style>
                                     <Style TargetType="Border">
-                                        <Setter Property="Background" Value="#BBBBBB"/>
+                                        <!-- Normal: dolgu yok -->
+                                        <Setter Property="Background" Value="Transparent"/>
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding PriorityDisplay}" Value="Orta">
-                                                <Setter Property="Background" Value="#4A90D9"/>
+                                                <Setter Property="Background" Value="{DynamicResource Theme.Badge.InfoBackground}"/>
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding PriorityDisplay}" Value="Acil">
-                                                <Setter Property="Background" Value="#E07830"/>
+                                                <Setter Property="Background" Value="{DynamicResource Theme.Badge.WarningBackground}"/>
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding PriorityDisplay}" Value="Çok Acil">
-                                                <Setter Property="Background" Value="#CC2222"/>
+                                                <Setter Property="Background" Value="{DynamicResource Theme.Badge.DangerBackground}"/>
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
                                 </Border.Style>
-                                <TextBlock Text="{Binding PriorityDisplay}"
-                                           Foreground="White" FontSize="11"
-                                           HorizontalAlignment="Center"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <!-- "!" yalnızca Çok Acil'de: renge ek ikinci bir sinyal,
+                                         renk körlüğünde de ayırt edilebilsin -->
+                                    <TextBlock Text="!" FontSize="11" FontWeight="Bold"
+                                               Margin="0,0,3,0"
+                                               Foreground="{DynamicResource Theme.Badge.DangerText}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding PriorityDisplay}" Value="Çok Acil">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding PriorityDisplay}" FontSize="11">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{DynamicResource Theme.LabelText}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding PriorityDisplay}" Value="Orta">
+                                                        <Setter Property="Foreground" Value="{DynamicResource Theme.Badge.InfoText}"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding PriorityDisplay}" Value="Acil">
+                                                        <Setter Property="Foreground" Value="{DynamicResource Theme.Badge.WarningText}"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding PriorityDisplay}" Value="Çok Acil">
+                                                        <Setter Property="Foreground" Value="{DynamicResource Theme.Badge.DangerText}"/>
+                                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
                             </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>

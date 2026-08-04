@@ -194,19 +194,21 @@
 
                 <!-- Firma adı -->
                 <TextBlock Grid.Row="0" Grid.Column="0"
-                           Text="🏢" FontSize="11" VerticalAlignment="Center" Margin="0,0,4,3"/>
+                           Text="🏢" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="0,0,4,3"/>
                 <TextBlock Grid.Row="0" Grid.Column="1"
-                           Text="Firma:" FontWeight="SemiBold" FontSize="11" Margin="0,0,4,3"/>
+                           Text="Firma:" Style="{StaticResource Text.Caption}" FontWeight="SemiBold" Margin="0,0,4,3"/>
                 <TextBlock Grid.Row="0" Grid.Column="2"
                            Text="{Binding DirectoryFirma}"
-                           FontSize="11" FontWeight="SemiBold" Foreground="#1A3354" Margin="0,0,0,3"/>
+                           Style="{StaticResource Text.Caption}" FontWeight="SemiBold" Foreground="#1A3354" Margin="0,0,0,3"/>
 
                 <!-- Dikkatine — "İlgili: Abuzer Bey Dikkatine" veya gizli -->
                 <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
                            Text="{Binding DirectoryContactDisplay}"
-                           FontSize="11" Margin="0,0,0,3">
+                           Margin="0,0,0,3">
                     <TextBlock.Style>
-                        <Style TargetType="TextBlock">
+                        <!-- Ölçek stili BasedOn ile: tetikleyicili inline Style ile
+                             Style="..." özniteliği aynı anda kullanılamaz -->
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding HasDirectoryContact}" Value="False">
                                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -218,9 +220,11 @@
 
                 <!-- Adres -->
                 <TextBlock Grid.Row="2" Grid.Column="0"
-                           Text="📍" FontSize="10" VerticalAlignment="Top" Margin="0,0,4,3">
+                           Text="📍" VerticalAlignment="Top" Margin="0,0,4,3">
                     <TextBlock.Style>
-                        <Style TargetType="TextBlock">
+                        <!-- Ölçek stili BasedOn ile: tetikleyicili inline Style ile
+                             Style="..." özniteliği aynı anda kullanılamaz -->
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding HasDirectoryAddress}" Value="False">
                                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -230,9 +234,11 @@
                     </TextBlock.Style>
                 </TextBlock>
                 <TextBlock Grid.Row="2" Grid.Column="1"
-                           Text="Adres:" FontSize="11" Margin="0,0,4,3">
+                           Text="Adres:" Margin="0,0,4,3">
                     <TextBlock.Style>
-                        <Style TargetType="TextBlock">
+                        <!-- Ölçek stili BasedOn ile: tetikleyicili inline Style ile
+                             Style="..." özniteliği aynı anda kullanılamaz -->
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding HasDirectoryAddress}" Value="False">
                                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -243,9 +249,11 @@
                 </TextBlock>
                 <TextBlock Grid.Row="2" Grid.Column="2"
                            Text="{Binding DirectoryAddress}"
-                           FontSize="11" TextWrapping="Wrap" Margin="0,0,0,3">
+                           TextWrapping="Wrap" Margin="0,0,0,3">
                     <TextBlock.Style>
-                        <Style TargetType="TextBlock">
+                        <!-- Ölçek stili BasedOn ile: tetikleyicili inline Style ile
+                             Style="..." özniteliği aynı anda kullanılamaz -->
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding HasDirectoryAddress}" Value="False">
                                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -257,9 +265,11 @@
 
                 <!-- Telefon -->
                 <TextBlock Grid.Row="3" Grid.Column="0"
-                           Text="📞" FontSize="10" VerticalAlignment="Center" Margin="0,0,4,3">
+                           Text="📞" VerticalAlignment="Center" Margin="0,0,4,3">
                     <TextBlock.Style>
-                        <Style TargetType="TextBlock">
+                        <!-- Ölçek stili BasedOn ile: tetikleyicili inline Style ile
+                             Style="..." özniteliği aynı anda kullanılamaz -->
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding HasDirectoryPhone}" Value="False">
                                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -269,9 +279,11 @@
                     </TextBlock.Style>
                 </TextBlock>
                 <TextBlock Grid.Row="3" Grid.Column="1"
-                           Text="Telefon:" FontSize="11" Margin="0,0,4,3">
+                           Text="Telefon:" Margin="0,0,4,3">
                     <TextBlock.Style>
-                        <Style TargetType="TextBlock">
+                        <!-- Ölçek stili BasedOn ile: tetikleyicili inline Style ile
+                             Style="..." özniteliği aynı anda kullanılamaz -->
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding HasDirectoryPhone}" Value="False">
                                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -281,9 +293,11 @@
                     </TextBlock.Style>
                 </TextBlock>
                 <TextBlock Grid.Row="3" Grid.Column="2"
-                           Text="{Binding DirectoryPhone}" FontSize="11" Margin="0,0,0,3">
+                           Text="{Binding DirectoryPhone}" Margin="0,0,0,3">
                     <TextBlock.Style>
-                        <Style TargetType="TextBlock">
+                        <!-- Ölçek stili BasedOn ile: tetikleyicili inline Style ile
+                             Style="..." özniteliği aynı anda kullanılamaz -->
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding HasDirectoryPhone}" Value="False">
                                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -295,9 +309,11 @@
 
                 <!-- E-posta -->
                 <TextBlock Grid.Row="4" Grid.Column="0"
-                           Text="✉" FontSize="10" VerticalAlignment="Center" Margin="0,0,4,0">
+                           Text="✉" VerticalAlignment="Center" Margin="0,0,4,0">
                     <TextBlock.Style>
-                        <Style TargetType="TextBlock">
+                        <!-- Ölçek stili BasedOn ile: tetikleyicili inline Style ile
+                             Style="..." özniteliği aynı anda kullanılamaz -->
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding HasDirectoryEmail}" Value="False">
                                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -307,9 +323,11 @@
                     </TextBlock.Style>
                 </TextBlock>
                 <TextBlock Grid.Row="4" Grid.Column="1"
-                           Text="E-posta:" FontSize="11" Margin="0,0,4,0">
+                           Text="E-posta:" Margin="0,0,4,0">
                     <TextBlock.Style>
-                        <Style TargetType="TextBlock">
+                        <!-- Ölçek stili BasedOn ile: tetikleyicili inline Style ile
+                             Style="..." özniteliği aynı anda kullanılamaz -->
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding HasDirectoryEmail}" Value="False">
                                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -319,9 +337,11 @@
                     </TextBlock.Style>
                 </TextBlock>
                 <TextBlock Grid.Row="4" Grid.Column="2"
-                           Text="{Binding DirectoryEmail}" FontSize="11" Foreground="#1565C0">
+                           Text="{Binding DirectoryEmail}" Foreground="#1565C0">
                     <TextBlock.Style>
-                        <Style TargetType="TextBlock">
+                        <!-- Ölçek stili BasedOn ile: tetikleyicili inline Style ile
+                             Style="..." özniteliği aynı anda kullanılamaz -->
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding HasDirectoryEmail}" Value="False">
                                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -338,7 +358,7 @@
                 Content="🔄 Firma Bilgilerini Yenile"
                 HorizontalAlignment="Left"
                 Margin="0,0,0,8" Padding="6,3"
-                FontSize="11"
+                FontSize="12"
                 Click="RefreshSnapshotButton_Click"
                 ToolTip="Seçili firma rehberinden alıcı telefon, e-posta ve adres snapshot bilgilerini günceller. Kaydetmeden DB'ye yazılmaz.">
             <Button.Style>

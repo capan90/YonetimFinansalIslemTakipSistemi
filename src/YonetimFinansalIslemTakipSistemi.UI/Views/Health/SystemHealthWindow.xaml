@@ -76,19 +76,19 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
                             <TextBlock x:Name="StatusLabel"
-                                       FontSize="14"
+                                       Style="{StaticResource Text.Body}"
                                        FontWeight="Bold"
                                        Foreground="White"
                                        Text="Kontrol ediliyor..."/>
                             <TextBlock x:Name="CheckedAtLabel"
-                                       FontSize="11"
+                                       Style="{StaticResource Text.Caption}"
                                        Foreground="White"
                                        Opacity="0.9"
                                        Margin="0,2,0,0"/>
                         </StackPanel>
                         <TextBlock Grid.Column="1"
                                    x:Name="OverallStatusIcon"
-                                   FontSize="28"
+                                   Style="{StaticResource Text.Display}"
                                    Foreground="White"
                                    Opacity="0.7"
                                    VerticalAlignment="Center"

@@ -40,7 +40,7 @@
         <Border DockPanel.Dock="Bottom"
                 Background="#F5F3FF" BorderBrush="#DDD6FE" BorderThickness="1"
                 CornerRadius="4" Padding="8,6" Margin="0,8,0,0">
-            <TextBlock FontSize="11" Foreground="#5B21B6" TextWrapping="Wrap"
+            <TextBlock Style="{StaticResource Text.Caption}" Foreground="#5B21B6" TextWrapping="Wrap"
                        Text="ℹ  'Varsayılan CC' işaretli kişiler, kargo mail bildirimi ekranı açıldığında CC alanına otomatik eklenir."/>
         </Border>
 
@@ -58,7 +58,6 @@
                       AlternatingRowBackground="#F8FAFC"
                       RowBackground="White"
                       BorderBrush="#E2E8F0" BorderThickness="1"
-                      RowHeight="30"
                       MouseDoubleClick="MainGrid_MouseDoubleClick">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Ad Soyad / Kayıt Adı" Binding="{Binding FullName}"    Width="200"/>

@@ -29,7 +29,7 @@
                  ToolTip="Firmanın portal/takip adresi — tüm kargo ekranlarındaki tek bağlantı kaynağı. Yalnızca http/https; boş bırakılabilir."
                  Margin="0,0,0,2"/>
         <TextBlock Text="Kargo ekranlarındaki 'Portalı / Takibi Aç' butonu bu adresi kullanır."
-                   FontSize="10" Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                   Style="{StaticResource Text.Caption}" Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,8"/>
 
         <Label Content="Notlar:" Margin="0,0,0,2"/>
         <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}"

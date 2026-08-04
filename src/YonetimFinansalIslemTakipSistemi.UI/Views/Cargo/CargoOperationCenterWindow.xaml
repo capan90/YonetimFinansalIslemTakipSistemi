@@ -40,7 +40,7 @@
         <!-- Başlık -->
         <TextBlock DockPanel.Dock="Top"
                    Text="Operasyon Merkezi"
-                   FontSize="14" FontWeight="SemiBold"
+                   Style="{StaticResource Text.Body}" FontWeight="SemiBold"
                    Margin="0,0,0,10"/>
 
         <!-- Alt: Kapat -->
@@ -60,9 +60,9 @@
                 Visibility="Collapsed">
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="✓  " Foreground="#2E7D32"
-                           FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>
+                           Style="{StaticResource Text.Body}" FontWeight="Bold" VerticalAlignment="Center"/>
                 <TextBlock x:Name="OpStatusBlock" Foreground="#2E7D32"
-                           FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                           Style="{StaticResource Text.Caption}" FontWeight="SemiBold" VerticalAlignment="Center"/>
             </StackPanel>
         </Border>
 
@@ -116,7 +116,7 @@
         <!-- Operasyon kartları başlığı -->
         <TextBlock DockPanel.Dock="Top"
                    Text="İşlemler"
-                   FontSize="11" Foreground="{DynamicResource Theme.LabelText}"
+                   Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.LabelText}"
                    Margin="0,0,0,6"/>
 
         <!-- Operasyon kartları (WrapPanel: 5 kart) -->
@@ -130,8 +130,8 @@
                     Click="LabelButton_Click"
                     ToolTip="Seçili kargo için A4 PDF kargo etiketi oluşturur ve açar.">
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBlock Text="🏷" FontSize="22" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Etiket Önizle" FontSize="11"
+                    <TextBlock Text="🏷" Style="{StaticResource Text.Display}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Etiket Önizle" Style="{StaticResource Text.Caption}"
                                HorizontalAlignment="Center" TextAlignment="Center"
                                TextWrapping="Wrap" MaxWidth="110"/>
                 </StackPanel>
@@ -143,8 +143,8 @@
                     Click="WhatsAppButton_Click"
                     ToolTip="Seçili kargo için WhatsApp mesajı hazırlar ve önizleme açar">
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBlock Text="💬" FontSize="22" HorizontalAlignment="Center"/>
-                    <TextBlock Text="WhatsApp&#x0a;Hazırla" FontSize="11"
+                    <TextBlock Text="💬" Style="{StaticResource Text.Display}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="WhatsApp&#x0a;Hazırla" Style="{StaticResource Text.Caption}"
                                HorizontalAlignment="Center" TextAlignment="Center"/>
                 </StackPanel>
             </Button>
@@ -155,8 +155,8 @@
                     Click="MailButton_Click"
                     ToolTip="Seçili kargo için mail mesajı hazırlar ve önizleme açar">
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBlock Text="✉" FontSize="22" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Mail Hazırla" FontSize="11"
+                    <TextBlock Text="✉" Style="{StaticResource Text.Display}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Mail Hazırla" Style="{StaticResource Text.Caption}"
                                HorizontalAlignment="Center" TextAlignment="Center"/>
                 </StackPanel>
             </Button>
@@ -167,8 +167,8 @@
                     Click="TrackButton_Click"
                     ToolTip="Kargo firmasının portal/takip sayfasını tarayıcıda açar">
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBlock Text="🔗" FontSize="22" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Portalı /&#x0a;Takibi Aç" FontSize="11"
+                    <TextBlock Text="🔗" Style="{StaticResource Text.Display}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Portalı /&#x0a;Takibi Aç" Style="{StaticResource Text.Caption}"
                                HorizontalAlignment="Center" TextAlignment="Center"/>
                 </StackPanel>
             </Button>
@@ -179,8 +179,8 @@
                     Click="StatusButton_Click"
                     ToolTip="Kargo durumunu değiştirir (izin verilen geçişler gösterilir)">
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBlock Text="⚡" FontSize="22" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Durum&#x0a;Değiştir" FontSize="11"
+                    <TextBlock Text="⚡" Style="{StaticResource Text.Display}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Durum&#x0a;Değiştir" Style="{StaticResource Text.Caption}"
                                HorizontalAlignment="Center" TextAlignment="Center"/>
                 </StackPanel>
             </Button>

@@ -10,7 +10,7 @@
         <!-- ADIM 1: Dosya Seç -->
         <Border x:Name="StepFilePanel" Visibility="Visible">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="580">
-                <TextBlock FontSize="16" FontWeight="SemiBold"
+                <TextBlock Style="{StaticResource Text.H2}" FontWeight="SemiBold"
                            Text="Excel Dosyasından Toplu Finans İşlemi" Margin="0,0,0,10"
                            HorizontalAlignment="Center"/>
                 <TextBlock TextWrapping="Wrap" Foreground="#555" Margin="0,0,0,4"
@@ -30,7 +30,7 @@
 
         <!-- ADIM 2: Önizleme -->
         <DockPanel x:Name="StepPreviewPanel" Visibility="Collapsed">
-            <TextBlock DockPanel.Dock="Top" FontSize="14" FontWeight="SemiBold"
+            <TextBlock DockPanel.Dock="Top" Style="{StaticResource Text.Body}" FontWeight="SemiBold"
                        Text="Önizleme — içe aktarılacak işlemleri kontrol edin" Margin="0,0,0,6"/>
 
             <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
@@ -60,8 +60,7 @@
             <DataGrid ItemsSource="{Binding FilteredRows}"
                       AutoGenerateColumns="False" IsReadOnly="False"
                       CanUserAddRows="False" CanUserDeleteRows="False"
-                      SelectionMode="Single" RowHeight="30"
-                      GridLinesVisibility="Horizontal"
+                      SelectionMode="Single"                      GridLinesVisibility="Horizontal"
                       HorizontalGridLinesBrush="#E2E8F0"
                       BorderBrush="#E2E8F0" BorderThickness="1"
                       HeadersVisibility="Column">
@@ -124,7 +123,7 @@
         <!-- ADIM 3: İşlem sürüyor -->
         <Border x:Name="StepProgressPanel" Visibility="Collapsed">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="420">
-                <TextBlock x:Name="ProgressTitle" FontSize="15" FontWeight="SemiBold"
+                <TextBlock x:Name="ProgressTitle" Style="{StaticResource Text.H2}" FontWeight="SemiBold"
                            Text="Dosya analiz ediliyor…" Margin="0,0,0,12"
                            HorizontalAlignment="Center"/>
                 <ProgressBar Height="18"
@@ -142,9 +141,9 @@
                 <Border Background="#E8F5E9" BorderBrush="#81C784" BorderThickness="1"
                         CornerRadius="6" Padding="16" Margin="0,0,0,14">
                     <StackPanel>
-                        <TextBlock FontSize="16" FontWeight="SemiBold"
+                        <TextBlock Style="{StaticResource Text.H2}" FontWeight="SemiBold"
                                    Foreground="#2E7D32" Text="İçe aktarma tamamlandı"/>
-                        <TextBlock x:Name="SummaryMainText" FontSize="13" Margin="0,8,0,0" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="SummaryMainText" Style="{StaticResource Text.Body}" Margin="0,8,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </Border>
                 <TextBlock x:Name="SummaryDetailText" TextWrapping="Wrap" Foreground="#555" Margin="0,0,0,16"/>

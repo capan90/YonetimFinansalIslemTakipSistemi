@@ -11,7 +11,7 @@
         <!-- Başlık — code-behind tarafından mode'a göre güncellenir -->
         <TextBlock x:Name="TitleBlock"
                    DockPanel.Dock="Top"
-                   FontSize="14" FontWeight="SemiBold"
+                   Style="{StaticResource Text.Body}" FontWeight="SemiBold"
                    Margin="0,0,0,10"/>
 
         <!-- Kargo özet bilgisi: her iki modda görünür -->
@@ -64,7 +64,7 @@
                 Visibility="Collapsed">
             <StackPanel>
                 <TextBlock Text="Rehberden Alıcı Seç" FontWeight="SemiBold"
-                           FontSize="12" Margin="0,0,0,6"/>
+                           Style="{StaticResource Text.Caption}" Margin="0,0,0,6"/>
 
                 <DockPanel Margin="0,0,0,2">
                     <!-- Padding=0 zorunlu: SecondaryButton stilinin 14px yatay padding'i
@@ -79,7 +79,7 @@
                     <Button x:Name="DropDownButton"
                             DockPanel.Dock="Right"
                             Content="▼" Width="26" Height="26" Margin="4,0,0,0"
-                            Padding="0" FontSize="10"
+                            Padding="0" FontSize="12"
                             Style="{StaticResource SecondaryButton}"
                             Click="DropDownButton_Click"
                             ToolTip="Rehber listesini aç"/>
@@ -131,10 +131,10 @@
                             <Border Background="#E3F2FD" BorderBrush="#90CAF9" BorderThickness="1"
                                     CornerRadius="10" Padding="8,3" Margin="0,0,6,4">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding Display}" FontSize="11"
+                                    <TextBlock Text="{Binding Display}" Style="{StaticResource Text.Caption}"
                                                VerticalAlignment="Center"
                                                ToolTip="{Binding Phone}"/>
-                                    <Button Content="✕" FontSize="10" Margin="6,0,0,0"
+                                    <Button Content="✕" FontSize="12" Margin="6,0,0,0"
                                             Padding="2,0" BorderThickness="0"
                                             Background="Transparent" Cursor="Hand"
                                             Click="RemoveChip_Click" Tag="{Binding}"
@@ -185,7 +185,7 @@
                     <Button x:Name="ToPickButton"
                             DockPanel.Dock="Right"
                             Content="📇 Rehber" Width="80" Height="24" Margin="4,0,0,0"
-                            Padding="0" FontSize="11"
+                            Padding="0" FontSize="12"
                             Style="{StaticResource SecondaryButton}"
                             Click="ToPickButton_Click"
                             ToolTip="Mail rehberinden alıcı seç"/>
@@ -205,7 +205,7 @@
                     <Button x:Name="CcPickButton"
                             DockPanel.Dock="Right"
                             Content="📇 Rehber" Width="80" Height="24" Margin="4,0,0,0"
-                            Padding="0" FontSize="11"
+                            Padding="0" FontSize="12"
                             Style="{StaticResource SecondaryButton}"
                             Click="CcPickButton_Click"
                             ToolTip="Mail rehberinden CC seç"/>
@@ -229,7 +229,7 @@
                 <!-- Adres doğrulama uyarısı: hangi adresin hatalı olduğunu anında gösterir -->
                 <TextBlock Grid.Row="4" Grid.Column="1"
                            x:Name="RecipientWarningBlock"
-                           Foreground="#C2410C" FontSize="11" TextWrapping="Wrap"
+                           Foreground="#C2410C" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"
                            Visibility="Collapsed"/>
             </Grid>
         </Border>
@@ -272,9 +272,9 @@
                 Visibility="Collapsed">
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="✓  " Foreground="#2E7D32"
-                           FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>
+                           Style="{StaticResource Text.Body}" FontWeight="Bold" VerticalAlignment="Center"/>
                 <TextBlock x:Name="SuccessToastText" Foreground="#2E7D32"
-                           FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                           Style="{StaticResource Text.Caption}" FontWeight="SemiBold" VerticalAlignment="Center"/>
             </StackPanel>
         </Border>
 
@@ -282,7 +282,7 @@
         <TextBox x:Name="MessageBodyBox"
                  IsReadOnly="True" AcceptsReturn="True"
                  TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
-                 FontFamily="Segoe UI" FontSize="13"
+                 FontFamily="Segoe UI" FontSize="14"
                  Background="#FAFAFA" BorderBrush="#CBD5E1" BorderThickness="1"
                  Padding="10"/>
 

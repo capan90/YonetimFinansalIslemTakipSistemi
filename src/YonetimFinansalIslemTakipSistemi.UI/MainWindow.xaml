@@ -130,10 +130,10 @@
                     </Border.Effect>
                     <StackPanel>
                         <TextBlock Text="TL BAKİYE"
-                                   Foreground="{DynamicResource Theme.LabelText}" FontSize="11.5" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}" FontWeight="SemiBold"
                                    Margin="0,0,0,4"/>
                         <TextBlock Text="{Binding TlBalance, StringFormat=N2}"
-                                   FontSize="22" FontWeight="Bold"
+                                   Style="{StaticResource Text.Display}" FontWeight="Bold"
                                    Foreground="{Binding TlBalance, Converter={StaticResource BalanceToColor}}"/>
                     </StackPanel>
                 </Border>
@@ -146,10 +146,10 @@
                     </Border.Effect>
                     <StackPanel>
                         <TextBlock Text="USD BAKİYE"
-                                   Foreground="{DynamicResource Theme.LabelText}" FontSize="11.5" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}" FontWeight="SemiBold"
                                    Margin="0,0,0,4"/>
                         <TextBlock Text="{Binding UsdBalance, StringFormat=N2}"
-                                   FontSize="22" FontWeight="Bold"
+                                   Style="{StaticResource Text.Display}" FontWeight="Bold"
                                    Foreground="{Binding UsdBalance, Converter={StaticResource BalanceToColor}}"/>
                     </StackPanel>
                 </Border>
@@ -162,10 +162,10 @@
                     </Border.Effect>
                     <StackPanel>
                         <TextBlock Text="EUR BAKİYE"
-                                   Foreground="{DynamicResource Theme.LabelText}" FontSize="11.5" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}" FontWeight="SemiBold"
                                    Margin="0,0,0,4"/>
                         <TextBlock Text="{Binding EurBalance, StringFormat=N2}"
-                                   FontSize="22" FontWeight="Bold"
+                                   Style="{StaticResource Text.Display}" FontWeight="Bold"
                                    Foreground="{Binding EurBalance, Converter={StaticResource BalanceToColor}}"/>
                     </StackPanel>
                 </Border>
@@ -180,7 +180,7 @@
                                VerticalAlignment="Center"
                                Margin="0,0,10,0"
                                Foreground="#475569"
-                               FontSize="13"/>
+                               Style="{StaticResource Text.Body}"/>
                     <Button Content="Çıkış Yap"
                             Width="90"
                             Style="{StaticResource SecondaryButton}"
@@ -278,7 +278,6 @@
                       HeadersVisibility="Column"
                       BorderBrush="#E2E8F0"
                       BorderThickness="1"
-                      RowHeight="30"
                       MouseDoubleClick="TransactionDataGrid_MouseDoubleClick">
 
                 <!-- Sağ tıklama context menu'su kod arkasında atanır (bkz. MainWindow.xaml.cs) -->
@@ -305,8 +304,8 @@
                                         Binding="{Binding Borc, StringFormat=N2}"
                                         Width="110">
                         <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="HorizontalAlignment" Value="Right"/>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource NumericCell}">
+                                
                                 <Setter Property="Foreground" Value="#2E7D32"/>
                                 <Setter Property="Padding" Value="0,0,4,0"/>
                             </Style>
@@ -317,8 +316,8 @@
                                         Binding="{Binding Alacak, StringFormat=N2}"
                                         Width="110">
                         <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="HorizontalAlignment" Value="Right"/>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource NumericCell}">
+                                
                                 <Setter Property="Foreground" Value="#C62828"/>
                                 <Setter Property="Padding" Value="0,0,4,0"/>
                             </Style>
@@ -329,10 +328,9 @@
                                         Binding="{Binding TlBalanceAfter, StringFormat=N2}"
                                         Width="100">
                         <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="HorizontalAlignment" Value="Right"/>
-                                <Setter Property="Padding" Value="0,0,4,0"/>
-                            </Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource NumericCell}">
+                                
+                                </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
                     <DataGridTextColumn x:Name="ColUsdBakiye"
@@ -340,10 +338,9 @@
                                         Binding="{Binding UsdBalanceAfter, StringFormat=N2}"
                                         Width="100">
                         <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="HorizontalAlignment" Value="Right"/>
-                                <Setter Property="Padding" Value="0,0,4,0"/>
-                            </Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource NumericCell}">
+                                
+                                </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
                     <DataGridTextColumn x:Name="ColEurBakiye"
@@ -351,10 +348,9 @@
                                         Binding="{Binding EurBalanceAfter, StringFormat=N2}"
                                         Width="100">
                         <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="HorizontalAlignment" Value="Right"/>
-                                <Setter Property="Padding" Value="0,0,4,0"/>
-                            </Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource NumericCell}">
+                                
+                                </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
                     <DataGridTextColumn x:Name="ColOlusturulmaT"

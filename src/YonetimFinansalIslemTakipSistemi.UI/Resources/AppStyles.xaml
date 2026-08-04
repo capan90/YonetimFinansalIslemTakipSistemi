@@ -260,7 +260,7 @@
         <Setter Property="HeadersVisibility"    Value="Column"/>
         <Setter Property="SelectionUnit"        Value="FullRow"/>
         <!-- 36: 14px gövde metni + rahat dokunma alanı. Tek yerden yönetilir;
-             pencerelerdeki RowHeight="30" tekrarları kaldırıldı. -->
+             pencerelerdeki satır yüksekliği tekrarları kaldırıldı. -->
         <Setter Property="RowHeight"            Value="36"/>
         <Setter Property="FontSize"             Value="14"/>
         <Setter Property="Background"           Value="{DynamicResource Theme.DataGridRow}"/>

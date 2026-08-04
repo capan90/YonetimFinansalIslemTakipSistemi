@@ -27,7 +27,7 @@
         <!-- Hata mesajı -->
         <TextBlock DockPanel.Dock="Bottom"
                    Text="{Binding ErrorMessage}"
-                   Foreground="#C62828" FontSize="11" TextWrapping="Wrap"
+                   Foreground="#C62828" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"
                    Margin="0,8,0,0"/>
 
         <!-- Form -->

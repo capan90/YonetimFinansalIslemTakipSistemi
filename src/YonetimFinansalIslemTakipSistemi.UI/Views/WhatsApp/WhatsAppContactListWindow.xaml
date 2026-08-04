@@ -58,7 +58,6 @@
                   AlternatingRowBackground="#F8FAFC"
                   RowBackground="White"
                   BorderBrush="#E2E8F0" BorderThickness="1"
-                  RowHeight="30"
                   MouseDoubleClick="MainGrid_MouseDoubleClick">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Ad Soyad / Kayıt Adı" Binding="{Binding FullName}"    Width="220"/>

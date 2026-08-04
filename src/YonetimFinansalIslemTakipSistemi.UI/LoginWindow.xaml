@@ -20,7 +20,7 @@
 
             <!-- Ana başlık -->
             <TextBlock Text="Yönetim Finansal İşlem Takip Sistemi"
-                       FontSize="14" FontWeight="Bold"
+                       Style="{StaticResource Text.Body}" FontWeight="Bold"
                        TextAlignment="Center"
                        TextWrapping="Wrap"
                        Foreground="{DynamicResource Theme.Text}"
@@ -29,7 +29,7 @@
 
             <!-- Hoş geldiniz -->
             <TextBlock Text="Hoş geldiniz"
-                       FontSize="16"
+                       Style="{StaticResource Text.H2}"
                        FontWeight="SemiBold"
                        Foreground="{DynamicResource Theme.Primary}"
                        TextAlignment="Center"
@@ -37,7 +37,7 @@
                        Margin="0,0,0,2"/>
 
             <TextBlock Text="Lütfen hesabınızla giriş yapın."
-                       FontSize="11"
+                       Style="{StaticResource Text.Caption}"
                        Foreground="{DynamicResource Theme.MutedText}"
                        TextAlignment="Center"
                        HorizontalAlignment="Center"
@@ -57,7 +57,7 @@
                     <TextBlock Grid.Column="0"
                                Text="👤"
                                FontFamily="Segoe UI Emoji"
-                               FontSize="14"
+                               Style="{StaticResource Text.Body}"
                                VerticalAlignment="Center"
                                HorizontalAlignment="Center"
                                Foreground="{DynamicResource Theme.MutedText}"/>
@@ -75,10 +75,11 @@
                                IsHitTestVisible="False"
                                Padding="4,7" VerticalAlignment="Center"
                                Foreground="{DynamicResource Theme.MutedText}"
-                               FontSize="12"
                                Visibility="Visible">
+                        <!-- Ölçek stili BasedOn ile alınır: tetikleyicili inline Style
+                             ile Style="..." özniteliği aynı anda kullanılamaz -->
                         <TextBlock.Style>
-                            <Style TargetType="TextBlock">
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
                                 <Setter Property="Visibility" Value="Visible"/>
                                 <Style.Triggers>
                                     <!-- Kullanıcı adı girilince placeholder gizlenir -->
@@ -106,7 +107,7 @@
                     <TextBlock Grid.Column="0"
                                Text="🔒"
                                FontFamily="Segoe UI Emoji"
-                               FontSize="13"
+                               Style="{StaticResource Text.Body}"
                                VerticalAlignment="Center"
                                HorizontalAlignment="Center"
                                Foreground="{DynamicResource Theme.MutedText}"/>
@@ -123,7 +124,7 @@
                                IsHitTestVisible="False"
                                Padding="4,7" VerticalAlignment="Center"
                                Foreground="{DynamicResource Theme.MutedText}"
-                               FontSize="12"
+                               Style="{StaticResource Text.Caption}"
                                Visibility="Visible"/>
                 </Grid>
             </Border>
@@ -152,7 +153,7 @@
                     HorizontalAlignment="Stretch"
                     Padding="8,8"
                     FontWeight="SemiBold"
-                    FontSize="13"
+                    FontSize="14"
                     Margin="0,2,0,16"
                     Style="{StaticResource PrimaryButton}"/>
 
@@ -160,12 +161,12 @@
             <StackPanel HorizontalAlignment="Center">
                 <TextBlock x:Name="VersionText"
                            Text="Versiyon: 1.0.0.0"
-                           FontSize="10"
+                           Style="{StaticResource Text.Caption}"
                            Foreground="{DynamicResource Theme.MutedText}"
                            HorizontalAlignment="Center"
                            Margin="0,0,0,2"/>
                 <TextBlock Text="© Erdemsoft Tekstil A.Ş."
-                           FontSize="10"
+                           Style="{StaticResource Text.Caption}"
                            Foreground="{DynamicResource Theme.MutedText}"
                            HorizontalAlignment="Center"/>
             </StackPanel>

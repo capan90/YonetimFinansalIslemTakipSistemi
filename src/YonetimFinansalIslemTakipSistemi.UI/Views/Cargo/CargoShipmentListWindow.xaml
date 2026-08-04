@@ -9,7 +9,7 @@
 
         <!-- Başlık satırı -->
         <TextBlock x:Name="TitleBlock" DockPanel.Dock="Top"
-                   FontSize="14" FontWeight="SemiBold"
+                   Style="{StaticResource Text.H2}"
                    Margin="0,0,0,6"/>
 
         <!-- Araç çubuğu — 1. satır: CRUD + Arama + Filtreler -->
@@ -85,7 +85,6 @@
                   AlternatingRowBackground="#F8FAFC"
                   RowBackground="White"
                   BorderBrush="#E2E8F0" BorderThickness="1"
-                  RowHeight="30"
                   MouseDoubleClick="MainGrid_MouseDoubleClick">
             <DataGrid.Columns>
                 <!-- Öncelik rozeti: yumuşak dolgu + koyu metin.
@@ -115,11 +114,11 @@
                                 <StackPanel Orientation="Horizontal">
                                     <!-- "!" yalnızca Çok Acil'de: renge ek ikinci bir sinyal,
                                          renk körlüğünde de ayırt edilebilsin -->
-                                    <TextBlock Text="!" FontSize="11" FontWeight="Bold"
+                                    <TextBlock Text="!" FontWeight="Bold"
                                                Margin="0,0,3,0"
                                                Foreground="{DynamicResource Theme.Badge.DangerText}">
                                         <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
                                                 <Setter Property="Visibility" Value="Collapsed"/>
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding PriorityDisplay}" Value="Çok Acil">
@@ -129,9 +128,9 @@
                                             </Style>
                                         </TextBlock.Style>
                                     </TextBlock>
-                                    <TextBlock Text="{Binding PriorityDisplay}" FontSize="11">
+                                    <TextBlock Text="{Binding PriorityDisplay}">
                                         <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
                                                 <Setter Property="Foreground" Value="{DynamicResource Theme.LabelText}"/>
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding PriorityDisplay}" Value="Orta">

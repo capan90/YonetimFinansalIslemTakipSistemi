@@ -3,11 +3,31 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:common="clr-namespace:YonetimFinansalIslemTakipSistemi.UI.Common"
         mc:Ignorable="d"
         Title="Yönetim — Nakit İşlemler"
         Height="640" Width="1280"
         MinWidth="900" MinHeight="500"
         Icon="Assets/AppIcon.ico">
+
+    <!-- Klavye kısayolları — mevcut Click handler'ları sarmalayıcı üzerinden çağrılır,
+         imzalar ve iş mantığı değişmez (bkz. Common/AppCommands.cs).
+         F5 doğrudan ViewModel'in FilterCommand'ına bağlıdır. -->
+    <Window.CommandBindings>
+        <CommandBinding Command="common:AppCommands.New"           Executed="Command_New"/>
+        <CommandBinding Command="common:AppCommands.Duplicate"     Executed="Command_Duplicate"/>
+        <CommandBinding Command="common:AppCommands.DeleteSelected" Executed="Command_Delete"/>
+        <CommandBinding Command="common:AppCommands.FocusSearch"   Executed="Command_FocusSearch"/>
+        <CommandBinding Command="common:AppCommands.ImportExcel"   Executed="Command_ImportExcel"/>
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Key="N"      Modifiers="Ctrl" Command="common:AppCommands.New"/>
+        <KeyBinding Key="D"      Modifiers="Ctrl" Command="common:AppCommands.Duplicate"/>
+        <KeyBinding Key="Delete"                  Command="common:AppCommands.DeleteSelected"/>
+        <KeyBinding Key="F"      Modifiers="Ctrl" Command="common:AppCommands.FocusSearch"/>
+        <KeyBinding Key="E"      Modifiers="Ctrl" Command="common:AppCommands.ImportExcel"/>
+        <KeyBinding Key="F5"                      Command="{Binding FilterCommand}"/>
+    </Window.InputBindings>
 
     <DockPanel Background="#F5F7FA">
 
@@ -250,8 +270,11 @@
                               Width="90" Margin="0,0,10,0"/>
 
                     <Label Content="Açıklama:" VerticalAlignment="Center" Foreground="#475569"/>
-                    <TextBox Text="{Binding DescriptionFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                             Width="160" Margin="0,0,10,0"/>
+                    <!-- Ctrl+F bu alana odaklanır -->
+                    <TextBox x:Name="DescriptionFilterBox"
+                             Text="{Binding DescriptionFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             Width="160" Margin="0,0,10,0"
+                             ToolTip="Açıklamada ara (Ctrl+F)"/>
 
                     <Label Content="Tutar:" VerticalAlignment="Center" Foreground="#475569"/>
                     <ComboBox ItemsSource="{Binding AmountOperatorOptions}"

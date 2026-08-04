@@ -1,9 +1,31 @@
 <Window x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.Cargo.CargoShipmentListWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:common="clr-namespace:YonetimFinansalIslemTakipSistemi.UI.Common"
         Title="Kargo Listesi" Height="600" Width="1360"
         WindowStartupLocation="CenterOwner"
         Icon="pack://application:,,,/Assets/AppIcon.ico">
+
+    <!-- Klavye kısayolları — mevcut Click handler'ları sarmalayıcı ile çağrılır.
+         Enter bilinçli olarak pencere değil DataGrid seviyesinde: arama kutusundaki
+         Enter zaten aramayı çalıştırıyor, ikisi çakışmamalı. -->
+    <Window.CommandBindings>
+        <CommandBinding Command="common:AppCommands.New"            Executed="Command_New"/>
+        <CommandBinding Command="common:AppCommands.Duplicate"      Executed="Command_Duplicate"/>
+        <CommandBinding Command="common:AppCommands.DeleteSelected" Executed="Command_Delete"/>
+        <CommandBinding Command="common:AppCommands.EditSelected"   Executed="Command_Edit"/>
+        <CommandBinding Command="common:AppCommands.RefreshList"    Executed="Command_Refresh"/>
+        <CommandBinding Command="common:AppCommands.FocusSearch"    Executed="Command_FocusSearch"/>
+        <CommandBinding Command="common:AppCommands.CloseWindow"    Executed="Command_Close"/>
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Key="N"      Modifiers="Ctrl" Command="common:AppCommands.New"/>
+        <KeyBinding Key="D"      Modifiers="Ctrl" Command="common:AppCommands.Duplicate"/>
+        <KeyBinding Key="Delete"                  Command="common:AppCommands.DeleteSelected"/>
+        <KeyBinding Key="F5"                      Command="common:AppCommands.RefreshList"/>
+        <KeyBinding Key="F"      Modifiers="Ctrl" Command="common:AppCommands.FocusSearch"/>
+        <KeyBinding Key="Escape"                  Command="common:AppCommands.CloseWindow"/>
+    </Window.InputBindings>
 
     <DockPanel Margin="8">
 
@@ -39,9 +61,10 @@
                           SelectedItem="{Binding SelectedSearchType, Mode=TwoWay}"
                           Width="110" Margin="0,0,4,0"
                           ToolTip="Arama yapılacak alanı seçin"/>
-                <TextBox Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}"
+                <TextBox x:Name="SearchBox"
+                         Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}"
                          Width="180" Margin="0,0,6,0" KeyDown="SearchBox_KeyDown"
-                         ToolTip="Seçili arama türünde ara — Enter veya Ara butonu ile"/>
+                         ToolTip="Seçili arama türünde ara — Enter veya Ara butonu ile (Ctrl+F)"/>
                 <Button Content="Ara" Width="55" Margin="0,0,12,0"
                         Style="{StaticResource PrimaryButton}"
                         Command="{Binding SearchCommand}"/>
@@ -96,6 +119,11 @@
                   RowBackground="White"
                   BorderBrush="#E2E8F0" BorderThickness="1"
                   MouseDoubleClick="MainGrid_MouseDoubleClick">
+            <!-- Enter yalnızca ızgara odaktayken düzenler; arama kutusundaki
+                 Enter aramayı çalıştırmaya devam eder -->
+            <DataGrid.InputBindings>
+                <KeyBinding Key="Enter" Command="common:AppCommands.EditSelected"/>
+            </DataGrid.InputBindings>
             <DataGrid.Columns>
                 <!-- Öncelik rozeti: yumuşak dolgu + koyu metin.
                      Normal öncelik çoğunluktur — rozet çizilmez, sade metin kalır;

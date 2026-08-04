@@ -6,6 +6,7 @@ using Serilog.Events;
 using System.IO;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Threading;
 using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Features.AuditLogs.Queries.GetAuditLogs;
@@ -106,6 +107,8 @@ public partial class App : System.Windows.Application
         // Başarısız olursa uygulama akışı engellenmez — yalnızca pin gruplaması iyileştirmesidir.
         try { SetCurrentProcessExplicitAppUserModelID(AppUserModelId); }
         catch (Exception ex) { Log.Warning(ex, "AppUserModelID ayarlanamadı (pin gruplaması)"); }
+
+        RegisterGlobalKeyBindings();
 
         // Global handler'lar logger kurulmadan önce kaydedilir.
         // Logger henüz hazır değilse Serilog'un varsayılan sessiz logger'ı devreye girer.
@@ -406,6 +409,28 @@ public partial class App : System.Windows.Application
     }
 
     // ── Global Exception Handlers ────────────────────────────────────────────
+
+    /// <summary>
+    /// Esc = pencereyi kapat — sınıf düzeyinde, tüm pencereler için bir kez.
+    /// 24 pencerenin her birine ayrı KeyBinding + CommandBinding eklemek yerine
+    /// Window tipine kaydediliyor; yeni eklenen pencereler de otomatik kapsanır.
+    ///
+    /// ComboBox açıkken veya hücre düzenlemesindeyken Esc'i o kontroller önce
+    /// işleyip "handled" işaretler — pencere kapanmaz, beklenen davranış korunur.
+    /// İptal butonu olan diyaloglarda IsCancel zaten aynı sonucu veriyordu.
+    /// </summary>
+    private static void RegisterGlobalKeyBindings()
+    {
+        CommandManager.RegisterClassCommandBinding(
+            typeof(Window),
+            new CommandBinding(
+                UI.Common.AppCommands.CloseWindow,
+                (sender, _) => (sender as Window)?.Close()));
+
+        CommandManager.RegisterClassInputBinding(
+            typeof(Window),
+            new KeyBinding(UI.Common.AppCommands.CloseWindow, Key.Escape, ModifierKeys.None));
+    }
 
     private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
     {

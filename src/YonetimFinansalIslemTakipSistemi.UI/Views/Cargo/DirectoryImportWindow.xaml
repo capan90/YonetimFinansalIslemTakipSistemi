@@ -97,13 +97,20 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTextColumn Header="Satır"   Binding="{Binding RowNumber}"      Width="50"  IsReadOnly="True"/>
-                    <DataGridTextColumn Header=""        Binding="{Binding StatusGlyph}"    Width="34"  IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Durum"   Binding="{Binding StatusText}"     Width="75"  IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Firma"   Binding="{Binding CompanyDisplay}" Width="220" IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Yetkili" Binding="{Binding ContactDisplay}" Width="120" IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Telefon" Binding="{Binding PhoneDisplay}"   Width="120" IsReadOnly="True"/>
-                    <DataGridTextColumn Header="İl"      Binding="{Binding CityDisplay}"    Width="80"  IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Satır"   Binding="{Binding RowNumber}"      Width="50"  IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header=""        Binding="{Binding StatusGlyph}"    Width="34"  IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header="Durum"   Binding="{Binding StatusText}"     Width="75"  IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header="Firma"   Binding="{Binding CompanyDisplay}" Width="220" IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header="Yetkili" Binding="{Binding ContactDisplay}" Width="120" IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header="Telefon" Binding="{Binding PhoneDisplay}"   Width="120" IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header="İl"      Binding="{Binding CityDisplay}"    Width="80"  IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                     <DataGridTextColumn Header="Açıklama / Hatalar" Binding="{Binding MessagesText}" Width="*" IsReadOnly="True">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">

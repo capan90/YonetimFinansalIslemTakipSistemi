@@ -60,12 +60,16 @@
                       BorderBrush="#E2E8F0" BorderThickness="1"
                       MouseDoubleClick="MainGrid_MouseDoubleClick">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Ad Soyad / Kayıt Adı" Binding="{Binding FullName}"    Width="200"/>
-                    <DataGridTextColumn Header="E-posta"              Binding="{Binding Email}"       Width="220"/>
-                    <DataGridTextColumn Header="Firma"                Binding="{Binding Company}"     Width="160"/>
+                    <DataGridTextColumn Header="Ad Soyad / Kayıt Adı" Binding="{Binding FullName}"    Width="200"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header="E-posta"              Binding="{Binding Email}"       Width="220"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header="Firma"                Binding="{Binding Company}"     Width="160"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                     <DataGridCheckBoxColumn Header="Varsayılan CC"    Binding="{Binding IsDefaultCc}" Width="100"/>
                     <DataGridTextColumn Header="Son Kullanım"
-                                        Binding="{Binding LastUsedAt, StringFormat=dd.MM.yyyy HH:mm}" Width="120"/>
+                                        Binding="{Binding LastUsedAt, StringFormat=dd.MM.yyyy HH:mm}" Width="120"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                     <DataGridCheckBoxColumn Header="Aktif"            Binding="{Binding IsActive}"    Width="60"/>
                 </DataGrid.Columns>
             </DataGrid>

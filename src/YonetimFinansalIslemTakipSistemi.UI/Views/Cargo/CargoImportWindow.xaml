@@ -106,14 +106,22 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTextColumn Header="Satır"  Binding="{Binding RowNumber}"       Width="50"  IsReadOnly="True"/>
-                    <DataGridTextColumn Header=""       Binding="{Binding StatusGlyph}"     Width="34"  IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Durum"  Binding="{Binding StatusText}"      Width="75"  IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Tarih"  Binding="{Binding DateDisplay}"     Width="85"  IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Firma"  Binding="{Binding CompanyDisplay}"  Width="180" IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Kargo Firması" Binding="{Binding CargoDisplay}" Width="120" IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Öncelik" Binding="{Binding PriorityDisplay}" Width="75" IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Takip No" Binding="{Binding TrackingDisplay}" Width="110" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Satır"  Binding="{Binding RowNumber}"       Width="50"  IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header=""       Binding="{Binding StatusGlyph}"     Width="34"  IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header="Durum"  Binding="{Binding StatusText}"      Width="75"  IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header="Tarih"  Binding="{Binding DateDisplay}"     Width="85"  IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header="Firma"  Binding="{Binding CompanyDisplay}"  Width="180" IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header="Kargo Firması" Binding="{Binding CargoDisplay}" Width="120" IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header="Öncelik" Binding="{Binding PriorityDisplay}" Width="75" IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header="Takip No" Binding="{Binding TrackingDisplay}" Width="110" IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                     <DataGridTextColumn Header="Açıklama / Hatalar" Binding="{Binding MessagesText}" Width="*" IsReadOnly="True">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">

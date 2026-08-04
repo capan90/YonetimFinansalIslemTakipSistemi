@@ -65,10 +65,14 @@
                   BorderBrush="#E2E8F0" BorderThickness="1"
                   MouseDoubleClick="MainGrid_MouseDoubleClick">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Ad Soyad / Kayıt Adı" Binding="{Binding FullName}"    Width="220"/>
-                <DataGridTextColumn Header="Telefon"              Binding="{Binding Phone}"       Width="140"/>
-                <DataGridTextColumn Header="Firma"                Binding="{Binding Company}"     Width="180"/>
-                <DataGridTextColumn Header="Açıklama"             Binding="{Binding Description}" Width="*"/>
+                <DataGridTextColumn Header="Ad Soyad / Kayıt Adı" Binding="{Binding FullName}"    Width="220"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridTextColumn Header="Telefon"              Binding="{Binding Phone}"       Width="140"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridTextColumn Header="Firma"                Binding="{Binding Company}"     Width="180"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridTextColumn Header="Açıklama"             Binding="{Binding Description}" Width="*"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                 <DataGridCheckBoxColumn Header="Aktif"            Binding="{Binding IsActive}"    Width="60"/>
             </DataGrid.Columns>
         </DataGrid>

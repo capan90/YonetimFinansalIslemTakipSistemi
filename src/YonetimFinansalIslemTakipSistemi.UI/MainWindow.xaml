@@ -239,7 +239,7 @@
                     <Button Content="Sil"
                             Width="60"
                             Style="{StaticResource DangerButton}"
-                            ToolTip="Seçili işlemi kalıcı olarak siler."
+                            ToolTip="Seçili işlemi siler. Kayıt denetim günlüğünde saklanır."
                             IsEnabled="{Binding HasSelectedTransaction}"
                             Click="DeleteTransactionButton_Click"/>
                 </StackPanel>
@@ -291,6 +291,19 @@
                 </WrapPanel>
             </Border>
 
+            <!-- Liste özet şeridi — DataGrid'den ÖNCE tanımlanır çünkü DockPanel'de
+                 son çocuk kalan alanı doldurur; tablo son çocuk olmalı.
+                 Üstteki bakiye kartlarından farkı: kartlar filtreden bağımsız genel
+                 bakiyeyi, bu şerit ekranda görünen filtrelenmiş satırları özetler. -->
+            <Border DockPanel.Dock="Bottom"
+                    Background="{DynamicResource Theme.DataGridHeader}"
+                    BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1,0,1,1"
+                    Padding="10,6" Margin="0,0,0,0">
+                <TextBlock Text="{Binding ListSummary}"
+                           Style="{StaticResource Text.Caption}"
+                           ToolTip="Filtre uygulandıktan sonra listede görünen satırların özeti. Para birimleri karışık olabilir."/>
+            </Border>
+
             <!-- İşlem Listesi -->
             <DataGrid x:Name="TransactionDataGrid"
                       ItemsSource="{Binding Transactions}"
@@ -313,19 +326,23 @@
                     <DataGridTextColumn x:Name="ColTarih"
                                         Header="Tarih"
                                         Binding="{Binding TransactionDate, StringFormat=dd.MM.yyyy}"
-                                        Width="90"/>
+                                        Width="90"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                     <DataGridTextColumn x:Name="ColTur"
                                         Header="Tür"
                                         Binding="{Binding TransactionTypeDisplay}"
-                                        Width="80"/>
+                                        Width="80"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                     <DataGridTextColumn x:Name="ColParaBir"
                                         Header="Para Bir."
                                         Binding="{Binding CurrencyTypeDisplay}"
-                                        Width="75"/>
+                                        Width="75"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                     <DataGridTextColumn x:Name="ColAciklama"
                                         Header="Açıklama"
                                         Binding="{Binding Description}"
-                                        Width="*"/>
+                                        Width="*"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                     <DataGridTextColumn x:Name="ColBorc"
                                         Header="Borç"
                                         Binding="{Binding Borc, StringFormat=N2}"
@@ -355,9 +372,7 @@
                                         Binding="{Binding TlBalanceAfter, StringFormat=N2}"
                                         Width="100">
                         <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource NumericCell}">
-                                
-                                </Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource NumericCell}"/>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
                     <DataGridTextColumn x:Name="ColUsdBakiye"
@@ -365,9 +380,7 @@
                                         Binding="{Binding UsdBalanceAfter, StringFormat=N2}"
                                         Width="100">
                         <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource NumericCell}">
-                                
-                                </Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource NumericCell}"/>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
                     <DataGridTextColumn x:Name="ColEurBakiye"
@@ -375,15 +388,14 @@
                                         Binding="{Binding EurBalanceAfter, StringFormat=N2}"
                                         Width="100">
                         <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource NumericCell}">
-                                
-                                </Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource NumericCell}"/>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
                     <DataGridTextColumn x:Name="ColOlusturulmaT"
                                         Header="Oluşturulma"
                                         Binding="{Binding CreatedAt, StringFormat=dd.MM.yyyy HH:mm}"
-                                        Width="130"/>
+                                        Width="130"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                 </DataGrid.Columns>
             </DataGrid>
 

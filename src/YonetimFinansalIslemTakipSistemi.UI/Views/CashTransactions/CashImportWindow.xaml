@@ -97,12 +97,18 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTextColumn Header="Satır"       Binding="{Binding RowNumber}"       Width="50"  IsReadOnly="True"/>
-                    <DataGridTextColumn Header=""            Binding="{Binding StatusGlyph}"     Width="34"  IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Durum"       Binding="{Binding StatusText}"      Width="75"  IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Tarih"       Binding="{Binding DateDisplay}"     Width="85"  IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Tür"         Binding="{Binding TypeDisplay}"     Width="60"  IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Para Birimi" Binding="{Binding CurrencyDisplay}" Width="80"  IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Satır"       Binding="{Binding RowNumber}"       Width="50"  IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header=""            Binding="{Binding StatusGlyph}"     Width="34"  IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header="Durum"       Binding="{Binding StatusText}"      Width="75"  IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header="Tarih"       Binding="{Binding DateDisplay}"     Width="85"  IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header="Tür"         Binding="{Binding TypeDisplay}"     Width="60"  IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header="Para Birimi" Binding="{Binding CurrencyDisplay}" Width="80"  IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                     <DataGridTextColumn Header="Tutar"       Binding="{Binding AmountDisplay}"   Width="100" IsReadOnly="True">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
@@ -111,7 +117,8 @@
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Açıklama"    Binding="{Binding DescriptionDisplay}" Width="200" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Açıklama"    Binding="{Binding DescriptionDisplay}" Width="200" IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                     <DataGridTextColumn Header="Hatalar / Uyarılar" Binding="{Binding MessagesText}" Width="*" IsReadOnly="True">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">

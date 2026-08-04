@@ -171,6 +171,28 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
 
     public ObservableCollection<CashTransactionDto> Transactions { get; } = new();
 
+    // --- Liste özeti (salt okunur) ---
+    // Filtre uygulandıktan SONRAKİ görünen satırların özeti. Üstteki bakiye
+    // kartlarından farklıdır: kartlar filtreden bağımsız genel bakiyeyi gösterir,
+    // bu şerit "şu an ekranda ne var" sorusunu yanıtlar.
+    // Para birimleri karışık olabildiği için toplamlar birim yazılmadan verilir.
+
+    public int VisibleCount => Transactions.Count;
+
+    public decimal VisibleBorcTotal   => Transactions.Sum(t => t.Borc);
+    public decimal VisibleAlacakTotal => Transactions.Sum(t => t.Alacak);
+
+    public string ListSummary =>
+        $"Gösterilen: {VisibleCount} kayıt   ·   Borç toplamı: {VisibleBorcTotal:N2}   ·   Alacak toplamı: {VisibleAlacakTotal:N2}";
+
+    private void NotifySummaryChanged()
+    {
+        OnPropertyChanged(nameof(VisibleCount));
+        OnPropertyChanged(nameof(VisibleBorcTotal));
+        OnPropertyChanged(nameof(VisibleAlacakTotal));
+        OnPropertyChanged(nameof(ListSummary));
+    }
+
     // --- Komutlar ---
 
     public ICommand FilterCommand { get; }
@@ -226,6 +248,7 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
             Transactions.Add(item);
 
         OnPropertyChanged(nameof(Transactions));
+        NotifySummaryChanged();
     }
 
     private void UpdateBalanceColumnVisibility()

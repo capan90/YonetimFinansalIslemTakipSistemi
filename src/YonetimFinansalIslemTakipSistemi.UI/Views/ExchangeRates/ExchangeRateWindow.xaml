@@ -143,10 +143,12 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Tarih"
                                         Binding="{Binding RateDate, StringFormat=dd.MM.yyyy}"
-                                        Width="100"/>
+                                        Width="100"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                     <DataGridTextColumn Header="Para Birimi"
                                         Binding="{Binding CurrencyDisplay}"
-                                        Width="90"/>
+                                        Width="90"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                     <DataGridTextColumn Header="Alış Kuru"
                                         Binding="{Binding ForexBuying, StringFormat=N4}"
                                         Width="*">
@@ -167,7 +169,8 @@
                     </DataGridTextColumn>
                     <DataGridTextColumn Header="Güncellendi"
                                         Binding="{Binding UpdatedAt, StringFormat=dd.MM.yyyy HH:mm}"
-                                        Width="130"/>
+                                        Width="130"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                 </DataGrid.Columns>
             </DataGrid>
         </GroupBox>

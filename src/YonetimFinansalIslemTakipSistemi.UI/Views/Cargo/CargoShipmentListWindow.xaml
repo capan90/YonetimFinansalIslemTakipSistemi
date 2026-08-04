@@ -193,22 +193,29 @@
 
                 <DataGridTextColumn Header="Kargo No"
                                     Binding="{Binding ShipmentNumber}"
-                                    Width="120"/>
+                                    Width="120"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                 <DataGridTextColumn Header="Tarih"
                                     Binding="{Binding ShipmentDate, StringFormat=dd.MM.yyyy}"
-                                    Width="85"/>
+                                    Width="85"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                 <DataGridTextColumn Header="Kargo Firması"
                                     Binding="{Binding CargoCompanyName}"
-                                    Width="120"/>
+                                    Width="120"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                 <DataGridTextColumn Header="Karşı Taraf"
                                     Binding="{Binding DisplayParty}"
-                                    Width="150"/>
+                                    Width="150"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                <!-- Çoğu kayıtta boş: sabit genişlik yerine içeriğe göre daralsınlar -->
                 <DataGridTextColumn Header="Takip No"
                                     Binding="{Binding TrackingNumber}"
-                                    Width="110"/>
+                                    Width="Auto" MinWidth="80"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                 <DataGridTextColumn Header="Araç Plaka"
                                     Binding="{Binding VehiclePlate}"
-                                    Width="90"/>
+                                    Width="Auto" MinWidth="80"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
 
                 <!-- Tek bağlantı kaynağı: firma PortalUrl (eski kayıtlarda saklı TrackingUrl korunur);
                      DTO seviyesinde birleştirilir -->
@@ -239,10 +246,12 @@
 
                 <DataGridTextColumn Header="Durum"
                                     Binding="{Binding StatusDisplay}"
-                                    Width="100"/>
+                                    Width="100"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                 <DataGridTextColumn Header="Bildirim Durumu"
                                     Binding="{Binding NotificationStatusDisplay}"
-                                    Width="110"/>
+                                    Width="110"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
             </DataGrid.Columns>
         </DataGrid>
         <TextBlock Text="Gösterilecek kargo kaydı bulunamadı">

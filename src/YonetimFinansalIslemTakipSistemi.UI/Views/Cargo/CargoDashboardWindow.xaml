@@ -364,14 +364,22 @@
                           GridLinesVisibility="Horizontal"
                           AlternatingRowBackground="#F8FAFC">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Kargo No"      Binding="{Binding ShipmentNumber}"            Width="100"/>
-                        <DataGridTextColumn Header="Yön"            Binding="{Binding DirectionDisplay}"          Width="60"/>
-                        <DataGridTextColumn Header="Tarih"          Binding="{Binding ShipmentDate, StringFormat=dd.MM.yyyy}" Width="80"/>
-                        <DataGridTextColumn Header="Firma/Karşı Taraf" Binding="{Binding Party}"                 Width="*"/>
-                        <DataGridTextColumn Header="Kargo Firması"  Binding="{Binding CargoCompanyName}"         Width="120"/>
-                        <DataGridTextColumn Header="Durum"          Binding="{Binding StatusDisplay}"            Width="100"/>
-                        <DataGridTextColumn Header="Bildirim"       Binding="{Binding NotificationStatusDisplay}" Width="100"/>
-                        <DataGridTextColumn Header="Öncelik"        Binding="{Binding PriorityDisplay}"          Width="70"/>
+                        <DataGridTextColumn Header="Kargo No"      Binding="{Binding ShipmentNumber}"            Width="100"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Yön"            Binding="{Binding DirectionDisplay}"          Width="60"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Tarih"          Binding="{Binding ShipmentDate, StringFormat=dd.MM.yyyy}" Width="80"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Firma/Karşı Taraf" Binding="{Binding Party}"                 Width="*"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Kargo Firması"  Binding="{Binding CargoCompanyName}"         Width="120"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Durum"          Binding="{Binding StatusDisplay}"            Width="100"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Bildirim"       Binding="{Binding NotificationStatusDisplay}" Width="100"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Öncelik"        Binding="{Binding PriorityDisplay}"          Width="70"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
@@ -487,16 +495,26 @@
                           AlternatingRowBackground="#F8FAFC"
                           MouseDoubleClick="ReportGrid_MouseDoubleClick">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Kargo No"       Binding="{Binding ShipmentNumber}"              Width="100"/>
-                        <DataGridTextColumn Header="Yön"             Binding="{Binding DirectionDisplay}"            Width="55"/>
-                        <DataGridTextColumn Header="Tarih"           Binding="{Binding ShipmentDate, StringFormat=dd.MM.yyyy}" Width="75"/>
-                        <DataGridTextColumn Header="Firma / Karşı Taraf" Binding="{Binding Party}"                  Width="*"/>
-                        <DataGridTextColumn Header="Kargo Firması"   Binding="{Binding CargoCompanyName}"           Width="120"/>
-                        <DataGridTextColumn Header="Takip No"        Binding="{Binding TrackingNumber}"             Width="110"/>
-                        <DataGridTextColumn Header="Araç Plaka"      Binding="{Binding VehiclePlate}"               Width="90"/>
-                        <DataGridTextColumn Header="Durum"           Binding="{Binding StatusDisplay}"              Width="100"/>
-                        <DataGridTextColumn Header="Bildirim"        Binding="{Binding NotificationStatusDisplay}"  Width="100"/>
-                        <DataGridTextColumn Header="Öncelik"         Binding="{Binding PriorityDisplay}"            Width="70"/>
+                        <DataGridTextColumn Header="Kargo No"       Binding="{Binding ShipmentNumber}"              Width="100"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Yön"             Binding="{Binding DirectionDisplay}"            Width="55"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Tarih"           Binding="{Binding ShipmentDate, StringFormat=dd.MM.yyyy}" Width="75"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Firma / Karşı Taraf" Binding="{Binding Party}"                  Width="*"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Kargo Firması"   Binding="{Binding CargoCompanyName}"           Width="120"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Takip No"        Binding="{Binding TrackingNumber}"             Width="110"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Araç Plaka"      Binding="{Binding VehiclePlate}"               Width="90"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Durum"           Binding="{Binding StatusDisplay}"              Width="100"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Bildirim"        Binding="{Binding NotificationStatusDisplay}"  Width="100"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Öncelik"         Binding="{Binding PriorityDisplay}"            Width="70"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                     </DataGrid.Columns>
                 </DataGrid>
 

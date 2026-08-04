@@ -49,12 +49,15 @@
                   HeadersVisibility="Column"
                   MouseDoubleClick="EditButton_Click">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Ad Soyad"       Binding="{Binding FullName}"  Width="*"/>
-                <DataGridTextColumn Header="Kullanıcı Adı"  Binding="{Binding UserName}"  Width="150"/>
+                <DataGridTextColumn Header="Ad Soyad"       Binding="{Binding FullName}"  Width="*"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridTextColumn Header="Kullanıcı Adı"  Binding="{Binding UserName}"  Width="150"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                 <DataGridCheckBoxColumn Header="Aktif"       Binding="{Binding IsActive}"  Width="55"/>
                 <DataGridTextColumn Header="Oluşturulma"
                                     Binding="{Binding CreatedAt, StringFormat=dd.MM.yyyy HH:mm}"
-                                    Width="140"/>
+                                    Width="140"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
             </DataGrid.Columns>
         </DataGrid>
         <TextBlock Text="Gösterilecek kullanıcı bulunamadı">

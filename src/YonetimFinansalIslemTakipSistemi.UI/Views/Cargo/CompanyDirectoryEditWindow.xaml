@@ -69,7 +69,7 @@
         <CheckBox Content="Aktif" IsChecked="{Binding IsActive}" Margin="0,0,0,12"/>
 
         <!-- Hata mesajı -->
-        <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" TextWrapping="Wrap" Margin="0,0,0,8">
+        <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Theme.Danger}" TextWrapping="Wrap" Margin="0,0,0,8">
             <TextBlock.Style>
                 <Style TargetType="TextBlock">
                     <Setter Property="Visibility" Value="Visible"/>

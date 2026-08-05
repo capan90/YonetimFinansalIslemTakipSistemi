@@ -96,9 +96,14 @@ Gerçek kasa-arası transfer için:
 - Eş hareket kaydı (kaynak çıkış + hedef giriş)
 - `GetFinancialDirection()` ve rapor handler güncellemesi
 
-### Koyu Tema
-`DarkTheme.xaml` hazır; WPF DynamicResource sorunları nedeniyle devre dışı bırakıldı.  
-`AppearanceSettingsWindow`'da "Koyu Tema (Yakında)" olarak görünür.
+### ~~Koyu Tema~~ — kapandı (2026-08-05)
+Faz B token setini kurdu, Faz B düzeltmesi kontrol şablonlarını temaya bağladı.  
+Üç tercih aktif: Açık / Koyu / Sistem temasını takip et.  
+Bkz. `docs/05-ADR/ADR-005-ThemeSystem.md` ve `docs/02-Architecture/ThemeEngine.md`.
+
+**Devreden kalan:** Kargo dashboard grafik barlarının rengi Application katmanındaki
+`CargoDashboardChartItem.Color` alanından geliyor, tema token'ı değil. Grafik paleti
+Faz C kapsamında `ChartPalette.xaml`'a taşınacak.
 
 ---
 

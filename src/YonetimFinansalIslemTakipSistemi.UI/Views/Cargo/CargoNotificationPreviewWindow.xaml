@@ -16,7 +16,7 @@
 
         <!-- Kargo özet bilgisi: her iki modda görünür -->
         <Border DockPanel.Dock="Top"
-                Background="#F0FFF0" BorderBrush="#A8D8A8" BorderThickness="1"
+                Background="{DynamicResource Theme.Success.Background}" BorderBrush="{DynamicResource Theme.Success.Border}" BorderThickness="1"
                 CornerRadius="4" Padding="10,8" Margin="0,0,0,8">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -50,7 +50,7 @@
                 <TextBox   Grid.Row="1" Grid.Column="1"
                            x:Name="PhoneTextBox"
                            Grid.ColumnSpan="3" Margin="0,0,0,0"
-                           Padding="4,2" BorderThickness="1" BorderBrush="#CBD5E1"
+                           Padding="4,2" BorderThickness="1" BorderBrush="{DynamicResource Theme.InputBorder}"
                            Visibility="Collapsed"
                            ToolTip="WhatsApp alıcı numarası — yalnızca bu gönderim için kullanılır"/>
             </Grid>
@@ -59,7 +59,7 @@
         <!-- WhatsApp rehber seçimi — yalnızca WhatsApp modunda görünür -->
         <Border x:Name="ContactsPanel"
                 DockPanel.Dock="Top"
-                Background="#F8F9FA" BorderBrush="#CBD5E1" BorderThickness="1"
+                Background="{DynamicResource Theme.SurfaceSubtle}" BorderBrush="{DynamicResource Theme.InputBorder}" BorderThickness="1"
                 CornerRadius="4" Padding="10,8" Margin="0,0,0,8"
                 Visibility="Collapsed">
             <StackPanel>
@@ -85,7 +85,7 @@
                             ToolTip="Rehber listesini aç"/>
                     <TextBox x:Name="ContactSearchBox"
                              Height="26" VerticalContentAlignment="Center"
-                             Padding="4,2" BorderThickness="1" BorderBrush="#CBD5E1"
+                             Padding="4,2" BorderThickness="1" BorderBrush="{DynamicResource Theme.InputBorder}"
                              TextChanged="ContactSearchBox_TextChanged"
                              GotKeyboardFocus="ContactSearchBox_GotKeyboardFocus"
                              ToolTip="Ad, firma veya telefonla arayın — yazınca liste açılır"/>
@@ -99,7 +99,7 @@
                        PlacementTarget="{Binding ElementName=ContactSearchBox}"
                        Placement="Bottom"
                        VerticalOffset="2">
-                    <Border Background="White" BorderBrush="#CBD5E1" BorderThickness="1"
+                    <Border Background="{DynamicResource Theme.Surface}" BorderBrush="{DynamicResource Theme.InputBorder}" BorderThickness="1"
                             CornerRadius="4" Padding="4"
                             Width="{Binding ActualWidth, ElementName=ContactSearchBox}">
                         <ListBox x:Name="ContactListBox"
@@ -128,7 +128,7 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="#E3F2FD" BorderBrush="#90CAF9" BorderThickness="1"
+                            <Border Background="{DynamicResource Theme.Info.Background}" BorderBrush="{DynamicResource Theme.Info.Border}" BorderThickness="1"
                                     CornerRadius="10" Padding="8,3" Margin="0,0,6,4">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding Display}" Style="{StaticResource Text.Caption}"
@@ -150,7 +150,7 @@
         <!-- Mail alanları paneli — yalnızca mail modunda görünür -->
         <Border x:Name="MailFieldsPanel"
                 DockPanel.Dock="Top"
-                Background="#F8F9FA" BorderBrush="#CBD5E1" BorderThickness="1"
+                Background="{DynamicResource Theme.SurfaceSubtle}" BorderBrush="{DynamicResource Theme.InputBorder}" BorderThickness="1"
                 CornerRadius="4" Padding="10,8" Margin="0,0,0,8"
                 Visibility="Collapsed">
             <Grid>
@@ -172,7 +172,7 @@
                            VerticalAlignment="Center" Margin="0,0,6,5"/>
                 <TextBlock Grid.Row="0" Grid.Column="1"
                            x:Name="FromBlock"
-                           FontStyle="Italic" Foreground="#555"
+                           FontStyle="Italic" Foreground="{DynamicResource Theme.LabelText}"
                            VerticalAlignment="Center" Margin="0,0,0,5"/>
 
                 <!-- Alıcı — birden fazla adres kabul eder (";" ile ayrılır).
@@ -191,7 +191,7 @@
                             ToolTip="Mail rehberinden alıcı seç"/>
                     <TextBox x:Name="ToTextBox"
                              Padding="4,3"
-                             BorderThickness="1" BorderBrush="#CBD5E1"
+                             BorderThickness="1" BorderBrush="{DynamicResource Theme.InputBorder}"
                              VerticalContentAlignment="Center"
                              TextChanged="RecipientBoxes_TextChanged"
                              ToolTip="Birden fazla adres yazabilirsiniz — noktalı virgül veya virgülle ayırın. Adresler yalnızca bu gönderim için kullanılır, DB'ye kaydedilmez."/>
@@ -211,7 +211,7 @@
                             ToolTip="Mail rehberinden CC seç"/>
                     <TextBox x:Name="CcTextBox"
                              Padding="4,3"
-                             BorderThickness="1" BorderBrush="#CBD5E1"
+                             BorderThickness="1" BorderBrush="{DynamicResource Theme.InputBorder}"
                              VerticalContentAlignment="Center"
                              TextChanged="RecipientBoxes_TextChanged"
                              ToolTip="İsteğe bağlı — birden fazla adres için noktalı virgül kullanın. 'Varsayılan CC' işaretli rehber kişileri otomatik eklenir."/>
@@ -224,12 +224,12 @@
                 <TextBox   Grid.Row="3" Grid.Column="1"
                            x:Name="SubjectTextBox"
                            Padding="4,3" Margin="0,0,0,5"
-                           BorderThickness="1" BorderBrush="#CBD5E1"/>
+                           BorderThickness="1" BorderBrush="{DynamicResource Theme.InputBorder}"/>
 
                 <!-- Adres doğrulama uyarısı: hangi adresin hatalı olduğunu anında gösterir -->
                 <TextBlock Grid.Row="4" Grid.Column="1"
                            x:Name="RecipientWarningBlock"
-                           Foreground="#C2410C" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Theme.Warning.Text}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"
                            Visibility="Collapsed"/>
             </Grid>
         </Border>
@@ -272,13 +272,13 @@
         <!-- Başarı bildirimi — pencere kapanmadan önce kısa süre görünür (1.5 sn) -->
         <Border x:Name="SuccessToast"
                 DockPanel.Dock="Bottom"
-                Background="#E8F5E9" BorderBrush="#81C784" BorderThickness="0,1,0,0"
+                Background="{DynamicResource Theme.Success.Background}" BorderBrush="{DynamicResource Theme.Success.Border}" BorderThickness="0,1,0,0"
                 CornerRadius="0,0,0,0" Padding="10,7" Margin="0,6,0,0"
                 Visibility="Collapsed">
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="✓  " Foreground="#2E7D32"
+                <TextBlock Text="✓  " Foreground="{DynamicResource Theme.Success}"
                            Style="{StaticResource Text.Body}" FontWeight="Bold" VerticalAlignment="Center"/>
-                <TextBlock x:Name="SuccessToastText" Foreground="#2E7D32"
+                <TextBlock x:Name="SuccessToastText" Foreground="{DynamicResource Theme.Success}"
                            Style="{StaticResource Text.Caption}" FontWeight="SemiBold" VerticalAlignment="Center"/>
             </StackPanel>
         </Border>
@@ -288,7 +288,7 @@
                  IsReadOnly="True" AcceptsReturn="True"
                  TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
                  FontFamily="Segoe UI" FontSize="14"
-                 Background="#FAFAFA" BorderBrush="#CBD5E1" BorderThickness="1"
+                 Background="{DynamicResource Theme.SurfaceSubtle}" BorderBrush="{DynamicResource Theme.InputBorder}" BorderThickness="1"
                  Padding="10"/>
 
     </DockPanel>

@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Tema testleri ayrı bir projede yaşar çünkü WPF tiplerine (ResourceDictionary,
+    XamlReader, Brush) ve STA thread'e ihtiyaç duyarlar; mevcut Tests projesi
+    net9.0 (Windows'suz) hedefliyor ve öyle kalmalı.
+    Yeni UI otomasyon framework'ü EKLENMEDİ — yalnızca xunit + WPF'in kendisi.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="System.IO" />
+    <Using Include="System.Linq" />
+    <!--
+      UI projesi "YonetimFinansalIslemTakipSistemi.Application" ad alanını
+      taşıdığı için sade "Application" adı WPF'in Application sınıfıyla çakışır.
+      Takma ad, testlerde her seferinde tam nitelemekten kurtarır.
+    -->
+    <Using Include="System.Windows.Application" Alias="WpfApp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\YonetimFinansalIslemTakipSistemi.UI\YonetimFinansalIslemTakipSistemi.UI.csproj" />
+  </ItemGroup>
+
+</Project>

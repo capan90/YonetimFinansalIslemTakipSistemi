@@ -108,7 +108,11 @@ public partial class MainWindow : Window
         var cm = new ContextMenu();
         cm.Opened += ColumnHeaderContextMenu_Opened;
 
-        var headerStyle = new Style(typeof(DataGridColumnHeader));
+        // BasedOn ZORUNLU: setter'sız bir Style, kontrolü uygulamanın tema
+        // stilinden koparıp WPF'in yerleşik (sabit renkli) şablonuna düşürür.
+        // Bu satır olmadan koyu temada sütun başlıkları açık gri kalıyordu.
+        var themeHeaderStyle = (Style?)TryFindResource(typeof(DataGridColumnHeader));
+        var headerStyle      = new Style(typeof(DataGridColumnHeader), themeHeaderStyle);
         headerStyle.Setters.Add(new Setter(FrameworkElement.ContextMenuProperty, cm));
         TransactionDataGrid.ColumnHeaderStyle = headerStyle;
     }

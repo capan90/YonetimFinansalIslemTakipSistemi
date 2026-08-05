@@ -48,9 +48,10 @@
                 <ComboBox x:Name="ThemeCombo"
                           SelectedIndex="0">
                     <ComboBoxItem Content="Açık Tema" Tag="Light"/>
-                    <!-- Koyu tema sonraki sürümde aktif edilecek -->
-                    <ComboBoxItem Content="Koyu Tema (Yakında)" Tag="Dark" IsEnabled="False"
-                                  Foreground="{DynamicResource Theme.MutedText}"/>
+                    <ComboBoxItem Content="Koyu Tema"  Tag="Dark"/>
+                    <!-- Tercih "System" olarak saklanır; uygulanacak tema her açılışta
+                         ve Windows ayarı değiştiğinde yeniden çözülür -->
+                    <ComboBoxItem Content="Sistem temasını takip et" Tag="System"/>
                 </ComboBox>
             </DockPanel>
 
@@ -66,8 +67,9 @@
                         renk şeması güncellenir.
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" Style="{StaticResource Text.Caption}"
-                               Foreground="{DynamicResource Theme.Warning}">
-                        Koyu tema sonraki sürümde aktif edilecektir.
+                               Foreground="{DynamicResource Theme.MutedText}">
+                        "Sistem temasını takip et" seçilirse Windows'un açık/koyu ayarı
+                        kullanılır ve ayar değiştiğinde uygulama da anında döner.
                     </TextBlock>
                 </StackPanel>
             </Border>

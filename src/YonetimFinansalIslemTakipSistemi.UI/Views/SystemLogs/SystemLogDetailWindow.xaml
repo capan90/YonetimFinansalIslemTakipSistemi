@@ -12,7 +12,7 @@
 
         <!-- Butonlar — alt panel -->
         <Border DockPanel.Dock="Bottom"
-                BorderBrush="#E2E8F0" BorderThickness="0,1,0,0"
+                BorderBrush="{DynamicResource Theme.Border}" BorderThickness="0,1,0,0"
                 Padding="0,10,0,0" Margin="0,10,0,0">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button x:Name="CopyStackTraceButton" Content="StackTrace Kopyala"
@@ -30,7 +30,7 @@
             <StackPanel x:Name="ContentPanel">
 
                 <!-- Genel bilgiler grid -->
-                <Border Background="#F8FAFC" CornerRadius="6" Padding="12" Margin="0,0,0,12">
+                <Border Background="{DynamicResource Theme.SurfaceSubtle}" CornerRadius="6" Padding="12" Margin="0,0,0,12">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="130"/>
@@ -69,7 +69,7 @@
 
                 <!-- Mesaj -->
                 <TextBlock Text="Mesaj" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                <Border Background="#FFF7ED" BorderBrush="#FED7AA" BorderThickness="1"
+                <Border Background="{DynamicResource Theme.Warning.Background}" BorderBrush="{DynamicResource Theme.Warning.Border}" BorderThickness="1"
                         CornerRadius="4" Padding="10" Margin="0,0,0,10">
                     <TextBlock x:Name="MessageText" TextWrapping="Wrap"/>
                 </Border>
@@ -77,18 +77,18 @@
                 <!-- Exception tipi -->
                 <TextBlock x:Name="ExceptionTypeLabel" Text="Exception Tipi" FontWeight="SemiBold" Margin="0,0,0,4"/>
                 <TextBox   x:Name="ExceptionTypeText"  IsReadOnly="True" Margin="0,0,0,10"
-                           Background="#F8FAFC" BorderBrush="#E2E8F0" Padding="6"/>
+                           Background="{DynamicResource Theme.SurfaceSubtle}" BorderBrush="{DynamicResource Theme.Border}" Padding="6"/>
 
                 <!-- InnerException -->
                 <TextBlock x:Name="InnerExLabel" Text="Inner Exception" FontWeight="SemiBold" Margin="0,0,0,4"/>
                 <TextBox   x:Name="InnerExText"  IsReadOnly="True" Margin="0,0,0,10"
-                           Background="#F8FAFC" BorderBrush="#E2E8F0" Padding="6"
+                           Background="{DynamicResource Theme.SurfaceSubtle}" BorderBrush="{DynamicResource Theme.Border}" Padding="6"
                            TextWrapping="Wrap" MaxHeight="80"/>
 
                 <!-- StackTrace -->
                 <TextBlock Text="Stack Trace" FontWeight="SemiBold" Margin="0,0,0,4"/>
                 <TextBox   x:Name="StackTraceText" IsReadOnly="True" Margin="0,0,0,10"
-                           Background="#F8FAFC" BorderBrush="#E2E8F0" Padding="6"
+                           Background="{DynamicResource Theme.SurfaceSubtle}" BorderBrush="{DynamicResource Theme.Border}" Padding="6"
                            VerticalScrollBarVisibility="Auto"
                            HorizontalScrollBarVisibility="Auto"
                            TextWrapping="NoWrap"
@@ -102,7 +102,7 @@
                            TextWrapping="Wrap"
                            AcceptsReturn="True"
                            VerticalScrollBarVisibility="Auto"
-                           BorderBrush="#E2E8F0"/>
+                           BorderBrush="{DynamicResource Theme.Border}"/>
 
             </StackPanel>
         </ScrollViewer>

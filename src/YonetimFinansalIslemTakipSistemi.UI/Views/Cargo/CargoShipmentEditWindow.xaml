@@ -35,7 +35,7 @@
                 <!-- Salt okunur: numara atomik sayaçtan üretilir, kullanıcı değiştiremez.
                      Yeni kayıtta placeholder metin görünür; numara form açılırken rezerve edilmez -->
                 <TextBox Text="{Binding ShipmentNumberDisplay, Mode=OneWay}"
-                         IsReadOnly="True" Background="#F1F5F9" Foreground="#475569"
+                         IsReadOnly="True" Background="{DynamicResource Theme.SurfaceAlt}" Foreground="{DynamicResource Theme.LabelText}"
                          ToolTip="Kayıt sırasında otomatik atanır; değiştirilemez"/>
             </StackPanel>
         </Grid>
@@ -115,7 +115,7 @@
             </Grid.ColumnDefinitions>
             <TextBox Grid.Column="0"
                      Text="{Binding SelectedCompanyPortalUrl, Mode=OneWay}"
-                     IsReadOnly="True" Background="#F1F5F9" Foreground="#475569"
+                     IsReadOnly="True" Background="{DynamicResource Theme.SurfaceAlt}" Foreground="{DynamicResource Theme.LabelText}"
                      ToolTip="Kargo firmasının portal/takip bağlantısı — yalnızca Kargo Firmaları ekranından düzenlenir"/>
             <Button Grid.Column="2"
                     Content="Portalı / Takibi Aç" Width="115" Height="22"
@@ -166,8 +166,8 @@
         </Grid>
 
         <!-- Firma Özeti Kartı — firma seçildiğinde gösterilir -->
-        <Border Margin="0,0,0,8" Padding="10,8" Background="#F0F4FF"
-                BorderBrush="#B0C4F0" BorderThickness="1" CornerRadius="4">
+        <Border Margin="0,0,0,8" Padding="10,8" Background="{DynamicResource Theme.Info.Background}"
+                BorderBrush="{DynamicResource Theme.Info.Border}" BorderThickness="1" CornerRadius="4">
             <Border.Style>
                 <Style TargetType="Border">
                     <Setter Property="Visibility" Value="Visible"/>
@@ -199,7 +199,7 @@
                            Text="Firma:" Style="{StaticResource Text.Caption}" FontWeight="SemiBold" Margin="0,0,4,3"/>
                 <TextBlock Grid.Row="0" Grid.Column="2"
                            Text="{Binding DirectoryFirma}"
-                           Style="{StaticResource Text.Caption}" FontWeight="SemiBold" Foreground="#1A3354" Margin="0,0,0,3"/>
+                           Style="{StaticResource Text.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource Theme.Primary}" Margin="0,0,0,3"/>
 
                 <!-- Dikkatine — "İlgili: Abuzer Bey Dikkatine" veya gizli -->
                 <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
@@ -337,7 +337,7 @@
                     </TextBlock.Style>
                 </TextBlock>
                 <TextBlock Grid.Row="4" Grid.Column="2"
-                           Text="{Binding DirectoryEmail}" Foreground="#1565C0">
+                           Text="{Binding DirectoryEmail}" Foreground="{DynamicResource Theme.Info.Text}">
                     <TextBlock.Style>
                         <!-- Ölçek stili BasedOn ile: tetikleyicili inline Style ile
                              Style="..." özniteliği aynı anda kullanılamaz -->
@@ -361,7 +361,7 @@
                 Click="RefreshSnapshotButton_Click"
                 ToolTip="Seçili firma rehberinden alıcı telefon, e-posta ve adres snapshot bilgilerini günceller. Kaydetmeden DB'ye yazılmaz.">
             <Button.Style>
-                <Style TargetType="Button">
+                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                     <Setter Property="Visibility" Value="Collapsed"/>
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding HasRefreshableSnapshot}" Value="True">
@@ -450,7 +450,7 @@
                  Height="48" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
                  Margin="0,0,0,12"/>
 
-        <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" TextWrapping="Wrap" Margin="0,0,0,8">
+        <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Theme.Danger}" TextWrapping="Wrap" Margin="0,0,0,8">
             <TextBlock.Style>
                 <Style TargetType="TextBlock">
                     <Setter Property="Visibility" Value="Visible"/>

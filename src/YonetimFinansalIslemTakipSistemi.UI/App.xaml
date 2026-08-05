@@ -7,6 +7,12 @@
             <ResourceDictionary.MergedDictionaries>
                 <!-- Bileşen stilleri ve converter'lar -->
                 <ResourceDictionary Source="Resources/AppStyles.xaml"/>
+                <!-- Kontrol kabuğu (Menu, ComboBox, Button, DatePicker...).
+                     AppStyles'tan SONRA gelir: AppFocusVisual gibi ortak
+                     kaynaklara DynamicResource ile başvuruyor. -->
+                <ResourceDictionary Source="Resources/Controls.xaml"/>
+                <!-- Rapor önizleme baskı katmanı — temadan bağımsız sabit yüzey -->
+                <ResourceDictionary Source="Resources/PrintStyles.xaml"/>
                 <!-- Vektör ikon geometrileri — emoji karakterlerinin yerini alır -->
                 <ResourceDictionary Source="Resources/Icons.xaml"/>
                 <!-- Varsayılan tema — IThemeService startup'ta kaydedilmiş temayı uygular -->

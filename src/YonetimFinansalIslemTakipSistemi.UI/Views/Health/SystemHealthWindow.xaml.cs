@@ -1,13 +1,14 @@
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
-using System.Windows.Media;
+using System.Windows.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
+using YonetimFinansalIslemTakipSistemi.UI.Common;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Health;
 
@@ -42,7 +43,7 @@ public partial class SystemHealthWindow : Window
         try
         {
             BtnRefresh.IsEnabled    = false;
-            StatusBanner.Background = Brushes.DimGray;
+            ThemeBrush.Apply(StatusBanner, Border.BackgroundProperty, "Theme.Secondary");
             StatusLabel.Text        = "Kontrol ediliyor...";
             CheckedAtLabel.Text     = "";
             OverallStatusIcon.Text  = "●";
@@ -54,7 +55,7 @@ public partial class SystemHealthWindow : Window
         catch (Exception ex)
         {
             Log.Error(ex, "Sistem sağlık kontrolü başarısız");
-            StatusBanner.Background = HealthRowData.ErrBrush;
+            ThemeBrush.Apply(StatusBanner, Border.BackgroundProperty, "Theme.Danger");
             StatusLabel.Text        = "Sağlık kontrolü sırasında beklenmeyen bir hata oluştu.";
         }
         finally
@@ -65,14 +66,30 @@ public partial class SystemHealthWindow : Window
 
     private void Apply(AppHealthInfo info)
     {
-        // Genel durum bandı
-        (StatusBanner.Background, StatusLabel.Text, OverallStatusIcon.Text) = info.OverallStatus switch
+        // Genel durum bandı.
+        // Dolu renk + beyaz metin deseni terk edildi: koyu temada Theme.Success
+        // açık yeşile (#4ADE80) dönüyor ve üzerindeki açık metin 1.5:1'e düşüyordu.
+        // Yerine, iki temada da birlikte ölçülmüş "yumuşak panel + koyu/açık metin"
+        // rol çifti kullanılır.
+        var (bgToken, fgToken, text, icon) = info.OverallStatus switch
         {
-            HealthStatus.Ok      => (HealthRowData.OkBrush,   "Sistem Durumu: Normal",                                       "✓"),
-            HealthStatus.Warning => (HealthRowData.WarnBrush,  "Sistem Durumu: Uyarı — dikkat gerektiren konular mevcut",     "⚠"),
-            HealthStatus.Error   => (HealthRowData.ErrBrush,   "Sistem Durumu: Hata — acil müdahale gerekebilir",             "✗"),
-            _                    => ((Brush)Brushes.DimGray,   "Bilinmiyor",                                                  "?")
+            HealthStatus.Ok      => ("Theme.Success.Background", "Theme.Success.Text",
+                                     "Sistem Durumu: Normal", "✓"),
+            HealthStatus.Warning => ("Theme.Warning.Background", "Theme.Warning.Text",
+                                     "Sistem Durumu: Uyarı — dikkat gerektiren konular mevcut", "⚠"),
+            HealthStatus.Error   => ("Theme.Danger.Background",  "Theme.Danger.Text",
+                                     "Sistem Durumu: Hata — acil müdahale gerekebilir", "✗"),
+            _                    => ("Theme.SurfaceAlt",         "Theme.Text",
+                                     "Bilinmiyor", "?")
         };
+
+        ThemeBrush.Apply(StatusBanner,      Border.BackgroundProperty,    bgToken);
+        ThemeBrush.Apply(StatusLabel,       TextBlock.ForegroundProperty, fgToken);
+        ThemeBrush.Apply(CheckedAtLabel,    TextBlock.ForegroundProperty, fgToken);
+        ThemeBrush.Apply(OverallStatusIcon, TextBlock.ForegroundProperty, fgToken);
+
+        StatusLabel.Text       = text;
+        OverallStatusIcon.Text = icon;
 
         CheckedAtLabel.Text = $"Kontrol zamanı: {info.CheckedAt:dd.MM.yyyy HH:mm:ss}";
 
@@ -259,11 +276,10 @@ internal enum RowStatus { None, Ok, Warning, Error }
 
 internal sealed class HealthRowData
 {
-    // Statik fırçalar: tüm satırlar aynı örneği paylaşır; freeze edildi (thread-safe, performanslı)
-    internal static readonly SolidColorBrush OkBrush   = CreateFrozen(0x1B, 0x5E, 0x20);
-    internal static readonly SolidColorBrush WarnBrush  = CreateFrozen(0xE6, 0x5C, 0x00);
-    internal static readonly SolidColorBrush ErrBrush   = CreateFrozen(0xC6, 0x28, 0x28);
-    private  static readonly SolidColorBrush NoneBrush  = CreateFrozen(0x55, 0x55, 0x55);
+    // Sabit fırçalar KALDIRILDI (#1B5E20 / #E65C00 / #C62828 / #555555).
+    // Renk artık veri sınıfının değil, görünümün sorumluluğu: satır şablonu
+    // Status'e göre DataTrigger + DynamicResource ile renklendirir. Böylece
+    // tema değişiminde açık listedeki satırlar da anında güncellenir.
 
     public HealthRowData(string label, string value, RowStatus status, string? tooltip = null)
     {
@@ -286,18 +302,4 @@ internal sealed class HealthRowData
         _                 => ""
     };
 
-    public Brush StatusBrush => Status switch
-    {
-        RowStatus.Ok      => OkBrush,
-        RowStatus.Warning => WarnBrush,
-        RowStatus.Error   => ErrBrush,
-        _                 => NoneBrush
-    };
-
-    private static SolidColorBrush CreateFrozen(byte r, byte g, byte b)
-    {
-        var brush = new SolidColorBrush(Color.FromRgb(r, g, b));
-        brush.Freeze();
-        return brush;
-    }
 }

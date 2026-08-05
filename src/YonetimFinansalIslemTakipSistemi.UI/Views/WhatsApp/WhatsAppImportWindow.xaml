@@ -13,9 +13,9 @@
                 <TextBlock Style="{StaticResource Text.H2}" FontWeight="SemiBold"
                            Text="Excel Dosyasından Toplu WhatsApp Kişisi" Margin="0,0,0,10"
                            HorizontalAlignment="Center"/>
-                <TextBlock TextWrapping="Wrap" Foreground="#555" Margin="0,0,0,4"
+                <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Theme.LabelText}" Margin="0,0,0,4"
                            Text="Seçtiğiniz .xlsx dosyası analiz edilir, kişiler önizlemede doğrulanır ve onayınızla ortak rehbere topluca eklenir. Telefon geçerli bir Türkiye cep numarası olmalıdır."/>
-                <TextBlock TextWrapping="Wrap" Foreground="#555" Margin="0,0,0,16"
+                <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Theme.LabelText}" Margin="0,0,0,16"
                            Text="Zorunlu kolonlar: Ad Soyad, Telefon. Desteklenen diğer kolonlar: Firma, Açıklama. Rehberde kayıtlı numaralar mükerrer olarak işaretlenir; daha önce silinmiş numaralar geri yüklenir."/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Button Content="Şablon İndir" Width="130" Margin="0,0,10,0"
@@ -40,13 +40,13 @@
 
             <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                    <TextBlock Text="Göster:" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="#555"/>
+                    <TextBlock Text="Göster:" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="{DynamicResource Theme.LabelText}"/>
                     <ComboBox ItemsSource="{Binding FilterOptions}"
                               SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
                               Width="160"/>
                 </StackPanel>
                 <TextBlock Text="{Binding AnalysisSummary}" TextWrapping="Wrap"
-                           VerticalAlignment="Center" Foreground="#333"/>
+                           VerticalAlignment="Center" Foreground="{DynamicResource Theme.Text}"/>
             </DockPanel>
 
             <DockPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
@@ -58,7 +58,7 @@
                             IsEnabled="{Binding CanImport}"
                             Click="ImportButton_Click"/>
                 </StackPanel>
-                <TextBlock Foreground="#777" VerticalAlignment="Center" TextWrapping="Wrap"
+                <TextBlock Foreground="{DynamicResource Theme.MutedText}" VerticalAlignment="Center" TextWrapping="Wrap"
                            Text="Hatalı ve rehberde kayıtlı numaralar içe aktarılamaz."/>
             </DockPanel>
 
@@ -66,23 +66,23 @@
                       AutoGenerateColumns="False" IsReadOnly="False"
                       CanUserAddRows="False" CanUserDeleteRows="False"
                       SelectionMode="Single"                      GridLinesVisibility="Horizontal"
-                      HorizontalGridLinesBrush="#E2E8F0"
-                      BorderBrush="#E2E8F0" BorderThickness="1"
+                      HorizontalGridLinesBrush="{DynamicResource Theme.Border}"
+                      BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1"
                       HeadersVisibility="Column">
                 <DataGrid.RowStyle>
-                    <Style TargetType="DataGridRow">
+                    <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding StatusText}" Value="Geçerli">
-                                <Setter Property="Background" Value="#F1F8E9"/>
+                                <Setter Property="Background" Value="{DynamicResource Theme.Success.Background}"/>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding StatusText}" Value="Uyarılı">
-                                <Setter Property="Background" Value="#FFF8E1"/>
+                                <Setter Property="Background" Value="{DynamicResource Theme.Warning.Background}"/>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding StatusText}" Value="Hatalı">
-                                <Setter Property="Background" Value="#FDECEA"/>
+                                <Setter Property="Background" Value="{DynamicResource Theme.Danger.Background}"/>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding StatusText}" Value="Mükerrer">
-                                <Setter Property="Background" Value="#FFF3E0"/>
+                                <Setter Property="Background" Value="{DynamicResource Theme.Warning.Background}"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -133,22 +133,22 @@
                              Maximum="{Binding ProgressMax, Mode=OneWay}"
                              IsIndeterminate="{Binding ProgressIndeterminate, Mode=OneWay}"/>
                 <TextBlock Text="{Binding ProgressText}" Margin="0,8,0,0"
-                           HorizontalAlignment="Center" Foreground="#555"/>
+                           HorizontalAlignment="Center" Foreground="{DynamicResource Theme.LabelText}"/>
             </StackPanel>
         </Border>
 
         <!-- ADIM 4: Sonuç -->
         <Border x:Name="StepSummaryPanel" Visibility="Collapsed">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="560">
-                <Border Background="#E8F5E9" BorderBrush="#81C784" BorderThickness="1"
+                <Border Background="{DynamicResource Theme.Success.Background}" BorderBrush="{DynamicResource Theme.Success.Border}" BorderThickness="1"
                         CornerRadius="6" Padding="16" Margin="0,0,0,14">
                     <StackPanel>
                         <TextBlock Style="{StaticResource Text.H2}" FontWeight="SemiBold"
-                                   Foreground="#2E7D32" Text="İçe aktarma tamamlandı"/>
+                                   Foreground="{DynamicResource Theme.Success}" Text="İçe aktarma tamamlandı"/>
                         <TextBlock x:Name="SummaryMainText" Style="{StaticResource Text.Body}" Margin="0,8,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </Border>
-                <TextBlock x:Name="SummaryDetailText" TextWrapping="Wrap" Foreground="#555" Margin="0,0,0,16"/>
+                <TextBlock x:Name="SummaryDetailText" TextWrapping="Wrap" Foreground="{DynamicResource Theme.LabelText}" Margin="0,0,0,16"/>
                 <Button Content="Kapat" Width="110" HorizontalAlignment="Center"
                         Style="{StaticResource PrimaryButton}" Click="CloseButton_Click"/>
             </StackPanel>

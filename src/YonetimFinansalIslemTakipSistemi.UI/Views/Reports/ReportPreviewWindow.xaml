@@ -7,186 +7,153 @@
         ResizeMode="CanResizeWithGrip"
         Icon="pack://application:,,,/Assets/AppIcon.ico">
 
+    <!--
+    İKİ KATMAN:
+      1) Pencere çerçevesi + araç çubuğu  → aktif uygulama teması (Theme.*)
+      2) Kâğıt (PaperSurface ve içindeki her şey) → sabit baskı renkleri
+         (Theme.PrintPreview.*, iki temada da aynı)
+    Kâğıt alt ağacı, Theme.Surface / Theme.Text gibi dinamik token'lara
+    BAĞLANMAZ; yazdırma/PDF çıktısıyla aynı görünmelidir.
+    -->
+
     <DockPanel Margin="16">
 
-        <!-- Buton çubuğu -->
+        <!-- Buton çubuğu — TEMA KATMANI -->
         <Border DockPanel.Dock="Bottom"
                 BorderThickness="0,1,0,0"
-                BorderBrush="#DDD"
+                BorderBrush="{DynamicResource Theme.Border}"
                 Padding="0,10,0,0"
                 Margin="0,10,0,0">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Content="PDF Kaydet"   Width="110" Margin="0,0,8,0"
-                        ToolTip="Raporu PDF formatında dışa aktarır ve kaydetmenizi sağlar."
-                        Click="SavePdf_Click"/>
-                <Button Content="Excel Kaydet" Width="110" Margin="0,0,8,0"
-                        ToolTip="Raporu Excel (.xlsx) formatında dışa aktarır."
-                        Click="SaveExcel_Click"/>
-                <Button Content="Kapat"        Width="80"
-                        Click="Close_Click"/>
-            </StackPanel>
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Left"
+                           VerticalAlignment="Center"
+                           Style="{StaticResource Text.Caption}"
+                           Text="Önizleme, PDF/Excel çıktısıyla aynı sabit renkleri kullanır."/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="PDF Kaydet"   Width="110" Margin="0,0,8,0"
+                            ToolTip="Raporu PDF formatında dışa aktarır ve kaydetmenizi sağlar."
+                            Click="SavePdf_Click"/>
+                    <Button Content="Excel Kaydet" Width="110" Margin="0,0,8,0"
+                            ToolTip="Raporu Excel (.xlsx) formatında dışa aktarır."
+                            Click="SaveExcel_Click"/>
+                    <Button Content="Kapat"        Width="80"
+                            Click="Close_Click"/>
+                </StackPanel>
+            </DockPanel>
         </Border>
 
-        <!-- Rapor içeriği -->
+        <!-- Rapor içeriği — BASKI KATMANI -->
         <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <StackPanel>
+            <Border x:Name="PaperSurface" Style="{StaticResource Print.Paper}">
 
-                <!-- Başlık -->
-                <TextBlock Text="Finansal Rapor"
-                           Style="{StaticResource Text.H1}" FontWeight="Bold"
-                           Margin="0,0,0,4"/>
-                <TextBlock x:Name="DateRangeText"
-                           Style="{StaticResource Text.Caption}" Foreground="#666"
-                           Margin="0,0,0,4"/>
-                <TextBlock x:Name="FilterSummaryText"
-                           Style="{StaticResource Text.Caption}" Foreground="#888" FontStyle="Italic"
-                           Margin="0,0,0,12"/>
-                <Separator Margin="0,0,0,12"/>
+                <!-- Baskı stilleri yalnızca bu alt ağaçta örtük hâle getirilir;
+                     uygulamanın geri kalanı etkilenmez. -->
+                <Border.Resources>
+                    <Style TargetType="TextBlock"             BasedOn="{StaticResource Print.Body}"/>
+                    <Style TargetType="DataGrid"              BasedOn="{StaticResource Print.DataGrid}"/>
+                    <Style TargetType="DataGridColumnHeader"  BasedOn="{StaticResource Print.ColumnHeader}"/>
+                    <Style TargetType="DataGridRow"           BasedOn="{StaticResource Print.Row}"/>
+                    <Style TargetType="DataGridCell"          BasedOn="{StaticResource Print.Cell}"/>
+                    <Style TargetType="GroupBox"              BasedOn="{StaticResource Print.GroupBox}"/>
+                    <Style TargetType="Separator"             BasedOn="{StaticResource Print.Separator}"/>
+                </Border.Resources>
 
-                <!-- Para Birimi Özet Kartları -->
-                <TextBlock Text="Para Birimi Özeti"
-                           FontWeight="SemiBold"
-                           Margin="0,0,0,8"/>
-                <UniformGrid x:Name="SummaryGrid" Columns="3" Margin="0,0,0,16"/>
+                <StackPanel>
 
-                <!-- İşlem Türü Tablosu -->
-                <TextBlock Text="İşlem Türü Bazında Toplam"
-                           FontWeight="SemiBold"
-                           Margin="0,0,0,8"/>
-                <DataGrid x:Name="TypeDataGrid"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="True"
-                          CanUserAddRows="False"
-                          GridLinesVisibility="Horizontal"
-                          AlternatingRowBackground="#F5F5F5"
-                          HeadersVisibility="Column"
-                          Margin="0,0,0,16">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="İşlem Türü" Binding="{Binding TypeDisplay}" Width="90"
-                                    ElementStyle="{StaticResource EllipsisCell}"/>
-                        <DataGridTextColumn Header="TL Borç"    Binding="{Binding TryBorc,  StringFormat=N2}" Width="*">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="HorizontalAlignment" Value="Right"/>
-                                    <Setter Property="Foreground" Value="#2E7D32"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        <DataGridTextColumn Header="TL Alacak"  Binding="{Binding TryAlacak, StringFormat=N2}" Width="*">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="HorizontalAlignment" Value="Right"/>
-                                    <Setter Property="Foreground" Value="#C62828"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        <DataGridTextColumn Header="TL Adet"    Binding="{Binding TryCount}" Width="55">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock"><Setter Property="HorizontalAlignment" Value="Right"/></Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        <DataGridTextColumn Header="USD Borç"   Binding="{Binding UsdBorc,  StringFormat=N2}" Width="*">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="HorizontalAlignment" Value="Right"/>
-                                    <Setter Property="Foreground" Value="#2E7D32"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        <DataGridTextColumn Header="USD Alacak" Binding="{Binding UsdAlacak, StringFormat=N2}" Width="*">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="HorizontalAlignment" Value="Right"/>
-                                    <Setter Property="Foreground" Value="#C62828"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        <DataGridTextColumn Header="USD Adet"   Binding="{Binding UsdCount}" Width="55">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock"><Setter Property="HorizontalAlignment" Value="Right"/></Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        <DataGridTextColumn Header="EUR Borç"   Binding="{Binding EurBorc,  StringFormat=N2}" Width="*">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="HorizontalAlignment" Value="Right"/>
-                                    <Setter Property="Foreground" Value="#2E7D32"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        <DataGridTextColumn Header="EUR Alacak" Binding="{Binding EurAlacak, StringFormat=N2}" Width="*">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="HorizontalAlignment" Value="Right"/>
-                                    <Setter Property="Foreground" Value="#C62828"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        <DataGridTextColumn Header="EUR Adet"   Binding="{Binding EurCount}" Width="55">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock"><Setter Property="HorizontalAlignment" Value="Right"/></Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
+                    <!-- Başlık -->
+                    <TextBlock Text="Finansal Rapor"
+                               Style="{StaticResource Print.H1}"
+                               Margin="0,0,0,4"/>
+                    <TextBlock x:Name="DateRangeText"
+                               Style="{StaticResource Print.Caption}"
+                               Margin="0,0,0,4"/>
+                    <TextBlock x:Name="FilterSummaryText"
+                               Style="{StaticResource Print.Caption}"
+                               FontStyle="Italic"
+                               Margin="0,0,0,12"/>
+                    <Separator Margin="0,0,0,12"/>
 
-                <!-- İşlem Detay Tablosu — yalnızca detay istendiğinde görünür -->
-                <StackPanel x:Name="DetailSection" Visibility="Collapsed">
-                    <TextBlock Text="İşlem Detayları"
-                               FontWeight="SemiBold"
+                    <!-- Para Birimi Özet Kartları -->
+                    <TextBlock Text="Para Birimi Özeti"
+                               Style="{StaticResource Print.H2}"
                                Margin="0,0,0,8"/>
-                    <DataGrid x:Name="DetailDataGrid"
+                    <UniformGrid x:Name="SummaryGrid" Columns="3" Margin="0,0,0,16"/>
+
+                    <!-- İşlem Türü Tablosu -->
+                    <TextBlock Text="İşlem Türü Bazında Toplam"
+                               Style="{StaticResource Print.H2}"
+                               Margin="0,0,0,8"/>
+                    <DataGrid x:Name="TypeDataGrid"
                               AutoGenerateColumns="False"
                               IsReadOnly="True"
                               CanUserAddRows="False"
                               GridLinesVisibility="Horizontal"
-                              AlternatingRowBackground="#F5F5F5"
                               HeadersVisibility="Column"
-                              Margin="0,0,0,8">
+                              Margin="0,0,0,16">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Tarih"     Binding="{Binding Date}"            Width="80"
-                                    ElementStyle="{StaticResource EllipsisCell}"/>
-                            <DataGridTextColumn Header="Açıklama"  Binding="{Binding Description}"     Width="*"
-                                    ElementStyle="{StaticResource EllipsisCell}"/>
-                            <DataGridTextColumn Header="Tür"       Binding="{Binding TypeDisplay}"     Width="65"
-                                    ElementStyle="{StaticResource EllipsisCell}"/>
-                            <DataGridTextColumn Header="Para Bir." Binding="{Binding CurrencyDisplay}" Width="65"
-                                    ElementStyle="{StaticResource EllipsisCell}"/>
-                            <DataGridTextColumn Header="Borç"      Binding="{Binding Borc,    StringFormat=N2}" Width="100">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="HorizontalAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="#2E7D32"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Header="Alacak"    Binding="{Binding Alacak,  StringFormat=N2}" Width="100">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="HorizontalAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="#C62828"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Header="Bakiye"    Binding="{Binding Balance,  StringFormat=N2}" Width="100">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="HorizontalAlignment" Value="Right"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="İşlem Türü" Binding="{Binding TypeDisplay}" Width="90"
+                                                ElementStyle="{StaticResource Print.TextCell}"/>
+                            <DataGridTextColumn Header="TL Borç"    Binding="{Binding TryBorc,  StringFormat=N2}" Width="*"
+                                                ElementStyle="{StaticResource Print.PositiveCell}"/>
+                            <DataGridTextColumn Header="TL Alacak"  Binding="{Binding TryAlacak, StringFormat=N2}" Width="*"
+                                                ElementStyle="{StaticResource Print.NegativeCell}"/>
+                            <DataGridTextColumn Header="TL Adet"    Binding="{Binding TryCount}" Width="55"
+                                                ElementStyle="{StaticResource Print.NumericCell}"/>
+                            <DataGridTextColumn Header="USD Borç"   Binding="{Binding UsdBorc,  StringFormat=N2}" Width="*"
+                                                ElementStyle="{StaticResource Print.PositiveCell}"/>
+                            <DataGridTextColumn Header="USD Alacak" Binding="{Binding UsdAlacak, StringFormat=N2}" Width="*"
+                                                ElementStyle="{StaticResource Print.NegativeCell}"/>
+                            <DataGridTextColumn Header="USD Adet"   Binding="{Binding UsdCount}" Width="55"
+                                                ElementStyle="{StaticResource Print.NumericCell}"/>
+                            <DataGridTextColumn Header="EUR Borç"   Binding="{Binding EurBorc,  StringFormat=N2}" Width="*"
+                                                ElementStyle="{StaticResource Print.PositiveCell}"/>
+                            <DataGridTextColumn Header="EUR Alacak" Binding="{Binding EurAlacak, StringFormat=N2}" Width="*"
+                                                ElementStyle="{StaticResource Print.NegativeCell}"/>
+                            <DataGridTextColumn Header="EUR Adet"   Binding="{Binding EurCount}" Width="55"
+                                                ElementStyle="{StaticResource Print.NumericCell}"/>
                         </DataGrid.Columns>
                     </DataGrid>
+
+                    <!-- İşlem Detay Tablosu — yalnızca detay istendiğinde görünür -->
+                    <StackPanel x:Name="DetailSection" Visibility="Collapsed">
+                        <TextBlock Text="İşlem Detayları"
+                                   Style="{StaticResource Print.H2}"
+                                   Margin="0,0,0,8"/>
+                        <DataGrid x:Name="DetailDataGrid"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  CanUserAddRows="False"
+                                  GridLinesVisibility="Horizontal"
+                                  HeadersVisibility="Column"
+                                  Margin="0,0,0,8">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Tarih"     Binding="{Binding Date}"        Width="80"
+                                                    ElementStyle="{StaticResource Print.TextCell}"/>
+                                <DataGridTextColumn Header="Açıklama"  Binding="{Binding Description}" Width="*"
+                                                    ElementStyle="{StaticResource Print.TextCell}"/>
+                                <DataGridTextColumn Header="Tür"       Binding="{Binding TypeDisplay}" Width="65"
+                                                    ElementStyle="{StaticResource Print.TextCell}"/>
+                                <DataGridTextColumn Header="Para Bir." Binding="{Binding CurrencyDisplay}" Width="65"
+                                                    ElementStyle="{StaticResource Print.TextCell}"/>
+                                <DataGridTextColumn Header="Borç"      Binding="{Binding Borc,    StringFormat=N2}" Width="100"
+                                                    ElementStyle="{StaticResource Print.PositiveCell}"/>
+                                <DataGridTextColumn Header="Alacak"    Binding="{Binding Alacak,  StringFormat=N2}" Width="100"
+                                                    ElementStyle="{StaticResource Print.NegativeCell}"/>
+                                <DataGridTextColumn Header="Bakiye"    Binding="{Binding Balance, StringFormat=N2}" Width="100"
+                                                    ElementStyle="{StaticResource Print.NumericCell}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+
+                    <!-- Genel Toplamlar (her zaman gösterilir) -->
+                    <Border x:Name="TotalsPanel"
+                            BorderThickness="0,1,0,0"
+                            BorderBrush="{DynamicResource Theme.PrintPreview.Border}"
+                            Padding="0,8,0,0"
+                            Margin="0,4,0,0"/>
+
                 </StackPanel>
-
-                <!-- Genel Toplamlar (her zaman gösterilir) -->
-                <Border x:Name="TotalsPanel"
-                        BorderThickness="0,1,0,0"
-                        BorderBrush="#DDD"
-                        Padding="0,8,0,0"
-                        Margin="0,4,0,0"/>
-
-            </StackPanel>
+            </Border>
         </ScrollViewer>
 
     </DockPanel>

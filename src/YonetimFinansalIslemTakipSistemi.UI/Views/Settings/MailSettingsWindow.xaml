@@ -6,50 +6,35 @@
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         Icon="pack://application:,,,/Assets/AppIcon.ico"
-        Background="#F5F6FA">
+        Background="{DynamicResource Theme.SurfaceSubtle}">
 
     <Window.Resources>
         <Style x:Key="LabelStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="#374151"/>
+            <Setter Property="Foreground" Value="{DynamicResource Theme.LabelText}"/>
             <Setter Property="Margin" Value="0,10,0,3"/>
         </Style>
-        <Style x:Key="InputStyle" TargetType="TextBox">
-            <Setter Property="Height" Value="32"/>
+        <!-- Zemin/kenarlık/seçim renkleri ortak input stilinden gelir -->
+        <Style x:Key="InputStyle" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Height"  Value="32"/>
             <Setter Property="Padding" Value="8,4"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="BorderBrush" Value="#D1D5DB"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
-        <Style x:Key="PwdStyle" TargetType="PasswordBox">
-            <Setter Property="Height" Value="32"/>
+        <Style x:Key="PwdStyle" TargetType="PasswordBox" BasedOn="{StaticResource {x:Type PasswordBox}}">
+            <Setter Property="Height"  Value="32"/>
             <Setter Property="Padding" Value="8,4"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="BorderBrush" Value="#D1D5DB"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
-        <Style x:Key="PrimaryBtn" TargetType="Button">
-            <Setter Property="Height" Value="34"/>
+        <!-- Renk/durum tanımları ortak buton stillerinden gelir; burada yalnızca
+             ölçü farkı kalır. Eskiden bu iki stil BasedOn'suzdu: WPF'in yerleşik
+             buton şablonuna düşüyor ve koyu temada hover'da sabit açık mavi
+             zemin + açık metin veriyorlardı. -->
+        <Style x:Key="PrimaryBtn" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Height"  Value="34"/>
             <Setter Property="Padding" Value="16,0"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Background" Value="#2563EB"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
         </Style>
-        <Style x:Key="SecondaryBtn" TargetType="Button">
-            <Setter Property="Height" Value="34"/>
+        <Style x:Key="SecondaryBtn" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+            <Setter Property="Height"  Value="34"/>
             <Setter Property="Padding" Value="16,0"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="#374151"/>
-            <Setter Property="Background" Value="#E5E7EB"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
         </Style>
     </Window.Resources>
 
@@ -59,7 +44,7 @@
             <!-- Başlık -->
             <TextBlock x:Name="TitleBlock" Text="Mail (SMTP) Ayarları"
                        Style="{StaticResource Text.H2}" FontWeight="Bold"
-                       Foreground="#1E3A5F" Margin="0,0,0,16"/>
+                       Foreground="{DynamicResource Theme.Primary}" Margin="0,0,0,16"/>
 
             <!-- SMTP -->
             <TextBlock Text="SMTP Sunucusu" Style="{StaticResource LabelStyle}"/>
@@ -80,7 +65,7 @@
                 <StackPanel Grid.Column="2" VerticalAlignment="Bottom">
                     <TextBlock Text="SSL/TLS" Style="{StaticResource LabelStyle}"/>
                     <CheckBox x:Name="EnableSslCheck" Content="SSL Etkin"
-                              FontSize="14" Foreground="#374151"
+                              FontSize="14" Foreground="{DynamicResource Theme.LabelText}"
                               VerticalAlignment="Center" Height="32"
                               IsChecked="True"/>
                 </StackPanel>
@@ -101,15 +86,15 @@
             <PasswordBox x:Name="PasswordBox" Style="{StaticResource PwdStyle}"
                          PasswordChar="●"/>
             <TextBlock Text="Şifre alanı boş bırakılırsa mevcut şifre korunur."
-                       Style="{StaticResource Text.Caption}" Foreground="#6B7280" Margin="0,2,0,0"/>
+                       Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.MutedText}" Margin="0,2,0,0"/>
 
-            <Separator Margin="0,18,0,0" Background="#E5E7EB"/>
+            <Separator Margin="0,18,0,0" Background="{DynamicResource Theme.Border}"/>
 
             <!-- Test Mail -->
             <TextBlock Text="Test Maili" Style="{StaticResource Text.Body}" FontWeight="SemiBold"
-                       Foreground="#1E3A5F" Margin="0,14,0,0"/>
+                       Foreground="{DynamicResource Theme.Primary}" Margin="0,14,0,0"/>
             <TextBlock Text="Formdaki ayarlarla (kaydetmeden) test maili gönderir."
-                       Style="{StaticResource Text.Caption}" Foreground="#6B7280" Margin="0,2,0,8"/>
+                       Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.MutedText}" Margin="0,2,0,8"/>
 
             <Grid>
                 <Grid.ColumnDefinitions>

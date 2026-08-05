@@ -12,58 +12,48 @@
 
         <!-- Üst: Navigasyon çubuğu — yetkiye göre kargo ekranlarına erişim -->
         <Border x:Name="NavBar" DockPanel.Dock="Top"
-                Background="#1E3A5F" Padding="10,6">
+                Background="{DynamicResource Theme.Nav.Background}" Padding="10,6">
             <DockPanel LastChildFill="False">
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
                     <Button x:Name="NavGelenButton"
                             Content="Gelen Kargolar"
-                            Height="28" Padding="12,0" Margin="0,0,6,0"
-                            Foreground="White" Background="#2E5F9F"
-                            BorderBrush="#3B7BC8" BorderThickness="1"
-                            Cursor="Hand"
+                            Style="{StaticResource NavButton}" Margin="0,0,6,0"
                             Click="NavGelenButton_Click"/>
                     <Button x:Name="NavGidenButton"
                             Content="Giden Kargolar"
-                            Height="28" Padding="12,0" Margin="0,0,6,0"
-                            Foreground="White" Background="#2E5F9F"
-                            BorderBrush="#3B7BC8" BorderThickness="1"
-                            Cursor="Hand"
+                            Style="{StaticResource NavButton}" Margin="0,0,6,0"
                             Click="NavGidenButton_Click"/>
                     <Button x:Name="NavFirmaRehberiButton"
                             Content="Firma Rehberi"
-                            Height="28" Padding="12,0" Margin="0,0,6,0"
-                            Foreground="White" Background="#2E5F9F"
-                            BorderBrush="#3B7BC8" BorderThickness="1"
-                            Cursor="Hand"
+                            Style="{StaticResource NavButton}" Margin="0,0,6,0"
                             Click="NavFirmaRehberiButton_Click"/>
                     <Button x:Name="NavKargoFirmalariButton"
                             Content="Kargo Firmaları"
-                            Height="28" Padding="12,0" Margin="0,0,6,0"
-                            Foreground="White" Background="#2E5F9F"
-                            BorderBrush="#3B7BC8" BorderThickness="1"
-                            Cursor="Hand"
+                            Style="{StaticResource NavButton}" Margin="0,0,6,0"
                             Click="NavKargoFirmalariButton_Click"/>
                     <Button x:Name="NavWhatsAppRehberiButton"
                             Content="WhatsApp Rehberi"
-                            Height="28" Padding="12,0" Margin="0,0,0,0"
-                            Foreground="White" Background="#2E5F9F"
-                            BorderBrush="#3B7BC8" BorderThickness="1"
-                            Cursor="Hand"
+                            Style="{StaticResource NavButton}" Margin="0,0,0,0"
                             ToolTip="Tüm kullanıcıların ortak kullandığı WhatsApp alıcı rehberi."
                             Click="NavWhatsAppRehberiButton_Click"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
                     <!-- Yardım Menüsü (Yetkiye tabi) -->
+                    <!-- Alt öğelerdeki Foreground override'ları KALDIRILDI: Theme.Text
+                         pencere yüzeyi içindir, açılan menü ise ayrı bir popup
+                         yüzeyidir. Koyu temada açık metin, açık popup zemini
+                         üzerine biniyor ve öğeler görünmez oluyordu. Popup metni
+                         artık şablondan Theme.Popup.Foreground olarak gelir. -->
                     <Menu x:Name="MenuYardim" Background="Transparent" Margin="0,0,10,0" Visibility="Collapsed">
                         <Menu.Resources>
-                            <Style TargetType="MenuItem">
+                            <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
                                 <Setter Property="FontSize" Value="14"/>
                                 <Setter Property="FontWeight" Value="SemiBold"/>
                                 <Setter Property="Padding" Value="10,6"/>
                             </Style>
                         </Menu.Resources>
-                        <MenuItem Foreground="White" Background="#2E5F9F" BorderBrush="#3B7BC8" BorderThickness="1" Padding="12,5" Height="28">
+                        <MenuItem Style="{StaticResource NavMenuItem}">
                             <MenuItem.Header>
                                 <!-- "▾" karakteri yerine vektör chevron: tema rengini alır,
                                      DPI ölçeğinde metin taban çizgisine göre kaymaz -->
@@ -71,29 +61,29 @@
                                     <TextBlock Text="Yardım" Margin="0,0,4,0"/>
                                     <Path Style="{StaticResource IconPath}"
                                           Data="{StaticResource Icon.ChevronDown}"
-                                          Width="12" Height="12" Stroke="White"/>
+                                          Width="12" Height="12" Stroke="{DynamicResource Theme.Nav.Foreground}"/>
                                 </StackPanel>
                             </MenuItem.Header>
                             <!-- Teknik yardım öğeleri CanAccessHelpMenu iznine tabidir (code-behind) -->
-                            <MenuItem x:Name="MenuItemCheckUpdates" Header="Güncellemeleri Denetle" Click="CheckUpdates_Click" Foreground="Black"/>
-                            <MenuItem x:Name="MenuItemPersonalMail" Header="Mail Ayarlarım" Click="OpenPersonalMailSettings_Click" Foreground="Black"/>
-                            <MenuItem x:Name="MenuItemLogFolder" Header="Log Klasörünü Aç" Click="OpenLogDirectory_Click" Foreground="Black"/>
+                            <MenuItem x:Name="MenuItemCheckUpdates" Header="Güncellemeleri Denetle" Click="CheckUpdates_Click"/>
+                            <MenuItem x:Name="MenuItemPersonalMail" Header="Mail Ayarlarım" Click="OpenPersonalMailSettings_Click"/>
+                            <MenuItem x:Name="MenuItemLogFolder" Header="Log Klasörünü Aç" Click="OpenLogDirectory_Click"/>
                             <!-- Kişisel kullanıcı ayarları: izin gerektirmez — yalnızca kargo yetkili
                                  kullanıcı da kendi harf tercihine buradan erişir (MainWindow'a geçmeden) -->
-                            <MenuItem Header="Kullanıcı Ayarlarım" Foreground="Black">
+                            <MenuItem Header="Kullanıcı Ayarlarım">
                                 <MenuItem Header="Harf Duyarlılığı"
-                                          Click="OpenTextCaseSettings_Click" Foreground="Black"
+                                          Click="OpenTextCaseSettings_Click"
                                           ToolTip="Girdiğiniz metinlerin BÜYÜK/küçük harf dönüşüm tercihini belirleyin (kişisel ayar)."/>
                             </MenuItem>
                         </MenuItem>
                     </Menu>
 
+                    <!-- Çıkış butonu şeritte tek "tehlike" rengidir; dolu Danger
+                         zemini + OnDanger metni iki temada da ölçülü çifttir. -->
                     <Button x:Name="NavLogoutButton"
                             Content="Çıkış Yap"
-                            Height="28" Padding="12,0" Margin="0,0,0,0"
-                            Foreground="White" Background="#B91C1C"
-                            BorderBrush="#991B1B" BorderThickness="1"
-                            Cursor="Hand"
+                            Style="{StaticResource DangerButton}"
+                            Height="28" Padding="12,0"
                             Click="Logout_Click"/>
                 </StackPanel>
             </DockPanel>
@@ -101,7 +91,7 @@
 
         <!-- Alt: Kapat butonu -->
         <Border DockPanel.Dock="Bottom"
-                Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0,1,0,0"
+                Background="{DynamicResource Theme.SurfaceSubtle}" BorderBrush="{DynamicResource Theme.Border}" BorderThickness="0,1,0,0"
                 Padding="12,8">
             <Button x:Name="CloseButton"
                     Content="Kapat"
@@ -119,7 +109,7 @@
                 <DockPanel Margin="0,0,0,8">
                     <TextBlock DockPanel.Dock="Left"
                                Text="Kargo Dashboard"
-                               Style="{StaticResource Text.H1}" Foreground="#1A3354"
+                               Style="{StaticResource Text.H1}" Foreground="{DynamicResource Theme.Primary}"
                                VerticalAlignment="Center"/>
                     <Button DockPanel.Dock="Right"
                             x:Name="RefreshDashboardButton"
@@ -143,85 +133,85 @@
                     <!-- Bugün Gelen -->
                     <Border x:Name="CardTodayIncoming"
                             Width="160" Height="80" Margin="0,0,10,10"
-                            Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1"
+                            Background="{DynamicResource Theme.Info.Background}" BorderBrush="{DynamicResource Theme.Info.Border}" BorderThickness="1"
                             CornerRadius="6" Padding="12,8"
                             ToolTip="Gönderim tarihi bugün olan gelen kargo sayısı.">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock x:Name="CardTodayIncomingVal"
                                        Text="—" Style="{StaticResource Text.Display}"
-                                       Foreground="#1D4ED8"/>
+                                       Foreground="{DynamicResource Theme.Info.Text}"/>
                             <TextBlock Text="Bugün Gelen"
-                                       Style="{StaticResource Text.Caption}" Foreground="#3B82F6"/>
+                                       Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Info.Text}"/>
                         </StackPanel>
                     </Border>
 
                     <!-- Bugün Giden -->
                     <Border Width="160" Height="80" Margin="0,0,10,10"
-                            Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1"
+                            Background="{DynamicResource Theme.Success.Background}" BorderBrush="{DynamicResource Theme.Success.Border}" BorderThickness="1"
                             CornerRadius="6" Padding="12,8"
                             ToolTip="Gönderim tarihi bugün olan giden kargo sayısı.">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock x:Name="CardTodayOutgoingVal"
                                        Text="—" Style="{StaticResource Text.Display}"
-                                       Foreground="#15803D"/>
+                                       Foreground="{DynamicResource Theme.Success.Text}"/>
                             <TextBlock Text="Bugün Giden"
-                                       Style="{StaticResource Text.Caption}" Foreground="#22C55E"/>
+                                       Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Success.Text}"/>
                         </StackPanel>
                     </Border>
 
                     <!-- Toplam Bekleyen — tanım CargoShipmentStatusRules.IsPending ile ortak -->
                     <Border Width="160" Height="80" Margin="0,0,10,10"
-                            Background="#FFF7ED" BorderBrush="#FED7AA" BorderThickness="1"
+                            Background="{DynamicResource Theme.Warning.Background}" BorderBrush="{DynamicResource Theme.Warning.Border}" BorderThickness="1"
                             CornerRadius="6" Padding="12,8"
                             ToolTip="Süreci hâlâ devam eden kargolar: Teslim Edildi, Personele Teslim Edildi ve İptal dışındaki tüm kayıtlar (gelen + giden, tarih filtresi uygulanmaz).">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock x:Name="CardPendingVal"
                                        Text="—" Style="{StaticResource Text.Display}"
-                                       Foreground="#C2410C"/>
+                                       Foreground="{DynamicResource Theme.Warning.Text}"/>
                             <TextBlock Text="Toplam Bekleyen"
-                                       Style="{StaticResource Text.Caption}" Foreground="#F97316"/>
+                                       Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Warning.Text}"/>
                         </StackPanel>
                     </Border>
 
                     <!-- Bildirim Bekleyen -->
                     <Border Width="160" Height="80" Margin="0,0,10,10"
-                            Background="#F5F3FF" BorderBrush="#DDD6FE" BorderThickness="1"
+                            Background="{DynamicResource Theme.Accent.Background}" BorderBrush="{DynamicResource Theme.Accent.Border}" BorderThickness="1"
                             CornerRadius="6" Padding="12,8"
                             ToolTip="Henüz WhatsApp/mail bildirimi hazırlanmamış aktif kargolar (Gönderime Hazır, Gönderildi, Teslim Alındı).">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock x:Name="CardNotifPendingVal"
                                        Text="—" Style="{StaticResource Text.Display}"
-                                       Foreground="#7C3AED"/>
+                                       Foreground="{DynamicResource Theme.Accent.Text}"/>
                             <TextBlock Text="Bildirim Bekleyen"
-                                       Style="{StaticResource Text.Caption}" Foreground="#8B5CF6"/>
+                                       Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Accent.Text}"/>
                         </StackPanel>
                     </Border>
 
                     <!-- Acil Bekleyen -->
                     <Border Width="160" Height="80" Margin="0,0,10,10"
-                            Background="#FFF1F2" BorderBrush="#FECDD3" BorderThickness="1"
+                            Background="{DynamicResource Theme.Danger.Background}" BorderBrush="{DynamicResource Theme.Danger.Border}" BorderThickness="1"
                             CornerRadius="6" Padding="12,8"
                             ToolTip="Önceliği Acil veya Çok Acil olan, teslim edilmemiş ve iptal edilmemiş kargolar.">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock x:Name="CardUrgentVal"
                                        Text="—" Style="{StaticResource Text.Display}"
-                                       Foreground="#BE123C"/>
+                                       Foreground="{DynamicResource Theme.Danger}"/>
                             <TextBlock Text="Acil Bekleyen"
-                                       Style="{StaticResource Text.Caption}" Foreground="#F43F5E"/>
+                                       Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Danger.Text}"/>
                         </StackPanel>
                     </Border>
 
                     <!-- Bugün Teslim -->
                     <Border Width="160" Height="80" Margin="0,0,10,10"
-                            Background="#F0FDF4" BorderBrush="#86EFAC" BorderThickness="1"
+                            Background="{DynamicResource Theme.Success.Background}" BorderBrush="{DynamicResource Theme.Success.Border}" BorderThickness="1"
                             CornerRadius="6" Padding="12,8"
                             ToolTip="Bugün 'Teslim Edildi' durumuna geçen kargolar.">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock x:Name="CardTodayDeliveredVal"
                                        Text="—" Style="{StaticResource Text.Display}"
-                                       Foreground="#166534"/>
+                                       Foreground="{DynamicResource Theme.Success.Text}"/>
                             <TextBlock Text="Bugün Teslim"
-                                       Style="{StaticResource Text.Caption}" Foreground="#16A34A"/>
+                                       Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Success.Text}"/>
                         </StackPanel>
                     </Border>
 
@@ -239,12 +229,12 @@
 
                     <!-- Grafik 1: Gelen/Giden -->
                     <Border Grid.Column="0"
-                            BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="4" Padding="10">
+                            BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1" CornerRadius="4" Padding="10">
                         <StackPanel>
                             <DockPanel Margin="0,0,0,6">
                                 <TextBlock DockPanel.Dock="Left"
                                            Text="Gelen / Giden (son 30 gün)"
-                                           Style="{StaticResource Text.H2}" Foreground="#1A3354"/>
+                                           Style="{StaticResource Text.H2}" Foreground="{DynamicResource Theme.Primary}"/>
                             </DockPanel>
                             <ItemsControl x:Name="DirectionChart">
                                 <ItemsControl.ItemTemplate>
@@ -277,10 +267,10 @@
 
                     <!-- Grafik 2: Durum Dağılımı -->
                     <Border Grid.Column="2"
-                            BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="4" Padding="10">
+                            BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1" CornerRadius="4" Padding="10">
                         <StackPanel>
                             <TextBlock Text="Durum Dağılımı"
-                                       Style="{StaticResource Text.H2}" Foreground="#1A3354"
+                                       Style="{StaticResource Text.H2}" Foreground="{DynamicResource Theme.Primary}"
                                        Margin="0,0,0,6"/>
                             <ItemsControl x:Name="StatusChart">
                                 <ItemsControl.ItemTemplate>
@@ -313,10 +303,10 @@
 
                     <!-- Grafik 3: Top 5 Kargo Firması -->
                     <Border Grid.Column="4"
-                            BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="4" Padding="10">
+                            BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1" CornerRadius="4" Padding="10">
                         <StackPanel>
                             <TextBlock Text="Top 5 Kargo Firması"
-                                       Style="{StaticResource Text.H2}" Foreground="#1A3354"
+                                       Style="{StaticResource Text.H2}" Foreground="{DynamicResource Theme.Primary}"
                                        Margin="0,0,0,6"/>
                             <ItemsControl x:Name="CompanyChart">
                                 <ItemsControl.ItemTemplate>
@@ -351,7 +341,7 @@
 
                 <!-- ── Son 10 Hareket ────────────────────────────── -->
                 <TextBlock Text="Son 10 Hareket"
-                           Style="{StaticResource Text.H2}" Foreground="#1A3354"
+                           Style="{StaticResource Text.H2}" Foreground="{DynamicResource Theme.Primary}"
                            Margin="0,0,0,4"/>
                 <DataGrid x:Name="RecentGrid"
                           AutoGenerateColumns="False"
@@ -362,7 +352,7 @@
                           Height="180"
                           Margin="0,0,0,14"
                           GridLinesVisibility="Horizontal"
-                          AlternatingRowBackground="#F8FAFC">
+                          AlternatingRowBackground="{DynamicResource Theme.DataGridAltRow}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Kargo No"      Binding="{Binding ShipmentNumber}"            Width="100"
                                     ElementStyle="{StaticResource EllipsisCell}"/>
@@ -387,7 +377,7 @@
 
                 <!-- ── Rapor Filtreleri ──────────────────────────── -->
                 <TextBlock Text="Filtrelenebilir Rapor"
-                           Style="{StaticResource Text.H2}" Foreground="#1A3354"
+                           Style="{StaticResource Text.H2}" Foreground="{DynamicResource Theme.Primary}"
                            Margin="0,0,0,6"/>
 
                 <GroupBox Header="Filtreler" Padding="8,4,8,8" Margin="0,0,0,8">
@@ -457,7 +447,7 @@
 
                 <!-- ── Rapor Sonuç Özeti ─────────────────────────── -->
                 <Border x:Name="ReportSummaryBorder"
-                        Background="#EEF4FA" BorderBrush="#93C5FD" BorderThickness="1"
+                        Background="{DynamicResource Theme.SurfaceAlt}" BorderBrush="{DynamicResource Theme.PrimaryHover}" BorderThickness="1"
                         CornerRadius="4" Padding="10,6" Margin="0,0,0,6"
                         Visibility="Collapsed">
                     <DockPanel>
@@ -469,18 +459,18 @@
                                 Click="ExportPdfButton_Click"
                                 Margin="8,0,0,0"/>
                         <TextBlock x:Name="ReportSummaryBlock"
-                                   Style="{StaticResource Text.Caption}" Foreground="#1E40AF"
+                                   Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Info.Text}"
                                    VerticalAlignment="Center"/>
                     </DockPanel>
                 </Border>
 
                 <!-- PDF başarı / hata bildirimi -->
                 <Border x:Name="ExportResultBorder"
-                        Background="#F0FDF4" BorderBrush="#86EFAC" BorderThickness="1"
+                        Background="{DynamicResource Theme.Success.Background}" BorderBrush="{DynamicResource Theme.Success.Border}" BorderThickness="1"
                         CornerRadius="4" Padding="8,5" Margin="0,0,0,6"
                         Visibility="Collapsed">
                     <TextBlock x:Name="ExportResultBlock"
-                               Style="{StaticResource Text.Caption}" Foreground="#166534"/>
+                               Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Success.Text}"/>
                 </Border>
 
                 <!-- ── Rapor Tablosu ──────────────────────────────── -->
@@ -492,7 +482,7 @@
                           SelectionMode="Single"
                           Height="280"
                           GridLinesVisibility="Horizontal"
-                          AlternatingRowBackground="#F8FAFC"
+                          AlternatingRowBackground="{DynamicResource Theme.DataGridAltRow}"
                           MouseDoubleClick="ReportGrid_MouseDoubleClick">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Kargo No"       Binding="{Binding ShipmentNumber}"              Width="100"

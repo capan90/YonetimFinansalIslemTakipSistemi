@@ -1,9 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
-using System.Windows.Media;
+using System.Windows.Controls;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Settings.MailSettings;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
+using YonetimFinansalIslemTakipSistemi.UI.Common;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Settings;
 
@@ -90,12 +91,12 @@ public partial class MailSettingsWindow : Window
 
             if (result.Success)
             {
-                TestResultBlock.Foreground = new SolidColorBrush(Color.FromRgb(21, 128, 61));
+                ThemeBrush.Apply(TestResultBlock, TextBlock.ForegroundProperty, "Theme.Success");
                 TestResultBlock.Text       = $"Test maili başarıyla gönderildi: {recipient}";
             }
             else
             {
-                TestResultBlock.Foreground = new SolidColorBrush(Color.FromRgb(185, 28, 28));
+                ThemeBrush.Apply(TestResultBlock, TextBlock.ForegroundProperty, "Theme.Danger");
                 TestResultBlock.Text       = result.ErrorMessage ?? "Gönderilemedi.";
             }
         }

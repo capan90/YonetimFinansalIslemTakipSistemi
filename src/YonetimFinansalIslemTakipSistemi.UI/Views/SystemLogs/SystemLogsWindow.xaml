@@ -8,39 +8,111 @@
         Icon="pack://application:,,,/Assets/AppIcon.ico"
         Loaded="Window_Loaded">
 
+    <Window.Resources>
+        <!-- ── Seviye rozeti ─────────────────────────────────────────────────
+             Renkler eskiden converter'dan geliyordu; converter bağlama başına
+             bir kez çalıştığı için tema değişince açık listedeki satırlar eski
+             renklerinde kalıyordu. Artık DataTrigger + DynamicResource:
+             tema anahtarı çevrilince satırlar anında güncellenir.
+
+             Seviye ayrımı yalnızca RENGE bağlı değildir — rozet metni
+             (LevelDisplay: Bilgi/Uyarı/Hata/Kritik) her zaman yazılıdır.
+             Renk körlüğünde de seviye okunabilir kalır. -->
+        <Style x:Key="LogLevelBadge" TargetType="Border">
+            <Setter Property="CornerRadius"        Value="3"/>
+            <Setter Property="Padding"             Value="6,1"/>
+            <Setter Property="BorderThickness"     Value="1"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment"   Value="Center"/>
+            <!-- Varsayılan: bilinmeyen seviye → nötr yüzey -->
+            <Setter Property="Background"  Value="{DynamicResource Theme.SurfaceAlt}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Theme.Border}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Level}" Value="Info">
+                    <Setter Property="Background"  Value="{DynamicResource Theme.Info.BackgroundStrong}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource Theme.Info.Border}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Level}" Value="Warning">
+                    <Setter Property="Background"  Value="{DynamicResource Theme.Warning.BackgroundStrong}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource Theme.Warning.Border}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Level}" Value="Error">
+                    <Setter Property="Background"  Value="{DynamicResource Theme.Danger.BackgroundStrong}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource Theme.Danger.Border}"/>
+                </DataTrigger>
+                <!-- Kritik tek DOLU seviyedir: listede ilk görülmesi gereken satır -->
+                <DataTrigger Binding="{Binding Level}" Value="Critical">
+                    <Setter Property="Background"  Value="{DynamicResource Theme.Critical.BackgroundStrong}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource Theme.Critical.Border}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="LogLevelBadgeText" TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource Theme.Text}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Level}" Value="Info">
+                    <Setter Property="Foreground" Value="{DynamicResource Theme.Info.Text}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Level}" Value="Warning">
+                    <Setter Property="Foreground" Value="{DynamicResource Theme.Warning.Text}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Level}" Value="Error">
+                    <Setter Property="Foreground" Value="{DynamicResource Theme.Danger.Text}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Level}" Value="Critical">
+                    <Setter Property="Foreground" Value="{DynamicResource Theme.Critical.Text}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Çözüldü / Açık durumu -->
+        <Style x:Key="LogStatusText" TargetType="TextBlock">
+            <Setter Property="FontWeight"        Value="SemiBold"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Foreground"        Value="{DynamicResource Theme.Warning}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsResolved}" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource Theme.Success}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
     <DockPanel Margin="10">
 
         <!-- Özet kartlar -->
         <UniformGrid DockPanel.Dock="Top" Rows="1" Margin="0,0,0,10">
-            <Border Background="#FEE2E2" CornerRadius="6" Margin="0,0,6,0" Padding="12,8">
+            <Border Background="{DynamicResource Theme.Danger.BackgroundStrong}" CornerRadius="6" Margin="0,0,6,0" Padding="12,8">
                 <StackPanel>
-                    <TextBlock Text="Bugünkü Kritik" Style="{StaticResource Text.Caption}" Foreground="#991B1B"/>
-                    <TextBlock Text="{Binding TodayCriticalCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="#DC2626"/>
+                    <TextBlock Text="Bugünkü Kritik" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Danger.Text}"/>
+                    <TextBlock Text="{Binding TodayCriticalCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="{DynamicResource Theme.Danger}"/>
                 </StackPanel>
             </Border>
-            <Border Background="#FEF3C7" CornerRadius="6" Margin="0,0,6,0" Padding="12,8">
+            <Border Background="{DynamicResource Theme.Warning.Background}" CornerRadius="6" Margin="0,0,6,0" Padding="12,8">
                 <StackPanel>
-                    <TextBlock Text="Bugünkü Hata" Style="{StaticResource Text.Caption}" Foreground="#92400E"/>
-                    <TextBlock Text="{Binding TodayErrorCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="#D97706"/>
+                    <TextBlock Text="Bugünkü Hata" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Warning.Text}"/>
+                    <TextBlock Text="{Binding TodayErrorCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="{DynamicResource Theme.Warning}"/>
                 </StackPanel>
             </Border>
-            <Border Background="#FFF7ED" CornerRadius="6" Margin="0,0,6,0" Padding="12,8">
+            <Border Background="{DynamicResource Theme.Warning.Background}" CornerRadius="6" Margin="0,0,6,0" Padding="12,8">
                 <StackPanel>
-                    <TextBlock Text="Son 24h Uyarı" Style="{StaticResource Text.Caption}" Foreground="#9A3412"/>
-                    <TextBlock Text="{Binding Last24hWarningCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="#EA580C"/>
+                    <TextBlock Text="Son 24h Uyarı" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Warning.Text}"/>
+                    <TextBlock Text="{Binding Last24hWarningCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="{DynamicResource Theme.Warning.Text}"/>
                 </StackPanel>
             </Border>
-            <Border Background="#EFF6FF" CornerRadius="6" Padding="12,8">
+            <Border Background="{DynamicResource Theme.Info.Background}" CornerRadius="6" Padding="12,8">
                 <StackPanel>
-                    <TextBlock Text="Çözülmemiş Kritik" Style="{StaticResource Text.Caption}" Foreground="#1D4ED8"/>
-                    <TextBlock Text="{Binding OpenCriticalCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="#2563EB"/>
+                    <TextBlock Text="Çözülmemiş Kritik" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Info.Text}"/>
+                    <TextBlock Text="{Binding OpenCriticalCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="{DynamicResource Theme.Info.Text}"/>
                 </StackPanel>
             </Border>
         </UniformGrid>
 
         <!-- Filtre paneli -->
         <Border DockPanel.Dock="Top"
-                BorderBrush="#E2E8F0" BorderThickness="1"
+                BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1"
                 CornerRadius="4" Padding="10,8"
                 Margin="0,0,0,8">
             <WrapPanel Orientation="Horizontal">
@@ -90,7 +162,7 @@
 
         <!-- Sayfalama -->
         <Border DockPanel.Dock="Bottom"
-                BorderBrush="#E2E8F0" BorderThickness="0,1,0,0"
+                BorderBrush="{DynamicResource Theme.Border}" BorderThickness="0,1,0,0"
                 Padding="0,6,0,0" Margin="0,6,0,0">
             <DockPanel>
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
@@ -112,7 +184,7 @@
                   SelectedItem="{Binding Selected, Mode=TwoWay}"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
-                  AlternatingRowBackground="#F8FAFC"
+                  AlternatingRowBackground="{DynamicResource Theme.DataGridAltRow}"
                   MouseDoubleClick="MainGrid_MouseDoubleClick">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Tarih"     Binding="{Binding CreatedAt, StringFormat=dd.MM.yyyy HH:mm:ss}" Width="140"
@@ -120,12 +192,9 @@
                 <DataGridTemplateColumn Header="Seviye" Width="80">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Border CornerRadius="3" Padding="4,1"
-                                    Background="{Binding Level, Converter={StaticResource LevelToBackgroundConverter}}"
-                                    HorizontalAlignment="Center">
+                            <Border Style="{StaticResource LogLevelBadge}">
                                 <TextBlock Text="{Binding LevelDisplay}"
-                                           Foreground="{Binding Level, Converter={StaticResource LevelToForegroundConverter}, ConverterParameter=foreground}"
-                                           Style="{StaticResource Text.Caption}" FontWeight="SemiBold"/>
+                                           Style="{StaticResource LogLevelBadgeText}"/>
                             </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -142,8 +211,7 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding StatusDisplay}"
-                                       Foreground="{Binding IsResolved, Converter={StaticResource BoolToStatusColorConverter}}"
-                                       FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                       Style="{StaticResource LogStatusText}"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

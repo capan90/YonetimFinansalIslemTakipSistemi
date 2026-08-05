@@ -9,27 +9,27 @@
 
     <Window.Resources>
         <!-- Operasyon kartı stili: büyük, tıklanabilir, hover efektli -->
-        <Style x:Key="OpCard" TargetType="Button">
+        <Style x:Key="OpCard" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Width"           Value="130"/>
             <Setter Property="Height"          Value="80"/>
             <Setter Property="Margin"          Value="4"/>
-            <Setter Property="Background"      Value="#F8FAFC"/>
-            <Setter Property="BorderBrush"     Value="#CBD5E1"/>
+            <Setter Property="Background" Value="{DynamicResource Theme.SurfaceSubtle}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Theme.InputBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Cursor"          Value="Hand"/>
             <Setter Property="FontFamily"      Value="Segoe UI"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#EEF4FF"/>
-                    <Setter Property="BorderBrush" Value="#7BA7D9"/>
+                    <Setter Property="Background" Value="{DynamicResource Theme.Info.Background}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource Theme.PrimaryHover}"/>
                 </Trigger>
                 <Trigger Property="IsPressed" Value="True">
-                    <Setter Property="Background" Value="#DCE9FA"/>
+                    <Setter Property="Background" Value="{DynamicResource Theme.Info.Background}"/>
                 </Trigger>
                 <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Background" Value="#F0F0F0"/>
-                    <Setter Property="Foreground" Value="#AAAAAA"/>
-                    <Setter Property="BorderBrush" Value="#DDDDDD"/>
+                    <Setter Property="Background" Value="{DynamicResource Theme.SurfaceAlt}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource Theme.MutedText}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource Theme.Border}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -55,20 +55,20 @@
         <!-- İşlem sonucu bildirimi — Mail/WhatsApp tamamlandığında görünür, pencere kapanana kadar kalır -->
         <Border x:Name="OpStatusBorder"
                 DockPanel.Dock="Bottom"
-                Background="#E8F5E9" BorderBrush="#81C784" BorderThickness="1"
+                Background="{DynamicResource Theme.Success.Background}" BorderBrush="{DynamicResource Theme.Success.Border}" BorderThickness="1"
                 CornerRadius="4" Padding="10,7" Margin="0,8,0,0"
                 Visibility="Collapsed">
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="✓  " Foreground="#2E7D32"
+                <TextBlock Text="✓  " Foreground="{DynamicResource Theme.Success}"
                            Style="{StaticResource Text.Body}" FontWeight="Bold" VerticalAlignment="Center"/>
-                <TextBlock x:Name="OpStatusBlock" Foreground="#2E7D32"
+                <TextBlock x:Name="OpStatusBlock" Foreground="{DynamicResource Theme.Success}"
                            Style="{StaticResource Text.Caption}" FontWeight="SemiBold" VerticalAlignment="Center"/>
             </StackPanel>
         </Border>
 
         <!-- Kargo bilgi kartı -->
         <Border DockPanel.Dock="Top"
-                Background="#F0F4FF" BorderBrush="#B0C4F0" BorderThickness="1"
+                Background="{DynamicResource Theme.Info.Background}" BorderBrush="{DynamicResource Theme.Info.Border}" BorderThickness="1"
                 CornerRadius="4" Padding="12,10" Margin="0,0,0,12">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -87,7 +87,7 @@
                            Text="Kargo No:" FontWeight="SemiBold" Margin="0,0,6,4"/>
                 <TextBlock Grid.Row="0" Grid.Column="1"
                            x:Name="ShipmentNumberBlock" FontWeight="SemiBold"
-                           Foreground="#1A3354" Margin="0,0,12,4"/>
+                           Foreground="{DynamicResource Theme.Primary}" Margin="0,0,12,4"/>
 
                 <TextBlock Grid.Row="0" Grid.Column="2"
                            Text="Karşı Taraf:" FontWeight="SemiBold" Margin="0,0,6,4"/>

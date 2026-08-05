@@ -84,7 +84,7 @@
         <!-- Hata / uyarı satırı -->
         <TextBlock DockPanel.Dock="Top"
                    Text="{Binding FormError}"
-                   Foreground="Red"
+                   Foreground="{DynamicResource Theme.Danger}"
                    Margin="0,0,0,8"
                    TextWrapping="Wrap">
             <TextBlock.Style>
@@ -138,7 +138,7 @@
                       IsReadOnly="True"
                       CanUserAddRows="False"
                       GridLinesVisibility="Horizontal"
-                      AlternatingRowBackground="#F5F5F5"
+                      AlternatingRowBackground="{DynamicResource Theme.SurfaceAlt}"
                       HeadersVisibility="Column">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Tarih"

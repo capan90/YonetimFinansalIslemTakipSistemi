@@ -20,7 +20,7 @@
         <!-- Hata mesajı -->
         <TextBlock DockPanel.Dock="Bottom"
                    Text="{Binding ErrorMessage}"
-                   Foreground="Red"
+                   Foreground="{DynamicResource Theme.Danger}"
                    Margin="0,6,0,0"
                    TextWrapping="Wrap">
             <TextBlock.Style>
@@ -45,7 +45,7 @@
                   CanUserAddRows="False"
                   SelectionMode="Single"
                   GridLinesVisibility="Horizontal"
-                  AlternatingRowBackground="#F5F5F5"
+                  AlternatingRowBackground="{DynamicResource Theme.SurfaceAlt}"
                   HeadersVisibility="Column"
                   MouseDoubleClick="EditButton_Click">
             <DataGrid.Columns>

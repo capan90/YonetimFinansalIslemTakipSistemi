@@ -138,13 +138,13 @@
                                         <Setter Property="Background" Value="Transparent"/>
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding PriorityDisplay}" Value="Orta">
-                                                <Setter Property="Background" Value="{DynamicResource Theme.Badge.InfoBackground}"/>
+                                                <Setter Property="Background" Value="{DynamicResource Theme.Info.BackgroundStrong}"/>
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding PriorityDisplay}" Value="Acil">
-                                                <Setter Property="Background" Value="{DynamicResource Theme.Badge.WarningBackground}"/>
+                                                <Setter Property="Background" Value="{DynamicResource Theme.Warning.BackgroundStrong}"/>
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding PriorityDisplay}" Value="Çok Acil">
-                                                <Setter Property="Background" Value="{DynamicResource Theme.Badge.DangerBackground}"/>
+                                                <Setter Property="Background" Value="{DynamicResource Theme.Danger.BackgroundStrong}"/>
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -154,7 +154,7 @@
                                          renk körlüğünde de ayırt edilebilsin -->
                                     <TextBlock Text="!" FontWeight="Bold"
                                                Margin="0,0,3,0"
-                                               Foreground="{DynamicResource Theme.Badge.DangerText}">
+                                               Foreground="{DynamicResource Theme.Danger.Text}">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
                                                 <Setter Property="Visibility" Value="Collapsed"/>
@@ -172,13 +172,13 @@
                                                 <Setter Property="Foreground" Value="{DynamicResource Theme.LabelText}"/>
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding PriorityDisplay}" Value="Orta">
-                                                        <Setter Property="Foreground" Value="{DynamicResource Theme.Badge.InfoText}"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource Theme.Info.Text}"/>
                                                     </DataTrigger>
                                                     <DataTrigger Binding="{Binding PriorityDisplay}" Value="Acil">
-                                                        <Setter Property="Foreground" Value="{DynamicResource Theme.Badge.WarningText}"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource Theme.Warning.Text}"/>
                                                     </DataTrigger>
                                                     <DataTrigger Binding="{Binding PriorityDisplay}" Value="Çok Acil">
-                                                        <Setter Property="Foreground" Value="{DynamicResource Theme.Badge.DangerText}"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource Theme.Danger.Text}"/>
                                                         <Setter Property="FontWeight" Value="SemiBold"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>

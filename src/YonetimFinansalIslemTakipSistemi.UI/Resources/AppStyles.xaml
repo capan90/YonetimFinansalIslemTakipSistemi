@@ -127,25 +127,18 @@
         <Setter Property="BorderBrush"      Value="{DynamicResource Theme.InputBorder}"/>
     </Style>
 
-    <!-- ── Sabit Renk Fırçaları (StaticResource ile referans verilen mevcut isimler) ── -->
-    <!-- Not: Tema fırçaları (Theme.*) ayrı LightTheme/DarkTheme.xaml dosyalarındadır -->
-    <SolidColorBrush x:Key="Brush.Primary"       Color="#1E3A5F"/>
-    <SolidColorBrush x:Key="Brush.Success"       Color="#2E7D32"/>
-    <SolidColorBrush x:Key="Brush.Danger"        Color="#C62828"/>
-    <SolidColorBrush x:Key="Brush.Secondary"     Color="#475569"/>
-    <SolidColorBrush x:Key="Brush.Disabled"      Color="#64748B"/>
-    <SolidColorBrush x:Key="Brush.Border"        Color="#E2E8F0"/>
-    <SolidColorBrush x:Key="Brush.GridAlt"       Color="#F8FAFC"/>
-    <SolidColorBrush x:Key="Brush.GridSelected"  Color="#DBEAFE"/>
-    <SolidColorBrush x:Key="Brush.GridHover"     Color="#EFF6FF"/>
-    <SolidColorBrush x:Key="Brush.TextPrimary"   Color="#1A202C"/>
-    <SolidColorBrush x:Key="Brush.TextSecondary" Color="#64748B"/>
+    <!-- Brush.* sabit fırçaları KALDIRILDI (Faz B).
+         11 adet sabit renkli SolidColorBrush idi; XAML'de de code-behind'da da
+         hiçbir referansı kalmamıştı. StaticResource oldukları için tema
+         değişiminde güncellenmiyorlardı — durmaları koyu tema için tuzaktı.
+         Karşılıkları: Brush.Primary→Theme.Primary, Brush.Border→Theme.Border,
+         Brush.TextPrimary→Theme.Text, Brush.TextSecondary→Theme.MutedText vb. -->
 
     <!-- ── Buton Stilleri ────────────────────────────────────────────────────── -->
 
     <Style x:Key="PrimaryButton" TargetType="Button">
         <Setter Property="Background"      Value="{DynamicResource Theme.Primary}"/>
-        <Setter Property="Foreground"      Value="White"/>
+        <Setter Property="Foreground"      Value="{DynamicResource Theme.OnPrimary}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Height"          Value="32"/>
         <Setter Property="Padding"         Value="14,0"/>
@@ -169,7 +162,7 @@
                             <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Theme.PrimaryHover}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="#152C4A"/>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Theme.PrimaryPressed}"/>
                         </Trigger>
                         <!-- Devre dışı: #94A3B8 + Opacity 0.7 beyaz metinle 2.1:1 veriyordu.
                              Opaklık kaldırıldı, zemin koyulaştırıldı → 4.6:1 (WCAG AA). -->
@@ -183,8 +176,8 @@
     </Style>
 
     <Style x:Key="SecondaryButton" TargetType="Button">
-        <Setter Property="Background"      Value="#475569"/>
-        <Setter Property="Foreground"      Value="White"/>
+        <Setter Property="Background"      Value="{DynamicResource Theme.Secondary}"/>
+        <Setter Property="Foreground"      Value="{DynamicResource Theme.OnSecondary}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Height"          Value="32"/>
         <Setter Property="Padding"         Value="14,0"/>
@@ -205,10 +198,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="#334155"/>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Theme.SecondaryHover}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="#1E293B"/>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Theme.SecondaryPressed}"/>
                         </Trigger>
                         <!-- Devre dışı: #94A3B8 + Opacity 0.7 beyaz metinle 2.1:1 veriyordu.
                              Opaklık kaldırıldı, zemin koyulaştırıldı → 4.6:1 (WCAG AA). -->
@@ -222,8 +215,8 @@
     </Style>
 
     <Style x:Key="DangerButton" TargetType="Button">
-        <Setter Property="Background"      Value="#C62828"/>
-        <Setter Property="Foreground"      Value="White"/>
+        <Setter Property="Background"      Value="{DynamicResource Theme.Danger}"/>
+        <Setter Property="Foreground"      Value="{DynamicResource Theme.OnDanger}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Height"          Value="32"/>
         <Setter Property="Padding"         Value="14,0"/>
@@ -244,10 +237,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="#B71C1C"/>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Theme.DangerHover}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="#7F1010"/>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Theme.DangerPressed}"/>
                         </Trigger>
                         <!-- Devre dışı: #94A3B8 + Opacity 0.7 beyaz metinle 2.1:1 veriyordu.
                              Opaklık kaldırıldı, zemin koyulaştırıldı → 4.6:1 (WCAG AA). -->

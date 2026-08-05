@@ -40,15 +40,63 @@
     <SolidColorBrush x:Key="Theme.Success"               Color="#4ADE80"/>
     <SolidColorBrush x:Key="Theme.Warning"               Color="#FBBF24"/>
 
-    <!-- ── Rozet (badge) ──────────────────────────────────────────────────────
+    <!-- ══ DURUM RENKLERİ (dört adımlı) ══════════════════════════════════════
          Koyu temada ilişki tersine döner: koyu dolgu + açık metin.
-         Açık tema değerlerinin otomatik tersi DEĞİL, ayrı ayarlanmıştır. -->
-    <SolidColorBrush x:Key="Theme.Badge.InfoBackground"    Color="#1E3A5F"/>
-    <SolidColorBrush x:Key="Theme.Badge.InfoText"          Color="#BFDBFE"/>
-    <SolidColorBrush x:Key="Theme.Badge.WarningBackground" Color="#4A2A12"/>
-    <SolidColorBrush x:Key="Theme.Badge.WarningText"       Color="#FED7AA"/>
-    <SolidColorBrush x:Key="Theme.Badge.DangerBackground"  Color="#4C1D1D"/>
-    <SolidColorBrush x:Key="Theme.Badge.DangerText"        Color="#FECACA"/>
+         Açık tema değerlerinin otomatik tersi DEĞİL — her biri koyu yüzey
+         (#1E293B) üzerinde ayrı ölçüldü, metinler 7:1 üzerindedir.
+    ═══════════════════════════════════════════════════════════════════════ -->
+
+    <SolidColorBrush x:Key="Theme.Info.Background"          Color="#16304D"/>
+    <SolidColorBrush x:Key="Theme.Info.BackgroundStrong"    Color="#1E3A5F"/>
+    <SolidColorBrush x:Key="Theme.Info.Border"              Color="#2E5F9F"/>
+    <SolidColorBrush x:Key="Theme.Info.Text"                Color="#BFDBFE"/>
+
+    <SolidColorBrush x:Key="Theme.Success.Background"       Color="#14321C"/>
+    <SolidColorBrush x:Key="Theme.Success.BackgroundStrong" Color="#1C4529"/>
+    <SolidColorBrush x:Key="Theme.Success.Border"           Color="#2E7D32"/>
+    <SolidColorBrush x:Key="Theme.Success.Text"             Color="#A7F3C0"/>
+
+    <SolidColorBrush x:Key="Theme.Warning.Background"       Color="#3A2A12"/>
+    <SolidColorBrush x:Key="Theme.Warning.BackgroundStrong" Color="#4A2A12"/>
+    <SolidColorBrush x:Key="Theme.Warning.Border"           Color="#B45309"/>
+    <SolidColorBrush x:Key="Theme.Warning.Text"             Color="#FED7AA"/>
+
+    <SolidColorBrush x:Key="Theme.Danger.Background"        Color="#3B1717"/>
+    <SolidColorBrush x:Key="Theme.Danger.BackgroundStrong"  Color="#4C1D1D"/>
+    <SolidColorBrush x:Key="Theme.Danger.Border"            Color="#B91C1C"/>
+    <SolidColorBrush x:Key="Theme.Danger.Text"              Color="#FECACA"/>
+
+    <SolidColorBrush x:Key="Theme.Accent.Background"        Color="#241B3D"/>
+    <SolidColorBrush x:Key="Theme.Accent.BackgroundStrong"  Color="#2E2350"/>
+    <SolidColorBrush x:Key="Theme.Accent.Border"            Color="#6D28D9"/>
+    <SolidColorBrush x:Key="Theme.Accent.Text"              Color="#DDD6FE"/>
+
+    <!-- ── Buton metin renkleri ("on-" rolleri) ───────────────────────────────
+         Koyu temada Primary (#60A5FA) ve Danger (#F87171) AÇIK renkler;
+         üzerlerine beyaz metin 2.5:1 veriyordu. Bu yüzden metin koyulaşır. -->
+    <SolidColorBrush x:Key="Theme.OnPrimary"             Color="#0F172A"/>
+    <SolidColorBrush x:Key="Theme.OnSecondary"           Color="#F1F5F9"/>
+    <SolidColorBrush x:Key="Theme.OnDanger"              Color="#0F172A"/>
+    <SolidColorBrush x:Key="Theme.OnDisabled"            Color="#CBD5E1"/>
+
+    <!-- ── Buton durumları ────────────────────────────────────────────────── -->
+    <!-- Koyu temada birincil buton açık mavi; hover/pressed AÇILIR, koyulaşmaz -->
+    <SolidColorBrush x:Key="Theme.PrimaryPressed"        Color="#BFDBFE"/>
+    <SolidColorBrush x:Key="Theme.Secondary"             Color="#475569"/>
+    <SolidColorBrush x:Key="Theme.SecondaryHover"        Color="#5A6B80"/>
+    <SolidColorBrush x:Key="Theme.SecondaryPressed"      Color="#6B7C93"/>
+    <SolidColorBrush x:Key="Theme.DangerHover"           Color="#EF4444"/>
+    <SolidColorBrush x:Key="Theme.DangerPressed"         Color="#DC2626"/>
+
+    <!-- ── Navigasyon şeridi (Kargo Dashboard) ────────────────────────────── -->
+    <SolidColorBrush x:Key="Theme.Nav.Background"        Color="#16304D"/>
+    <SolidColorBrush x:Key="Theme.Nav.ItemBackground"    Color="#1E3A5F"/>
+    <SolidColorBrush x:Key="Theme.Nav.ItemBorder"        Color="#2E5F9F"/>
+    <SolidColorBrush x:Key="Theme.Nav.Foreground"        Color="#F1F5F9"/>
+
+    <!-- ── Yüzey kademeleri ───────────────────────────────────────────────── -->
+    <SolidColorBrush x:Key="Theme.SurfaceAlt"            Color="#263348"/>
+    <SolidColorBrush x:Key="Theme.SurfaceSubtle"         Color="#1A2436"/>
 
     <!-- ── Sistem: DataGrid seçim rengi override (koyu tema) ─────────────────── -->
     <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"

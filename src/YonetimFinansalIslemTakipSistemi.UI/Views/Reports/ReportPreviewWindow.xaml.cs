@@ -2,12 +2,12 @@ using Microsoft.Win32;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Reports.Queries.GetReport;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.Domain.Extensions;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
+using YonetimFinansalIslemTakipSistemi.UI.Common;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Reports;
 
@@ -126,8 +126,8 @@ public partial class ReportPreviewWindow : Window
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(130) });
 
             AddTotalCell(grid, cs.CurrencyDisplay, 0, FontWeights.SemiBold, null);
-            AddTotalCell(grid, $"Giriş: {cs.TotalInflow:N2}", 1, FontWeights.Normal, Brushes.DarkGreen);
-            AddTotalCell(grid, $"Çıkış: {cs.TotalOutflow:N2}", 2, FontWeights.Normal, Brushes.DarkRed);
+            AddTotalCell(grid, $"Giriş: {cs.TotalInflow:N2}", 1, FontWeights.Normal, PrintPositive);
+            AddTotalCell(grid, $"Çıkış: {cs.TotalOutflow:N2}", 2, FontWeights.Normal, PrintNegative);
             AddTotalCell(grid, $"Net: {cs.NetBalance:N2}", 3, FontWeights.Bold, null);
 
             sp.Children.Add(grid);
@@ -136,7 +136,15 @@ public partial class ReportPreviewWindow : Window
         TotalsPanel.Child = sp;
     }
 
-    private static void AddTotalCell(Grid grid, string text, int col, FontWeight weight, Brush? foreground)
+    // Baskı katmanı token anahtarları. Bu iki değer LightTheme ve DarkTheme'de
+    // BİREBİR AYNIDIR — kâğıt üzerindeki giriş/çıkış rakamları uygulama teması
+    // ne olursa olsun aynı koyu yeşil/kırmızıyla, yani çıktıdaki gibi görünür.
+    // Eskiden Brushes.DarkGreen / Brushes.DarkRed idi; sistem sabitiydi ve
+    // tasarım sistemine bağlı değildi.
+    private const string PrintPositive = "Theme.PrintPreview.Positive";
+    private const string PrintNegative = "Theme.PrintPreview.Negative";
+
+    private static void AddTotalCell(Grid grid, string text, int col, FontWeight weight, string? foregroundToken)
     {
         var tb = new TextBlock
         {
@@ -145,7 +153,8 @@ public partial class ReportPreviewWindow : Window
             Margin       = new Thickness(0, 0, 16, 0),
             VerticalAlignment = VerticalAlignment.Center
         };
-        if (foreground is not null) tb.Foreground = foreground;
+        if (foregroundToken is not null)
+            ThemeBrush.Apply(tb, TextBlock.ForegroundProperty, foregroundToken);
         Grid.SetColumn(tb, col);
         grid.Children.Add(tb);
     }
@@ -158,8 +167,8 @@ public partial class ReportPreviewWindow : Window
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-        AddCardRow(grid, 0, "Toplam Giriş:", cs.TotalInflow.ToString("N2"), Brushes.DarkGreen);
-        AddCardRow(grid, 1, "Toplam Çıkış:", cs.TotalOutflow.ToString("N2"), Brushes.DarkRed);
+        AddCardRow(grid, 0, "Toplam Giriş:", cs.TotalInflow.ToString("N2"), PrintPositive);
+        AddCardRow(grid, 1, "Toplam Çıkış:", cs.TotalOutflow.ToString("N2"), PrintNegative);
 
         var sep = new Separator { Margin = new Thickness(0, 4, 0, 4) };
         Grid.SetRow(sep, 2);
@@ -171,7 +180,7 @@ public partial class ReportPreviewWindow : Window
         return new GroupBox { Header = cs.CurrencyDisplay, Padding = new Thickness(8), Content = grid, Margin = new Thickness(0, 0, 6, 0) };
     }
 
-    private static void AddCardRow(Grid grid, int row, string label, string value, Brush? valueBrush, bool bold = false)
+    private static void AddCardRow(Grid grid, int row, string label, string value, string? valueToken, bool bold = false)
     {
         var lblTb = new TextBlock { Text = label, Margin = new Thickness(0, 2, 0, 2), FontWeight = bold ? FontWeights.SemiBold : FontWeights.Normal };
         Grid.SetRow(lblTb, row); Grid.SetColumn(lblTb, 0);
@@ -183,7 +192,8 @@ public partial class ReportPreviewWindow : Window
             Margin            = new Thickness(4, 2, 0, 2),
             FontWeight        = bold ? FontWeights.SemiBold : FontWeights.Normal
         };
-        if (valueBrush is not null) valTb.Foreground = valueBrush;
+        if (valueToken is not null)
+            ThemeBrush.Apply(valTb, TextBlock.ForegroundProperty, valueToken);
         Grid.SetRow(valTb, row); Grid.SetColumn(valTb, 1);
 
         grid.Children.Add(lblTb);

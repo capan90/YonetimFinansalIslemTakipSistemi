@@ -1,0 +1,194 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+    ══════════════════════════════════════════════════════════════════════════
+    BASKI KATMANI — rapor önizlemesi için sabit yüzey
+
+    KURAL: Yazdırılacak içerik uygulama temasından BAĞIMSIZDIR.
+
+        Pencere çerçevesi, başlık, araç çubuğu, Kapat/Export butonları
+            → aktif uygulama teması (Theme.*)
+        Kâğıt ve üzerindeki her şey
+            → burada tanımlı sabit renkler (Theme.PrintPreview.*)
+
+    NEDEN: Önizleme, PDF/Excel çıktısının ekrandaki karşılığıdır. Koyu temaya
+    geçince kâğıdın da kararması, kullanıcıya üretilmeyecek bir çıktı vaat
+    eder. Faz B'de rapor gövdesi Theme.Surface / Theme.Text gibi dinamik
+    token'lara bağlanmıştı; kâğıt kayboldu, metin zeminle aynı renge döndü.
+
+    Theme.PrintPreview.* token'ları LightTheme.xaml ve DarkTheme.xaml içinde
+    BİREBİR AYNI değerlerle tanımlıdır — parite testi bunu doğrular.
+
+    KULLANIM: Bu stiller anahtarlıdır (x:Key). Rapor gövdesini taşıyan kap,
+    kendi Resources'ında bunları örtük stile bağlar; böylece kapsam yalnızca
+    kâğıt alt ağacıdır, uygulamanın geri kalanı etkilenmez:
+
+        <Border.Resources>
+            <Style TargetType="TextBlock" BasedOn="{StaticResource Print.Body}"/>
+        </Border.Resources>
+
+    Bu dosya PDF/Excel üretimini DEĞİŞTİRMEZ; export servisi kendi renklerini
+    kullanmaya devam eder.
+    ══════════════════════════════════════════════════════════════════════════
+    -->
+
+    <!-- Kâğıt yüzeyi -->
+    <Style x:Key="Print.Paper" TargetType="Border">
+        <Setter Property="Background"      Value="{DynamicResource Theme.PrintPreview.PaperBackground}"/>
+        <Setter Property="BorderBrush"     Value="{DynamicResource Theme.PrintPreview.Border}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding"         Value="28,24"/>
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource Theme.PrintPreview.Text}"/>
+    </Style>
+
+    <!-- ── Metin ─────────────────────────────────────────────────────────── -->
+    <Style x:Key="Print.Body" TargetType="TextBlock">
+        <Setter Property="FontSize"   Value="13"/>
+        <Setter Property="LineHeight" Value="19"/>
+        <Setter Property="Foreground" Value="{DynamicResource Theme.PrintPreview.Text}"/>
+    </Style>
+
+    <Style x:Key="Print.H1" TargetType="TextBlock" BasedOn="{StaticResource Print.Body}">
+        <Setter Property="FontSize"   Value="20"/>
+        <Setter Property="LineHeight" Value="28"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+    </Style>
+
+    <Style x:Key="Print.H2" TargetType="TextBlock" BasedOn="{StaticResource Print.Body}">
+        <Setter Property="FontSize"   Value="14"/>
+        <Setter Property="LineHeight" Value="20"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+
+    <Style x:Key="Print.Caption" TargetType="TextBlock" BasedOn="{StaticResource Print.Body}">
+        <Setter Property="FontSize"   Value="11.5"/>
+        <Setter Property="LineHeight" Value="17"/>
+        <Setter Property="Foreground" Value="{DynamicResource Theme.PrintPreview.MutedText}"/>
+    </Style>
+
+    <!-- ── Tablo ─────────────────────────────────────────────────────────── -->
+    <Style x:Key="Print.DataGrid" TargetType="DataGrid">
+        <Setter Property="Background"               Value="{DynamicResource Theme.PrintPreview.PaperBackground}"/>
+        <Setter Property="RowBackground"            Value="{DynamicResource Theme.PrintPreview.PaperBackground}"/>
+        <Setter Property="AlternatingRowBackground" Value="{DynamicResource Theme.PrintPreview.AltRow}"/>
+        <Setter Property="Foreground"               Value="{DynamicResource Theme.PrintPreview.Text}"/>
+        <Setter Property="BorderBrush"              Value="{DynamicResource Theme.PrintPreview.Border}"/>
+        <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource Theme.PrintPreview.Border}"/>
+        <Setter Property="VerticalGridLinesBrush"   Value="{DynamicResource Theme.PrintPreview.Border}"/>
+        <Setter Property="RowHeight"                Value="28"/>
+        <Setter Property="FontSize"                 Value="12.5"/>
+    </Style>
+
+    <Style x:Key="Print.ColumnHeader" TargetType="DataGridColumnHeader">
+        <Setter Property="Background"      Value="{DynamicResource Theme.PrintPreview.HeaderBackground}"/>
+        <Setter Property="Foreground"      Value="{DynamicResource Theme.PrintPreview.Text}"/>
+        <Setter Property="BorderBrush"     Value="{DynamicResource Theme.PrintPreview.Border}"/>
+        <Setter Property="BorderThickness" Value="0,0,1,1"/>
+        <Setter Property="FontWeight"      Value="SemiBold"/>
+        <Setter Property="FontSize"        Value="12.5"/>
+        <Setter Property="Padding"         Value="8,6"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    </Style>
+
+    <Style x:Key="Print.Row" TargetType="DataGridRow">
+        <Setter Property="Foreground"      Value="{DynamicResource Theme.PrintPreview.Text}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Style.Triggers>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="{DynamicResource Theme.PrintPreview.SelectedBackground}"/>
+                <Setter Property="Foreground" Value="{DynamicResource Theme.PrintPreview.SelectedText}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="Print.Cell" TargetType="DataGridCell">
+        <Setter Property="Foreground"       Value="{DynamicResource Theme.PrintPreview.Text}"/>
+        <Setter Property="BorderThickness"  Value="0"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Style.Triggers>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background"  Value="{DynamicResource Theme.PrintPreview.SelectedBackground}"/>
+                <Setter Property="Foreground"  Value="{DynamicResource Theme.PrintPreview.SelectedText}"/>
+                <Setter Property="BorderBrush" Value="Transparent"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ── Hücre içerik stilleri (DataGridTextColumn.ElementStyle) ───────── -->
+    <Style x:Key="Print.TextCell" TargetType="TextBlock">
+        <Setter Property="Foreground"   Value="{DynamicResource Theme.PrintPreview.Text}"/>
+        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <Style x:Key="Print.NumericCell" TargetType="TextBlock">
+        <Setter Property="Foreground"                  Value="{DynamicResource Theme.PrintPreview.Text}"/>
+        <Setter Property="HorizontalAlignment"         Value="Right"/>
+        <Setter Property="VerticalAlignment"           Value="Center"/>
+        <Setter Property="Padding"                     Value="0,0,4,0"/>
+        <Setter Property="Typography.NumeralAlignment" Value="Tabular"/>
+    </Style>
+
+    <!-- Giriş/çıkış rakamları: ekrandaki Theme.Success/Danger DEĞİL, baskıda
+         okunan koyu tonlar. Beyaz kâğıtta 9:1 ve 10:1. -->
+    <Style x:Key="Print.PositiveCell" TargetType="TextBlock" BasedOn="{StaticResource Print.NumericCell}">
+        <Setter Property="Foreground" Value="{DynamicResource Theme.PrintPreview.Positive}"/>
+    </Style>
+
+    <Style x:Key="Print.NegativeCell" TargetType="TextBlock" BasedOn="{StaticResource Print.NumericCell}">
+        <Setter Property="Foreground" Value="{DynamicResource Theme.PrintPreview.Negative}"/>
+    </Style>
+
+    <!-- ── Kâğıt üzerindeki kutu ve ayraç ───────────────────────────────── -->
+    <Style x:Key="Print.GroupBox" TargetType="GroupBox">
+        <Setter Property="Background"      Value="{DynamicResource Theme.PrintPreview.PaperBackground}"/>
+        <Setter Property="Foreground"      Value="{DynamicResource Theme.PrintPreview.Text}"/>
+        <Setter Property="BorderBrush"     Value="{DynamicResource Theme.PrintPreview.Border}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding"         Value="8"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="GroupBox">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="0"
+                                Background="{DynamicResource Theme.PrintPreview.HeaderBackground}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1,1,1,0"
+                                CornerRadius="3,3,0,0"
+                                Padding="8,4">
+                            <ContentPresenter ContentSource="Header"
+                                              TextElement.Foreground="{DynamicResource Theme.PrintPreview.Text}"
+                                              TextElement.FontWeight="SemiBold"/>
+                        </Border>
+                        <Border Grid.Row="1"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1,0,1,1"
+                                CornerRadius="0,0,3,3"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter TextElement.Foreground="{DynamicResource Theme.PrintPreview.Text}"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="Print.Separator" TargetType="Separator">
+        <Setter Property="Height"     Value="1"/>
+        <Setter Property="Background" Value="{DynamicResource Theme.PrintPreview.Border}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Separator">
+                    <Border Background="{TemplateBinding Background}" Height="1" SnapsToDevicePixels="True"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

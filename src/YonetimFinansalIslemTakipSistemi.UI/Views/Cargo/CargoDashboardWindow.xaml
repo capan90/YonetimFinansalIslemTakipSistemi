@@ -17,53 +17,43 @@
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
                     <Button x:Name="NavGelenButton"
                             Content="Gelen Kargolar"
-                            Height="28" Padding="12,0" Margin="0,0,6,0"
-                            Foreground="{DynamicResource Theme.Nav.Foreground}" Background="{DynamicResource Theme.Nav.ItemBackground}"
-                            BorderBrush="{DynamicResource Theme.Nav.ItemBorder}" BorderThickness="1"
-                            Cursor="Hand"
+                            Style="{StaticResource NavButton}" Margin="0,0,6,0"
                             Click="NavGelenButton_Click"/>
                     <Button x:Name="NavGidenButton"
                             Content="Giden Kargolar"
-                            Height="28" Padding="12,0" Margin="0,0,6,0"
-                            Foreground="{DynamicResource Theme.Nav.Foreground}" Background="{DynamicResource Theme.Nav.ItemBackground}"
-                            BorderBrush="{DynamicResource Theme.Nav.ItemBorder}" BorderThickness="1"
-                            Cursor="Hand"
+                            Style="{StaticResource NavButton}" Margin="0,0,6,0"
                             Click="NavGidenButton_Click"/>
                     <Button x:Name="NavFirmaRehberiButton"
                             Content="Firma Rehberi"
-                            Height="28" Padding="12,0" Margin="0,0,6,0"
-                            Foreground="{DynamicResource Theme.Nav.Foreground}" Background="{DynamicResource Theme.Nav.ItemBackground}"
-                            BorderBrush="{DynamicResource Theme.Nav.ItemBorder}" BorderThickness="1"
-                            Cursor="Hand"
+                            Style="{StaticResource NavButton}" Margin="0,0,6,0"
                             Click="NavFirmaRehberiButton_Click"/>
                     <Button x:Name="NavKargoFirmalariButton"
                             Content="Kargo Firmaları"
-                            Height="28" Padding="12,0" Margin="0,0,6,0"
-                            Foreground="{DynamicResource Theme.Nav.Foreground}" Background="{DynamicResource Theme.Nav.ItemBackground}"
-                            BorderBrush="{DynamicResource Theme.Nav.ItemBorder}" BorderThickness="1"
-                            Cursor="Hand"
+                            Style="{StaticResource NavButton}" Margin="0,0,6,0"
                             Click="NavKargoFirmalariButton_Click"/>
                     <Button x:Name="NavWhatsAppRehberiButton"
                             Content="WhatsApp Rehberi"
-                            Height="28" Padding="12,0" Margin="0,0,0,0"
-                            Foreground="{DynamicResource Theme.Nav.Foreground}" Background="{DynamicResource Theme.Nav.ItemBackground}"
-                            BorderBrush="{DynamicResource Theme.Nav.ItemBorder}" BorderThickness="1"
-                            Cursor="Hand"
+                            Style="{StaticResource NavButton}" Margin="0,0,0,0"
                             ToolTip="Tüm kullanıcıların ortak kullandığı WhatsApp alıcı rehberi."
                             Click="NavWhatsAppRehberiButton_Click"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
                     <!-- Yardım Menüsü (Yetkiye tabi) -->
+                    <!-- Alt öğelerdeki Foreground override'ları KALDIRILDI: Theme.Text
+                         pencere yüzeyi içindir, açılan menü ise ayrı bir popup
+                         yüzeyidir. Koyu temada açık metin, açık popup zemini
+                         üzerine biniyor ve öğeler görünmez oluyordu. Popup metni
+                         artık şablondan Theme.Popup.Foreground olarak gelir. -->
                     <Menu x:Name="MenuYardim" Background="Transparent" Margin="0,0,10,0" Visibility="Collapsed">
                         <Menu.Resources>
-                            <Style TargetType="MenuItem">
+                            <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
                                 <Setter Property="FontSize" Value="14"/>
                                 <Setter Property="FontWeight" Value="SemiBold"/>
                                 <Setter Property="Padding" Value="10,6"/>
                             </Style>
                         </Menu.Resources>
-                        <MenuItem Foreground="{DynamicResource Theme.Nav.Foreground}" Background="{DynamicResource Theme.Nav.ItemBackground}" BorderBrush="{DynamicResource Theme.Nav.ItemBorder}" BorderThickness="1" Padding="12,5" Height="28">
+                        <MenuItem Style="{StaticResource NavMenuItem}">
                             <MenuItem.Header>
                                 <!-- "▾" karakteri yerine vektör chevron: tema rengini alır,
                                      DPI ölçeğinde metin taban çizgisine göre kaymaz -->
@@ -71,29 +61,29 @@
                                     <TextBlock Text="Yardım" Margin="0,0,4,0"/>
                                     <Path Style="{StaticResource IconPath}"
                                           Data="{StaticResource Icon.ChevronDown}"
-                                          Width="12" Height="12" Stroke="{DynamicResource Theme.Surface}"/>
+                                          Width="12" Height="12" Stroke="{DynamicResource Theme.Nav.Foreground}"/>
                                 </StackPanel>
                             </MenuItem.Header>
                             <!-- Teknik yardım öğeleri CanAccessHelpMenu iznine tabidir (code-behind) -->
-                            <MenuItem x:Name="MenuItemCheckUpdates" Header="Güncellemeleri Denetle" Click="CheckUpdates_Click" Foreground="{DynamicResource Theme.Text}"/>
-                            <MenuItem x:Name="MenuItemPersonalMail" Header="Mail Ayarlarım" Click="OpenPersonalMailSettings_Click" Foreground="{DynamicResource Theme.Text}"/>
-                            <MenuItem x:Name="MenuItemLogFolder" Header="Log Klasörünü Aç" Click="OpenLogDirectory_Click" Foreground="{DynamicResource Theme.Text}"/>
+                            <MenuItem x:Name="MenuItemCheckUpdates" Header="Güncellemeleri Denetle" Click="CheckUpdates_Click"/>
+                            <MenuItem x:Name="MenuItemPersonalMail" Header="Mail Ayarlarım" Click="OpenPersonalMailSettings_Click"/>
+                            <MenuItem x:Name="MenuItemLogFolder" Header="Log Klasörünü Aç" Click="OpenLogDirectory_Click"/>
                             <!-- Kişisel kullanıcı ayarları: izin gerektirmez — yalnızca kargo yetkili
                                  kullanıcı da kendi harf tercihine buradan erişir (MainWindow'a geçmeden) -->
-                            <MenuItem Header="Kullanıcı Ayarlarım" Foreground="{DynamicResource Theme.Text}">
+                            <MenuItem Header="Kullanıcı Ayarlarım">
                                 <MenuItem Header="Harf Duyarlılığı"
-                                          Click="OpenTextCaseSettings_Click" Foreground="{DynamicResource Theme.Text}"
+                                          Click="OpenTextCaseSettings_Click"
                                           ToolTip="Girdiğiniz metinlerin BÜYÜK/küçük harf dönüşüm tercihini belirleyin (kişisel ayar)."/>
                             </MenuItem>
                         </MenuItem>
                     </Menu>
 
+                    <!-- Çıkış butonu şeritte tek "tehlike" rengidir; dolu Danger
+                         zemini + OnDanger metni iki temada da ölçülü çifttir. -->
                     <Button x:Name="NavLogoutButton"
                             Content="Çıkış Yap"
-                            Height="28" Padding="12,0" Margin="0,0,0,0"
-                            Foreground="{DynamicResource Theme.OnDanger}" Background="{DynamicResource Theme.Danger}"
-                            BorderBrush="{DynamicResource Theme.Danger.Text}" BorderThickness="1"
-                            Cursor="Hand"
+                            Style="{StaticResource DangerButton}"
+                            Height="28" Padding="12,0"
                             Click="Logout_Click"/>
                 </StackPanel>
             </DockPanel>

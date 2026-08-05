@@ -256,7 +256,7 @@
                 <!-- İşlem Detay Tablosu — ShowTransactionDetails=true ise görünür -->
                 <GroupBox Header="İşlem Detayları" Margin="0,0,0,0">
                     <GroupBox.Style>
-                        <Style TargetType="GroupBox">
+                        <Style TargetType="GroupBox" BasedOn="{StaticResource {x:Type GroupBox}}">
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding HasDetails}" Value="False">
                                     <Setter Property="Visibility" Value="Collapsed"/>

@@ -15,41 +15,26 @@
             <Setter Property="Foreground" Value="{DynamicResource Theme.LabelText}"/>
             <Setter Property="Margin" Value="0,10,0,3"/>
         </Style>
-        <Style x:Key="InputStyle" TargetType="TextBox">
-            <Setter Property="Height" Value="32"/>
+        <!-- Zemin/kenarlık/seçim renkleri ortak input stilinden gelir -->
+        <Style x:Key="InputStyle" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Height"  Value="32"/>
             <Setter Property="Padding" Value="8,4"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource Theme.Border}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Background" Value="{DynamicResource Theme.Surface}"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
-        <Style x:Key="PwdStyle" TargetType="PasswordBox">
-            <Setter Property="Height" Value="32"/>
+        <Style x:Key="PwdStyle" TargetType="PasswordBox" BasedOn="{StaticResource {x:Type PasswordBox}}">
+            <Setter Property="Height"  Value="32"/>
             <Setter Property="Padding" Value="8,4"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource Theme.Border}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Background" Value="{DynamicResource Theme.Surface}"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
-        <Style x:Key="PrimaryBtn" TargetType="Button">
-            <Setter Property="Height" Value="34"/>
+        <!-- Renk/durum tanımları ortak buton stillerinden gelir; burada yalnızca
+             ölçü farkı kalır. Eskiden bu iki stil BasedOn'suzdu: WPF'in yerleşik
+             buton şablonuna düşüyor ve koyu temada hover'da sabit açık mavi
+             zemin + açık metin veriyorlardı. -->
+        <Style x:Key="PrimaryBtn" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Height"  Value="34"/>
             <Setter Property="Padding" Value="16,0"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="{DynamicResource Theme.OnPrimary}"/>
-            <Setter Property="Background" Value="{DynamicResource Theme.Primary}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
         </Style>
-        <Style x:Key="SecondaryBtn" TargetType="Button">
-            <Setter Property="Height" Value="34"/>
+        <Style x:Key="SecondaryBtn" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+            <Setter Property="Height"  Value="34"/>
             <Setter Property="Padding" Value="16,0"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="{DynamicResource Theme.LabelText}"/>
-            <Setter Property="Background" Value="{DynamicResource Theme.Border}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
         </Style>
     </Window.Resources>
 

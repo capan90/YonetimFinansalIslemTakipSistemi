@@ -79,7 +79,7 @@
                       HeadersVisibility="Column">
                 <DataGrid.RowStyle>
                     <!-- Durum bazlı satır renklendirme — projede ilk RowStyle kullanımı -->
-                    <Style TargetType="DataGridRow">
+                    <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding StatusText}" Value="Geçerli">
                                 <Setter Property="Background" Value="{DynamicResource Theme.Success.Background}"/>

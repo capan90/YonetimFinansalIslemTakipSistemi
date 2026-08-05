@@ -361,7 +361,7 @@
                 Click="RefreshSnapshotButton_Click"
                 ToolTip="Seçili firma rehberinden alıcı telefon, e-posta ve adres snapshot bilgilerini günceller. Kaydetmeden DB'ye yazılmaz.">
             <Button.Style>
-                <Style TargetType="Button">
+                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                     <Setter Property="Visibility" Value="Collapsed"/>
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding HasRefreshableSnapshot}" Value="True">

@@ -70,7 +70,7 @@
                       BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1"
                       HeadersVisibility="Column">
                 <DataGrid.RowStyle>
-                    <Style TargetType="DataGridRow">
+                    <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding StatusText}" Value="Geçerli">
                                 <Setter Property="Background" Value="{DynamicResource Theme.Success.Background}"/>

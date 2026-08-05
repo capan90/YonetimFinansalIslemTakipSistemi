@@ -4,6 +4,60 @@ En son sürüm üstte. Her sürüm `v1.0.0.xx` formatındadır.
 
 ---
 
+## Yayımlanmamış — Koyu Tema Üretime Hazır
+
+> **Sürüm numarası henüz artırılmadı.** `AssemblyVersion` `1.0.1.2` olarak duruyor.
+> Yayın kararı verildiğinde `csproj` `AssemblyVersion`, pubxml `PublishVersion` ve
+> `version.json` birlikte güncellenmelidir.
+
+> **Migration içermez.** Değişiklikler UI katmanıyla sınırlıdır; şema tarafında iş yoktur.
+> `ApplicationSettings.UI:Theme` anahtarı prod'da "Light" duruyor olacak — ilk açılışta
+> varsayılanın ne kalacağına karar verilmeli (geçerli değerler: Light / Dark / System).
+
+**Düzeltildi:**
+- **Koyu temada menüler görünmüyordu.** `Yönetim / Kargo Takip / Ayarlar / Yardım`
+  başlıkları ve açılan alt menüler zeminle birleşiyordu. Yardım menüsü ancak tahmini
+  konuma tıklanınca bulunabiliyordu.
+- **Alt ekranlarda metin ve kontroller kayboluyordu.** Zemin rengi verilmeyen pencereler
+  koyu temada beyaz kalıyor, üzerine açık renkli metin biniyordu. 31 pencere etkileniyordu.
+- **Filtre alanları okunmuyordu.** ComboBox'ın kapalı değeri ve açılır listesi, TextBox'a
+  yazılan metin ve metni seçtiğinizde görünürlüğü, DatePicker ve takvim penceresi.
+- **Kargo ekranlarında** yüzey / metin / aktif-pasif ayrımı kaybolmuştu; navigasyon şeridi
+  butonları hover'da şeritten kopuyordu.
+- **Rapor Önizleme'de beyaz kâğıt görünümü kaybolmuştu**, yazdırılacak içerik tema ile
+  birlikte renk değiştiriyordu. Önizleme artık uygulama temasından bağımsız: kâğıt her
+  zaman beyaz, rakamlar her zaman baskıya uygun koyu yeşil/kırmızı — PDF/Excel çıktısıyla
+  birebir aynı. Pencere çerçevesi ve araç çubuğu temayı takip etmeye devam eder.
+- **Sistem Logları** seviye renkleri tema değiştiğinde açık listede güncellenmiyordu.
+  Koyu temadaki `Bilgi` tonu fazla baskındı, sakinleştirildi. `Kritik` artık `Hata`dan
+  ayrı görünüyor (tek dolu seviye). Seviye ayrımı yalnızca renge bağlı değil — rozet
+  metni her zaman yazılı.
+- Devre dışı buton yazısı ve beş durum rengi WCAG AA eşiğinin altındaydı; ölçülüp
+  düzeltildi.
+
+**Teknik:**
+- `Resources/Controls.xaml` — Menu, ComboBox, TextBox, Button, DatePicker, CheckBox,
+  GroupBox, ToolTip, ScrollBar ve diğerleri için tema uyumlu şablonlar. WPF'in yerleşik
+  şablonları renkleri sabit hex olarak taşır ve tema sözlüğünü hiç görmez; koyu temanın
+  kırılma sebebi buydu.
+- `Resources/PrintStyles.xaml` — rapor önizlemesi için temadan bağımsız baskı katmanı.
+- Fırça döndüren üç converter kaldırıldı (bağlama başına bir kez çalışıp donuyorlardı);
+  yerlerini DataTrigger + DynamicResource aldı. `ThemeBrush.Apply()` code-behind için
+  `SetResourceReference` sarmalayıcısı.
+- Menu / Popup / Input / ComboBox / Navigation / Critical / PrintPreview semantik rolleri;
+  Light–Dark parite tam.
+- `BasedOn`'suz 13 stil tema zincirine bağlandı — BasedOn'suz bir stil kontrolü
+  uygulamanın temasından tamamen koparır.
+- Yeni test projesi `YonetimFinansalIslemTakipSistemi.UiTests` (197 test): Light/Dark
+  parite, 68 semantik çift kontrast, 40 pencere × 2 tema XAML parse, 45 satırlık kontrol
+  durum matrisi, 213 metin öğesi üzerinde pencere ağacı taraması, stil zinciri ve ham
+  renk denetimi.
+- Doküman: ADR-005 (durum → Kabul Edildi), ThemeEngine, ColorTokenMap, CodingStandards
+  (üç yeni kural), Roadmap (teknik borç kapatıldı).
+- Test: 499 (302 + 197). Build: 0 hata / 0 uyarı.
+
+---
+
 ## v1.0.1.2 (2026-08-04) — Mail Rehberi, Çoklu Alıcı, İsim Önerileri
 
 > ⚠ **Bu sürüm migration içerir:** `20260804112346_AddMailContacts`.

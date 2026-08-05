@@ -399,3 +399,68 @@ Publish klasörü her publish öncesi temizleniyor. Doğrulama bloğu: ASCII kon
 **Commit:** Bekliyor.
 
 Bkz. [`docs/04-Development/LessonsLearned.md`](../04-Development/LessonsLearned.md)
+
+---
+
+## UX Modernizasyonu Faz B Düzeltme — Koyu Tema Regresyonu (2026-08-05)
+
+**Bağlam:** Faz B token'ları XAML'e taşıdı ve koyu temayı açtı, ancak manuel testte
+koyu tema üretim seviyesinde kullanılamadı. Ham hex taraması temiz olmasına rağmen
+ekranlar bozuktu — sorun token'larda değil, **token'ların hiç kullanılmadığı yerdeydi.**
+
+**Kök nedenler:**
+
+1. **`Window.Background` bağlanmamıştı.** Global `Window` stili `Foreground`'u temaya
+   bağlamış, `Background`'u bağlamamıştı. Zemin verilmeyen bir Window
+   `SystemColors.WindowBrush` = beyaz kullanır. 43 XAML'in 31'i kök panelinde zemin
+   vermiyordu. En büyük tekil neden.
+2. **WPF'in yerleşik (Aero2) şablonları tema körüdür.** `MenuItem` stili `Foreground`'u
+   `#212121`'e setter olarak sabitler (miras değil, pencereden devralınmaz). ComboBox
+   açılır listesi `SystemColors.WindowBrush` kullanır, item metni ise ComboBox'tan
+   miras alır → beyaz üstüne beyaz. Popup/ContextMenu ayrı visual tree'dedir,
+   pencereden hiçbir şey miras almaz.
+3. **Fırça döndüren converter'lar** bağlama başına bir kez çalışır; sonuç fırçası donar
+   ve tema değişimini görmez.
+4. **`BasedOn`'suz yerel stiller** kontrolü tema zincirinden koparıp yerleşik stile
+   düşürür. Token taramasıyla yakalanmaz — ortada yanlış token yoktur, hiç token yoktur.
+
+**Yapılanlar:**
+- `Resources/Controls.xaml` — Menu, MenuItem (4 rol şablonu), ContextMenu, ComboBox
+  (+editable), Button, DatePicker, CheckBox, RadioButton, GroupBox, ListBox, ProgressBar,
+  ToolTip, ScrollBar, Calendar şablonları. `PART_*` adları korundu.
+- `Resources/PrintStyles.xaml` + rapor önizlemesinin tema/baskı olarak ikiye ayrılması.
+- Menu / Popup / Input / ComboBox / Navigation / Critical / PrintPreview semantik rolleri.
+- Üç converter kaldırıldı, `ThemeBrush.Apply()` eklendi.
+- 13 stil + 1 kod stili tema zincirine bağlandı.
+- Yeni test projesi `UiTests` — 197 test.
+- Doküman: ADR-005, ThemeEngine, ColorTokenMap, CodingStandards, Roadmap.
+
+**Önemli kararlar:**
+- **Baskı katmanı token'ları iki temada da aynı değeri taşır.** Parite testi bunu anahtar
+  değil **değer** düzeyinde doğrular. Rapor gövdesi dinamik token kullanamaz — önizleme
+  PDF/Excel çıktısının ekrandaki karşılığıdır, temayla kararması yanlış bir çıktı vaat eder.
+- **Yeni `Status.*` / `Input.*` isim alanı uydurulmadı.** Mevcut `Theme.Info.* /
+  Warning.* / Danger.*` korundu; yalnızca gerçekten eksik olan `Critical` ve input
+  durumları eklendi.
+- **Devre dışı durumlar** WCAG'den muaf olsa da testte ≥3:1 aranıyor — "devre dışı" ile
+  "görünmez" karışmasın diye.
+- Koyu temada Danger/Primary butonları **açık** renklidir ve metinleri koyudur; bu yüzden
+  hover/pressed koyulaşmaz, **açılır**.
+
+**Problemler:**
+- Pencere kurucuları DI bağımlılığı aldığı ve giriş yapılamadığı için canlı pencere
+  örneği üretilemedi. Çözüm: kaynak XAML kod arkasından arındırılıp (`x:Class`, olay
+  adları, `Icon`) `XamlReader` ile ayrıştırıldı. Doğrulanmayan tek şey code-behind
+  davranışı. Yaklaşım **negatif kontrolle sınandı**: bilerek bozulan bir `StaticResource`
+  testi kırdı, sonra geri alındı.
+- Otomatik kontrast testi eklenince Faz B'de göz kararı verilmiş altı token AA eşiğinin
+  altında çıktı; ölçülüp düzeltildi.
+
+**Açık tema regresyonu (bilinçli):** GroupBox başlık şeridi, Label rengi
+(`Theme.LabelText`), stilsiz butonların nötr yüzeye geçmesi, ince ScrollBar.
+
+**Test:** 499 (302 + 197). **Build:** 0 hata / 0 uyarı. **Migration:** yok.
+
+**Commit'ler:** Bekliyor (7 commit — 6 kod + 1 doküman).
+
+Bkz. [`docs/05-ADR/ADR-005-ThemeSystem.md`](../05-ADR/ADR-005-ThemeSystem.md)

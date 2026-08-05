@@ -16,7 +16,7 @@
             <TextBlock x:Name="StatusText"
                        VerticalAlignment="Center"
                        Foreground="{DynamicResource Theme.Success}"
-                       FontSize="11"
+                       Style="{StaticResource Text.Caption}"
                        Margin="0,0,12,0"
                        Visibility="Collapsed"/>
             <Button Content="Kaydet ve Uygula"
@@ -59,13 +59,13 @@
                     BorderThickness="1" CornerRadius="4"
                     Padding="10,8">
                 <StackPanel>
-                    <TextBlock TextWrapping="Wrap" FontSize="11"
+                    <TextBlock TextWrapping="Wrap" Style="{StaticResource Text.Caption}"
                                Foreground="{DynamicResource Theme.MutedText}"
                                Margin="0,0,0,4">
                         Tema değişikliği anında uygulanır. Pencereler yeniden açılmadan
                         renk şeması güncellenir.
                     </TextBlock>
-                    <TextBlock TextWrapping="Wrap" FontSize="11"
+                    <TextBlock TextWrapping="Wrap" Style="{StaticResource Text.Caption}"
                                Foreground="{DynamicResource Theme.Warning}">
                         Koyu tema sonraki sürümde aktif edilecektir.
                     </TextBlock>

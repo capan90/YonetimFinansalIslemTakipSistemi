@@ -184,7 +184,8 @@
                               AlternatingRowBackground="#F5F5F5"
                               HeadersVisibility="Column">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="İşlem Türü" Binding="{Binding TypeDisplay}" Width="90"/>
+                            <DataGridTextColumn Header="İşlem Türü" Binding="{Binding TypeDisplay}" Width="90"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                             <DataGridTextColumn Header="TL Borç"    Binding="{Binding TryBorc,  StringFormat=N2}" Width="*">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
@@ -272,10 +273,14 @@
                               HeadersVisibility="Column"
                               MaxHeight="280">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Tarih"       Binding="{Binding Date}"            Width="80"/>
-                            <DataGridTextColumn Header="Açıklama"    Binding="{Binding Description}"     Width="*"/>
-                            <DataGridTextColumn Header="Tür"         Binding="{Binding TypeDisplay}"     Width="65"/>
-                            <DataGridTextColumn Header="Para Bir."   Binding="{Binding CurrencyDisplay}" Width="65"/>
+                            <DataGridTextColumn Header="Tarih"       Binding="{Binding Date}"            Width="80"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                            <DataGridTextColumn Header="Açıklama"    Binding="{Binding Description}"     Width="*"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                            <DataGridTextColumn Header="Tür"         Binding="{Binding TypeDisplay}"     Width="65"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                            <DataGridTextColumn Header="Para Bir."   Binding="{Binding CurrencyDisplay}" Width="65"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                             <DataGridTextColumn Header="Borç"        Binding="{Binding Borc,   StringFormat=N2}" Width="100">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">

@@ -22,10 +22,15 @@
                         Style="{StaticResource DangerButton}"
                         IsEnabled="{Binding HasSelected}"
                         Click="DeleteButton_Click"/>
-                <Button x:Name="ImportButton" Content="📥 Excel'den İçe Aktar" Width="160" Margin="6,0,0,0"
+                <Button x:Name="ImportButton" Width="170" Margin="6,0,0,0"
                         Style="{StaticResource SecondaryButton}"
                         Click="ImportButton_Click"
-                        ToolTip="Excel dosyasından toplu firma kaydı oluşturur: analiz → önizleme → onay → içe aktarma"/>
+                        ToolTip="Excel dosyasından toplu firma kaydı oluşturur: analiz → önizleme → onay → içe aktarma">
+                    <StackPanel Style="{StaticResource IconTextPanel}">
+                        <Path Style="{StaticResource IconPath}" Data="{StaticResource Icon.Download}" Margin="0,0,6,0"/>
+                        <TextBlock Text="Excel'den İçe Aktar"/>
+                    </StackPanel>
+                </Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBox Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}"
@@ -51,14 +56,18 @@
                   AlternatingRowBackground="#F8FAFC"
                   RowBackground="White"
                   BorderBrush="#E2E8F0" BorderThickness="1"
-                  RowHeight="30"
                   MouseDoubleClick="MainGrid_MouseDoubleClick">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Firma Adı"    Binding="{Binding CompanyName}"   Width="200"/>
-                <DataGridTextColumn Header="İlgili Kişi"  Binding="{Binding ContactPerson}" Width="150"/>
-                <DataGridTextColumn Header="Dikkatine"    Binding="{Binding AttentionTo}"   Width="130"/>
-                <DataGridTextColumn Header="Şehir"        Binding="{Binding City}"          Width="100"/>
-                <DataGridTextColumn Header="Telefon"      Binding="{Binding Phone}"         Width="120"/>
+                <DataGridTextColumn Header="Firma Adı"    Binding="{Binding CompanyName}"   Width="200"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridTextColumn Header="İlgili Kişi"  Binding="{Binding ContactPerson}" Width="150"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridTextColumn Header="Dikkatine"    Binding="{Binding AttentionTo}"   Width="130"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridTextColumn Header="Şehir"        Binding="{Binding City}"          Width="100"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridTextColumn Header="Telefon"      Binding="{Binding Phone}"         Width="120"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                 <DataGridCheckBoxColumn Header="Aktif"    Binding="{Binding IsActive}"      Width="60"/>
             </DataGrid.Columns>
         </DataGrid>

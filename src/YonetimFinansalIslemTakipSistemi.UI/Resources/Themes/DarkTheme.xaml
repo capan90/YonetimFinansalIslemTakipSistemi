@@ -12,7 +12,13 @@
 
     <!-- ── Metin ──────────────────────────────────────────────────────────────── -->
     <SolidColorBrush x:Key="Theme.Text"                  Color="#F1F5F9"/>
+    <!-- Koyu yüzeyde (#1E293B) 5.0:1 — dekoratif soluk metin -->
     <SolidColorBrush x:Key="Theme.MutedText"             Color="#94A3B8"/>
+    <!-- Koyu temada etiket açık uçtan gelir: #CBD5E1 → yüzeyde 9.6:1 -->
+    <SolidColorBrush x:Key="Theme.LabelText"             Color="#CBD5E1"/>
+
+    <!-- ── Devre dışı ─────────────────────────────────────────────────────────── -->
+    <SolidColorBrush x:Key="Theme.DisabledBackground"    Color="#475569"/>
 
     <!-- ── Kenarlık / Input ───────────────────────────────────────────────────── -->
     <SolidColorBrush x:Key="Theme.Border"                Color="#334155"/>
@@ -33,6 +39,16 @@
     <SolidColorBrush x:Key="Theme.Danger"                Color="#F87171"/>
     <SolidColorBrush x:Key="Theme.Success"               Color="#4ADE80"/>
     <SolidColorBrush x:Key="Theme.Warning"               Color="#FBBF24"/>
+
+    <!-- ── Rozet (badge) ──────────────────────────────────────────────────────
+         Koyu temada ilişki tersine döner: koyu dolgu + açık metin.
+         Açık tema değerlerinin otomatik tersi DEĞİL, ayrı ayarlanmıştır. -->
+    <SolidColorBrush x:Key="Theme.Badge.InfoBackground"    Color="#1E3A5F"/>
+    <SolidColorBrush x:Key="Theme.Badge.InfoText"          Color="#BFDBFE"/>
+    <SolidColorBrush x:Key="Theme.Badge.WarningBackground" Color="#4A2A12"/>
+    <SolidColorBrush x:Key="Theme.Badge.WarningText"       Color="#FED7AA"/>
+    <SolidColorBrush x:Key="Theme.Badge.DangerBackground"  Color="#4C1D1D"/>
+    <SolidColorBrush x:Key="Theme.Badge.DangerText"        Color="#FECACA"/>
 
     <!-- ── Sistem: DataGrid seçim rengi override (koyu tema) ─────────────────── -->
     <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"

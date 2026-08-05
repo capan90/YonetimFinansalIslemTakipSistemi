@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
+using System.Windows.Input;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Commands.DeleteCashTransaction;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
@@ -461,6 +462,41 @@ public partial class MainWindow : Window
         var canCreate = userContext.HasPermission(PermissionType.CanCreateTransaction);
         CopyTransactionButton.Visibility = canCreate ? Visibility.Visible : Visibility.Collapsed;
         CashImportButton.Visibility      = canCreate ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    // ── Klavye Kısayolları ────────────────────────────────────────────────────
+    // Sarmalayıcılar: RoutedUICommand imzası (ExecutedRoutedEventArgs) Click
+    // handler'ının imzasından farklı. Handler'ları değiştirmek yerine buradan
+    // çağırıyoruz — iş mantığı ve buton bağlantıları aynen kalıyor.
+    // Butonun görünürlüğü yetki kontrolüyle belirlendiği için kısayol da
+    // yalnızca buton görünürken çalışsın: yetkisiz kullanıcı Ctrl+N ile
+    // yetkisi olmayan formu açamamalı.
+
+    // "Yeni İşlem" ve "Sil" butonları görünürlük kapısı kullanmaz; yetki ve
+    // seçim kontrolleri handler'ların içindedir — doğrudan çağrılır.
+    private void Command_New(object sender, ExecutedRoutedEventArgs e)
+        => NewTransactionButton_Click(sender, new RoutedEventArgs());
+
+    private void Command_Duplicate(object sender, ExecutedRoutedEventArgs e)
+    {
+        if (CopyTransactionButton.Visibility == Visibility.Visible)
+            CopyTransactionButton_Click(sender, new RoutedEventArgs());
+    }
+
+    // Mevcut onay diyaloğu handler'ın içinde — kısayol onu atlamaz
+    private void Command_Delete(object sender, ExecutedRoutedEventArgs e)
+        => DeleteTransactionButton_Click(sender, new RoutedEventArgs());
+
+    private void Command_ImportExcel(object sender, ExecutedRoutedEventArgs e)
+    {
+        if (CashImportButton.Visibility == Visibility.Visible)
+            CashImportButton_Click(sender, new RoutedEventArgs());
+    }
+
+    private void Command_FocusSearch(object sender, ExecutedRoutedEventArgs e)
+    {
+        DescriptionFilterBox.Focus();
+        DescriptionFilterBox.SelectAll();
     }
 
     // ── İşlem Butonları ───────────────────────────────────────────────────────

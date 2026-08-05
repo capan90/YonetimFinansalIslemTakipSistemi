@@ -12,7 +12,17 @@
 
     <!-- ── Metin ──────────────────────────────────────────────────────────────── -->
     <SolidColorBrush x:Key="Theme.Text"                  Color="#1A202C"/>
+    <!-- MutedText yalnızca DEKORATİF soluk metin içindir (ipucu, zaman damgası).
+         Beyaz üzerinde 4.6:1 — AA'yı geçer ama etiket/başlık için zayıf kalır. -->
     <SolidColorBrush x:Key="Theme.MutedText"             Color="#64748B"/>
+    <!-- Etiket/başlık rolündeki ikincil metin: beyaz üzerinde 7.4:1 (AAA).
+         Kart etiketleri, form etiketleri ve sütun başlıkları bunu kullanır. -->
+    <SolidColorBrush x:Key="Theme.LabelText"             Color="#475569"/>
+
+    <!-- ── Devre dışı ─────────────────────────────────────────────────────────── -->
+    <!-- Beyaz metinle 4.6:1 (AA). Eski #94A3B8 + Opacity 0.7 kombinasyonu 2.1:1'e
+         düşüyordu — devre dışı buton yazısı okunmuyordu. -->
+    <SolidColorBrush x:Key="Theme.DisabledBackground"    Color="#64748B"/>
 
     <!-- ── Kenarlık / Input ───────────────────────────────────────────────────── -->
     <SolidColorBrush x:Key="Theme.Border"                Color="#E2E8F0"/>
@@ -33,6 +43,16 @@
     <SolidColorBrush x:Key="Theme.Danger"                Color="#C62828"/>
     <SolidColorBrush x:Key="Theme.Success"               Color="#2E7D32"/>
     <SolidColorBrush x:Key="Theme.Warning"               Color="#D97706"/>
+
+    <!-- ── Rozet (badge) ──────────────────────────────────────────────────────
+         Yumuşak dolgu + koyu metin. Dolu renk üzerine beyaz metin deseni
+         listede ~1.9:1 veriyordu; bu çift her zaman 7:1 üzerindedir. -->
+    <SolidColorBrush x:Key="Theme.Badge.InfoBackground"    Color="#DBEAFE"/>
+    <SolidColorBrush x:Key="Theme.Badge.InfoText"          Color="#1E40AF"/>
+    <SolidColorBrush x:Key="Theme.Badge.WarningBackground" Color="#FFEDD5"/>
+    <SolidColorBrush x:Key="Theme.Badge.WarningText"       Color="#9A3412"/>
+    <SolidColorBrush x:Key="Theme.Badge.DangerBackground"  Color="#FEE2E2"/>
+    <SolidColorBrush x:Key="Theme.Badge.DangerText"        Color="#991B1B"/>
 
     <!-- ── Sistem: DataGrid seçim rengi override ──────────────────────────────── -->
     <!-- WPF sistem renkleri DynamicResource yerine statik x:Static key ile override edilir -->

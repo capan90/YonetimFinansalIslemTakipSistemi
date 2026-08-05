@@ -10,7 +10,7 @@
         <!-- ADIM 1: Dosya Seç -->
         <Border x:Name="StepFilePanel" Visibility="Visible">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="560">
-                <TextBlock FontSize="16" FontWeight="SemiBold"
+                <TextBlock Style="{StaticResource Text.H2}" FontWeight="SemiBold"
                            Text="Excel Dosyasından Toplu WhatsApp Kişisi" Margin="0,0,0,10"
                            HorizontalAlignment="Center"/>
                 <TextBlock TextWrapping="Wrap" Foreground="#555" Margin="0,0,0,4"
@@ -21,16 +21,21 @@
                     <Button Content="Şablon İndir" Width="130" Margin="0,0,10,0"
                             Style="{StaticResource SecondaryButton}"
                             Click="TemplateButton_Click"/>
-                    <Button Content="📥 Excel Dosyası Seç" Width="180"
+                    <Button Width="180"
                             Style="{StaticResource PrimaryButton}"
-                            Click="SelectFileButton_Click"/>
+                            Click="SelectFileButton_Click">
+                        <StackPanel Style="{StaticResource IconTextPanel}">
+                            <Path Style="{StaticResource IconPath}" Data="{StaticResource Icon.Download}" Margin="0,0,6,0"/>
+                            <TextBlock Text="Excel Dosyası Seç"/>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
             </StackPanel>
         </Border>
 
         <!-- ADIM 2: Önizleme -->
         <DockPanel x:Name="StepPreviewPanel" Visibility="Collapsed">
-            <TextBlock DockPanel.Dock="Top" FontSize="14" FontWeight="SemiBold"
+            <TextBlock DockPanel.Dock="Top" Style="{StaticResource Text.Body}" FontWeight="SemiBold"
                        Text="Önizleme — içe aktarılacak kişileri kontrol edin" Margin="0,0,0,6"/>
 
             <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
@@ -60,8 +65,7 @@
             <DataGrid ItemsSource="{Binding FilteredRows}"
                       AutoGenerateColumns="False" IsReadOnly="False"
                       CanUserAddRows="False" CanUserDeleteRows="False"
-                      SelectionMode="Single" RowHeight="30"
-                      GridLinesVisibility="Horizontal"
+                      SelectionMode="Single"                      GridLinesVisibility="Horizontal"
                       HorizontalGridLinesBrush="#E2E8F0"
                       BorderBrush="#E2E8F0" BorderThickness="1"
                       HeadersVisibility="Column">
@@ -93,12 +97,18 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTextColumn Header="Satır"    Binding="{Binding RowNumber}"          Width="50"  IsReadOnly="True"/>
-                    <DataGridTextColumn Header=""         Binding="{Binding StatusGlyph}"        Width="34"  IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Durum"    Binding="{Binding StatusText}"         Width="75"  IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Ad Soyad" Binding="{Binding NameDisplay}"        Width="180" IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Telefon"  Binding="{Binding PhoneDisplay}"       Width="120" IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Firma"    Binding="{Binding CompanyDisplay}"     Width="140" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Satır"    Binding="{Binding RowNumber}"          Width="50"  IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header=""         Binding="{Binding StatusGlyph}"        Width="34"  IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header="Durum"    Binding="{Binding StatusText}"         Width="75"  IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header="Ad Soyad" Binding="{Binding NameDisplay}"        Width="180" IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header="Telefon"  Binding="{Binding PhoneDisplay}"       Width="120" IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header="Firma"    Binding="{Binding CompanyDisplay}"     Width="140" IsReadOnly="True"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                     <DataGridTextColumn Header="Açıklama / Hatalar" Binding="{Binding MessagesText}" Width="*" IsReadOnly="True">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
@@ -115,7 +125,7 @@
         <!-- ADIM 3: İşlem sürüyor -->
         <Border x:Name="StepProgressPanel" Visibility="Collapsed">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="420">
-                <TextBlock x:Name="ProgressTitle" FontSize="15" FontWeight="SemiBold"
+                <TextBlock x:Name="ProgressTitle" Style="{StaticResource Text.H2}" FontWeight="SemiBold"
                            Text="Dosya analiz ediliyor…" Margin="0,0,0,12"
                            HorizontalAlignment="Center"/>
                 <ProgressBar Height="18"
@@ -133,9 +143,9 @@
                 <Border Background="#E8F5E9" BorderBrush="#81C784" BorderThickness="1"
                         CornerRadius="6" Padding="16" Margin="0,0,0,14">
                     <StackPanel>
-                        <TextBlock FontSize="16" FontWeight="SemiBold"
+                        <TextBlock Style="{StaticResource Text.H2}" FontWeight="SemiBold"
                                    Foreground="#2E7D32" Text="İçe aktarma tamamlandı"/>
-                        <TextBlock x:Name="SummaryMainText" FontSize="13" Margin="0,8,0,0" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="SummaryMainText" Style="{StaticResource Text.Body}" Margin="0,8,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </Border>
                 <TextBlock x:Name="SummaryDetailText" TextWrapping="Wrap" Foreground="#555" Margin="0,0,0,16"/>

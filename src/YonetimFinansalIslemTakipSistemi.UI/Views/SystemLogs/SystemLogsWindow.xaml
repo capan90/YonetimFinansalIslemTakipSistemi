@@ -14,26 +14,26 @@
         <UniformGrid DockPanel.Dock="Top" Rows="1" Margin="0,0,0,10">
             <Border Background="#FEE2E2" CornerRadius="6" Margin="0,0,6,0" Padding="12,8">
                 <StackPanel>
-                    <TextBlock Text="Bugünkü Kritik" FontSize="11" Foreground="#991B1B"/>
-                    <TextBlock Text="{Binding TodayCriticalCount}" FontSize="26" FontWeight="Bold" Foreground="#DC2626"/>
+                    <TextBlock Text="Bugünkü Kritik" Style="{StaticResource Text.Caption}" Foreground="#991B1B"/>
+                    <TextBlock Text="{Binding TodayCriticalCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="#DC2626"/>
                 </StackPanel>
             </Border>
             <Border Background="#FEF3C7" CornerRadius="6" Margin="0,0,6,0" Padding="12,8">
                 <StackPanel>
-                    <TextBlock Text="Bugünkü Hata" FontSize="11" Foreground="#92400E"/>
-                    <TextBlock Text="{Binding TodayErrorCount}" FontSize="26" FontWeight="Bold" Foreground="#D97706"/>
+                    <TextBlock Text="Bugünkü Hata" Style="{StaticResource Text.Caption}" Foreground="#92400E"/>
+                    <TextBlock Text="{Binding TodayErrorCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="#D97706"/>
                 </StackPanel>
             </Border>
             <Border Background="#FFF7ED" CornerRadius="6" Margin="0,0,6,0" Padding="12,8">
                 <StackPanel>
-                    <TextBlock Text="Son 24h Uyarı" FontSize="11" Foreground="#9A3412"/>
-                    <TextBlock Text="{Binding Last24hWarningCount}" FontSize="26" FontWeight="Bold" Foreground="#EA580C"/>
+                    <TextBlock Text="Son 24h Uyarı" Style="{StaticResource Text.Caption}" Foreground="#9A3412"/>
+                    <TextBlock Text="{Binding Last24hWarningCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="#EA580C"/>
                 </StackPanel>
             </Border>
             <Border Background="#EFF6FF" CornerRadius="6" Padding="12,8">
                 <StackPanel>
-                    <TextBlock Text="Çözülmemiş Kritik" FontSize="11" Foreground="#1D4ED8"/>
-                    <TextBlock Text="{Binding OpenCriticalCount}" FontSize="26" FontWeight="Bold" Foreground="#2563EB"/>
+                    <TextBlock Text="Çözülmemiş Kritik" Style="{StaticResource Text.Caption}" Foreground="#1D4ED8"/>
+                    <TextBlock Text="{Binding OpenCriticalCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="#2563EB"/>
                 </StackPanel>
             </Border>
         </UniformGrid>
@@ -102,7 +102,7 @@
                             IsEnabled="{Binding CanGoNext}"/>
                 </StackPanel>
                 <TextBlock Text="{Binding PageInfo}"
-                           VerticalAlignment="Center" Foreground="#64748B"/>
+                           VerticalAlignment="Center" Foreground="{DynamicResource Theme.LabelText}"/>
             </DockPanel>
         </Border>
 
@@ -113,10 +113,10 @@
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
                   AlternatingRowBackground="#F8FAFC"
-                  RowHeight="28"
                   MouseDoubleClick="MainGrid_MouseDoubleClick">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Tarih"     Binding="{Binding CreatedAt, StringFormat=dd.MM.yyyy HH:mm:ss}" Width="140"/>
+                <DataGridTextColumn Header="Tarih"     Binding="{Binding CreatedAt, StringFormat=dd.MM.yyyy HH:mm:ss}" Width="140"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                 <DataGridTemplateColumn Header="Seviye" Width="80">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
@@ -125,15 +125,19 @@
                                     HorizontalAlignment="Center">
                                 <TextBlock Text="{Binding LevelDisplay}"
                                            Foreground="{Binding Level, Converter={StaticResource LevelToForegroundConverter}, ConverterParameter=foreground}"
-                                           FontSize="11" FontWeight="SemiBold"/>
+                                           Style="{StaticResource Text.Caption}" FontWeight="SemiBold"/>
                             </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTextColumn Header="Kategori"  Binding="{Binding Category}"      Width="100"/>
-                <DataGridTextColumn Header="Kullanıcı" Binding="{Binding Username}"      Width="120"/>
-                <DataGridTextColumn Header="Makine"    Binding="{Binding MachineName}"   Width="120"/>
-                <DataGridTextColumn Header="Mesaj"     Binding="{Binding Message}"       Width="*"/>
+                <DataGridTextColumn Header="Kategori"  Binding="{Binding Category}"      Width="100"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridTextColumn Header="Kullanıcı" Binding="{Binding Username}"      Width="120"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridTextColumn Header="Makine"    Binding="{Binding MachineName}"   Width="120"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridTextColumn Header="Mesaj"     Binding="{Binding Message}"       Width="*"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                 <DataGridTemplateColumn Header="Durum" Width="80">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>

@@ -93,7 +93,7 @@
                            HorizontalScrollBarVisibility="Auto"
                            TextWrapping="NoWrap"
                            Height="140"
-                           FontFamily="Consolas" FontSize="11"/>
+                           FontFamily="Consolas" FontSize="12"/>
 
                 <!-- Çözüm notu -->
                 <TextBlock x:Name="ResolutionSection" Text="Çözüm Notu" FontWeight="SemiBold" Margin="0,0,0,4"/>

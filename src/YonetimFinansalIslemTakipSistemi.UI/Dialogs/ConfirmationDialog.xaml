@@ -20,12 +20,12 @@
         <Border Grid.Row="0" Background="#5D6D7E">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0">
                 <TextBlock Text="?"
-                           FontSize="22" FontWeight="Bold"
+                           Style="{StaticResource Text.Display}" FontWeight="Bold"
                            Foreground="White"
                            VerticalAlignment="Center"
                            Margin="0,0,12,0"/>
                 <TextBlock Text="{Binding HeaderTitle}"
-                           FontSize="14" FontWeight="SemiBold"
+                           Style="{StaticResource Text.Body}" FontWeight="SemiBold"
                            Foreground="White"
                            VerticalAlignment="Center"
                            TextWrapping="Wrap"/>
@@ -37,7 +37,7 @@
                    Text="{Binding Message}"
                    TextWrapping="Wrap"
                    Margin="20,16,20,12"
-                   FontSize="13"
+                   Style="{StaticResource Text.Body}"
                    Foreground="#222222"
                    LineHeight="20"/>
 

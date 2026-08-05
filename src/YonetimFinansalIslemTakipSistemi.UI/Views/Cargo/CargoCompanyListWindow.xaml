@@ -40,12 +40,14 @@
                   AlternatingRowBackground="#F8FAFC"
                   RowBackground="White"
                   BorderBrush="#E2E8F0" BorderThickness="1"
-                  RowHeight="30"
                   MouseDoubleClick="MainGrid_MouseDoubleClick">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Firma Adı"      Binding="{Binding Name}"    Width="200"/>
-                <DataGridTextColumn Header="Telefon"        Binding="{Binding Phone}"   Width="120"/>
-                <DataGridTextColumn Header="Website"        Binding="{Binding Website}" Width="200"/>
+                <DataGridTextColumn Header="Firma Adı"      Binding="{Binding Name}"    Width="200"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridTextColumn Header="Telefon"        Binding="{Binding Phone}"   Width="120"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridTextColumn Header="Website"        Binding="{Binding Website}" Width="200"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                 <DataGridCheckBoxColumn Header="Aktif"      Binding="{Binding IsActive}" Width="60"/>
             </DataGrid.Columns>
         </DataGrid>

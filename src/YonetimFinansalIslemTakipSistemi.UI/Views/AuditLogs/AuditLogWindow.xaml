@@ -81,25 +81,32 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Zaman"
                                     Binding="{Binding Timestamp, StringFormat=dd.MM.yyyy HH:mm:ss}"
-                                    Width="140"/>
+                                    Width="140"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                 <DataGridTextColumn Header="Kullanıcı"
                                     Binding="{Binding UserName}"
-                                    Width="120"/>
+                                    Width="120"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                 <DataGridTextColumn Header="İşlem"
                                     Binding="{Binding ActionDisplay}"
-                                    Width="160"/>
+                                    Width="160"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                 <DataGridTextColumn Header="Varlık"
                                     Binding="{Binding EntityType}"
-                                    Width="110"/>
+                                    Width="110"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                 <DataGridTextColumn Header="Bilgisayar"
                                     Binding="{Binding ComputerName}"
-                                    Width="110"/>
+                                    Width="110"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                 <DataGridTextColumn Header="Eski Değer"
                                     Binding="{Binding OldValues}"
-                                    Width="*"/>
+                                    Width="*"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                 <DataGridTextColumn Header="Yeni Değer"
                                     Binding="{Binding NewValues}"
-                                    Width="*"/>
+                                    Width="*"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
             </DataGrid.Columns>
         </DataGrid>
 

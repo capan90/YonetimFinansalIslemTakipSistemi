@@ -51,6 +51,47 @@ public partial class CargoShipmentListWindow : Window
         Loaded += async (_, _) => await _vm.LoadAsync();
     }
 
+    // ── Klavye Kısayolları ────────────────────────────────────────────────────
+    // Sarmalayıcılar: RoutedUICommand imzası Click handler'ınkinden farklı.
+    // Handler'lar değiştirilmedi; yetki kapıları buton görünürlüğünde olduğu için
+    // kısayol da aynı kapıya tabi tutulur.
+
+    private void Command_New(object sender, ExecutedRoutedEventArgs e)
+    {
+        if (NewButton.Visibility == Visibility.Visible)
+            NewButton_Click(sender, new RoutedEventArgs());
+    }
+
+    private void Command_Duplicate(object sender, ExecutedRoutedEventArgs e)
+    {
+        if (CopyButton.Visibility == Visibility.Visible && _vm.HasSelected)
+            CopyButton_Click(sender, new RoutedEventArgs());
+    }
+
+    private void Command_Delete(object sender, ExecutedRoutedEventArgs e)
+    {
+        // Onay diyaloğu handler'ın içinde — kısayol onu atlamaz
+        if (DeleteButton.Visibility == Visibility.Visible && _vm.HasSelected)
+            DeleteButton_Click(sender, new RoutedEventArgs());
+    }
+
+    private void Command_Edit(object sender, ExecutedRoutedEventArgs e)
+    {
+        if (EditButton.Visibility == Visibility.Visible && _vm.HasSelected)
+            EditButton_Click(sender, new RoutedEventArgs());
+    }
+
+    private void Command_Refresh(object sender, ExecutedRoutedEventArgs e)
+        => RefreshButton_Click(sender, new RoutedEventArgs());
+
+    private void Command_FocusSearch(object sender, ExecutedRoutedEventArgs e)
+    {
+        SearchBox.Focus();
+        SearchBox.SelectAll();
+    }
+
+    private void Command_Close(object sender, ExecutedRoutedEventArgs e) => Close();
+
     private async void NewButton_Click(object sender, RoutedEventArgs e)
     {
         var form = new CargoShipmentEditWindow(_services) { Owner = this };

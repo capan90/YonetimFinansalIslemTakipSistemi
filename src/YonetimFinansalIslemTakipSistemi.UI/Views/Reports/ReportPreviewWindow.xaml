@@ -33,13 +33,13 @@
 
                 <!-- Başlık -->
                 <TextBlock Text="Finansal Rapor"
-                           FontSize="18" FontWeight="Bold"
+                           Style="{StaticResource Text.H1}" FontWeight="Bold"
                            Margin="0,0,0,4"/>
                 <TextBlock x:Name="DateRangeText"
-                           FontSize="12" Foreground="#666"
+                           Style="{StaticResource Text.Caption}" Foreground="#666"
                            Margin="0,0,0,4"/>
                 <TextBlock x:Name="FilterSummaryText"
-                           FontSize="11" Foreground="#888" FontStyle="Italic"
+                           Style="{StaticResource Text.Caption}" Foreground="#888" FontStyle="Italic"
                            Margin="0,0,0,12"/>
                 <Separator Margin="0,0,0,12"/>
 
@@ -62,7 +62,8 @@
                           HeadersVisibility="Column"
                           Margin="0,0,0,16">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="İşlem Türü" Binding="{Binding TypeDisplay}" Width="90"/>
+                        <DataGridTextColumn Header="İşlem Türü" Binding="{Binding TypeDisplay}" Width="90"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                         <DataGridTextColumn Header="TL Borç"    Binding="{Binding TryBorc,  StringFormat=N2}" Width="*">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
@@ -143,10 +144,14 @@
                               HeadersVisibility="Column"
                               Margin="0,0,0,8">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Tarih"     Binding="{Binding Date}"            Width="80"/>
-                            <DataGridTextColumn Header="Açıklama"  Binding="{Binding Description}"     Width="*"/>
-                            <DataGridTextColumn Header="Tür"       Binding="{Binding TypeDisplay}"     Width="65"/>
-                            <DataGridTextColumn Header="Para Bir." Binding="{Binding CurrencyDisplay}" Width="65"/>
+                            <DataGridTextColumn Header="Tarih"     Binding="{Binding Date}"            Width="80"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                            <DataGridTextColumn Header="Açıklama"  Binding="{Binding Description}"     Width="*"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                            <DataGridTextColumn Header="Tür"       Binding="{Binding TypeDisplay}"     Width="65"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                            <DataGridTextColumn Header="Para Bir." Binding="{Binding CurrencyDisplay}" Width="65"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                             <DataGridTextColumn Header="Borç"      Binding="{Binding Borc,    StringFormat=N2}" Width="100">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">

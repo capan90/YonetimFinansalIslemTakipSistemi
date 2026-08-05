@@ -13,25 +13,25 @@
         <StackPanel>
 
             <!-- Form alanları -->
-            <TextBlock Text="İşlem Tarihi" FontSize="12" Foreground="#475569" Margin="0,0,0,3"/>
+            <TextBlock Text="İşlem Tarihi" Style="{StaticResource Text.Caption}" Foreground="#475569" Margin="0,0,0,3"/>
             <DatePicker SelectedDate="{Binding TransactionDate, Mode=TwoWay}"
                         Margin="0,0,0,14"/>
 
-            <TextBlock Text="İşlem Türü" FontSize="12" Foreground="#475569" Margin="0,0,0,3"/>
+            <TextBlock Text="İşlem Türü" Style="{StaticResource Text.Caption}" Foreground="#475569" Margin="0,0,0,3"/>
             <ComboBox ItemsSource="{Binding TransactionTypeOptions}"
                       SelectedItem="{Binding SelectedTransactionType, Mode=TwoWay}"
                       Height="30" Margin="0,0,0,14"/>
 
-            <TextBlock Text="Para Birimi" FontSize="12" Foreground="#475569" Margin="0,0,0,3"/>
+            <TextBlock Text="Para Birimi" Style="{StaticResource Text.Caption}" Foreground="#475569" Margin="0,0,0,3"/>
             <ComboBox ItemsSource="{Binding CurrencyTypeOptions}"
                       SelectedItem="{Binding SelectedCurrencyType, Mode=TwoWay}"
                       Height="30" Margin="0,0,0,14"/>
 
-            <TextBlock Text="Tutar" FontSize="12" Foreground="#475569" Margin="0,0,0,3"/>
+            <TextBlock Text="Tutar" Style="{StaticResource Text.Caption}" Foreground="#475569" Margin="0,0,0,3"/>
             <TextBox Text="{Binding AmountText, UpdateSourceTrigger=PropertyChanged}"
                      Margin="0,0,0,14"/>
 
-            <TextBlock Text="Açıklama" FontSize="12" Foreground="#475569" Margin="0,0,0,3"/>
+            <TextBlock Text="Açıklama" Style="{StaticResource Text.Caption}" Foreground="#475569" Margin="0,0,0,3"/>
             <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
                      Margin="0,0,0,16"/>
 
@@ -54,7 +54,7 @@
                 <TextBlock Text="{Binding ErrorMessage}"
                            Foreground="#C62828"
                            TextWrapping="Wrap"
-                           FontSize="12"/>
+                           Style="{StaticResource Text.Caption}"/>
             </Border>
 
             <!-- Butonlar sağ altta -->

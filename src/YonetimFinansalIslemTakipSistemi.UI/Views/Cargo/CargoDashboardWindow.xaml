@@ -58,12 +58,22 @@
                     <Menu x:Name="MenuYardim" Background="Transparent" Margin="0,0,10,0" Visibility="Collapsed">
                         <Menu.Resources>
                             <Style TargetType="MenuItem">
-                                <Setter Property="FontSize" Value="12"/>
+                                <Setter Property="FontSize" Value="14"/>
                                 <Setter Property="FontWeight" Value="SemiBold"/>
                                 <Setter Property="Padding" Value="10,6"/>
                             </Style>
                         </Menu.Resources>
-                        <MenuItem Header="Yardım ▾" Foreground="White" Background="#2E5F9F" BorderBrush="#3B7BC8" BorderThickness="1" Padding="12,5" Height="28">
+                        <MenuItem Foreground="White" Background="#2E5F9F" BorderBrush="#3B7BC8" BorderThickness="1" Padding="12,5" Height="28">
+                            <MenuItem.Header>
+                                <!-- "▾" karakteri yerine vektör chevron: tema rengini alır,
+                                     DPI ölçeğinde metin taban çizgisine göre kaymaz -->
+                                <StackPanel Style="{StaticResource IconTextPanel}">
+                                    <TextBlock Text="Yardım" Margin="0,0,4,0"/>
+                                    <Path Style="{StaticResource IconPath}"
+                                          Data="{StaticResource Icon.ChevronDown}"
+                                          Width="12" Height="12" Stroke="White"/>
+                                </StackPanel>
+                            </MenuItem.Header>
                             <!-- Teknik yardım öğeleri CanAccessHelpMenu iznine tabidir (code-behind) -->
                             <MenuItem x:Name="MenuItemCheckUpdates" Header="Güncellemeleri Denetle" Click="CheckUpdates_Click" Foreground="Black"/>
                             <MenuItem x:Name="MenuItemPersonalMail" Header="Mail Ayarlarım" Click="OpenPersonalMailSettings_Click" Foreground="Black"/>
@@ -109,7 +119,7 @@
                 <DockPanel Margin="0,0,0,8">
                     <TextBlock DockPanel.Dock="Left"
                                Text="Kargo Dashboard"
-                               FontSize="16" FontWeight="Bold" Foreground="#1A3354"
+                               Style="{StaticResource Text.H1}" Foreground="#1A3354"
                                VerticalAlignment="Center"/>
                     <Button DockPanel.Dock="Right"
                             x:Name="RefreshDashboardButton"
@@ -120,7 +130,7 @@
                             Click="RefreshDashboardButton_Click"/>
                     <TextBlock DockPanel.Dock="Right"
                                x:Name="DashboardDateBlock"
-                               Foreground="#64748B" FontSize="11"
+                               Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.MutedText}"
                                VerticalAlignment="Center" Margin="0,0,8,0"
                                HorizontalAlignment="Right"/>
                 </DockPanel>
@@ -138,10 +148,10 @@
                             ToolTip="Gönderim tarihi bugün olan gelen kargo sayısı.">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock x:Name="CardTodayIncomingVal"
-                                       Text="—" FontSize="26" FontWeight="Bold"
+                                       Text="—" Style="{StaticResource Text.Display}"
                                        Foreground="#1D4ED8"/>
                             <TextBlock Text="Bugün Gelen"
-                                       FontSize="11" Foreground="#3B82F6"/>
+                                       Style="{StaticResource Text.Caption}" Foreground="#3B82F6"/>
                         </StackPanel>
                     </Border>
 
@@ -152,10 +162,10 @@
                             ToolTip="Gönderim tarihi bugün olan giden kargo sayısı.">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock x:Name="CardTodayOutgoingVal"
-                                       Text="—" FontSize="26" FontWeight="Bold"
+                                       Text="—" Style="{StaticResource Text.Display}"
                                        Foreground="#15803D"/>
                             <TextBlock Text="Bugün Giden"
-                                       FontSize="11" Foreground="#22C55E"/>
+                                       Style="{StaticResource Text.Caption}" Foreground="#22C55E"/>
                         </StackPanel>
                     </Border>
 
@@ -166,10 +176,10 @@
                             ToolTip="Süreci hâlâ devam eden kargolar: Teslim Edildi, Personele Teslim Edildi ve İptal dışındaki tüm kayıtlar (gelen + giden, tarih filtresi uygulanmaz).">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock x:Name="CardPendingVal"
-                                       Text="—" FontSize="26" FontWeight="Bold"
+                                       Text="—" Style="{StaticResource Text.Display}"
                                        Foreground="#C2410C"/>
                             <TextBlock Text="Toplam Bekleyen"
-                                       FontSize="11" Foreground="#F97316"/>
+                                       Style="{StaticResource Text.Caption}" Foreground="#F97316"/>
                         </StackPanel>
                     </Border>
 
@@ -180,10 +190,10 @@
                             ToolTip="Henüz WhatsApp/mail bildirimi hazırlanmamış aktif kargolar (Gönderime Hazır, Gönderildi, Teslim Alındı).">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock x:Name="CardNotifPendingVal"
-                                       Text="—" FontSize="26" FontWeight="Bold"
+                                       Text="—" Style="{StaticResource Text.Display}"
                                        Foreground="#7C3AED"/>
                             <TextBlock Text="Bildirim Bekleyen"
-                                       FontSize="11" Foreground="#8B5CF6"/>
+                                       Style="{StaticResource Text.Caption}" Foreground="#8B5CF6"/>
                         </StackPanel>
                     </Border>
 
@@ -194,10 +204,10 @@
                             ToolTip="Önceliği Acil veya Çok Acil olan, teslim edilmemiş ve iptal edilmemiş kargolar.">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock x:Name="CardUrgentVal"
-                                       Text="—" FontSize="26" FontWeight="Bold"
+                                       Text="—" Style="{StaticResource Text.Display}"
                                        Foreground="#BE123C"/>
                             <TextBlock Text="Acil Bekleyen"
-                                       FontSize="11" Foreground="#F43F5E"/>
+                                       Style="{StaticResource Text.Caption}" Foreground="#F43F5E"/>
                         </StackPanel>
                     </Border>
 
@@ -208,10 +218,10 @@
                             ToolTip="Bugün 'Teslim Edildi' durumuna geçen kargolar.">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock x:Name="CardTodayDeliveredVal"
-                                       Text="—" FontSize="26" FontWeight="Bold"
+                                       Text="—" Style="{StaticResource Text.Display}"
                                        Foreground="#166534"/>
                             <TextBlock Text="Bugün Teslim"
-                                       FontSize="11" Foreground="#16A34A"/>
+                                       Style="{StaticResource Text.Caption}" Foreground="#16A34A"/>
                         </StackPanel>
                     </Border>
 
@@ -234,7 +244,7 @@
                             <DockPanel Margin="0,0,0,6">
                                 <TextBlock DockPanel.Dock="Left"
                                            Text="Gelen / Giden (son 30 gün)"
-                                           FontWeight="SemiBold" FontSize="11" Foreground="#1A3354"/>
+                                           Style="{StaticResource Text.H2}" Foreground="#1A3354"/>
                             </DockPanel>
                             <ItemsControl x:Name="DirectionChart">
                                 <ItemsControl.ItemTemplate>
@@ -247,7 +257,7 @@
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Grid.Column="0"
                                                        Text="{Binding Label}"
-                                                       FontSize="10" VerticalAlignment="Center"/>
+                                                       Style="{StaticResource Text.Caption}" VerticalAlignment="Center"/>
                                             <Border Grid.Column="1"
                                                     Height="18" CornerRadius="2"
                                                     HorizontalAlignment="Left"
@@ -257,7 +267,7 @@
                                                     Margin="0,0,4,0"/>
                                             <TextBlock Grid.Column="2"
                                                        Text="{Binding Value}"
-                                                       FontSize="10" VerticalAlignment="Center"/>
+                                                       Style="{StaticResource Text.Caption}" VerticalAlignment="Center"/>
                                         </Grid>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
@@ -270,7 +280,7 @@
                             BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="4" Padding="10">
                         <StackPanel>
                             <TextBlock Text="Durum Dağılımı"
-                                       FontWeight="SemiBold" FontSize="11" Foreground="#1A3354"
+                                       Style="{StaticResource Text.H2}" Foreground="#1A3354"
                                        Margin="0,0,0,6"/>
                             <ItemsControl x:Name="StatusChart">
                                 <ItemsControl.ItemTemplate>
@@ -283,7 +293,7 @@
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Grid.Column="0"
                                                        Text="{Binding Label}"
-                                                       FontSize="10" VerticalAlignment="Center"/>
+                                                       Style="{StaticResource Text.Caption}" VerticalAlignment="Center"/>
                                             <Border Grid.Column="1"
                                                     Height="18" CornerRadius="2"
                                                     HorizontalAlignment="Left"
@@ -293,7 +303,7 @@
                                                     Margin="0,0,4,0"/>
                                             <TextBlock Grid.Column="2"
                                                        Text="{Binding Value}"
-                                                       FontSize="10" VerticalAlignment="Center"/>
+                                                       Style="{StaticResource Text.Caption}" VerticalAlignment="Center"/>
                                         </Grid>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
@@ -306,7 +316,7 @@
                             BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="4" Padding="10">
                         <StackPanel>
                             <TextBlock Text="Top 5 Kargo Firması"
-                                       FontWeight="SemiBold" FontSize="11" Foreground="#1A3354"
+                                       Style="{StaticResource Text.H2}" Foreground="#1A3354"
                                        Margin="0,0,0,6"/>
                             <ItemsControl x:Name="CompanyChart">
                                 <ItemsControl.ItemTemplate>
@@ -319,7 +329,7 @@
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Grid.Column="0"
                                                        Text="{Binding Label}"
-                                                       FontSize="10" VerticalAlignment="Center"
+                                                       Style="{StaticResource Text.Caption}" VerticalAlignment="Center"
                                                        TextTrimming="CharacterEllipsis"/>
                                             <Border Grid.Column="1"
                                                     Height="18" CornerRadius="2"
@@ -330,7 +340,7 @@
                                                     Margin="0,0,4,0"/>
                                             <TextBlock Grid.Column="2"
                                                        Text="{Binding Value}"
-                                                       FontSize="10" VerticalAlignment="Center"/>
+                                                       Style="{StaticResource Text.Caption}" VerticalAlignment="Center"/>
                                         </Grid>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
@@ -341,7 +351,7 @@
 
                 <!-- ── Son 10 Hareket ────────────────────────────── -->
                 <TextBlock Text="Son 10 Hareket"
-                           FontSize="13" FontWeight="Bold" Foreground="#1A3354"
+                           Style="{StaticResource Text.H2}" Foreground="#1A3354"
                            Margin="0,0,0,4"/>
                 <DataGrid x:Name="RecentGrid"
                           AutoGenerateColumns="False"
@@ -354,14 +364,22 @@
                           GridLinesVisibility="Horizontal"
                           AlternatingRowBackground="#F8FAFC">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Kargo No"      Binding="{Binding ShipmentNumber}"            Width="100"/>
-                        <DataGridTextColumn Header="Yön"            Binding="{Binding DirectionDisplay}"          Width="60"/>
-                        <DataGridTextColumn Header="Tarih"          Binding="{Binding ShipmentDate, StringFormat=dd.MM.yyyy}" Width="80"/>
-                        <DataGridTextColumn Header="Firma/Karşı Taraf" Binding="{Binding Party}"                 Width="*"/>
-                        <DataGridTextColumn Header="Kargo Firması"  Binding="{Binding CargoCompanyName}"         Width="120"/>
-                        <DataGridTextColumn Header="Durum"          Binding="{Binding StatusDisplay}"            Width="100"/>
-                        <DataGridTextColumn Header="Bildirim"       Binding="{Binding NotificationStatusDisplay}" Width="100"/>
-                        <DataGridTextColumn Header="Öncelik"        Binding="{Binding PriorityDisplay}"          Width="70"/>
+                        <DataGridTextColumn Header="Kargo No"      Binding="{Binding ShipmentNumber}"            Width="100"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Yön"            Binding="{Binding DirectionDisplay}"          Width="60"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Tarih"          Binding="{Binding ShipmentDate, StringFormat=dd.MM.yyyy}" Width="80"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Firma/Karşı Taraf" Binding="{Binding Party}"                 Width="*"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Kargo Firması"  Binding="{Binding CargoCompanyName}"         Width="120"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Durum"          Binding="{Binding StatusDisplay}"            Width="100"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Bildirim"       Binding="{Binding NotificationStatusDisplay}" Width="100"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Öncelik"        Binding="{Binding PriorityDisplay}"          Width="70"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
@@ -369,7 +387,7 @@
 
                 <!-- ── Rapor Filtreleri ──────────────────────────── -->
                 <TextBlock Text="Filtrelenebilir Rapor"
-                           FontSize="13" FontWeight="Bold" Foreground="#1A3354"
+                           Style="{StaticResource Text.H2}" Foreground="#1A3354"
                            Margin="0,0,0,6"/>
 
                 <GroupBox Header="Filtreler" Padding="8,4,8,8" Margin="0,0,0,8">
@@ -451,7 +469,7 @@
                                 Click="ExportPdfButton_Click"
                                 Margin="8,0,0,0"/>
                         <TextBlock x:Name="ReportSummaryBlock"
-                                   Foreground="#1E40AF" FontSize="11"
+                                   Style="{StaticResource Text.Caption}" Foreground="#1E40AF"
                                    VerticalAlignment="Center"/>
                     </DockPanel>
                 </Border>
@@ -462,7 +480,7 @@
                         CornerRadius="4" Padding="8,5" Margin="0,0,0,6"
                         Visibility="Collapsed">
                     <TextBlock x:Name="ExportResultBlock"
-                               Foreground="#166534" FontSize="11"/>
+                               Style="{StaticResource Text.Caption}" Foreground="#166534"/>
                 </Border>
 
                 <!-- ── Rapor Tablosu ──────────────────────────────── -->
@@ -477,16 +495,26 @@
                           AlternatingRowBackground="#F8FAFC"
                           MouseDoubleClick="ReportGrid_MouseDoubleClick">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Kargo No"       Binding="{Binding ShipmentNumber}"              Width="100"/>
-                        <DataGridTextColumn Header="Yön"             Binding="{Binding DirectionDisplay}"            Width="55"/>
-                        <DataGridTextColumn Header="Tarih"           Binding="{Binding ShipmentDate, StringFormat=dd.MM.yyyy}" Width="75"/>
-                        <DataGridTextColumn Header="Firma / Karşı Taraf" Binding="{Binding Party}"                  Width="*"/>
-                        <DataGridTextColumn Header="Kargo Firması"   Binding="{Binding CargoCompanyName}"           Width="120"/>
-                        <DataGridTextColumn Header="Takip No"        Binding="{Binding TrackingNumber}"             Width="110"/>
-                        <DataGridTextColumn Header="Araç Plaka"      Binding="{Binding VehiclePlate}"               Width="90"/>
-                        <DataGridTextColumn Header="Durum"           Binding="{Binding StatusDisplay}"              Width="100"/>
-                        <DataGridTextColumn Header="Bildirim"        Binding="{Binding NotificationStatusDisplay}"  Width="100"/>
-                        <DataGridTextColumn Header="Öncelik"         Binding="{Binding PriorityDisplay}"            Width="70"/>
+                        <DataGridTextColumn Header="Kargo No"       Binding="{Binding ShipmentNumber}"              Width="100"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Yön"             Binding="{Binding DirectionDisplay}"            Width="55"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Tarih"           Binding="{Binding ShipmentDate, StringFormat=dd.MM.yyyy}" Width="75"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Firma / Karşı Taraf" Binding="{Binding Party}"                  Width="*"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Kargo Firması"   Binding="{Binding CargoCompanyName}"           Width="120"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Takip No"        Binding="{Binding TrackingNumber}"             Width="110"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Araç Plaka"      Binding="{Binding VehiclePlate}"               Width="90"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Durum"           Binding="{Binding StatusDisplay}"              Width="100"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Bildirim"        Binding="{Binding NotificationStatusDisplay}"  Width="100"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                        <DataGridTextColumn Header="Öncelik"         Binding="{Binding PriorityDisplay}"            Width="70"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
                     </DataGrid.Columns>
                 </DataGrid>
 

@@ -37,8 +37,8 @@
             <Setter Property="Height" Value="34"/>
             <Setter Property="Padding" Value="16,0"/>
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="{DynamicResource Theme.Surface}"/>
-            <Setter Property="Background" Value="{DynamicResource Theme.Info.Text}"/>
+            <Setter Property="Foreground" Value="{DynamicResource Theme.OnPrimary}"/>
+            <Setter Property="Background" Value="{DynamicResource Theme.Primary}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>

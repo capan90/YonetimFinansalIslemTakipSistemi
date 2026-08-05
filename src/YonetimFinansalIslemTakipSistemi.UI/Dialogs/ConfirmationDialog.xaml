@@ -17,16 +17,16 @@
         </Grid.RowDefinitions>
 
         <!-- Başlık bandı -->
-        <Border Grid.Row="0" Background="{DynamicResource Theme.LabelText}">
+        <Border Grid.Row="0" Background="{DynamicResource Theme.Secondary}">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0">
                 <TextBlock Text="?"
                            Style="{StaticResource Text.Display}" FontWeight="Bold"
-                           Foreground="{DynamicResource Theme.Surface}"
+                           Foreground="{DynamicResource Theme.OnSecondary}"
                            VerticalAlignment="Center"
                            Margin="0,0,12,0"/>
                 <TextBlock Text="{Binding HeaderTitle}"
                            Style="{StaticResource Text.Body}" FontWeight="SemiBold"
-                           Foreground="{DynamicResource Theme.Surface}"
+                           Foreground="{DynamicResource Theme.OnSecondary}"
                            VerticalAlignment="Center"
                            TextWrapping="Wrap"/>
             </StackPanel>

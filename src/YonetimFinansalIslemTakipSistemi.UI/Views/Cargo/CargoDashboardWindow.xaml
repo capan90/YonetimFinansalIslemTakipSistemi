@@ -12,41 +12,41 @@
 
         <!-- Üst: Navigasyon çubuğu — yetkiye göre kargo ekranlarına erişim -->
         <Border x:Name="NavBar" DockPanel.Dock="Top"
-                Background="{DynamicResource Theme.Primary}" Padding="10,6">
+                Background="{DynamicResource Theme.Nav.Background}" Padding="10,6">
             <DockPanel LastChildFill="False">
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
                     <Button x:Name="NavGelenButton"
                             Content="Gelen Kargolar"
                             Height="28" Padding="12,0" Margin="0,0,6,0"
-                            Foreground="{DynamicResource Theme.Surface}" Background="{DynamicResource Theme.PrimaryHover}"
+                            Foreground="{DynamicResource Theme.Nav.Foreground}" Background="{DynamicResource Theme.Nav.ItemBackground}"
                             BorderBrush="{DynamicResource Theme.Nav.ItemBorder}" BorderThickness="1"
                             Cursor="Hand"
                             Click="NavGelenButton_Click"/>
                     <Button x:Name="NavGidenButton"
                             Content="Giden Kargolar"
                             Height="28" Padding="12,0" Margin="0,0,6,0"
-                            Foreground="{DynamicResource Theme.Surface}" Background="{DynamicResource Theme.PrimaryHover}"
+                            Foreground="{DynamicResource Theme.Nav.Foreground}" Background="{DynamicResource Theme.Nav.ItemBackground}"
                             BorderBrush="{DynamicResource Theme.Nav.ItemBorder}" BorderThickness="1"
                             Cursor="Hand"
                             Click="NavGidenButton_Click"/>
                     <Button x:Name="NavFirmaRehberiButton"
                             Content="Firma Rehberi"
                             Height="28" Padding="12,0" Margin="0,0,6,0"
-                            Foreground="{DynamicResource Theme.Surface}" Background="{DynamicResource Theme.PrimaryHover}"
+                            Foreground="{DynamicResource Theme.Nav.Foreground}" Background="{DynamicResource Theme.Nav.ItemBackground}"
                             BorderBrush="{DynamicResource Theme.Nav.ItemBorder}" BorderThickness="1"
                             Cursor="Hand"
                             Click="NavFirmaRehberiButton_Click"/>
                     <Button x:Name="NavKargoFirmalariButton"
                             Content="Kargo Firmaları"
                             Height="28" Padding="12,0" Margin="0,0,6,0"
-                            Foreground="{DynamicResource Theme.Surface}" Background="{DynamicResource Theme.PrimaryHover}"
+                            Foreground="{DynamicResource Theme.Nav.Foreground}" Background="{DynamicResource Theme.Nav.ItemBackground}"
                             BorderBrush="{DynamicResource Theme.Nav.ItemBorder}" BorderThickness="1"
                             Cursor="Hand"
                             Click="NavKargoFirmalariButton_Click"/>
                     <Button x:Name="NavWhatsAppRehberiButton"
                             Content="WhatsApp Rehberi"
                             Height="28" Padding="12,0" Margin="0,0,0,0"
-                            Foreground="{DynamicResource Theme.Surface}" Background="{DynamicResource Theme.PrimaryHover}"
+                            Foreground="{DynamicResource Theme.Nav.Foreground}" Background="{DynamicResource Theme.Nav.ItemBackground}"
                             BorderBrush="{DynamicResource Theme.Nav.ItemBorder}" BorderThickness="1"
                             Cursor="Hand"
                             ToolTip="Tüm kullanıcıların ortak kullandığı WhatsApp alıcı rehberi."
@@ -63,7 +63,7 @@
                                 <Setter Property="Padding" Value="10,6"/>
                             </Style>
                         </Menu.Resources>
-                        <MenuItem Foreground="{DynamicResource Theme.Surface}" Background="{DynamicResource Theme.PrimaryHover}" BorderBrush="{DynamicResource Theme.Nav.ItemBorder}" BorderThickness="1" Padding="12,5" Height="28">
+                        <MenuItem Foreground="{DynamicResource Theme.Nav.Foreground}" Background="{DynamicResource Theme.Nav.ItemBackground}" BorderBrush="{DynamicResource Theme.Nav.ItemBorder}" BorderThickness="1" Padding="12,5" Height="28">
                             <MenuItem.Header>
                                 <!-- "▾" karakteri yerine vektör chevron: tema rengini alır,
                                      DPI ölçeğinde metin taban çizgisine göre kaymaz -->
@@ -75,14 +75,14 @@
                                 </StackPanel>
                             </MenuItem.Header>
                             <!-- Teknik yardım öğeleri CanAccessHelpMenu iznine tabidir (code-behind) -->
-                            <MenuItem x:Name="MenuItemCheckUpdates" Header="Güncellemeleri Denetle" Click="CheckUpdates_Click" Foreground="Black"/>
-                            <MenuItem x:Name="MenuItemPersonalMail" Header="Mail Ayarlarım" Click="OpenPersonalMailSettings_Click" Foreground="Black"/>
-                            <MenuItem x:Name="MenuItemLogFolder" Header="Log Klasörünü Aç" Click="OpenLogDirectory_Click" Foreground="Black"/>
+                            <MenuItem x:Name="MenuItemCheckUpdates" Header="Güncellemeleri Denetle" Click="CheckUpdates_Click" Foreground="{DynamicResource Theme.Text}"/>
+                            <MenuItem x:Name="MenuItemPersonalMail" Header="Mail Ayarlarım" Click="OpenPersonalMailSettings_Click" Foreground="{DynamicResource Theme.Text}"/>
+                            <MenuItem x:Name="MenuItemLogFolder" Header="Log Klasörünü Aç" Click="OpenLogDirectory_Click" Foreground="{DynamicResource Theme.Text}"/>
                             <!-- Kişisel kullanıcı ayarları: izin gerektirmez — yalnızca kargo yetkili
                                  kullanıcı da kendi harf tercihine buradan erişir (MainWindow'a geçmeden) -->
-                            <MenuItem Header="Kullanıcı Ayarlarım" Foreground="Black">
+                            <MenuItem Header="Kullanıcı Ayarlarım" Foreground="{DynamicResource Theme.Text}">
                                 <MenuItem Header="Harf Duyarlılığı"
-                                          Click="OpenTextCaseSettings_Click" Foreground="Black"
+                                          Click="OpenTextCaseSettings_Click" Foreground="{DynamicResource Theme.Text}"
                                           ToolTip="Girdiğiniz metinlerin BÜYÜK/küçük harf dönüşüm tercihini belirleyin (kişisel ayar)."/>
                             </MenuItem>
                         </MenuItem>
@@ -91,7 +91,7 @@
                     <Button x:Name="NavLogoutButton"
                             Content="Çıkış Yap"
                             Height="28" Padding="12,0" Margin="0,0,0,0"
-                            Foreground="{DynamicResource Theme.Surface}" Background="{DynamicResource Theme.Danger}"
+                            Foreground="{DynamicResource Theme.OnDanger}" Background="{DynamicResource Theme.Danger}"
                             BorderBrush="{DynamicResource Theme.Danger.Text}" BorderThickness="1"
                             Cursor="Hand"
                             Click="Logout_Click"/>

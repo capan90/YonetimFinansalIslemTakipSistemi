@@ -13,9 +13,9 @@
                 <TextBlock x:Name="FileStepTitle" Style="{StaticResource Text.H2}" FontWeight="SemiBold"
                            Text="Excel Dosyasından Toplu Kargo Kaydı" Margin="0,0,0,10"
                            HorizontalAlignment="Center"/>
-                <TextBlock TextWrapping="Wrap" Foreground="#555" Margin="0,0,0,4"
+                <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Theme.LabelText}" Margin="0,0,0,4"
                            Text="Seçtiğiniz .xlsx dosyası analiz edilir, kayıtlar önizlemede doğrulanır ve onayınızla topluca oluşturulur. Hatalı satırlar içe aktarılmaz; nedenleriyle raporlanır."/>
-                <TextBlock TextWrapping="Wrap" Foreground="#555" Margin="0,0,0,16"
+                <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Theme.LabelText}" Margin="0,0,0,16"
                            Text="Zorunlu kolonlar: Tarih, Firma. Desteklenen diğer kolonlar: Kargo Firması, Gönderi Türü, Öncelik, Gönderen, Alıcı, Dikkatine, Takip No, Araç Plakası, Not. Fazladan kolonlar yok sayılır."/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Button Content="Şablon İndir" Width="130" Margin="0,0,10,0"
@@ -42,14 +42,14 @@
             <!-- Özet + durum filtresi -->
             <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                    <TextBlock Text="Göster:" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="#555"/>
+                    <TextBlock Text="Göster:" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="{DynamicResource Theme.LabelText}"/>
                     <ComboBox ItemsSource="{Binding FilterOptions}"
                               SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
                               Width="160"
                               ToolTip="Satırları durumuna göre filtrele"/>
                 </StackPanel>
                 <TextBlock Text="{Binding AnalysisSummary}" TextWrapping="Wrap"
-                           VerticalAlignment="Center" Foreground="#333"/>
+                           VerticalAlignment="Center" Foreground="{DynamicResource Theme.Text}"/>
             </DockPanel>
 
             <!-- Alt butonlar -->
@@ -64,7 +64,7 @@
                             IsEnabled="{Binding CanImport}"
                             Click="ImportButton_Click"/>
                 </StackPanel>
-                <TextBlock Foreground="#777" VerticalAlignment="Center" TextWrapping="Wrap"
+                <TextBlock Foreground="{DynamicResource Theme.MutedText}" VerticalAlignment="Center" TextWrapping="Wrap"
                            Text="Hatalı ve kesin mükerrer satırlar içe aktarılamaz. Mükerrer şüphesi taşıyan satırları onay kutusuyla dahil edebilirsiniz."/>
             </DockPanel>
 
@@ -146,7 +146,7 @@
                              Maximum="{Binding ProgressMax, Mode=OneWay}"
                              IsIndeterminate="{Binding ProgressIndeterminate, Mode=OneWay}"/>
                 <TextBlock Text="{Binding ProgressText}" Margin="0,8,0,0"
-                           HorizontalAlignment="Center" Foreground="#555"/>
+                           HorizontalAlignment="Center" Foreground="{DynamicResource Theme.LabelText}"/>
             </StackPanel>
         </Border>
 
@@ -161,7 +161,7 @@
                         <TextBlock x:Name="SummaryMainText" Style="{StaticResource Text.Body}" Margin="0,8,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </Border>
-                <TextBlock x:Name="SummaryDetailText" TextWrapping="Wrap" Foreground="#555" Margin="0,0,0,16"/>
+                <TextBlock x:Name="SummaryDetailText" TextWrapping="Wrap" Foreground="{DynamicResource Theme.LabelText}" Margin="0,0,0,16"/>
                 <Button Content="Kapat" Width="110" HorizontalAlignment="Center"
                         Style="{StaticResource PrimaryButton}" Click="CloseButton_Click"/>
             </StackPanel>

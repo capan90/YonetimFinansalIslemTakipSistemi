@@ -28,7 +28,7 @@
                 Command="{Binding SaveCommand}"/>
 
         <!-- Yetki listesi -->
-        <Border BorderBrush="#CCC" BorderThickness="1" CornerRadius="4" Padding="12">
+        <Border BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1" CornerRadius="4" Padding="12">
             <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="420">
                 <ItemsControl ItemsSource="{Binding Perms}">
                     <ItemsControl.ItemTemplate>

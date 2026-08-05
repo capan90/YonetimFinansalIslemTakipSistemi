@@ -52,7 +52,7 @@
         <!-- Hata satırı -->
         <TextBlock DockPanel.Dock="Top"
                    Text="{Binding ErrorMessage}"
-                   Foreground="Red"
+                   Foreground="{DynamicResource Theme.Danger}"
                    Margin="0,0,0,8"
                    TextWrapping="Wrap">
             <TextBlock.Style>
@@ -77,50 +77,50 @@
                 <TextBlock Text="Özet" FontWeight="SemiBold" Margin="0,0,0,8"/>
                 <UniformGrid Columns="6" Margin="0,0,0,12">
 
-                    <Border Margin="0,0,4,0" Padding="10,8" BorderThickness="1" BorderBrush="#DDD" CornerRadius="4">
+                    <Border Margin="0,0,4,0" Padding="10,8" BorderThickness="1" BorderBrush="{DynamicResource Theme.Border}" CornerRadius="4">
                         <StackPanel>
-                            <TextBlock Text="Toplam Alacak" Foreground="#666" Style="{StaticResource Text.Caption}"/>
+                            <TextBlock Text="Toplam Alacak" Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}"/>
                             <TextBlock Text="{Binding TotalAlacak, StringFormat=N2}"
                                        Style="{StaticResource Text.H2}" FontWeight="Bold" Foreground="{DynamicResource Theme.Danger}" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
 
-                    <Border Margin="2,0,4,0" Padding="10,8" BorderThickness="1" BorderBrush="#DDD" CornerRadius="4">
+                    <Border Margin="2,0,4,0" Padding="10,8" BorderThickness="1" BorderBrush="{DynamicResource Theme.Border}" CornerRadius="4">
                         <StackPanel>
-                            <TextBlock Text="Toplam Borç" Foreground="#666" Style="{StaticResource Text.Caption}"/>
+                            <TextBlock Text="Toplam Borç" Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}"/>
                             <TextBlock Text="{Binding TotalBorc, StringFormat=N2}"
                                        Style="{StaticResource Text.H2}" FontWeight="Bold" Foreground="{DynamicResource Theme.Success}" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
 
-                    <Border Margin="2,0,4,0" Padding="10,8" BorderThickness="1" BorderBrush="#DDD" CornerRadius="4">
+                    <Border Margin="2,0,4,0" Padding="10,8" BorderThickness="1" BorderBrush="{DynamicResource Theme.Border}" CornerRadius="4">
                         <StackPanel>
-                            <TextBlock Text="Net Fark" Foreground="#666" Style="{StaticResource Text.Caption}"/>
+                            <TextBlock Text="Net Fark" Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}"/>
                             <TextBlock Text="{Binding NetFark, StringFormat=N2}"
                                        x:Name="NetFarkText"
                                        Style="{StaticResource Text.H2}" FontWeight="Bold" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
 
-                    <Border Margin="2,0,4,0" Padding="10,8" BorderThickness="1" BorderBrush="#DDD" CornerRadius="4">
+                    <Border Margin="2,0,4,0" Padding="10,8" BorderThickness="1" BorderBrush="{DynamicResource Theme.Border}" CornerRadius="4">
                         <StackPanel>
-                            <TextBlock Text="İşlem Sayısı" Foreground="#666" Style="{StaticResource Text.Caption}"/>
+                            <TextBlock Text="İşlem Sayısı" Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}"/>
                             <TextBlock Text="{Binding TotalCount}"
                                        Style="{StaticResource Text.H2}" FontWeight="Bold" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
 
-                    <Border Margin="2,0,4,0" Padding="10,8" BorderThickness="1" BorderBrush="#DDD" CornerRadius="4">
+                    <Border Margin="2,0,4,0" Padding="10,8" BorderThickness="1" BorderBrush="{DynamicResource Theme.Border}" CornerRadius="4">
                         <StackPanel>
-                            <TextBlock Text="En Büyük Giriş" Foreground="#666" Style="{StaticResource Text.Caption}"/>
+                            <TextBlock Text="En Büyük Giriş" Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}"/>
                             <TextBlock Text="{Binding MaxGiris, StringFormat=N2}"
                                        Style="{StaticResource Text.H2}" FontWeight="Bold" Foreground="{DynamicResource Theme.Success}" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
 
-                    <Border Margin="2,0,0,0" Padding="10,8" BorderThickness="1" BorderBrush="#DDD" CornerRadius="4">
+                    <Border Margin="2,0,0,0" Padding="10,8" BorderThickness="1" BorderBrush="{DynamicResource Theme.Border}" CornerRadius="4">
                         <StackPanel>
-                            <TextBlock Text="En Büyük Çıkış" Foreground="#666" Style="{StaticResource Text.Caption}"/>
+                            <TextBlock Text="En Büyük Çıkış" Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}"/>
                             <TextBlock Text="{Binding MaxCikis, StringFormat=N2}"
                                        Style="{StaticResource Text.H2}" FontWeight="Bold" Foreground="{DynamicResource Theme.Danger}" Margin="0,4,0,0"/>
                         </StackPanel>
@@ -138,7 +138,7 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Margin="0,0,6,0" Padding="10,8" BorderThickness="1" BorderBrush="#DDD" CornerRadius="4">
+                            <Border Margin="0,0,6,0" Padding="10,8" BorderThickness="1" BorderBrush="{DynamicResource Theme.Border}" CornerRadius="4">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
@@ -174,10 +174,10 @@
                                                Text="{Binding NetFark, StringFormat=N2}"
                                                HorizontalAlignment="Right" FontWeight="SemiBold" Margin="0,2"/>
 
-                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="İşlem Sayısı:" Foreground="#888" Style="{StaticResource Text.Caption}" Margin="0,4,0,0"/>
+                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="İşlem Sayısı:" Foreground="{DynamicResource Theme.MutedText}" Style="{StaticResource Text.Caption}" Margin="0,4,0,0"/>
                                     <TextBlock Grid.Row="5" Grid.Column="1"
                                                Text="{Binding Count}"
-                                               Foreground="#888" Style="{StaticResource Text.Caption}"
+                                               Foreground="{DynamicResource Theme.MutedText}" Style="{StaticResource Text.Caption}"
                                                HorizontalAlignment="Right" Margin="0,4,0,0"/>
                                 </Grid>
                             </Border>

@@ -20,7 +20,7 @@
         <!-- Hata mesajı -->
         <TextBlock DockPanel.Dock="Bottom"
                    Text="{Binding ErrorMessage}"
-                   Foreground="Red"
+                   Foreground="{DynamicResource Theme.Danger}"
                    Margin="0,6,0,0"
                    TextWrapping="Wrap">
             <TextBlock.Style>

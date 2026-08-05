@@ -21,12 +21,12 @@
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0">
                 <TextBlock Text="{Binding DialogIcon}"
                            Style="{StaticResource Text.Display}" FontWeight="Bold"
-                           Foreground="{DynamicResource Theme.Surface}"
+                           Foreground="{DynamicResource Theme.OnSecondary}"
                            VerticalAlignment="Center"
                            Margin="0,0,12,0"/>
                 <TextBlock Text="{Binding HeaderTitle}"
                            Style="{StaticResource Text.Body}" FontWeight="SemiBold"
-                           Foreground="{DynamicResource Theme.Surface}"
+                           Foreground="{DynamicResource Theme.OnSecondary}"
                            VerticalAlignment="Center"
                            TextWrapping="Wrap"/>
             </StackPanel>

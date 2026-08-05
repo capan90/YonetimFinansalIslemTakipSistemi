@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using YonetimFinansalIslemTakipSistemi.Application.Features.SystemLogs;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
+using YonetimFinansalIslemTakipSistemi.UI.Common;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.SystemLogs;
 
@@ -88,10 +89,10 @@ public partial class SystemLogDetailWindow : Window
 
     private static Brush LevelToForeground(SystemLogLevel level) => level switch
     {
-        SystemLogLevel.Info     => new SolidColorBrush(Color.FromRgb(29,  78,  216)),
-        SystemLogLevel.Warning  => new SolidColorBrush(Color.FromRgb(146, 64,  14)),
-        SystemLogLevel.Error    => new SolidColorBrush(Color.FromRgb(153, 27,  27)),
-        SystemLogLevel.Critical => new SolidColorBrush(Color.FromRgb(220, 38,  38)),
-        _                       => Brushes.Black
+        SystemLogLevel.Info     => ThemeBrush.Get("Theme.Info.Text"),
+        SystemLogLevel.Warning  => ThemeBrush.Get("Theme.Warning.Text"),
+        SystemLogLevel.Error    => ThemeBrush.Get("Theme.Danger.Text"),
+        SystemLogLevel.Critical => ThemeBrush.Get("Theme.Danger"),
+        _                       => ThemeBrush.Get("Theme.Text")
     };
 }

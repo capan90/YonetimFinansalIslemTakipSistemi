@@ -32,7 +32,7 @@
 
         <!-- Hata mesajı -->
         <TextBlock Text="{Binding ErrorMessage}"
-                   Foreground="Red"
+                   Foreground="{DynamicResource Theme.Danger}"
                    TextWrapping="Wrap"
                    Margin="0,0,0,10">
             <TextBlock.Style>

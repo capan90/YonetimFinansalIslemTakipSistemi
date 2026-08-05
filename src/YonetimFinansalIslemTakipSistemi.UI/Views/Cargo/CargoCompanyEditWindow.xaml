@@ -29,7 +29,7 @@
                  ToolTip="Firmanın portal/takip adresi — tüm kargo ekranlarındaki tek bağlantı kaynağı. Yalnızca http/https; boş bırakılabilir."
                  Margin="0,0,0,2"/>
         <TextBlock Text="Kargo ekranlarındaki 'Portalı / Takibi Aç' butonu bu adresi kullanır."
-                   Style="{StaticResource Text.Caption}" Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                   Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.MutedText}" TextWrapping="Wrap" Margin="0,0,0,8"/>
 
         <Label Content="Notlar:" Margin="0,0,0,2"/>
         <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}"
@@ -38,7 +38,7 @@
 
         <CheckBox Content="Aktif" IsChecked="{Binding IsActive}" Margin="0,0,0,12"/>
 
-        <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" TextWrapping="Wrap" Margin="0,0,0,8">
+        <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Theme.Danger}" TextWrapping="Wrap" Margin="0,0,0,8">
             <TextBlock.Style>
                 <Style TargetType="TextBlock">
                     <Setter Property="Visibility" Value="Visible"/>

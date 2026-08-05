@@ -12,7 +12,7 @@
 
         <!-- Filtre paneli -->
         <Border DockPanel.Dock="Top"
-                BorderBrush="#DDD" BorderThickness="1"
+                BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1"
                 CornerRadius="4" Padding="10,8"
                 Margin="0,0,0,8">
             <WrapPanel Orientation="Horizontal">
@@ -66,7 +66,7 @@
         <!-- Kayıt sayısı -->
         <TextBlock DockPanel.Dock="Bottom"
                    Margin="0,6,0,0"
-                   Foreground="#666"
+                   Foreground="{DynamicResource Theme.LabelText}"
                    Text="{Binding Logs.Count, StringFormat='Toplam {0} kayıt'}"/>
 
         <!-- Audit log listesi -->

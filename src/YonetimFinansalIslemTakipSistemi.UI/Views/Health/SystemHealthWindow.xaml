@@ -22,7 +22,7 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0"
                            Text="{Binding Label}"
-                           Foreground="#555"
+                           Foreground="{DynamicResource Theme.LabelText}"
                            VerticalAlignment="Center"/>
                 <TextBlock Grid.Column="1"
                            Text="{Binding Value}"
@@ -68,7 +68,7 @@
                         CornerRadius="4"
                         Padding="14,10"
                         Margin="0,0,0,10"
-                        Background="#888">
+                        Background="{DynamicResource Theme.Secondary}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -78,18 +78,18 @@
                             <TextBlock x:Name="StatusLabel"
                                        Style="{StaticResource Text.Body}"
                                        FontWeight="Bold"
-                                       Foreground="{DynamicResource Theme.Surface}"
+                                       Foreground="{DynamicResource Theme.OnSecondary}"
                                        Text="Kontrol ediliyor..."/>
                             <TextBlock x:Name="CheckedAtLabel"
                                        Style="{StaticResource Text.Caption}"
-                                       Foreground="{DynamicResource Theme.Surface}"
+                                       Foreground="{DynamicResource Theme.OnSecondary}"
                                        Opacity="0.9"
                                        Margin="0,2,0,0"/>
                         </StackPanel>
                         <TextBlock Grid.Column="1"
                                    x:Name="OverallStatusIcon"
                                    Style="{StaticResource Text.Display}"
-                                   Foreground="{DynamicResource Theme.Surface}"
+                                   Foreground="{DynamicResource Theme.OnSecondary}"
                                    Opacity="0.7"
                                    VerticalAlignment="Center"
                                    Text="●"/>
@@ -143,7 +143,7 @@
 
         <!-- Alt buton çubuğu -->
         <Border Grid.Row="1"
-                BorderBrush="#DDD"
+                BorderBrush="{DynamicResource Theme.Border}"
                 BorderThickness="0,1,0,0"
                 Padding="12,8">
             <DockPanel>

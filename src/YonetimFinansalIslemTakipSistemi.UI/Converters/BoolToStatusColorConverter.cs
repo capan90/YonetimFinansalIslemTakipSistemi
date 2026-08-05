@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
+using YonetimFinansalIslemTakipSistemi.UI.Common;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Converters;
 
@@ -13,9 +14,9 @@ public sealed class BoolToStatusColorConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if (value is bool resolved && resolved)
-            return new SolidColorBrush(Color.FromRgb(22, 163, 74));   // yeşil
+            return ThemeBrush.Get("Theme.Success");
 
-        return new SolidColorBrush(Color.FromRgb(234, 88, 12));       // turuncu
+        return ThemeBrush.Get("Theme.Warning");
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

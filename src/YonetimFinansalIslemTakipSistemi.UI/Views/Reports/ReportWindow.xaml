@@ -79,7 +79,7 @@
         <!-- Hata / bilgi satırı -->
         <TextBlock DockPanel.Dock="Top"
                    Text="{Binding ErrorMessage}"
-                   Foreground="Red"
+                   Foreground="{DynamicResource Theme.Danger}"
                    Margin="0,0,0,8"
                    TextWrapping="Wrap">
             <TextBlock.Style>

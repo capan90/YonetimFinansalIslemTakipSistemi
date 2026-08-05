@@ -8,6 +8,7 @@ using YonetimFinansalIslemTakipSistemi.Application.Common;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
+using YonetimFinansalIslemTakipSistemi.UI.Common;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Health;
 
@@ -42,7 +43,7 @@ public partial class SystemHealthWindow : Window
         try
         {
             BtnRefresh.IsEnabled    = false;
-            StatusBanner.Background = Brushes.DimGray;
+            StatusBanner.Background = ThemeBrush.Get("Theme.Secondary");
             StatusLabel.Text        = "Kontrol ediliyor...";
             CheckedAtLabel.Text     = "";
             OverallStatusIcon.Text  = "●";
@@ -71,7 +72,7 @@ public partial class SystemHealthWindow : Window
             HealthStatus.Ok      => (HealthRowData.OkBrush,   "Sistem Durumu: Normal",                                       "✓"),
             HealthStatus.Warning => (HealthRowData.WarnBrush,  "Sistem Durumu: Uyarı — dikkat gerektiren konular mevcut",     "⚠"),
             HealthStatus.Error   => (HealthRowData.ErrBrush,   "Sistem Durumu: Hata — acil müdahale gerekebilir",             "✗"),
-            _                    => ((Brush)Brushes.DimGray,   "Bilinmiyor",                                                  "?")
+            _                    => (ThemeBrush.Get("Theme.Secondary"),   "Bilinmiyor",                                                  "?")
         };
 
         CheckedAtLabel.Text = $"Kontrol zamanı: {info.CheckedAt:dd.MM.yyyy HH:mm:ss}";

@@ -46,10 +46,14 @@
          (#1E293B) üzerinde ayrı ölçüldü, metinler 7:1 üzerindedir.
     ═══════════════════════════════════════════════════════════════════════ -->
 
-    <SolidColorBrush x:Key="Theme.Info.Background"          Color="#16304D"/>
-    <SolidColorBrush x:Key="Theme.Info.BackgroundStrong"    Color="#1E3A5F"/>
-    <SolidColorBrush x:Key="Theme.Info.Border"              Color="#2E5F9F"/>
-    <SolidColorBrush x:Key="Theme.Info.Text"                Color="#BFDBFE"/>
+    <!-- Info koyu temada yeniden ayarlandı: eski #1E3A5F dolgu + #BFDBFE metin
+         doygun lacivert bir blok gibi duruyor ve liste içinde diğer seviyeleri
+         bastırıyordu. Ton desatüre edildi (mavi-gri), metin bir tık kısıldı;
+         okunurluk korundu (8.05:1). -->
+    <SolidColorBrush x:Key="Theme.Info.Background"          Color="#1C2C3E"/>
+    <SolidColorBrush x:Key="Theme.Info.BackgroundStrong"    Color="#223449"/>
+    <SolidColorBrush x:Key="Theme.Info.Border"              Color="#35506E"/>
+    <SolidColorBrush x:Key="Theme.Info.Text"                Color="#A9C6E6"/>
 
     <SolidColorBrush x:Key="Theme.Success.Background"       Color="#14321C"/>
     <SolidColorBrush x:Key="Theme.Success.BackgroundStrong" Color="#1C4529"/>
@@ -65,6 +69,13 @@
     <SolidColorBrush x:Key="Theme.Danger.BackgroundStrong"  Color="#4C1D1D"/>
     <SolidColorBrush x:Key="Theme.Danger.Border"            Color="#B91C1C"/>
     <SolidColorBrush x:Key="Theme.Danger.Text"              Color="#FECACA"/>
+
+    <!-- Kritik: koyu temada tek dolu seviye. Error'dan (#45201F) belirgin
+         biçimde ayrışsın diye daha doygun kırmızı; metin 8.2:1. -->
+    <SolidColorBrush x:Key="Theme.Critical.Background"       Color="#3B1717"/>
+    <SolidColorBrush x:Key="Theme.Critical.BackgroundStrong" Color="#7F1D1D"/>
+    <SolidColorBrush x:Key="Theme.Critical.Border"           Color="#DC2626"/>
+    <SolidColorBrush x:Key="Theme.Critical.Text"             Color="#FEE2E2"/>
 
     <SolidColorBrush x:Key="Theme.Accent.Background"        Color="#241B3D"/>
     <SolidColorBrush x:Key="Theme.Accent.BackgroundStrong"  Color="#2E2350"/>
@@ -83,16 +94,26 @@
     <!-- Koyu temada birincil buton açık mavi; hover/pressed AÇILIR, koyulaşmaz -->
     <SolidColorBrush x:Key="Theme.PrimaryPressed"        Color="#BFDBFE"/>
     <SolidColorBrush x:Key="Theme.Secondary"             Color="#475569"/>
-    <SolidColorBrush x:Key="Theme.SecondaryHover"        Color="#5A6B80"/>
-    <SolidColorBrush x:Key="Theme.SecondaryPressed"      Color="#6B7C93"/>
-    <SolidColorBrush x:Key="Theme.DangerHover"           Color="#EF4444"/>
-    <SolidColorBrush x:Key="Theme.DangerPressed"         Color="#DC2626"/>
+    <SolidColorBrush x:Key="Theme.SecondaryHover"        Color="#54657C"/>
+    <!-- Basılı hâl AÇILIR ama metin kontrastı 4.5'in altına inemez:
+         eski #6B7C93, #F1F5F9 metinle 3.89:1 veriyordu (ölçüldü, düzeltildi). -->
+    <SolidColorBrush x:Key="Theme.SecondaryPressed"      Color="#5F7089"/>
+    <!-- Danger butonu koyu temada AÇIK kırmızıdır ve metni koyudur; bu yüzden
+         hover/pressed koyulaşmaz, AÇILIR. Eski #DC2626 basılı hâli koyu metinle
+         3.70:1 veriyordu. -->
+    <SolidColorBrush x:Key="Theme.DangerHover"           Color="#FA8B8B"/>
+    <SolidColorBrush x:Key="Theme.DangerPressed"         Color="#FCA5A5"/>
 
     <!-- ── Navigasyon şeridi (Kargo Dashboard) ────────────────────────────── -->
     <SolidColorBrush x:Key="Theme.Nav.Background"        Color="#16304D"/>
     <SolidColorBrush x:Key="Theme.Nav.ItemBackground"    Color="#1E3A5F"/>
     <SolidColorBrush x:Key="Theme.Nav.ItemBorder"        Color="#2E5F9F"/>
     <SolidColorBrush x:Key="Theme.Nav.Foreground"        Color="#F1F5F9"/>
+    <SolidColorBrush x:Key="Theme.Nav.HoverBackground"   Color="#2A4E7A"/>
+    <SolidColorBrush x:Key="Theme.Nav.HoverForeground"   Color="#F1F5F9"/>
+    <!-- Aktif zemin, koyu metinle 4.5'i geçecek kadar açık olmalı (#3B7BC8 4.01 veriyordu) -->
+    <SolidColorBrush x:Key="Theme.Nav.ActiveBackground"  Color="#5391D6"/>
+    <SolidColorBrush x:Key="Theme.Nav.ActiveForeground"  Color="#0B1B2E"/>
 
     <!-- ── Gölge ──────────────────────────────────────────────────────────────
          Koyu temada açık gri gölge "hale" gibi görünür; siyaha çekildi. -->
@@ -101,6 +122,75 @@
     <!-- ── Yüzey kademeleri ───────────────────────────────────────────────── -->
     <SolidColorBrush x:Key="Theme.SurfaceAlt"            Color="#263348"/>
     <SolidColorBrush x:Key="Theme.SurfaceSubtle"         Color="#1A2436"/>
+
+    <!-- ══ MENÜ ══════════════════════════════════════════════════════════════
+         Açık temadaki karşılıklarıyla aynı roller; bkz. LightTheme.xaml. -->
+    <SolidColorBrush x:Key="Theme.Menu.Background"          Color="#1E293B"/>
+    <SolidColorBrush x:Key="Theme.Menu.Foreground"          Color="#F1F5F9"/>
+    <SolidColorBrush x:Key="Theme.Menu.HoverBackground"     Color="#334155"/>
+    <SolidColorBrush x:Key="Theme.Menu.HoverForeground"     Color="#F1F5F9"/>
+    <SolidColorBrush x:Key="Theme.Menu.SelectedBackground"  Color="#223449"/>
+    <SolidColorBrush x:Key="Theme.Menu.SelectedForeground"  Color="#A9C6E6"/>
+    <SolidColorBrush x:Key="Theme.Menu.DisabledForeground"  Color="#8A99AD"/>
+    <SolidColorBrush x:Key="Theme.Menu.Separator"           Color="#334155"/>
+
+    <!-- ══ POPUP ═════════════════════════════════════════════════════════════
+         Popup yüzeyi Surface'ten bir kademe AÇIK: koyu temada üst üste binen
+         katmanlar yükseklik farkını gölgeyle değil, açıklıkla anlatır. -->
+    <SolidColorBrush x:Key="Theme.Popup.Background"         Color="#263348"/>
+    <SolidColorBrush x:Key="Theme.Popup.Foreground"         Color="#F1F5F9"/>
+    <SolidColorBrush x:Key="Theme.Popup.Border"             Color="#475569"/>
+
+    <!-- ══ INPUT ek rolleri ══════════════════════════════════════════════════ -->
+    <SolidColorBrush x:Key="Theme.Input.Placeholder"          Color="#94A3B8"/>
+    <SolidColorBrush x:Key="Theme.Input.DisabledBackground"   Color="#1A2436"/>
+    <SolidColorBrush x:Key="Theme.Input.DisabledForeground"   Color="#9AA8BC"/>
+    <SolidColorBrush x:Key="Theme.Input.ReadOnlyBackground"   Color="#1A2436"/>
+    <SolidColorBrush x:Key="Theme.Input.SelectionBackground"  Color="#2E5F9F"/>
+    <SolidColorBrush x:Key="Theme.Input.SelectionForeground"  Color="#F1F5F9"/>
+
+    <!-- ══ COMBOBOX ══════════════════════════════════════════════════════════ -->
+    <SolidColorBrush x:Key="Theme.ComboBox.DropdownBackground"     Color="#263348"/>
+    <SolidColorBrush x:Key="Theme.ComboBox.DropdownForeground"     Color="#F1F5F9"/>
+    <SolidColorBrush x:Key="Theme.ComboBox.ItemHoverBackground"    Color="#334155"/>
+    <SolidColorBrush x:Key="Theme.ComboBox.ItemHoverForeground"    Color="#F1F5F9"/>
+    <SolidColorBrush x:Key="Theme.ComboBox.ItemSelectedBackground" Color="#1E3A5F"/>
+    <SolidColorBrush x:Key="Theme.ComboBox.ItemSelectedForeground" Color="#BFDBFE"/>
+
+    <!-- ══ NÖTR BUTON ════════════════════════════════════════════════════════ -->
+    <SolidColorBrush x:Key="Theme.Button.Background"         Color="#334155"/>
+    <SolidColorBrush x:Key="Theme.Button.Foreground"         Color="#F1F5F9"/>
+    <SolidColorBrush x:Key="Theme.Button.Border"             Color="#475569"/>
+    <SolidColorBrush x:Key="Theme.Button.HoverBackground"    Color="#3F5069"/>
+    <SolidColorBrush x:Key="Theme.Button.PressedBackground"  Color="#4A5D78"/>
+    <SolidColorBrush x:Key="Theme.Button.DisabledBackground" Color="#263348"/>
+    <SolidColorBrush x:Key="Theme.Button.DisabledForeground" Color="#8A99AD"/>
+    <SolidColorBrush x:Key="Theme.Button.DisabledBorder"     Color="#334155"/>
+
+    <!-- ══ TOOLTIP ═══════════════════════════════════════════════════════════ -->
+    <SolidColorBrush x:Key="Theme.ToolTip.Background"        Color="#263348"/>
+    <SolidColorBrush x:Key="Theme.ToolTip.Foreground"        Color="#F1F5F9"/>
+    <SolidColorBrush x:Key="Theme.ToolTip.Border"            Color="#475569"/>
+
+    <!-- ══ KAYDIRMA ÇUBUĞU ═══════════════════════════════════════════════════ -->
+    <SolidColorBrush x:Key="Theme.ScrollBar.Track"           Color="#1A2436"/>
+    <SolidColorBrush x:Key="Theme.ScrollBar.Thumb"           Color="#475569"/>
+    <SolidColorBrush x:Key="Theme.ScrollBar.ThumbHover"      Color="#64748B"/>
+
+    <!-- ══ RAPOR ÖNİZLEME / BASKI KATMANI ════════════════════════════════════
+         AÇIK TEMAYLA BİREBİR AYNI DEĞERLER. Kasıtlı tekrar: baskı katmanı
+         temadan bağımsızdır, iki sözlükte de aynı kâğıdı tanımlar.
+         Parite testi bu blokta yalnızca anahtar değil DEĞER eşitliği de arar. -->
+    <SolidColorBrush x:Key="Theme.PrintPreview.PaperBackground"    Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Theme.PrintPreview.Text"               Color="#111827"/>
+    <SolidColorBrush x:Key="Theme.PrintPreview.MutedText"          Color="#4B5563"/>
+    <SolidColorBrush x:Key="Theme.PrintPreview.Border"             Color="#D1D5DB"/>
+    <SolidColorBrush x:Key="Theme.PrintPreview.HeaderBackground"   Color="#F3F4F6"/>
+    <SolidColorBrush x:Key="Theme.PrintPreview.AltRow"             Color="#F9FAFB"/>
+    <SolidColorBrush x:Key="Theme.PrintPreview.SelectedBackground" Color="#DBEAFE"/>
+    <SolidColorBrush x:Key="Theme.PrintPreview.SelectedText"       Color="#111827"/>
+    <SolidColorBrush x:Key="Theme.PrintPreview.Positive"           Color="#14532D"/>
+    <SolidColorBrush x:Key="Theme.PrintPreview.Negative"           Color="#7F1D1D"/>
 
     <!-- ── Sistem: DataGrid seçim rengi override (koyu tema) ─────────────────── -->
     <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
@@ -111,5 +201,19 @@
                      Color="#1E3A5F"/>
     <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}"
                      Color="#F1F5F9"/>
+
+    <!-- ── Sistem: geri kalan WPF varsayılan şablonları ───────────────────────
+         Kendi şablonunu yazmadığımız kontroller bu anahtarlara bakar. Koyu
+         temada override edilmezlerse Windows'un beyaz/siyah sistem renkleri
+         gelir ve açık zemin üstünde açık metin oluşur (Calendar'da olan buydu). -->
+    <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}"      Color="#1E293B"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.WindowTextBrushKey}"  Color="#F1F5F9"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}"     Color="#263348"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="#F1F5F9"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.GrayTextBrushKey}"    Color="#8A99AD"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.MenuBrushKey}"        Color="#263348"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.MenuTextBrushKey}"    Color="#F1F5F9"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.InfoBrushKey}"        Color="#263348"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.InfoTextBrushKey}"    Color="#F1F5F9"/>
 
 </ResourceDictionary>

@@ -20,9 +20,9 @@
     <SolidColorBrush x:Key="Theme.LabelText"             Color="#475569"/>
 
     <!-- ── Devre dışı ─────────────────────────────────────────────────────────── -->
-    <!-- Beyaz metinle 4.6:1 (AA). Eski #94A3B8 + Opacity 0.7 kombinasyonu 2.1:1'e
-         düşüyordu — devre dışı buton yazısı okunmuyordu. -->
-    <SolidColorBrush x:Key="Theme.DisabledBackground"    Color="#64748B"/>
+    <!-- Beyaz metinle 5.26:1 (AA). Eski #94A3B8 + Opacity 0.7 kombinasyonu 2.1:1'e,
+         Faz B'deki #64748B ise 4.34:1'e düşüyordu — ikisi de AA'nın altındaydı. -->
+    <SolidColorBrush x:Key="Theme.DisabledBackground"    Color="#616D7D"/>
 
     <!-- ── Kenarlık / Input ───────────────────────────────────────────────────── -->
     <SolidColorBrush x:Key="Theme.Border"                Color="#E2E8F0"/>
@@ -78,6 +78,15 @@
     <SolidColorBrush x:Key="Theme.Danger.Border"           Color="#FECDD3"/>
     <SolidColorBrush x:Key="Theme.Danger.Text"             Color="#991B1B"/>
 
+    <!-- Kritik — Danger'dan bir kademe yukarısı. Sistem log seviyeleri dört
+         basamaklıdır (Info < Warning < Error < Critical); Faz B'de Critical'ın
+         kendi rol seti yoktu ve Error ile aynı görünüyordu.
+         Tek dolu (solid) seviye budur: dolgu üzerinde beyaz metin 5.6:1. -->
+    <SolidColorBrush x:Key="Theme.Critical.Background"       Color="#FEE2E2"/>
+    <SolidColorBrush x:Key="Theme.Critical.BackgroundStrong" Color="#C62828"/>
+    <SolidColorBrush x:Key="Theme.Critical.Border"           Color="#991B1B"/>
+    <SolidColorBrush x:Key="Theme.Critical.Text"             Color="#FFFFFF"/>
+
     <!-- Mor vurgu — bildirim/rehber gibi "ikincil bilgi" şeritleri -->
     <SolidColorBrush x:Key="Theme.Accent.Background"       Color="#F5F3FF"/>
     <SolidColorBrush x:Key="Theme.Accent.BackgroundStrong" Color="#EDE9FE"/>
@@ -101,11 +110,18 @@
     <SolidColorBrush x:Key="Theme.DangerHover"           Color="#B71C1C"/>
     <SolidColorBrush x:Key="Theme.DangerPressed"         Color="#7F1010"/>
 
-    <!-- ── Navigasyon şeridi (Kargo Dashboard) ────────────────────────────── -->
+    <!-- ── Navigasyon şeridi (Kargo Dashboard) ──────────────────────────────
+         Navigasyon şeridi her iki temada da KOYU kalır: marka bandıdır, yüzey
+         değildir. Bu yüzden metni sabit açık uçtan gelir. -->
     <SolidColorBrush x:Key="Theme.Nav.Background"        Color="#1E3A5F"/>
     <SolidColorBrush x:Key="Theme.Nav.ItemBackground"    Color="#2E5F9F"/>
     <SolidColorBrush x:Key="Theme.Nav.ItemBorder"        Color="#3B7BC8"/>
     <SolidColorBrush x:Key="Theme.Nav.Foreground"        Color="White"/>
+    <!-- Beyaz metinle 5.45:1. Eski #3B7BC8 4.33 veriyordu — AA'nın altında. -->
+    <SolidColorBrush x:Key="Theme.Nav.HoverBackground"   Color="#2F6BB0"/>
+    <SolidColorBrush x:Key="Theme.Nav.HoverForeground"   Color="White"/>
+    <SolidColorBrush x:Key="Theme.Nav.ActiveBackground"  Color="#5391D6"/>
+    <SolidColorBrush x:Key="Theme.Nav.ActiveForeground"  Color="#0B1B2E"/>
 
     <!-- ── Gölge ──────────────────────────────────────────────────────────────
          DropShadowEffect.Color bir Brush değil Color alır; bu yüzden fırça değil
@@ -118,6 +134,96 @@
     <!-- SurfaceSubtle: salt okunur alan, devre dışı input zemini -->
     <SolidColorBrush x:Key="Theme.SurfaceSubtle"         Color="#F8FAFC"/>
 
+    <!-- ══ MENÜ ══════════════════════════════════════════════════════════════
+         WPF'in varsayılan MenuItem stili Foreground'u #212121'e SABİTLER (stil
+         setter'ı, miras değil). Koyu temada menü zemini koyulaşırken metin koyu
+         kalıyor ve "Yönetim / Ayarlar / Yardım" görünmez oluyordu.
+         Menü artık kendi rol setini kullanır; şablonlar Controls.xaml'de. -->
+    <SolidColorBrush x:Key="Theme.Menu.Background"          Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Theme.Menu.Foreground"          Color="#1A202C"/>
+    <SolidColorBrush x:Key="Theme.Menu.HoverBackground"     Color="#E2E8F0"/>
+    <SolidColorBrush x:Key="Theme.Menu.HoverForeground"     Color="#1A202C"/>
+    <SolidColorBrush x:Key="Theme.Menu.SelectedBackground"  Color="#DBEAFE"/>
+    <SolidColorBrush x:Key="Theme.Menu.SelectedForeground"  Color="#1E40AF"/>
+    <SolidColorBrush x:Key="Theme.Menu.DisabledForeground"  Color="#6B7688"/>
+    <SolidColorBrush x:Key="Theme.Menu.Separator"           Color="#E2E8F0"/>
+
+    <!-- ══ POPUP ═════════════════════════════════════════════════════════════
+         Popup/ContextMenu ayrı bir visual tree'de yaşar; pencerenin Background
+         ve Foreground'unu MİRAS ALMAZ. Kendi zemin/metin rolü olmak zorunda. -->
+    <SolidColorBrush x:Key="Theme.Popup.Background"         Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Theme.Popup.Foreground"         Color="#1A202C"/>
+    <SolidColorBrush x:Key="Theme.Popup.Border"             Color="#CBD5E1"/>
+
+    <!-- ══ INPUT ek rolleri ══════════════════════════════════════════════════
+         Zemin/kenarlık için mevcut Theme.InputBackground / InputBorder /
+         InputBorderFocus kullanılmaya devam eder; aşağıdakiler Faz B'de hiç
+         tanımlanmamış olan durumlardır. Seçim rengi tanımlı olmadığı için
+         TextBox'ta yazılan metin seçilince sistem mavisi + koyu metin
+         çakışıyor ve metin kayboluyordu. -->
+    <SolidColorBrush x:Key="Theme.Input.Placeholder"          Color="#64748B"/>
+    <SolidColorBrush x:Key="Theme.Input.DisabledBackground"   Color="#F1F5F9"/>
+    <SolidColorBrush x:Key="Theme.Input.DisabledForeground"   Color="#596579"/>
+    <SolidColorBrush x:Key="Theme.Input.ReadOnlyBackground"   Color="#F8FAFC"/>
+    <SolidColorBrush x:Key="Theme.Input.SelectionBackground"  Color="#1E3A5F"/>
+    <SolidColorBrush x:Key="Theme.Input.SelectionForeground"  Color="#FFFFFF"/>
+
+    <!-- ══ COMBOBOX ══════════════════════════════════════════════════════════
+         Kapalı kutu ile açılır liste AYRI yüzeylerdir. WPF varsayılanında
+         açılır liste SystemColors.WindowBrush (beyaz) iken item metni
+         ComboBox'tan miras alınıyordu → koyu temada beyaz üstüne beyaz. -->
+    <SolidColorBrush x:Key="Theme.ComboBox.DropdownBackground"     Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Theme.ComboBox.DropdownForeground"     Color="#1A202C"/>
+    <SolidColorBrush x:Key="Theme.ComboBox.ItemHoverBackground"    Color="#EFF6FF"/>
+    <SolidColorBrush x:Key="Theme.ComboBox.ItemHoverForeground"    Color="#1A202C"/>
+    <SolidColorBrush x:Key="Theme.ComboBox.ItemSelectedBackground" Color="#DBEAFE"/>
+    <SolidColorBrush x:Key="Theme.ComboBox.ItemSelectedForeground" Color="#1E40AF"/>
+
+    <!-- ══ NÖTR BUTON ════════════════════════════════════════════════════════
+         Uygulamadaki 149 butonun ~50'si Primary/Secondary/Danger stillerinden
+         hiçbirini kullanmıyor; WPF varsayılan şablonuna düşüyorlardı. O şablon
+         sabit açık gri gradyan + koyu metindir ve tema değişimini görmez. -->
+    <SolidColorBrush x:Key="Theme.Button.Background"         Color="#F1F5F9"/>
+    <SolidColorBrush x:Key="Theme.Button.Foreground"         Color="#1A202C"/>
+    <SolidColorBrush x:Key="Theme.Button.Border"             Color="#CBD5E1"/>
+    <SolidColorBrush x:Key="Theme.Button.HoverBackground"    Color="#E2E8F0"/>
+    <SolidColorBrush x:Key="Theme.Button.PressedBackground"  Color="#CBD5E1"/>
+    <SolidColorBrush x:Key="Theme.Button.DisabledBackground" Color="#F1F5F9"/>
+    <!-- Devre dışı metin WCAG'den muaftır; yine de en az 3:1 hedeflenir (4.19:1) -->
+    <SolidColorBrush x:Key="Theme.Button.DisabledForeground" Color="#6B7688"/>
+    <SolidColorBrush x:Key="Theme.Button.DisabledBorder"     Color="#E2E8F0"/>
+
+    <!-- ══ TOOLTIP ═══════════════════════════════════════════════════════════ -->
+    <SolidColorBrush x:Key="Theme.ToolTip.Background"        Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Theme.ToolTip.Foreground"        Color="#1A202C"/>
+    <SolidColorBrush x:Key="Theme.ToolTip.Border"            Color="#CBD5E1"/>
+
+    <!-- ══ KAYDIRMA ÇUBUĞU ═══════════════════════════════════════════════════ -->
+    <SolidColorBrush x:Key="Theme.ScrollBar.Track"           Color="#F1F5F9"/>
+    <SolidColorBrush x:Key="Theme.ScrollBar.Thumb"           Color="#CBD5E1"/>
+    <SolidColorBrush x:Key="Theme.ScrollBar.ThumbHover"      Color="#94A3B8"/>
+
+    <!-- ══ RAPOR ÖNİZLEME / BASKI KATMANI ════════════════════════════════════
+         BU DEĞERLER İKİ TEMADA DA AYNIDIR — bilinçli olarak.
+         Yazdırılacak kâğıt ve üzerindeki metin, ekran temasından bağımsızdır:
+         çıktı her zaman beyaz kâğıda siyah mürekkeple basılır. Uygulama teması
+         koyuya dönünce önizlemenin de kararması, kullanıcıya yanlış bir baskı
+         çıktısı vaat eder. Bu yüzden rapor gövdesi Theme.Surface / Theme.Text
+         gibi dinamik token'lara BAĞLANMAZ.
+         PDF/Excel üretimi zaten kendi sabit renklerini kullanır; bu blok yalnızca
+         önizlemenin o çıktıyla aynı görünmesini sağlar. -->
+    <SolidColorBrush x:Key="Theme.PrintPreview.PaperBackground"    Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Theme.PrintPreview.Text"               Color="#111827"/>
+    <SolidColorBrush x:Key="Theme.PrintPreview.MutedText"          Color="#4B5563"/>
+    <SolidColorBrush x:Key="Theme.PrintPreview.Border"             Color="#D1D5DB"/>
+    <SolidColorBrush x:Key="Theme.PrintPreview.HeaderBackground"   Color="#F3F4F6"/>
+    <SolidColorBrush x:Key="Theme.PrintPreview.AltRow"             Color="#F9FAFB"/>
+    <SolidColorBrush x:Key="Theme.PrintPreview.SelectedBackground" Color="#DBEAFE"/>
+    <SolidColorBrush x:Key="Theme.PrintPreview.SelectedText"       Color="#111827"/>
+    <!-- Baskıda okunan koyu yeşil/kırmızı — ekrandaki Theme.Success/Danger DEĞİL -->
+    <SolidColorBrush x:Key="Theme.PrintPreview.Positive"           Color="#14532D"/>
+    <SolidColorBrush x:Key="Theme.PrintPreview.Negative"           Color="#7F1D1D"/>
+
     <!-- ── Sistem: DataGrid seçim rengi override ──────────────────────────────── -->
     <!-- WPF sistem renkleri DynamicResource yerine statik x:Static key ile override edilir -->
     <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
@@ -128,5 +234,20 @@
                      Color="#DBEAFE"/>
     <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}"
                      Color="#1A202C"/>
+
+    <!-- ── Sistem: geri kalan WPF varsayılan şablonları ───────────────────────
+         Kendi şablonunu yazmadığımız kontroller (Calendar, DatePicker takvimi,
+         ContextMenu iç parçaları, ScrollViewer köşesi) bu anahtarlara bakar.
+         Açık temada değerler zaten Windows varsayılanıyla aynı — bu blok
+         DarkTheme.xaml'deki karşılığının parite eşidir. -->
+    <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}"      Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.WindowTextBrushKey}"  Color="#1A202C"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}"     Color="#F1F5F9"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="#1A202C"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.GrayTextBrushKey}"    Color="#6B7688"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.MenuBrushKey}"        Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.MenuTextBrushKey}"    Color="#1A202C"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.InfoBrushKey}"        Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="{x:Static SystemColors.InfoTextBrushKey}"    Color="#1A202C"/>
 
 </ResourceDictionary>

@@ -17,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YonetimFinansalIslemTakipSistemi.Tests", "tests\YonetimFinansalIslemTakipSistemi.Tests\YonetimFinansalIslemTakipSistemi.Tests.csproj", "{75E63ED2-1C94-4B98-AF5F-703E678B0AD8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YonetimFinansalIslemTakipSistemi.UiTests", "tests\YonetimFinansalIslemTakipSistemi.UiTests\YonetimFinansalIslemTakipSistemi.UiTests.csproj", "{1EB96900-89BC-44D5-95D9-3C79CED71A5A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +89,18 @@ Global
 		{75E63ED2-1C94-4B98-AF5F-703E678B0AD8}.Release|x64.Build.0 = Release|Any CPU
 		{75E63ED2-1C94-4B98-AF5F-703E678B0AD8}.Release|x86.ActiveCfg = Release|Any CPU
 		{75E63ED2-1C94-4B98-AF5F-703E678B0AD8}.Release|x86.Build.0 = Release|Any CPU
+		{1EB96900-89BC-44D5-95D9-3C79CED71A5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1EB96900-89BC-44D5-95D9-3C79CED71A5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1EB96900-89BC-44D5-95D9-3C79CED71A5A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1EB96900-89BC-44D5-95D9-3C79CED71A5A}.Debug|x64.Build.0 = Debug|Any CPU
+		{1EB96900-89BC-44D5-95D9-3C79CED71A5A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1EB96900-89BC-44D5-95D9-3C79CED71A5A}.Debug|x86.Build.0 = Debug|Any CPU
+		{1EB96900-89BC-44D5-95D9-3C79CED71A5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1EB96900-89BC-44D5-95D9-3C79CED71A5A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1EB96900-89BC-44D5-95D9-3C79CED71A5A}.Release|x64.ActiveCfg = Release|Any CPU
+		{1EB96900-89BC-44D5-95D9-3C79CED71A5A}.Release|x64.Build.0 = Release|Any CPU
+		{1EB96900-89BC-44D5-95D9-3C79CED71A5A}.Release|x86.ActiveCfg = Release|Any CPU
+		{1EB96900-89BC-44D5-95D9-3C79CED71A5A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -97,5 +111,6 @@ Global
 		{50D438F3-6DE2-432A-9E1F-967C6E34B81D} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{DC2F3853-8E03-4BEE-A313-FC9DC2DA7B31} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{75E63ED2-1C94-4B98-AF5F-703E678B0AD8} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{1EB96900-89BC-44D5-95D9-3C79CED71A5A} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal

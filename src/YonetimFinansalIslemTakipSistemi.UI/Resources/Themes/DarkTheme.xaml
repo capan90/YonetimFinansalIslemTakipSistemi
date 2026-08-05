@@ -94,6 +94,10 @@
     <SolidColorBrush x:Key="Theme.Nav.ItemBorder"        Color="#2E5F9F"/>
     <SolidColorBrush x:Key="Theme.Nav.Foreground"        Color="#F1F5F9"/>
 
+    <!-- ── Gölge ──────────────────────────────────────────────────────────────
+         Koyu temada açık gri gölge "hale" gibi görünür; siyaha çekildi. -->
+    <Color x:Key="Theme.ShadowColor">#000000</Color>
+
     <!-- ── Yüzey kademeleri ───────────────────────────────────────────────── -->
     <SolidColorBrush x:Key="Theme.SurfaceAlt"            Color="#263348"/>
     <SolidColorBrush x:Key="Theme.SurfaceSubtle"         Color="#1A2436"/>

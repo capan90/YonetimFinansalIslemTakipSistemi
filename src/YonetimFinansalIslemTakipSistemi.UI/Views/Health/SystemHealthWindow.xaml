@@ -78,18 +78,18 @@
                             <TextBlock x:Name="StatusLabel"
                                        Style="{StaticResource Text.Body}"
                                        FontWeight="Bold"
-                                       Foreground="White"
+                                       Foreground="{DynamicResource Theme.Surface}"
                                        Text="Kontrol ediliyor..."/>
                             <TextBlock x:Name="CheckedAtLabel"
                                        Style="{StaticResource Text.Caption}"
-                                       Foreground="White"
+                                       Foreground="{DynamicResource Theme.Surface}"
                                        Opacity="0.9"
                                        Margin="0,2,0,0"/>
                         </StackPanel>
                         <TextBlock Grid.Column="1"
                                    x:Name="OverallStatusIcon"
                                    Style="{StaticResource Text.Display}"
-                                   Foreground="White"
+                                   Foreground="{DynamicResource Theme.Surface}"
                                    Opacity="0.7"
                                    VerticalAlignment="Center"
                                    Text="●"/>

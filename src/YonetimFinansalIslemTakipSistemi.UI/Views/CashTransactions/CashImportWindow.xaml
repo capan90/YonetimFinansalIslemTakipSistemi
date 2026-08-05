@@ -66,23 +66,23 @@
                       AutoGenerateColumns="False" IsReadOnly="False"
                       CanUserAddRows="False" CanUserDeleteRows="False"
                       SelectionMode="Single"                      GridLinesVisibility="Horizontal"
-                      HorizontalGridLinesBrush="#E2E8F0"
-                      BorderBrush="#E2E8F0" BorderThickness="1"
+                      HorizontalGridLinesBrush="{DynamicResource Theme.Border}"
+                      BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1"
                       HeadersVisibility="Column">
                 <DataGrid.RowStyle>
                     <Style TargetType="DataGridRow">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding StatusText}" Value="Geçerli">
-                                <Setter Property="Background" Value="#F1F8E9"/>
+                                <Setter Property="Background" Value="{DynamicResource Theme.Success.Background}"/>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding StatusText}" Value="Uyarılı">
-                                <Setter Property="Background" Value="#FFF8E1"/>
+                                <Setter Property="Background" Value="{DynamicResource Theme.Warning.Background}"/>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding StatusText}" Value="Hatalı">
-                                <Setter Property="Background" Value="#FDECEA"/>
+                                <Setter Property="Background" Value="{DynamicResource Theme.Danger.Background}"/>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding StatusText}" Value="Mükerrer">
-                                <Setter Property="Background" Value="#FFF3E0"/>
+                                <Setter Property="Background" Value="{DynamicResource Theme.Warning.Background}"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -150,11 +150,11 @@
         <!-- ADIM 4: Sonuç -->
         <Border x:Name="StepSummaryPanel" Visibility="Collapsed">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="560">
-                <Border Background="#E8F5E9" BorderBrush="#81C784" BorderThickness="1"
+                <Border Background="{DynamicResource Theme.Success.Background}" BorderBrush="{DynamicResource Theme.Success.Border}" BorderThickness="1"
                         CornerRadius="6" Padding="16" Margin="0,0,0,14">
                     <StackPanel>
                         <TextBlock Style="{StaticResource Text.H2}" FontWeight="SemiBold"
-                                   Foreground="#2E7D32" Text="İçe aktarma tamamlandı"/>
+                                   Foreground="{DynamicResource Theme.Success}" Text="İçe aktarma tamamlandı"/>
                         <TextBlock x:Name="SummaryMainText" Style="{StaticResource Text.Body}" Margin="0,8,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </Border>

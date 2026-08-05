@@ -52,10 +52,10 @@
                   SelectionMode="Single"
                   CanUserAddRows="False"
                   GridLinesVisibility="Horizontal"
-                  HorizontalGridLinesBrush="#E2E8F0"
-                  AlternatingRowBackground="#F8FAFC"
-                  RowBackground="White"
-                  BorderBrush="#E2E8F0" BorderThickness="1"
+                  HorizontalGridLinesBrush="{DynamicResource Theme.Border}"
+                  AlternatingRowBackground="{DynamicResource Theme.DataGridAltRow}"
+                  RowBackground="{DynamicResource Theme.DataGridRow}"
+                  BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1"
                   MouseDoubleClick="MainGrid_MouseDoubleClick">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Firma Adı"    Binding="{Binding CompanyName}"   Width="200"

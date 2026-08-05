@@ -24,7 +24,7 @@
                     ToolTip="Rehbere yeni mail kişisi ekle"/>
             <TextBox x:Name="SearchBox"
                      Height="26" VerticalContentAlignment="Center"
-                     Padding="4,2" BorderThickness="1" BorderBrush="#CBD5E1"
+                     Padding="4,2" BorderThickness="1" BorderBrush="{DynamicResource Theme.InputBorder}"
                      TextChanged="SearchBox_TextChanged"
                      ToolTip="Ad, firma veya e-posta ile arayın"/>
         </DockPanel>
@@ -34,7 +34,7 @@
                     HorizontalAlignment="Right" Margin="0,10,0,0">
             <TextBlock x:Name="SelectionCountBlock"
                        VerticalAlignment="Center" Margin="0,0,12,0"
-                       Style="{StaticResource Text.Caption}" Foreground="#64748B"/>
+                       Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.MutedText}"/>
             <Button Content="Ekle" Width="90" Height="30"
                     Style="{StaticResource PrimaryButton}"
                     IsDefault="True" Click="ConfirmButton_Click"/>
@@ -44,7 +44,7 @@
         </StackPanel>
 
         <!-- Kişi listesi: çoklu seçim (checkbox) -->
-        <Border BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="4" Padding="4">
+        <Border BorderBrush="{DynamicResource Theme.InputBorder}" BorderThickness="1" CornerRadius="4" Padding="4">
             <ListBox x:Name="ContactListBox"
                      BorderThickness="0"
                      ScrollViewer.VerticalScrollBarVisibility="Auto"
@@ -60,13 +60,13 @@
                                     <TextBlock Text="{Binding Display}" Style="{StaticResource Text.Caption}"/>
                                     <!-- Varsayılan CC rozeti: bu kişinin her mailde CC'ye
                                          otomatik geldiğini seçim anında görünür kılar -->
-                                    <Border Background="#EDE9FE" BorderBrush="#DDD6FE" BorderThickness="1"
+                                    <Border Background="{DynamicResource Theme.Accent.BackgroundStrong}" BorderBrush="{DynamicResource Theme.Accent.Border}" BorderThickness="1"
                                             CornerRadius="8" Padding="5,0" Margin="6,0,0,0"
                                             Visibility="{Binding DefaultCcBadgeVisibility}">
-                                        <TextBlock Text="Varsayılan CC" Style="{StaticResource Text.Caption}" Foreground="#6D28D9"/>
+                                        <TextBlock Text="Varsayılan CC" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Accent.Text}"/>
                                     </Border>
                                 </StackPanel>
-                                <TextBlock Text="{Binding Email}" Style="{StaticResource Text.Caption}" Foreground="#64748B"/>
+                                <TextBlock Text="{Binding Email}" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.MutedText}"/>
                             </StackPanel>
                         </CheckBox>
                     </DataTemplate>

@@ -9,34 +9,34 @@
         ResizeMode="NoResize"
         Icon="pack://application:,,,/Assets/AppIcon.ico">
 
-    <Border Background="White" Padding="24,20">
+    <Border Background="{DynamicResource Theme.Surface}" Padding="24,20">
         <StackPanel>
 
             <!-- Form alanları -->
-            <TextBlock Text="İşlem Tarihi" Style="{StaticResource Text.Caption}" Foreground="#475569" Margin="0,0,0,3"/>
+            <TextBlock Text="İşlem Tarihi" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.LabelText}" Margin="0,0,0,3"/>
             <DatePicker SelectedDate="{Binding TransactionDate, Mode=TwoWay}"
                         Margin="0,0,0,14"/>
 
-            <TextBlock Text="İşlem Türü" Style="{StaticResource Text.Caption}" Foreground="#475569" Margin="0,0,0,3"/>
+            <TextBlock Text="İşlem Türü" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.LabelText}" Margin="0,0,0,3"/>
             <ComboBox ItemsSource="{Binding TransactionTypeOptions}"
                       SelectedItem="{Binding SelectedTransactionType, Mode=TwoWay}"
                       Height="30" Margin="0,0,0,14"/>
 
-            <TextBlock Text="Para Birimi" Style="{StaticResource Text.Caption}" Foreground="#475569" Margin="0,0,0,3"/>
+            <TextBlock Text="Para Birimi" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.LabelText}" Margin="0,0,0,3"/>
             <ComboBox ItemsSource="{Binding CurrencyTypeOptions}"
                       SelectedItem="{Binding SelectedCurrencyType, Mode=TwoWay}"
                       Height="30" Margin="0,0,0,14"/>
 
-            <TextBlock Text="Tutar" Style="{StaticResource Text.Caption}" Foreground="#475569" Margin="0,0,0,3"/>
+            <TextBlock Text="Tutar" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.LabelText}" Margin="0,0,0,3"/>
             <TextBox Text="{Binding AmountText, UpdateSourceTrigger=PropertyChanged}"
                      Margin="0,0,0,14"/>
 
-            <TextBlock Text="Açıklama" Style="{StaticResource Text.Caption}" Foreground="#475569" Margin="0,0,0,3"/>
+            <TextBlock Text="Açıklama" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.LabelText}" Margin="0,0,0,3"/>
             <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
                      Margin="0,0,0,16"/>
 
             <!-- Hata mesajı -->
-            <Border Background="#FFF5F5" BorderBrush="#FCA5A5" BorderThickness="1"
+            <Border Background="{DynamicResource Theme.Danger.Background}" BorderBrush="{DynamicResource Theme.Danger.Border}" BorderThickness="1"
                     CornerRadius="4" Padding="10,7" Margin="0,0,0,12">
                 <Border.Style>
                     <Style TargetType="Border">
@@ -52,7 +52,7 @@
                     </Style>
                 </Border.Style>
                 <TextBlock Text="{Binding ErrorMessage}"
-                           Foreground="#C62828"
+                           Foreground="{DynamicResource Theme.Danger}"
                            TextWrapping="Wrap"
                            Style="{StaticResource Text.Caption}"/>
             </Border>

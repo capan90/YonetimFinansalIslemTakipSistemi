@@ -17,16 +17,16 @@
         </Grid.RowDefinitions>
 
         <!-- Başlık bandı -->
-        <Border Grid.Row="0" Background="#5D6D7E">
+        <Border Grid.Row="0" Background="{DynamicResource Theme.LabelText}">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0">
                 <TextBlock Text="?"
                            Style="{StaticResource Text.Display}" FontWeight="Bold"
-                           Foreground="White"
+                           Foreground="{DynamicResource Theme.Surface}"
                            VerticalAlignment="Center"
                            Margin="0,0,12,0"/>
                 <TextBlock Text="{Binding HeaderTitle}"
                            Style="{StaticResource Text.Body}" FontWeight="SemiBold"
-                           Foreground="White"
+                           Foreground="{DynamicResource Theme.Surface}"
                            VerticalAlignment="Center"
                            TextWrapping="Wrap"/>
             </StackPanel>
@@ -38,13 +38,13 @@
                    TextWrapping="Wrap"
                    Margin="20,16,20,12"
                    Style="{StaticResource Text.Body}"
-                   Foreground="#222222"
+                   Foreground="{DynamicResource Theme.Text}"
                    LineHeight="20"/>
 
         <!-- Alt bölüm: Evet / Hayır -->
         <Border Grid.Row="2"
-                Background="#F5F5F5"
-                BorderBrush="#DDDDDD"
+                Background="{DynamicResource Theme.SurfaceAlt}"
+                BorderBrush="{DynamicResource Theme.Border}"
                 BorderThickness="0,1,0,0">
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Right"

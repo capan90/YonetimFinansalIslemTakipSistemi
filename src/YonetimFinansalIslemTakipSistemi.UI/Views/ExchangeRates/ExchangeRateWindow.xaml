@@ -138,7 +138,7 @@
                       IsReadOnly="True"
                       CanUserAddRows="False"
                       GridLinesVisibility="Horizontal"
-                      AlternatingRowBackground="#F5F5F5"
+                      AlternatingRowBackground="{DynamicResource Theme.SurfaceAlt}"
                       HeadersVisibility="Column">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Tarih"

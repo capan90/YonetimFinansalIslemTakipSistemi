@@ -38,9 +38,9 @@
 
         <!-- Bilgi şeridi: "Varsayılan CC" kolonunun ne işe yaradığını ekranda açıklar -->
         <Border DockPanel.Dock="Bottom"
-                Background="#F5F3FF" BorderBrush="#DDD6FE" BorderThickness="1"
+                Background="{DynamicResource Theme.Accent.Background}" BorderBrush="{DynamicResource Theme.Accent.Border}" BorderThickness="1"
                 CornerRadius="4" Padding="8,6" Margin="0,8,0,0">
-            <TextBlock Style="{StaticResource Text.Caption}" Foreground="#5B21B6" TextWrapping="Wrap"
+            <TextBlock Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Accent.Text}" TextWrapping="Wrap"
                        Text="ℹ  'Varsayılan CC' işaretli kişiler, kargo mail bildirimi ekranı açıldığında CC alanına otomatik eklenir."/>
         </Border>
 
@@ -54,10 +54,10 @@
                       SelectionMode="Single"
                       CanUserAddRows="False"
                       GridLinesVisibility="Horizontal"
-                      HorizontalGridLinesBrush="#E2E8F0"
-                      AlternatingRowBackground="#F8FAFC"
-                      RowBackground="White"
-                      BorderBrush="#E2E8F0" BorderThickness="1"
+                      HorizontalGridLinesBrush="{DynamicResource Theme.Border}"
+                      AlternatingRowBackground="{DynamicResource Theme.DataGridAltRow}"
+                      RowBackground="{DynamicResource Theme.DataGridRow}"
+                      BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1"
                       MouseDoubleClick="MainGrid_MouseDoubleClick">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Ad Soyad / Kayıt Adı" Binding="{Binding FullName}"    Width="200"

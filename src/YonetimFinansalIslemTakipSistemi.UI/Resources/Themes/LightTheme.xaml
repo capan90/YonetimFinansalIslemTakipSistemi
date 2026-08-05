@@ -107,6 +107,11 @@
     <SolidColorBrush x:Key="Theme.Nav.ItemBorder"        Color="#3B7BC8"/>
     <SolidColorBrush x:Key="Theme.Nav.Foreground"        Color="White"/>
 
+    <!-- ── Gölge ──────────────────────────────────────────────────────────────
+         DropShadowEffect.Color bir Brush değil Color alır; bu yüzden fırça değil
+         Color kaynağı olarak tanımlanır. DynamicResource yine çalışır. -->
+    <Color x:Key="Theme.ShadowColor">#CBD5E1</Color>
+
     <!-- ── Yüzey kademeleri ───────────────────────────────────────────────── -->
     <!-- SurfaceAlt: araç çubuğu / alt şerit gibi hafif ayrışan alanlar -->
     <SolidColorBrush x:Key="Theme.SurfaceAlt"            Color="#F1F5F9"/>

@@ -58,7 +58,7 @@
                           IsReadOnly="True"
                           CanUserAddRows="False"
                           GridLinesVisibility="Horizontal"
-                          AlternatingRowBackground="#F5F5F5"
+                          AlternatingRowBackground="{DynamicResource Theme.SurfaceAlt}"
                           HeadersVisibility="Column"
                           Margin="0,0,0,16">
                     <DataGrid.Columns>
@@ -68,7 +68,7 @@
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Right"/>
-                                    <Setter Property="Foreground" Value="#2E7D32"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource Theme.Success}"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -76,7 +76,7 @@
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Right"/>
-                                    <Setter Property="Foreground" Value="#C62828"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource Theme.Danger}"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -89,7 +89,7 @@
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Right"/>
-                                    <Setter Property="Foreground" Value="#2E7D32"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource Theme.Success}"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -97,7 +97,7 @@
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Right"/>
-                                    <Setter Property="Foreground" Value="#C62828"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource Theme.Danger}"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -110,7 +110,7 @@
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Right"/>
-                                    <Setter Property="Foreground" Value="#2E7D32"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource Theme.Success}"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -118,7 +118,7 @@
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Right"/>
-                                    <Setter Property="Foreground" Value="#C62828"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource Theme.Danger}"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -140,7 +140,7 @@
                               IsReadOnly="True"
                               CanUserAddRows="False"
                               GridLinesVisibility="Horizontal"
-                              AlternatingRowBackground="#F5F5F5"
+                              AlternatingRowBackground="{DynamicResource Theme.SurfaceAlt}"
                               HeadersVisibility="Column"
                               Margin="0,0,0,8">
                         <DataGrid.Columns>
@@ -156,7 +156,7 @@
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="HorizontalAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="#2E7D32"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource Theme.Success}"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
@@ -164,7 +164,7 @@
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="HorizontalAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="#C62828"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource Theme.Danger}"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>

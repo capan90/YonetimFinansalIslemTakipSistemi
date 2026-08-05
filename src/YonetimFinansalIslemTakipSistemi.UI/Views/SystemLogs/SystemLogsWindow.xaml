@@ -12,35 +12,35 @@
 
         <!-- Özet kartlar -->
         <UniformGrid DockPanel.Dock="Top" Rows="1" Margin="0,0,0,10">
-            <Border Background="#FEE2E2" CornerRadius="6" Margin="0,0,6,0" Padding="12,8">
+            <Border Background="{DynamicResource Theme.Danger.BackgroundStrong}" CornerRadius="6" Margin="0,0,6,0" Padding="12,8">
                 <StackPanel>
-                    <TextBlock Text="Bugünkü Kritik" Style="{StaticResource Text.Caption}" Foreground="#991B1B"/>
-                    <TextBlock Text="{Binding TodayCriticalCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="#DC2626"/>
+                    <TextBlock Text="Bugünkü Kritik" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Danger.Text}"/>
+                    <TextBlock Text="{Binding TodayCriticalCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="{DynamicResource Theme.Danger}"/>
                 </StackPanel>
             </Border>
-            <Border Background="#FEF3C7" CornerRadius="6" Margin="0,0,6,0" Padding="12,8">
+            <Border Background="{DynamicResource Theme.Warning.Background}" CornerRadius="6" Margin="0,0,6,0" Padding="12,8">
                 <StackPanel>
-                    <TextBlock Text="Bugünkü Hata" Style="{StaticResource Text.Caption}" Foreground="#92400E"/>
-                    <TextBlock Text="{Binding TodayErrorCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="#D97706"/>
+                    <TextBlock Text="Bugünkü Hata" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Warning.Text}"/>
+                    <TextBlock Text="{Binding TodayErrorCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="{DynamicResource Theme.Warning}"/>
                 </StackPanel>
             </Border>
-            <Border Background="#FFF7ED" CornerRadius="6" Margin="0,0,6,0" Padding="12,8">
+            <Border Background="{DynamicResource Theme.Warning.Background}" CornerRadius="6" Margin="0,0,6,0" Padding="12,8">
                 <StackPanel>
-                    <TextBlock Text="Son 24h Uyarı" Style="{StaticResource Text.Caption}" Foreground="#9A3412"/>
-                    <TextBlock Text="{Binding Last24hWarningCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="#EA580C"/>
+                    <TextBlock Text="Son 24h Uyarı" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Warning.Text}"/>
+                    <TextBlock Text="{Binding Last24hWarningCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="{DynamicResource Theme.Warning.Text}"/>
                 </StackPanel>
             </Border>
-            <Border Background="#EFF6FF" CornerRadius="6" Padding="12,8">
+            <Border Background="{DynamicResource Theme.Info.Background}" CornerRadius="6" Padding="12,8">
                 <StackPanel>
-                    <TextBlock Text="Çözülmemiş Kritik" Style="{StaticResource Text.Caption}" Foreground="#1D4ED8"/>
-                    <TextBlock Text="{Binding OpenCriticalCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="#2563EB"/>
+                    <TextBlock Text="Çözülmemiş Kritik" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Info.Text}"/>
+                    <TextBlock Text="{Binding OpenCriticalCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="{DynamicResource Theme.Info.Text}"/>
                 </StackPanel>
             </Border>
         </UniformGrid>
 
         <!-- Filtre paneli -->
         <Border DockPanel.Dock="Top"
-                BorderBrush="#E2E8F0" BorderThickness="1"
+                BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1"
                 CornerRadius="4" Padding="10,8"
                 Margin="0,0,0,8">
             <WrapPanel Orientation="Horizontal">
@@ -90,7 +90,7 @@
 
         <!-- Sayfalama -->
         <Border DockPanel.Dock="Bottom"
-                BorderBrush="#E2E8F0" BorderThickness="0,1,0,0"
+                BorderBrush="{DynamicResource Theme.Border}" BorderThickness="0,1,0,0"
                 Padding="0,6,0,0" Margin="0,6,0,0">
             <DockPanel>
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
@@ -112,7 +112,7 @@
                   SelectedItem="{Binding Selected, Mode=TwoWay}"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
-                  AlternatingRowBackground="#F8FAFC"
+                  AlternatingRowBackground="{DynamicResource Theme.DataGridAltRow}"
                   MouseDoubleClick="MainGrid_MouseDoubleClick">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Tarih"     Binding="{Binding CreatedAt, StringFormat=dd.MM.yyyy HH:mm:ss}" Width="140"

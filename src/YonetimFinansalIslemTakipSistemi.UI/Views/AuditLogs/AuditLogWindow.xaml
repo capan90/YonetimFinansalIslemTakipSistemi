@@ -76,7 +76,7 @@
                   CanUserAddRows="False"
                   SelectionMode="Single"
                   GridLinesVisibility="Horizontal"
-                  AlternatingRowBackground="#F8F8F8"
+                  AlternatingRowBackground="{DynamicResource Theme.SurfaceSubtle}"
                   HeadersVisibility="Column">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Zaman"

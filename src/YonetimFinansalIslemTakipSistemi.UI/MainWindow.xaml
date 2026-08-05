@@ -29,10 +29,10 @@
         <KeyBinding Key="F5"                      Command="{Binding FilterCommand}"/>
     </Window.InputBindings>
 
-    <DockPanel Background="#F5F7FA">
+    <DockPanel Background="{DynamicResource Theme.SurfaceSubtle}">
 
         <!-- Menü çubuğu -->
-        <Menu DockPanel.Dock="Top" Background="White" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1">
+        <Menu DockPanel.Dock="Top" Background="{DynamicResource Theme.Surface}" BorderBrush="{DynamicResource Theme.Border}" BorderThickness="0,0,0,1">
             <MenuItem Header="Yönetim">
                 <!-- Sadece iş/yönetim işlevleri; teknik işlemler Ayarlar altına taşındı -->
                 <MenuItem x:Name="MenuItemKullanicilar"
@@ -142,10 +142,10 @@
             <!-- Bakiye Kartları — para birimi başına ayrı kart, renk bağlaması converter ile -->
             <UniformGrid DockPanel.Dock="Top" Columns="3" Margin="0,0,0,10">
 
-                <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1"
+                <Border Background="{DynamicResource Theme.Surface}" BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1"
                         CornerRadius="6" Margin="0,0,6,0" Padding="14,10">
                     <Border.Effect>
-                        <DropShadowEffect Color="#CBD5E1" Direction="270" ShadowDepth="1"
+                        <DropShadowEffect Color="{DynamicResource Theme.ShadowColor}" Direction="270" ShadowDepth="1"
                                           BlurRadius="6" Opacity="0.3"/>
                     </Border.Effect>
                     <StackPanel>
@@ -158,10 +158,10 @@
                     </StackPanel>
                 </Border>
 
-                <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1"
+                <Border Background="{DynamicResource Theme.Surface}" BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1"
                         CornerRadius="6" Margin="3,0,3,0" Padding="14,10">
                     <Border.Effect>
-                        <DropShadowEffect Color="#CBD5E1" Direction="270" ShadowDepth="1"
+                        <DropShadowEffect Color="{DynamicResource Theme.ShadowColor}" Direction="270" ShadowDepth="1"
                                           BlurRadius="6" Opacity="0.3"/>
                     </Border.Effect>
                     <StackPanel>
@@ -174,10 +174,10 @@
                     </StackPanel>
                 </Border>
 
-                <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1"
+                <Border Background="{DynamicResource Theme.Surface}" BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1"
                         CornerRadius="6" Margin="6,0,0,0" Padding="14,10">
                     <Border.Effect>
-                        <DropShadowEffect Color="#CBD5E1" Direction="270" ShadowDepth="1"
+                        <DropShadowEffect Color="{DynamicResource Theme.ShadowColor}" Direction="270" ShadowDepth="1"
                                           BlurRadius="6" Opacity="0.3"/>
                     </Border.Effect>
                     <StackPanel>
@@ -199,7 +199,7 @@
                     <TextBlock x:Name="LoggedInUserText"
                                VerticalAlignment="Center"
                                Margin="0,0,10,0"
-                               Foreground="#475569"
+                               Foreground="{DynamicResource Theme.LabelText}"
                                Style="{StaticResource Text.Body}"/>
                     <Button Content="Çıkış Yap"
                             Width="90"
@@ -247,36 +247,36 @@
 
             <!-- Filtre Paneli -->
             <Border DockPanel.Dock="Top"
-                    Background="White" BorderBrush="#E2E8F0" BorderThickness="1"
+                    Background="{DynamicResource Theme.Surface}" BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1"
                     CornerRadius="6" Padding="10,8" Margin="0,0,0,8">
                 <WrapPanel Orientation="Horizontal" ItemHeight="30">
 
-                    <Label Content="Başlangıç:" VerticalAlignment="Center" Foreground="#475569"/>
+                    <Label Content="Başlangıç:" VerticalAlignment="Center" Foreground="{DynamicResource Theme.LabelText}"/>
                     <DatePicker SelectedDate="{Binding DateFrom, Mode=TwoWay}"
                                 Width="130" Margin="0,0,10,0"/>
 
-                    <Label Content="Bitiş:" VerticalAlignment="Center" Foreground="#475569"/>
+                    <Label Content="Bitiş:" VerticalAlignment="Center" Foreground="{DynamicResource Theme.LabelText}"/>
                     <DatePicker SelectedDate="{Binding DateTo, Mode=TwoWay}"
                                 Width="130" Margin="0,0,10,0"/>
 
-                    <Label Content="İşlem Türü:" VerticalAlignment="Center" Foreground="#475569"/>
+                    <Label Content="İşlem Türü:" VerticalAlignment="Center" Foreground="{DynamicResource Theme.LabelText}"/>
                     <ComboBox ItemsSource="{Binding TransactionTypeOptions}"
                               SelectedItem="{Binding SelectedTransactionType, Mode=TwoWay}"
                               Width="90" Margin="0,0,10,0"/>
 
-                    <Label Content="Para Birimi:" VerticalAlignment="Center" Foreground="#475569"/>
+                    <Label Content="Para Birimi:" VerticalAlignment="Center" Foreground="{DynamicResource Theme.LabelText}"/>
                     <ComboBox ItemsSource="{Binding CurrencyTypeOptions}"
                               SelectedItem="{Binding SelectedCurrencyType, Mode=TwoWay}"
                               Width="90" Margin="0,0,10,0"/>
 
-                    <Label Content="Açıklama:" VerticalAlignment="Center" Foreground="#475569"/>
+                    <Label Content="Açıklama:" VerticalAlignment="Center" Foreground="{DynamicResource Theme.LabelText}"/>
                     <!-- Ctrl+F bu alana odaklanır -->
                     <TextBox x:Name="DescriptionFilterBox"
                              Text="{Binding DescriptionFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              Width="160" Margin="0,0,10,0"
                              ToolTip="Açıklamada ara (Ctrl+F)"/>
 
-                    <Label Content="Tutar:" VerticalAlignment="Center" Foreground="#475569"/>
+                    <Label Content="Tutar:" VerticalAlignment="Center" Foreground="{DynamicResource Theme.LabelText}"/>
                     <ComboBox ItemsSource="{Binding AmountOperatorOptions}"
                               SelectedItem="{Binding SelectedAmountOperator, Mode=TwoWay}"
                               Width="48" Margin="0,0,4,0"/>
@@ -312,11 +312,11 @@
                       IsReadOnly="True"
                       CanUserAddRows="False"
                       GridLinesVisibility="Horizontal"
-                      HorizontalGridLinesBrush="#E2E8F0"
-                      AlternatingRowBackground="#F8FAFC"
-                      RowBackground="White"
+                      HorizontalGridLinesBrush="{DynamicResource Theme.Border}"
+                      AlternatingRowBackground="{DynamicResource Theme.DataGridAltRow}"
+                      RowBackground="{DynamicResource Theme.DataGridRow}"
                       HeadersVisibility="Column"
-                      BorderBrush="#E2E8F0"
+                      BorderBrush="{DynamicResource Theme.Border}"
                       BorderThickness="1"
                       MouseDoubleClick="TransactionDataGrid_MouseDoubleClick">
 
@@ -350,7 +350,7 @@
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock" BasedOn="{StaticResource NumericCell}">
                                 
-                                <Setter Property="Foreground" Value="#2E7D32"/>
+                                <Setter Property="Foreground" Value="{DynamicResource Theme.Success}"/>
                                 <Setter Property="Padding" Value="0,0,4,0"/>
                             </Style>
                         </DataGridTextColumn.ElementStyle>
@@ -362,7 +362,7 @@
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock" BasedOn="{StaticResource NumericCell}">
                                 
-                                <Setter Property="Foreground" Value="#C62828"/>
+                                <Setter Property="Foreground" Value="{DynamicResource Theme.Danger}"/>
                                 <Setter Property="Padding" Value="0,0,4,0"/>
                             </Style>
                         </DataGridTextColumn.ElementStyle>

@@ -117,9 +117,9 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Toplam Giriş:"   Margin="0,2"/>
-                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding TrySummary.TotalInflow,  StringFormat=N2}" HorizontalAlignment="Right" Foreground="#2E7D32" Margin="0,2"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding TrySummary.TotalInflow,  StringFormat=N2}" HorizontalAlignment="Right" Foreground="{DynamicResource Theme.Success}" Margin="0,2"/>
                             <TextBlock Grid.Row="1" Grid.Column="0" Text="Toplam Çıkış:"   Margin="0,2"/>
-                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TrySummary.TotalOutflow, StringFormat=N2}" HorizontalAlignment="Right" Foreground="#C62828" Margin="0,2"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TrySummary.TotalOutflow, StringFormat=N2}" HorizontalAlignment="Right" Foreground="{DynamicResource Theme.Danger}" Margin="0,2"/>
                             <Separator Grid.Row="2" Grid.ColumnSpan="2" Margin="0,4"/>
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="Net Bakiye:"     FontWeight="SemiBold" Margin="0,2"/>
                             <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding TrySummary.NetBalance,   StringFormat=N2}" HorizontalAlignment="Right" FontWeight="SemiBold" Margin="0,2"/>
@@ -140,9 +140,9 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Toplam Giriş:"   Margin="0,2"/>
-                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding UsdSummary.TotalInflow,  StringFormat=N2}" HorizontalAlignment="Right" Foreground="#2E7D32" Margin="0,2"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding UsdSummary.TotalInflow,  StringFormat=N2}" HorizontalAlignment="Right" Foreground="{DynamicResource Theme.Success}" Margin="0,2"/>
                             <TextBlock Grid.Row="1" Grid.Column="0" Text="Toplam Çıkış:"   Margin="0,2"/>
-                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding UsdSummary.TotalOutflow, StringFormat=N2}" HorizontalAlignment="Right" Foreground="#C62828" Margin="0,2"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding UsdSummary.TotalOutflow, StringFormat=N2}" HorizontalAlignment="Right" Foreground="{DynamicResource Theme.Danger}" Margin="0,2"/>
                             <Separator Grid.Row="2" Grid.ColumnSpan="2" Margin="0,4"/>
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="Net Bakiye:"     FontWeight="SemiBold" Margin="0,2"/>
                             <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding UsdSummary.NetBalance,   StringFormat=N2}" HorizontalAlignment="Right" FontWeight="SemiBold" Margin="0,2"/>
@@ -163,9 +163,9 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Toplam Giriş:"   Margin="0,2"/>
-                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding EurSummary.TotalInflow,  StringFormat=N2}" HorizontalAlignment="Right" Foreground="#2E7D32" Margin="0,2"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding EurSummary.TotalInflow,  StringFormat=N2}" HorizontalAlignment="Right" Foreground="{DynamicResource Theme.Success}" Margin="0,2"/>
                             <TextBlock Grid.Row="1" Grid.Column="0" Text="Toplam Çıkış:"   Margin="0,2"/>
-                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding EurSummary.TotalOutflow, StringFormat=N2}" HorizontalAlignment="Right" Foreground="#C62828" Margin="0,2"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding EurSummary.TotalOutflow, StringFormat=N2}" HorizontalAlignment="Right" Foreground="{DynamicResource Theme.Danger}" Margin="0,2"/>
                             <Separator Grid.Row="2" Grid.ColumnSpan="2" Margin="0,4"/>
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="Net Bakiye:"     FontWeight="SemiBold" Margin="0,2"/>
                             <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding EurSummary.NetBalance,   StringFormat=N2}" HorizontalAlignment="Right" FontWeight="SemiBold" Margin="0,2"/>
@@ -181,7 +181,7 @@
                               IsReadOnly="True"
                               CanUserAddRows="False"
                               GridLinesVisibility="Horizontal"
-                              AlternatingRowBackground="#F5F5F5"
+                              AlternatingRowBackground="{DynamicResource Theme.SurfaceAlt}"
                               HeadersVisibility="Column">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="İşlem Türü" Binding="{Binding TypeDisplay}" Width="90"
@@ -190,7 +190,7 @@
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="HorizontalAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="#2E7D32"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource Theme.Success}"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
@@ -198,7 +198,7 @@
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="HorizontalAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="#C62828"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource Theme.Danger}"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
@@ -211,7 +211,7 @@
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="HorizontalAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="#2E7D32"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource Theme.Success}"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
@@ -219,7 +219,7 @@
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="HorizontalAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="#C62828"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource Theme.Danger}"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
@@ -232,7 +232,7 @@
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="HorizontalAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="#2E7D32"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource Theme.Success}"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
@@ -240,7 +240,7 @@
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="HorizontalAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="#C62828"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource Theme.Danger}"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
@@ -269,7 +269,7 @@
                               IsReadOnly="True"
                               CanUserAddRows="False"
                               GridLinesVisibility="Horizontal"
-                              AlternatingRowBackground="#F5F5F5"
+                              AlternatingRowBackground="{DynamicResource Theme.SurfaceAlt}"
                               HeadersVisibility="Column"
                               MaxHeight="280">
                         <DataGrid.Columns>
@@ -285,7 +285,7 @@
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="HorizontalAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="#2E7D32"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource Theme.Success}"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
@@ -293,7 +293,7 @@
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="HorizontalAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="#C62828"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource Theme.Danger}"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>

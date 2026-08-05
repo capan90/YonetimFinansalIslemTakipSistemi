@@ -3,11 +3,14 @@
                     xmlns:converters="clr-namespace:YonetimFinansalIslemTakipSistemi.UI.Converters"
                     xmlns:common="clr-namespace:YonetimFinansalIslemTakipSistemi.UI.Common">
 
-    <!-- ── Converter ─────────────────────────────────────────────────────────── -->
-    <converters:DecimalToColorConverter         x:Key="BalanceToColor"/>
-    <converters:SystemLogLevelToColorConverter  x:Key="LevelToBackgroundConverter"/>
-    <converters:SystemLogLevelToColorConverter  x:Key="LevelToForegroundConverter" />
-    <converters:BoolToStatusColorConverter      x:Key="BoolToStatusColorConverter"/>
+    <!-- ── Converter ───────────────────────────────────────────────────────────
+         Fırça DÖNDÜREN converter'lar kaldırıldı (SystemLogLevelToColorConverter,
+         BoolToStatusColorConverter, DecimalToColorConverter). Hepsi aynı hatayı
+         paylaşıyordu: converter bağlama başına bir kez çalışır, döndürdüğü Brush
+         örneği donar ve tema değiştiğinde güncellenmez. Yerlerini XAML'deki
+         DataTrigger + DynamicResource desenleri aldı.
+         Geriye yalnızca veri→durum çeviren (renk taşımayan) converter kaldı. -->
+    <converters:DecimalToSignConverter x:Key="DecimalSign"/>
 
     <!-- ══ TİPOGRAFİ ÖLÇEĞİ ══════════════════════════════════════════════════
          Altı adım. XAML'de serbest FontSize yazılmaz; bu stillerden biri kullanılır.
@@ -29,6 +32,12 @@
         <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI, Segoe UI Emoji"/>
         <Setter Property="FontSize"   Value="14"/>
         <Setter Property="Foreground" Value="{DynamicResource Theme.Text}"/>
+        <!-- Faz B'nin en büyük koyu tema kırılması buradaydı: Foreground temaya
+             bağlanmış ama Background bağlanmamıştı. Background'u ayarlamayan bir
+             Window, WPF'te SystemColors.WindowBrush'a (BEYAZ) düşer. Koyu temada
+             açık metin beyaz zemine biniyor ve pencere içeriği kayboluyordu.
+             43 XAML'in 31'i kök panelinde zemin vermiyor — hepsi bundan etkilendi. -->
+        <Setter Property="Background" Value="{DynamicResource Theme.AppBackground}"/>
     </Style>
 
     <Style x:Key="Text.Display" TargetType="TextBlock">
@@ -65,6 +74,25 @@
         <Setter Property="LineHeight" Value="18"/>
         <Setter Property="FontWeight" Value="Medium"/>
         <Setter Property="Foreground" Value="{DynamicResource Theme.LabelText}"/>
+    </Style>
+
+    <!-- ── Bakiye tutarı ─────────────────────────────────────────────────────
+         Pozitif yeşil / negatif kırmızı / sıfır nötr. Renk artık converter'dan
+         DEĞİL, DataTrigger + DynamicResource ile gelir → tema değişiminde
+         anında güncellenir.
+         Kullanım: Tag'e işaret ("Positive"/"Negative"/"Zero") bağlanır; her kart
+         kendi bakiyesini gösterdiği için tetikleyici bağlama yolu stile
+         gömülemez, kontrolün kendi Tag'i üzerinden okunur. -->
+    <Style x:Key="Text.BalanceAmount" TargetType="TextBlock" BasedOn="{StaticResource Text.Display}">
+        <Setter Property="Foreground" Value="{DynamicResource Theme.LabelText}"/>
+        <Style.Triggers>
+            <Trigger Property="Tag" Value="Positive">
+                <Setter Property="Foreground" Value="{DynamicResource Theme.Success}"/>
+            </Trigger>
+            <Trigger Property="Tag" Value="Negative">
+                <Setter Property="Foreground" Value="{DynamicResource Theme.Danger}"/>
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <!-- ── Kırpılan metin hücresi ───────────────────────────────────────────
@@ -119,13 +147,10 @@
         </Setter>
     </Style>
 
-    <!-- DatePicker'ın kendi stili yoktu; odak halkası ve tema renkleri için eklendi -->
-    <Style TargetType="{x:Type DatePicker}">
-        <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisual}"/>
-        <Setter Property="Background"       Value="{DynamicResource Theme.InputBackground}"/>
-        <Setter Property="Foreground"       Value="{DynamicResource Theme.Text}"/>
-        <Setter Property="BorderBrush"      Value="{DynamicResource Theme.InputBorder}"/>
-    </Style>
+    <!-- DatePicker / ComboBox / Menu / Button gibi kontrollerin tam şablonları
+         Resources/Controls.xaml içindedir. Buradaki setter'lar yeterli değildi:
+         WPF'in yerleşik şablonları renkleri sabit hex olarak taşıyor ve
+         Background/Foreground setter'ları o sabitlerin üzerine geçmiyordu. -->
 
     <!-- Brush.* sabit fırçaları KALDIRILDI (Faz B).
          11 adet sabit renkli SolidColorBrush idi; XAML'de de code-behind'da da
@@ -253,6 +278,42 @@
         </Setter>
     </Style>
 
+    <!-- ── Metin girişi ortak şablonu ────────────────────────────────────────
+         WPF'in yerleşik TextBox şablonu devre dışı durumda zemini #F0F0F0'a,
+         metni #838383'e SABİTLER. Koyu temada bu, açık gri kutu içinde gri
+         metin demekti. Ayrıca seçim rengi (SelectionBrush) tanımlı olmadığı
+         için yazılan metin seçilince sistem mavisi + koyu metin çakışıyor ve
+         "yazdığım yazı kayboldu" görüntüsü oluşuyordu.
+         Şablon PART_ContentHost adını korur — metin girişi oraya yerleşir. -->
+    <ControlTemplate x:Key="InputFieldTemplate" TargetType="{x:Type Control}">
+        <Border x:Name="Bd"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="4"
+                SnapsToDevicePixels="True">
+            <ScrollViewer x:Name="PART_ContentHost"
+                          Margin="{TemplateBinding Padding}"
+                          VerticalAlignment="Center"
+                          Focusable="False"
+                          HorizontalScrollBarVisibility="Hidden"
+                          VerticalScrollBarVisibility="Hidden"/>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Theme.InputBorderFocus}"/>
+            </Trigger>
+            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Theme.InputBorderFocus}"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="Bd" Property="Background"  Value="{DynamicResource Theme.Input.DisabledBackground}"/>
+                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Theme.Border}"/>
+                <Setter Property="Foreground" Value="{DynamicResource Theme.Input.DisabledForeground}"/>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
     <!-- ── TextBox ──────────────────────────────────────────────────────────── -->
     <Style TargetType="{x:Type TextBox}">
         <Setter Property="Padding"                  Value="6,4"/>
@@ -261,11 +322,18 @@
         <Setter Property="Background"               Value="{DynamicResource Theme.InputBackground}"/>
         <Setter Property="Foreground"               Value="{DynamicResource Theme.Text}"/>
         <Setter Property="CaretBrush"               Value="{DynamicResource Theme.Text}"/>
+        <Setter Property="SelectionBrush"           Value="{DynamicResource Theme.Input.SelectionBackground}"/>
+        <Setter Property="SelectionTextBrush"       Value="{DynamicResource Theme.Input.SelectionForeground}"/>
+        <Setter Property="SelectionOpacity"         Value="1"/>
+        <Setter Property="MinHeight"                Value="28"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="FocusVisualStyle"         Value="{StaticResource AppFocusVisual}"/>
+        <Setter Property="Template"                 Value="{StaticResource InputFieldTemplate}"/>
         <Style.Triggers>
-            <Trigger Property="IsFocused" Value="True">
-                <Setter Property="BorderBrush" Value="{DynamicResource Theme.InputBorderFocus}"/>
+            <!-- Salt okunur alan devre dışı DEĞİLDİR: metin tam kontrastta kalır,
+                 yalnızca zemin "düzenlenemez" olduğunu söyler -->
+            <Trigger Property="IsReadOnly" Value="True">
+                <Setter Property="Background" Value="{DynamicResource Theme.Input.ReadOnlyBackground}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -278,17 +346,17 @@
         <Setter Property="Background"               Value="{DynamicResource Theme.InputBackground}"/>
         <Setter Property="Foreground"               Value="{DynamicResource Theme.Text}"/>
         <Setter Property="CaretBrush"               Value="{DynamicResource Theme.Text}"/>
+        <Setter Property="SelectionBrush"           Value="{DynamicResource Theme.Input.SelectionBackground}"/>
+        <Setter Property="SelectionTextBrush"       Value="{DynamicResource Theme.Input.SelectionForeground}"/>
+        <Setter Property="SelectionOpacity"         Value="1"/>
+        <Setter Property="MinHeight"                Value="28"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="FocusVisualStyle"         Value="{StaticResource AppFocusVisual}"/>
+        <Setter Property="Template"                 Value="{StaticResource InputFieldTemplate}"/>
     </Style>
 
-    <!-- ── ComboBox ─────────────────────────────────────────────────────────── -->
-    <Style TargetType="{x:Type ComboBox}">
-        <Setter Property="Background"       Value="{DynamicResource Theme.InputBackground}"/>
-        <Setter Property="Foreground"       Value="{DynamicResource Theme.Text}"/>
-        <Setter Property="BorderBrush"      Value="{DynamicResource Theme.InputBorder}"/>
-        <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisual}"/>
-    </Style>
+    <!-- ComboBox stili Resources/Controls.xaml'e taşındı: yalnızca renk
+         setter'ları yetmiyordu, tam şablon gerekiyor (açılır liste ayrı yüzey). -->
 
     <!-- ── DataGrid ──────────────────────────────────────────────────────────── -->
     <!-- SelectionUnit="FullRow": tıklamada tüm satır hücreleri seçilir.

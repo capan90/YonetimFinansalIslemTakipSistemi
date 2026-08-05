@@ -29,17 +29,37 @@
                            TextTrimming="CharacterEllipsis"
                            ToolTip="{Binding Value}"
                            VerticalAlignment="Center"/>
+                <!-- Durum rengi eskiden HealthRowData'daki dondurulmuş sabit
+                     fırçalardan geliyordu (#1B5E20 / #E65C00 / #C62828). Koyu
+                     yüzeyde koyu yeşil okunmuyordu ve tema değişimini görmüyordu.
+                     Artık DataTrigger + DynamicResource. -->
                 <TextBlock Grid.Column="2"
                            Text="{Binding StatusText}"
-                           Foreground="{Binding StatusBrush}"
                            FontWeight="SemiBold"
                            HorizontalAlignment="Right"
-                           VerticalAlignment="Center"/>
+                           VerticalAlignment="Center">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{DynamicResource Theme.MutedText}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Status}" Value="Ok">
+                                    <Setter Property="Foreground" Value="{DynamicResource Theme.Success}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Status}" Value="Warning">
+                                    <Setter Property="Foreground" Value="{DynamicResource Theme.Warning}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Status}" Value="Error">
+                                    <Setter Property="Foreground" Value="{DynamicResource Theme.Danger}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
             </Grid>
         </DataTemplate>
 
         <!-- GroupBox başlık stili -->
-        <Style x:Key="SectionBox" TargetType="GroupBox">
+        <Style x:Key="SectionBox" TargetType="GroupBox" BasedOn="{StaticResource {x:Type GroupBox}}">
             <Setter Property="Margin" Value="0,0,0,8"/>
             <Setter Property="Padding" Value="10,6,10,8"/>
             <Setter Property="FontWeight" Value="SemiBold"/>

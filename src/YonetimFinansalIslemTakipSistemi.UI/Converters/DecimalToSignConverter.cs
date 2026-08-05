@@ -1,23 +1,37 @@
 using System.Globalization;
 using System.Windows.Data;
-using System.Windows.Media;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Converters;
 
-// Pozitif → yeşil, negatif → kırmızı, sıfır → gri (bakiye kartlarında kullanılır)
-public class DecimalToColorConverter : IValueConverter
+/// <summary>
+/// Sayının işaretini metne çevirir: "Positive" / "Negative" / "Zero".
+///
+/// NEDEN RENK DÖNDÜRMÜYOR:
+/// Converter bağlama başına BİR KEZ çalışır ve döndürdüğü Brush örneği o
+/// bağlamada donar. Tema değiştiğinde sözlükteki fırça değişir ama ekranda
+/// duran eski fırça yerinde kalır — bakiye rakamları eski temanın renginde
+/// takılı kalıyordu. Ayrıca eski hâli renkleri sabit RGB tutuyordu, yani
+/// koyu temada hiç doğru renge dönmüyordu.
+///
+/// Yerine: XAML'de bu değeri okuyan DataTrigger + DynamicResource kullanılır.
+/// DataTrigger setter'ındaki DynamicResource tema değişiminde anında güncellenir.
+/// Bkz. MainWindow.xaml → BalanceAmount stili.
+/// </summary>
+[ValueConversion(typeof(decimal), typeof(string))]
+public sealed class DecimalToSignConverter : IValueConverter
 {
-    private static readonly SolidColorBrush Green = new(Color.FromRgb(0x2E, 0x7D, 0x32));
-    private static readonly SolidColorBrush Red   = new(Color.FromRgb(0xC6, 0x28, 0x28));
-    private static readonly SolidColorBrush Gray  = new(Color.FromRgb(0x64, 0x74, 0x8B));
+    public const string Positive = "Positive";
+    public const string Negative = "Negative";
+    public const string Zero     = "Zero";
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if (value is decimal d)
-            return d > 0 ? Green : d < 0 ? Red : Gray;
-        return Gray;
+            return d > 0 ? Positive : d < 0 ? Negative : Zero;
+
+        return Zero;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+        => throw new NotSupportedException();
 }

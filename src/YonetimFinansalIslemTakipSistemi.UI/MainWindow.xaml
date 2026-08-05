@@ -152,9 +152,10 @@
                         <TextBlock Text="TL BAKİYE"
                                    Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}" FontWeight="SemiBold"
                                    Margin="0,0,0,4"/>
+                        <!-- Tag işareti taşır; renk stildeki DataTrigger'dan gelir (tema uyumlu) -->
                         <TextBlock Text="{Binding TlBalance, StringFormat=N2}"
-                                   Style="{StaticResource Text.Display}" FontWeight="Bold"
-                                   Foreground="{Binding TlBalance, Converter={StaticResource BalanceToColor}}"/>
+                                   Tag="{Binding TlBalance, Converter={StaticResource DecimalSign}}"
+                                   Style="{StaticResource Text.BalanceAmount}"/>
                     </StackPanel>
                 </Border>
 
@@ -169,8 +170,8 @@
                                    Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}" FontWeight="SemiBold"
                                    Margin="0,0,0,4"/>
                         <TextBlock Text="{Binding UsdBalance, StringFormat=N2}"
-                                   Style="{StaticResource Text.Display}" FontWeight="Bold"
-                                   Foreground="{Binding UsdBalance, Converter={StaticResource BalanceToColor}}"/>
+                                   Tag="{Binding UsdBalance, Converter={StaticResource DecimalSign}}"
+                                   Style="{StaticResource Text.BalanceAmount}"/>
                     </StackPanel>
                 </Border>
 
@@ -185,8 +186,8 @@
                                    Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}" FontWeight="SemiBold"
                                    Margin="0,0,0,4"/>
                         <TextBlock Text="{Binding EurBalance, StringFormat=N2}"
-                                   Style="{StaticResource Text.Display}" FontWeight="Bold"
-                                   Foreground="{Binding EurBalance, Converter={StaticResource BalanceToColor}}"/>
+                                   Tag="{Binding EurBalance, Converter={StaticResource DecimalSign}}"
+                                   Style="{StaticResource Text.BalanceAmount}"/>
                     </StackPanel>
                 </Border>
 

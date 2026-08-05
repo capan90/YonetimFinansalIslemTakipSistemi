@@ -1,5 +1,5 @@
 using System.Windows;
-using System.Windows.Media;
+using System.Windows.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using YonetimFinansalIslemTakipSistemi.Application.Features.SystemLogs;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
@@ -34,16 +34,18 @@ public partial class SystemLogDetailWindow : Window
     {
         CreatedAtText.Text     = d.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss");
         LevelText.Text         = d.LevelDisplay;
-        LevelText.Foreground   = LevelToForeground(d.Level);
         CategoryText.Text      = d.Category;
         SourceText.Text        = d.Source ?? "—";
         UsernameText.Text      = d.Username ?? "—";
         MachineText.Text       = d.MachineName;
         VersionText.Text       = d.AppVersion ?? "—";
         StatusText.Text        = d.IsResolved ? "Çözüldü" : "Açık";
-        StatusText.Foreground  = d.IsResolved
-            ? new SolidColorBrush(Color.FromRgb(22, 163, 74))
-            : new SolidColorBrush(Color.FromRgb(234, 88, 12));
+
+        // Renkler token'a DİNAMİK bağlanır: pencere açıkken tema değişirse
+        // sabit fırça atansaydı eski renkte kalırlardı.
+        ThemeBrush.Apply(LevelText,  TextBlock.ForegroundProperty, LevelTokenOf(d.Level));
+        ThemeBrush.Apply(StatusText, TextBlock.ForegroundProperty,
+            d.IsResolved ? "Theme.Success" : "Theme.Warning");
 
         MessageText.Text = d.Message;
 
@@ -87,12 +89,14 @@ public partial class SystemLogDetailWindow : Window
         DialogResult = true; // listeyi yenilemesi için caller'a sinyal
     }
 
-    private static Brush LevelToForeground(SystemLogLevel level) => level switch
+    // Seviye → tema token anahtarı. Bu metin pencere YÜZEYİ üzerinde durur
+    // (rozet dolgusu üzerinde değil); bu yüzden *.Text rolleri kullanılır.
+    private static string LevelTokenOf(SystemLogLevel level) => level switch
     {
-        SystemLogLevel.Info     => ThemeBrush.Get("Theme.Info.Text"),
-        SystemLogLevel.Warning  => ThemeBrush.Get("Theme.Warning.Text"),
-        SystemLogLevel.Error    => ThemeBrush.Get("Theme.Danger.Text"),
-        SystemLogLevel.Critical => ThemeBrush.Get("Theme.Danger"),
-        _                       => ThemeBrush.Get("Theme.Text")
+        SystemLogLevel.Info     => "Theme.Info.Text",
+        SystemLogLevel.Warning  => "Theme.Warning.Text",
+        SystemLogLevel.Error    => "Theme.Danger.Text",
+        SystemLogLevel.Critical => "Theme.Danger",
+        _                       => "Theme.Text"
     };
 }

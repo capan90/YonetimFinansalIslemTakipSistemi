@@ -488,6 +488,74 @@
     </Style>
 
     <!-- ══════════════════════════════════════════════════════════════════════
+         TIKLANABİLİR KART (bakiye kartları, kargo sayaç kartları)
+
+         Border değil Button: kart tıklanabilir hale gelince klavyeyle de
+         erişilebilir olmalı, ekran okuyucu da düğme olarak duyurmalı.
+         Görünüm karttır — buton kromu yoktur, yalnızca hover/odak geri bildirimi.
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <Style x:Key="ClickableCard" TargetType="{x:Type Button}">
+        <Setter Property="Background"       Value="{DynamicResource Theme.Surface}"/>
+        <Setter Property="BorderBrush"      Value="{DynamicResource Theme.Border}"/>
+        <Setter Property="BorderThickness"  Value="1"/>
+        <Setter Property="Padding"          Value="14,10"/>
+        <Setter Property="Cursor"           Value="Hand"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment"   Value="Top"/>
+        <Setter Property="FocusVisualStyle"  Value="{DynamicResource AppFocusVisual}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="6"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <!-- Tıklanabilirlik YALNIZCA kenarlıkla belli edilir.
+                             Zemin değiştirilmez: kargo sayaç kartları durum
+                             rengini zeminde taşıyor (Info/Success/Warning...) ve
+                             hover'da onu ezmek hem anlamı hem üzerindeki metnin
+                             ölçülmüş kontrastını bozardı. -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush"     Value="{DynamicResource Theme.PrimaryHover}"/>
+                            <Setter TargetName="Bd" Property="BorderThickness" Value="2"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Theme.Primary}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Bakiye kartı — tıklanabilir kartın gölgeli hâli -->
+    <Style x:Key="BalanceCard" TargetType="{x:Type Button}" BasedOn="{StaticResource ClickableCard}">
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="{DynamicResource Theme.ShadowColor}" Direction="270"
+                                  ShadowDepth="1" BlurRadius="6" Opacity="0.3"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Kargo dashboard sayaç kartı — durum rengini kendi taşır (Info/Success/...),
+         bu yüzden Background/BorderBrush yerel olarak verilir ve stil ezmez. -->
+    <Style x:Key="CargoCountCard" TargetType="{x:Type Button}" BasedOn="{StaticResource ClickableCard}">
+        <Setter Property="Width"   Value="160"/>
+        <Setter Property="Height"  Value="80"/>
+        <Setter Property="Margin"  Value="0,0,10,10"/>
+        <Setter Property="Padding" Value="12,8"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
          NAVİGASYON BUTONU (Kargo Dashboard üst şeridi)
          Şerit her iki temada da koyu marka bandıdır; butonlar oradan renk alır.
          Örtük Button stili kullanılsaydı hover'da nötr gri gelir ve şeritten
@@ -936,6 +1004,97 @@
                             <ContentPresenter TextElement.Foreground="{TemplateBinding Foreground}"/>
                         </Border>
                     </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         EXPANDER
+         Faz C'de eklendi. Uygulamada daha önce hiç kullanılmamıştı; şablonu
+         olmadan WPF'in yerleşik (tema körü) stiline düşerdi — CodingStandards'ta
+         yazdığım "yeni kontrol tipi kullanırken önce şablonunu yaz" kuralı.
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <Style x:Key="Expander.ToggleButton" TargetType="{x:Type ToggleButton}">
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="Cursor"                Value="Hand"/>
+        <Setter Property="FocusVisualStyle"      Value="{DynamicResource AppFocusVisual}"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                    <Border x:Name="Bd"
+                            Background="Transparent"
+                            Padding="0,4"
+                            SnapsToDevicePixels="True">
+                        <StackPanel Orientation="Horizontal">
+                            <!-- Ok yönü açık/kapalı durumu RENK DIŞINDA da belli eder.
+                                 Döndürme yerine Data değiştirilir: RenderTransform'a
+                                 verilen ad şablon tetikleyicisinden hedeflenemiyor. -->
+                            <Path x:Name="Arrow"
+                                  Width="8" Height="8"
+                                  Margin="0,0,8,0"
+                                  VerticalAlignment="Center"
+                                  Data="M 0,0 L 4,4 L 0,8 Z"
+                                  Fill="{DynamicResource Theme.LabelText}"/>
+                            <ContentPresenter x:Name="Cp"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True"
+                                              TextElement.Foreground="{DynamicResource Theme.LabelText}"
+                                              TextElement.FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Arrow" Property="Data" Value="M 0,0 L 8,0 L 4,6 Z"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Arrow" Property="Fill" Value="{DynamicResource Theme.Primary}"/>
+                            <Setter TargetName="Cp"    Property="TextElement.Foreground" Value="{DynamicResource Theme.Primary}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Arrow" Property="Fill" Value="{DynamicResource Theme.Button.DisabledForeground}"/>
+                            <Setter TargetName="Cp"    Property="TextElement.Foreground" Value="{DynamicResource Theme.Button.DisabledForeground}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type Expander}">
+        <Setter Property="Background"      Value="Transparent"/>
+        <Setter Property="Foreground"      Value="{DynamicResource Theme.Text}"/>
+        <Setter Property="BorderBrush"     Value="{DynamicResource Theme.Border}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Expander}">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            SnapsToDevicePixels="True">
+                        <DockPanel>
+                            <!-- HeaderSite adı WPF'in beklediği parçadır -->
+                            <ToggleButton x:Name="HeaderSite"
+                                          DockPanel.Dock="Top"
+                                          Style="{StaticResource Expander.ToggleButton}"
+                                          Content="{TemplateBinding Header}"
+                                          ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                          ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}"
+                                          IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            <ContentPresenter x:Name="ExpandSite"
+                                              DockPanel.Dock="Bottom"
+                                              Visibility="Collapsed"
+                                              Margin="{TemplateBinding Padding}"
+                                              Focusable="False"/>
+                        </DockPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsExpanded" Value="True">
+                            <Setter TargetName="ExpandSite" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

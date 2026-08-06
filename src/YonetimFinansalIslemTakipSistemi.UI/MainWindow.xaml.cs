@@ -91,19 +91,9 @@ public partial class MainWindow : Window
     /// </summary>
     private async void OnLogoutRequested()
     {
-        if (!_dialogService.ShowConfirmation("Oturumu kapatmak istediğinize emin misiniz?", "Çıkış Yap"))
-            return;
+        if (!Common.SessionLogout.Confirm(_dialogService)) return;
 
-        // Çıkış audit'i — pencere (ve DbContext scope'u) kapanmadan önce yazılır;
-        // audit yazılamasa bile logout engellenmez
-        try
-        {
-            var userContext = _services.GetRequiredService<IUserContext>();
-            await _services.GetRequiredService<IAuditLogService>().WriteAsync(
-                AuditAction.UserLoggedOut, userContext.UserId, userContext.FullName,
-                "User", userContext.UserId);
-        }
-        catch { /* audit hatası çıkışı engellemez; kritik hatalar global handler'da loglanır */ }
+        await Common.SessionLogout.WriteAuditAsync(_services);
 
         IsLogoutRequested = true;
         Close();

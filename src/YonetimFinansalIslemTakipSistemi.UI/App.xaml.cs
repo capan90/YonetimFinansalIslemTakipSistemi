@@ -694,11 +694,15 @@ public partial class App : System.Windows.Application
                 }
                 else
                 {
-                    // Finans yetkisi var — mevcut davranış
-                    var mainWindow = new MainWindow(scope.ServiceProvider);
-                    Current.MainWindow = mainWindow;
-                    mainWindow.ShowDialog();
-                    isLogout = mainWindow.IsLogoutRequested;
+                    // Finans yetkisi var — Faz D5'ten itibaren tek kabuk.
+                    //
+                    // MainWindow SİLİNMEDİ; geri dönüş ve karşılaştırma için
+                    // kodda duruyor ama başlangıç akışı artık onu açmıyor.
+                    // Sözleşme aynı: ShowDialog + IsLogoutRequested.
+                    var shellWindow = new Views.Shell.ShellWindow(scope.ServiceProvider);
+                    Current.MainWindow = shellWindow;
+                    shellWindow.ShowDialog();
+                    isLogout = shellWindow.IsLogoutRequested;
                 }
             }
             finally
@@ -723,8 +727,12 @@ public partial class App : System.Windows.Application
     /// <summary>
     /// Kullanıcı yetkisine göre giriş sonrası ekranı belirler.
     /// Finans yetkisi varsa "finance", sadece kargo yetkisi varsa "cargo", ikisi de yoksa "none".
+    ///
+    /// Faz D5'te kabuğa geçiş bu kararı DEĞİŞTİRMEDİ; yalnızca "finance"
+    /// dalının açtığı pencere değişti. Karar tabloya bağlı olduğu için
+    /// doğrudan test edilebilsin diye internal.
     /// </summary>
-    private static string ResolveStartupMode(IUserContext userContext)
+    internal static string ResolveStartupMode(IUserContext userContext)
     {
         bool hasFinance = userContext.HasPermission(PermissionType.CanCreateTransaction)
                        || userContext.HasPermission(PermissionType.CanEditTransaction)

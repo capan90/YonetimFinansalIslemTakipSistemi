@@ -1,4 +1,5 @@
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
+using YonetimFinansalIslemTakipSistemi.UI.Views.CashTransactions;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
 
@@ -15,8 +16,12 @@ namespace YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
 ///
 /// TAŞIMA DURUMU: Bu tabloda ekranların tamamı tarif edilir ama
 /// <see cref="ScreenDefinition.CreateView"/> yalnızca UserControl'e taşınmış
-/// olanlarda doludur. Faz D'nin bu adımında HİÇBİR ekran taşınmadı.
-/// Sahte/boş görünüm üretilmedi.
+/// olanlarda doludur. Faz D5 itibarıyla taşınmış TEK ekran Nakit İşlemler'dir.
+///
+/// CreateView'ı boş olan ekranlar navigasyon rayında GÖRÜNMEZ ve programatik
+/// olarak da açılamaz (bkz. ShellViewModel.Resolve). Böylece tıklandığında
+/// hiçbir şey yapmayan sahte sekme oluşmaz; ekranlar taşındıkça rayda
+/// kendiliğinden belirirler.
 /// </summary>
 public static class ScreenRegistry
 {
@@ -57,7 +62,13 @@ public static class ScreenRegistry
     [
         // ── Finans ────────────────────────────────────────────────────────
         // Nakit İşlemler kapatılamaz: finans kullanıcısının ana çalışma alanı.
-        new(ScreenKey.CashTransactions, "Nakit İşlemler", FinanceAccess, CanClose: false),
+        //
+        // TAŞINMIŞ (Faz D4). Ekranın kurucusu IServiceProvider alır ve kendi
+        // ViewModel'ini oradan çözer — kabuk ekranın içine karışmaz.
+        new(ScreenKey.CashTransactions, "Nakit İşlemler", FinanceAccess,
+            CreateView: services => new CashTransactionsScreen(services),
+            CanClose: false),
+
         new(ScreenKey.Analysis,         "Finans Analiz",  [PermissionType.CanViewReports]),
         new(ScreenKey.Reports,          "Raporlar",       [PermissionType.CanViewReports]),
         new(ScreenKey.ExchangeRates,    "Döviz Kurları",  [PermissionType.CanManageExchangeRates]),

@@ -558,13 +558,20 @@ public class ShellViewModelTests
         Assert.Equal(keys.Count, keys.Distinct().Count());
     }
 
+    /// <summary>
+    /// Taşınmamış ekranın fabrikası BOŞ kalmalı. Boş fabrika, ekranın
+    /// navigasyonda görünmemesini ve programatik olarak açılamamasını sağlar —
+    /// tıklandığında hiçbir şey yapmayan sahte sekme üretilmez.
+    ///
+    /// Faz D5'te taşınmış tek ekran Nakit İşlemler'dir; o kontrol
+    /// <see cref="ShellPilotTests"/> içinde.
+    /// </summary>
     [Fact]
-    public void Kayit_tablosundaki_ekranlar_henuz_tasinmamis()
+    public void Tasinmamis_ekranlarin_fabrikasi_bos()
     {
-        // Faz D adım 2'de hiçbir ekran UserControl'e taşınmadı. Pilot dönüşüm
-        // başladığında bu test bilinçli olarak güncellenecek — o zamana kadar
-        // kabuğun üretimde boş olduğunu sabitler.
-        Assert.All(ScreenRegistry.All, s => Assert.False(s.IsMigrated));
+        var notMigrated = ScreenRegistry.All.Where(s => s.Key != ScreenKey.CashTransactions);
+
+        Assert.All(notMigrated, s => Assert.False(s.IsMigrated));
     }
 
     [Fact]

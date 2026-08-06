@@ -7,6 +7,15 @@
 
   <ItemGroup>
     <!--
+      Başlangıç ekranı kararı (App.ResolveStartupMode) ve kabuk penceresinin
+      test kurucusu doğrudan sınanabilsin diye. Kaynak metni tarayarak
+      doğrulamak bu kararı kanıtlamaz — yetki kümesi gerçekten çalıştırılmalı.
+    -->
+    <InternalsVisibleTo Include="YonetimFinansalIslemTakipSistemi.UiTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
       Grafik motoru (Faz C). SkiaSharp ile çizer; WPF fırçalarını KULLANMAZ,
       dolayısıyla DynamicResource'u görmez — renkler Common/ChartPalette.cs
       üzerinden token'lardan okunur ve tema değiştiğinde yeniden uygulanır.

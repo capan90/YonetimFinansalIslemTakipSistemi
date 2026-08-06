@@ -10,6 +10,7 @@ using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
 using YonetimFinansalIslemTakipSistemi.UI.Common;
+using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.CashTransactions;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.CashTransactions;
@@ -30,8 +31,15 @@ namespace YonetimFinansalIslemTakipSistemi.UI.Views.CashTransactions;
 /// ekran işleri burada. Klavye kısayolları pencerede tanımlı kalır (odak
 /// nerede olursa olsun çalışmaları için) ama buradaki genel metotlara
 /// YÖNLENDİRİLİR — mantık kopyalanmaz.
+///
+/// FAZ D5: Ekran artık kabukta gerçek sekme olarak da açılıyor. Bunun için
+/// iki bağlantı noktası eklendi, davranış değişmedi:
+///   • <see cref="IShellLogoutSource"/> — araç çubuğundaki çıkış düğmesi
+///     kabuk içinde de duyulsun diye
+///   • Kendi <c>CommandBindings</c>'i (bkz. XAML) — kısayollar barındıran
+///     pencereden bağımsız olarak bu ekrana ulaşsın diye
 /// </summary>
-public partial class CashTransactionsScreen : UserControl
+public partial class CashTransactionsScreen : UserControl, IShellLogoutSource
 {
     /// <summary>Kolon düzeninin kullanıcı bazında saklandığı ekran anahtarı.</summary>
     private const string LayoutScreenKey = "CashTransactionList";
@@ -127,10 +135,23 @@ public partial class CashTransactionsScreen : UserControl
 
     // ── Klavye kısayolu giriş noktaları ───────────────────────────────────────
     //
-    // Kısayollar PENCEREDE tanımlıdır (odak menüdeyken de çalışsınlar diye) ve
-    // buraya yönlendirilir. Buton görünürlüğü yetki kapısı olduğu için kısayol
-    // da yalnızca buton görünürken çalışır: yetkisiz kullanıcı Ctrl+D ile
-    // yetkisi olmayan formu açamamalı.
+    // TUŞ ATAMALARI (InputBindings) barındıran PENCEREDEDİR: odak navigasyon
+    // rayında ya da menüdeyken de çalışmaları gerekiyor.
+    //
+    // KOMUTLARIN GÖVDESİ ise burada, ekranın kendi CommandBindings'inde (bkz.
+    // XAML). Odak ekranın içindeyse komut zaten buraya kadar yükselir ve
+    // pencere hiç devreye girmez; odak dışarıdaysa pencere komutu aktif
+    // ekrana yönlendirir. Her iki yol da aşağıdaki TEK gövdeye çıkar.
+    //
+    // Buton görünürlüğü yetki kapısı olduğu için kısayol da yalnızca buton
+    // görünürken çalışır: yetkisiz kullanıcı Ctrl+D ile form açamamalı.
+
+    private void Command_New(object sender, ExecutedRoutedEventArgs e)         => NewTransaction();
+    private void Command_Duplicate(object sender, ExecutedRoutedEventArgs e)   => DuplicateTransaction();
+    private void Command_Delete(object sender, ExecutedRoutedEventArgs e)      => DeleteSelectedTransaction();
+    private void Command_ImportExcel(object sender, ExecutedRoutedEventArgs e) => ImportExcel();
+    private void Command_FocusSearch(object sender, ExecutedRoutedEventArgs e) => FocusSearch();
+    private void Command_Refresh(object sender, ExecutedRoutedEventArgs e)     => RefreshList();
 
     /// <summary>Ctrl+N — yetki ve seçim kontrolleri handler içindedir.</summary>
     public void NewTransaction() => NewTransactionButton_Click(this, new RoutedEventArgs());

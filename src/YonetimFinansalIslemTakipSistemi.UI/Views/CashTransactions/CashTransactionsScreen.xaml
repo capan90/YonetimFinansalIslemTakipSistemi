@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+             xmlns:common="clr-namespace:YonetimFinansalIslemTakipSistemi.UI.Common"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="1200"
              Background="{DynamicResource Theme.SurfaceSubtle}">
@@ -11,17 +12,31 @@
     <!--
     NAKIT ISLEMLER EKRANI (Faz D pilot)
 
-    MainWindow'un icerigi buraya tasindi. MainWindow yerinde duruyor ve bu
-    ekrani barindiriyor; kullanicinin akisi degismedi.
+    MainWindow'un icerigi buraya tasindi. Faz D5'ten itibaren finans
+    kullanicisi bu ekrani ShellWindow icinde sekme olarak goruyor; MainWindow
+    ayni ekrani barindirmaya devam ediyor ama artik baslangic akisinda degil.
 
-    Menu, cikis ve baslangicta guncelleme kontrolu MainWindow'da KALDI —
-    bunlar pencere/kabuk seviyesi davranislar. Bu ekran yalnizca nakit islem
-    icerigidir ve ileride ShellWindow icinde de ayni sekilde barinacak.
+    Menu, cikis ve baslangicta guncelleme kontrolu PENCEREDE kaldi — bunlar
+    pencere/kabuk seviyesi davranislar. Bu ekran yalnizca nakit islem icerigi.
 
     Zemin acikca veriliyor: ortuk UserControl stili Theme.AppBackground verir,
-    oysa bu icerik MainWindow'da Theme.SurfaceSubtle uzerinde duruyordu. Acik
-    temada ikisi ayni renk; koyu temada degil. Gorunum birebir korunuyor.
+    oysa bu icerik Theme.SurfaceSubtle uzerinde duruyordu. Acik temada ikisi
+    ayni renk; koyu temada degil. Kabukta da sekme icerik alani ayni token
+    oldugu icin kabuk + ekran tek parca gorunur.
     -->
+
+    <!-- Kisayollarin GOVDESI burada: ekran hangi pencerede barinirsa barinsin
+         komutlar kendisine ulasir. TUS atamalari (InputBindings) barindiran
+         pencerede kalir — odak menude ya da navigasyon rayindayken de
+         calismalari gerekiyor. Iki yol da ayni tek govdeye cikar. -->
+    <UserControl.CommandBindings>
+        <CommandBinding Command="common:AppCommands.New"            Executed="Command_New"/>
+        <CommandBinding Command="common:AppCommands.Duplicate"      Executed="Command_Duplicate"/>
+        <CommandBinding Command="common:AppCommands.DeleteSelected" Executed="Command_Delete"/>
+        <CommandBinding Command="common:AppCommands.FocusSearch"    Executed="Command_FocusSearch"/>
+        <CommandBinding Command="common:AppCommands.ImportExcel"    Executed="Command_ImportExcel"/>
+        <CommandBinding Command="common:AppCommands.RefreshList"    Executed="Command_Refresh"/>
+    </UserControl.CommandBindings>
 
     <DockPanel Margin="10">
 

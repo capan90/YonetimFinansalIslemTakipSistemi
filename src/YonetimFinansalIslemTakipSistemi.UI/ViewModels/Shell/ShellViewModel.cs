@@ -117,6 +117,7 @@ public sealed class ShellViewModel : INotifyPropertyChanged
 
         var tab = new ShellTab(definition, definition.CreateView!(_services));
 
+        Attach(tab);
         Tabs.Add(tab);
         ActiveTab = tab;
         return tab;
@@ -153,10 +154,32 @@ public sealed class ShellViewModel : INotifyPropertyChanged
 
         var tab = new ShellTab(definition, instance.View, instance.InstanceKey, instance.Title);
 
+        Attach(tab);
         Tabs.Add(tab);
         ActiveTab = tab;
         return tab;
     }
+
+    // ── Ekran ↔ kabuk bağlantısı ──────────────────────────────────────────
+    //
+    // Bazı ekranların araç çubuğunda kendi "Çıkış Yap" düğmesi var (bkz.
+    // IShellLogoutSource). Kabuk hangi ekranın böyle olduğunu BİLMEZ; sadece
+    // sözleşmeyi uygulayanı dinler. Böylece o düğme kabuk içinde de aynı
+    // çıkış yoluna çıkar, ölü kalmaz.
+
+    private void Attach(ShellTab tab)
+    {
+        if (tab.View is IShellLogoutSource source)
+            source.LogoutRequested += OnScreenLogoutRequested;
+    }
+
+    private void Detach(ShellTab tab)
+    {
+        if (tab.View is IShellLogoutSource source)
+            source.LogoutRequested -= OnScreenLogoutRequested;
+    }
+
+    private void OnScreenLogoutRequested() => RequestLogout();
 
     /// <summary>
     /// Ekranı kayıt tablosunda bulur ve açılabilirliğini doğrular.
@@ -191,6 +214,7 @@ public sealed class ShellViewModel : INotifyPropertyChanged
         var index = Tabs.IndexOf(tab);
         if (index < 0) return false;
 
+        Detach(tab);
         Tabs.Remove(tab);
 
         // Kapatılan sekme aktifse odak komşuya geçer; kabuk boş sekmeyle kalmaz
@@ -209,14 +233,27 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     public event Action? LogoutRequested;
 
     /// <summary>
-    /// Tüm sekmeleri kapatmayı dener, hepsi kapanırsa çıkış isteğini yayar.
+    /// Çıkış onayı. Kabuk penceresi atar — diyalog gösterimi pencerenin işi,
+    /// ViewModel IDialogService bilmez.
     ///
-    /// Bir ekran kaydedilmemiş değişiklik yüzünden kapanmayı reddederse çıkış
-    /// İPTAL edilir — kullanıcı verisi sessizce kaybolmaz.
+    /// Atanmazsa onay sorulmaz; kabuk mantığı diyalogsuz da sınanabilir.
+    /// </summary>
+    public Func<bool>? ConfirmLogout { get; set; }
+
+    /// <summary>
+    /// Çıkış akışı: önce kullanıcı onayı, sonra açık ekranların sözü, en son
+    /// çıkış isteğinin yayılması.
+    ///
+    /// SIRA ÖNEMLİ. Onay sekmeler kapatılmadan ÖNCE sorulur: kullanıcı
+    /// vazgeçtiğinde kabuk boş sekme listesiyle kalmamalı. Bir ekran
+    /// kaydedilmemiş değişiklik yüzünden kapanmayı reddederse çıkış İPTAL
+    /// edilir — kullanıcı verisi sessizce kaybolmaz.
     /// </summary>
     /// <returns>Çıkış isteği yayıldıysa <c>true</c>.</returns>
     public bool RequestLogout()
     {
+        if (ConfirmLogout is not null && !ConfirmLogout()) return false;
+
         if (!CloseAllTabs()) return false;
 
         LogoutRequested?.Invoke();
@@ -239,6 +276,7 @@ public sealed class ShellViewModel : INotifyPropertyChanged
                 return false;
             }
 
+            Detach(tab);
             Tabs.Remove(tab);
         }
 

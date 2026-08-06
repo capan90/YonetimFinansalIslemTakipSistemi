@@ -4,14 +4,12 @@ using System.Text.RegularExpressions;
 namespace YonetimFinansalIslemTakipSistemi.UiTests;
 
 /// <summary>
-/// Kabuk iskeleti projeye eklendi ama KULLANICININ AKIŞI DEĞİŞMEDİ.
+/// Başlangıç akışının sözleşmesi.
 ///
-/// Faz D kademeli ilerliyor: önce zemin ve iskelet, sonra pilot ekran, sonra
-/// geri kalanlar. Bu testler ara adımda startup'ın kazara ShellWindow'a
-/// bağlanmadığını sabitler — kabuk henüz boş ve içine taşınmış ekran yok,
-/// bağlansaydı uygulama kullanılamaz hâle gelirdi.
-///
-/// Pilot dönüşüm onaylandığında bu testler bilinçli olarak güncellenecek.
+/// Faz D5'te YALNIZCA finans dalı kabuğa geçti: finans yetkili kullanıcı artık
+/// ShellWindow görüyor. Kargo ve "none" dalları değişmedi, MainWindow silinmedi.
+/// Bu testler geçişin kapsamını sabitler — bir sonraki adımda kargo dalı da
+/// taşınırsa burası BİLİNÇLİ olarak güncellenmeli, sessizce kaymamalı.
 /// </summary>
 public class ShellStartupContractTests
 {
@@ -21,26 +19,47 @@ public class ShellStartupContractTests
         return File.ReadAllText(path, Encoding.UTF8);
     }
 
+    /// <summary>
+    /// Finans dalı ShellWindow açar ve MainWindow'u ARTIK oluşturmaz.
+    /// MainWindow dosyası yerinde duruyor (geri dönüş için) ama başlangıç
+    /// akışının içinde değil.
+    /// </summary>
     [Fact]
-    public void Startup_hala_MainWindow_ve_CargoDashboardWindow_aciyor()
+    public void Finans_dali_ShellWindow_aciyor()
     {
         var source = AppStartupSource();
 
-        Assert.Contains("new MainWindow(", source, StringComparison.Ordinal);
-        Assert.Contains("new CargoDashboardWindow(", source, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void Startup_henuz_ShellWindow_acmiyor()
-    {
-        var source = AppStartupSource();
-
-        Assert.DoesNotContain("new ShellWindow(", source, StringComparison.Ordinal);
+        Assert.Contains("new Views.Shell.ShellWindow(", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("new MainWindow(", source, StringComparison.Ordinal);
     }
 
     /// <summary>
-    /// Yetkiye göre başlangıç ekranı seçimi duruyor. Kabuk bu kararı henüz
-    /// devralmadı; devralınca burası bilinçli olarak değişecek.
+    /// Kargo dalı aynen duruyor — bu adımda kabuğa taşınmadı.
+    /// </summary>
+    [Fact]
+    public void Kargo_dali_hala_CargoDashboardWindow_aciyor()
+    {
+        var source = AppStartupSource();
+
+        Assert.Contains("new CargoDashboardWindow(", source, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Yetkisiz kullanıcı davranışı değişmedi: pencere açılmaz, uyarı gösterilir
+    /// ve oturum kapatılır.
+    /// </summary>
+    [Fact]
+    public void None_dali_uyari_gosterip_cikis_yapiyor()
+    {
+        var source = AppStartupSource();
+
+        Assert.Contains("startupMode == \"none\"", source, StringComparison.Ordinal);
+        Assert.Contains("Bu kullanıcı için tanımlı bir başlangıç ekranı bulunamadı", source, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Yetkiye göre başlangıç kararı duruyor. Kabuk bu kararı DEĞİŞTİRMEDİ;
+    /// yalnızca "finance" dalının açtığı pencere değişti.
     /// </summary>
     [Fact]
     public void ResolveStartupMode_sozlesmesi_duruyor()

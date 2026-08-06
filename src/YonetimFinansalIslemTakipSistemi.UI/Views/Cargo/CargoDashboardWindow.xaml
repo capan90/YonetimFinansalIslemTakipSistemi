@@ -1,6 +1,7 @@
 <Window x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.Cargo.CargoDashboardWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
         Title="Kargo Dashboard"
         Width="1100" Height="800"
         MinWidth="900" MinHeight="600"
@@ -130,12 +131,30 @@
                            Orientation="Horizontal"
                            Margin="0,0,0,12">
 
-                    <!-- Bugün Gelen -->
-                    <Border x:Name="CardTodayIncoming"
-                            Width="160" Height="80" Margin="0,0,10,10"
-                            Background="{DynamicResource Theme.Info.Background}" BorderBrush="{DynamicResource Theme.Info.Border}" BorderThickness="1"
-                            CornerRadius="6" Padding="12,8"
-                            ToolTip="Gönderim tarihi bugün olan gelen kargo sayısı.">
+                    <!-- TIKLANABİLİRLİK NOTU (Faz C bonus):
+                         Yalnızca ilk iki kart tıklanabilir. Sebebi doğruluk:
+                         rapor filtresi bu ikisinin saydığı kümeyi BİREBİR
+                         üretebiliyor (yön + gönderim tarihi = bugün).
+
+                         Diğer dördü üretemiyor:
+                           Toplam Bekleyen   → "teslim/iptal dışındaki tüm durumlar";
+                                               filtre tek bir durum değeri alıyor
+                           Bildirim Bekleyen → yalnızca aktif durumlardaki alt küme
+                           Acil Bekleyen     → Acil VEYA Çok Acil (iki değer) + bekliyor
+                           Bugün Teslim      → DURUM DEĞİŞİM tarihine göre sayılıyor,
+                                               filtre ise gönderim tarihine bakıyor
+
+                         Bu kartları tıklanabilir yapmak, karttaki sayıdan FARKLI
+                         bir liste açardı; rakama olan güveni bozar. Filtreyi
+                         genişletmek Application katmanı işidir, Faz C kapsamı dışı. -->
+
+                    <!-- Bugün Gelen — tıklanabilir -->
+                    <Button x:Name="CardTodayIncoming"
+                            Style="{StaticResource CargoCountCard}"
+                            Background="{DynamicResource Theme.Info.Background}"
+                            BorderBrush="{DynamicResource Theme.Info.Border}"
+                            Tag="Incoming" Click="CountCard_Click"
+                            ToolTip="Gönderim tarihi bugün olan gelen kargo sayısı. Tıklayın: raporu bu kayıtlara filtreler.">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock x:Name="CardTodayIncomingVal"
                                        Text="—" Style="{StaticResource Text.Display}"
@@ -143,13 +162,14 @@
                             <TextBlock Text="Bugün Gelen"
                                        Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Info.Text}"/>
                         </StackPanel>
-                    </Border>
+                    </Button>
 
-                    <!-- Bugün Giden -->
-                    <Border Width="160" Height="80" Margin="0,0,10,10"
-                            Background="{DynamicResource Theme.Success.Background}" BorderBrush="{DynamicResource Theme.Success.Border}" BorderThickness="1"
-                            CornerRadius="6" Padding="12,8"
-                            ToolTip="Gönderim tarihi bugün olan giden kargo sayısı.">
+                    <!-- Bugün Giden — tıklanabilir -->
+                    <Button Style="{StaticResource CargoCountCard}"
+                            Background="{DynamicResource Theme.Success.Background}"
+                            BorderBrush="{DynamicResource Theme.Success.Border}"
+                            Tag="Outgoing" Click="CountCard_Click"
+                            ToolTip="Gönderim tarihi bugün olan giden kargo sayısı. Tıklayın: raporu bu kayıtlara filtreler.">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock x:Name="CardTodayOutgoingVal"
                                        Text="—" Style="{StaticResource Text.Display}"
@@ -157,7 +177,7 @@
                             <TextBlock Text="Bugün Giden"
                                        Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Success.Text}"/>
                         </StackPanel>
-                    </Border>
+                    </Button>
 
                     <!-- Toplam Bekleyen — tanım CargoShipmentStatusRules.IsPending ile ortak -->
                     <Border Width="160" Height="80" Margin="0,0,10,10"
@@ -227,114 +247,41 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Grafik 1: Gelen/Giden -->
-                    <Border Grid.Column="0"
-                            BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1" CornerRadius="4" Padding="10">
+                    <!-- Grafik 1: Gelen/Giden — KATEGORİK (iki yön), mavi-turuncu -->
+                    <Border Grid.Column="0" Style="{StaticResource Chart.Card}">
                         <StackPanel>
-                            <DockPanel Margin="0,0,0,6">
-                                <TextBlock DockPanel.Dock="Left"
-                                           Text="Gelen / Giden (son 30 gün)"
-                                           Style="{StaticResource Text.H2}" Foreground="{DynamicResource Theme.Primary}"/>
-                            </DockPanel>
-                            <ItemsControl x:Name="DirectionChart">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid Margin="0,2">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="90"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="30"/>
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0"
-                                                       Text="{Binding Label}"
-                                                       Style="{StaticResource Text.Caption}" VerticalAlignment="Center"/>
-                                            <Border Grid.Column="1"
-                                                    Height="18" CornerRadius="2"
-                                                    HorizontalAlignment="Left"
-                                                    MinWidth="4"
-                                                    Width="{Binding BarWidth}"
-                                                    Background="{Binding Color}"
-                                                    Margin="0,0,4,0"/>
-                                            <TextBlock Grid.Column="2"
-                                                       Text="{Binding Value}"
-                                                       Style="{StaticResource Text.Caption}" VerticalAlignment="Center"/>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                            <TextBlock Text="Gelen / Giden (son 30 gün)"
+                                       Style="{StaticResource Chart.Title}"/>
+                            <lvc:CartesianChart x:Name="DirectionChart"
+                                                Style="{StaticResource Chart.Cartesian}"/>
+                            <TextBlock Style="{StaticResource Chart.Caption}"
+                                       Text="Yön ayrımı mavi–turuncu ile yapılır; kırmızı/yeşil renk körlüğünde ayrışmaz."/>
                         </StackPanel>
                     </Border>
 
-                    <!-- Grafik 2: Durum Dağılımı -->
-                    <Border Grid.Column="2"
-                            BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1" CornerRadius="4" Padding="10">
+                    <!-- Grafik 2: Durum Dağılımı — BÜYÜKLÜK verisi, tek hue -->
+                    <Border Grid.Column="2" Style="{StaticResource Chart.Card}">
                         <StackPanel>
                             <TextBlock Text="Durum Dağılımı"
-                                       Style="{StaticResource Text.H2}" Foreground="{DynamicResource Theme.Primary}"
-                                       Margin="0,0,0,6"/>
-                            <ItemsControl x:Name="StatusChart">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid Margin="0,2">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="90"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="30"/>
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0"
-                                                       Text="{Binding Label}"
-                                                       Style="{StaticResource Text.Caption}" VerticalAlignment="Center"/>
-                                            <Border Grid.Column="1"
-                                                    Height="18" CornerRadius="2"
-                                                    HorizontalAlignment="Left"
-                                                    MinWidth="4"
-                                                    Width="{Binding BarWidth}"
-                                                    Background="{Binding Color}"
-                                                    Margin="0,0,4,0"/>
-                                            <TextBlock Grid.Column="2"
-                                                       Text="{Binding Value}"
-                                                       Style="{StaticResource Text.Caption}" VerticalAlignment="Center"/>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                                       Style="{StaticResource Chart.Title}"/>
+                            <lvc:CartesianChart x:Name="StatusChart"
+                                                Style="{StaticResource Chart.Cartesian}"
+                                                LegendPosition="Hidden"/>
+                            <TextBlock Style="{StaticResource Chart.Caption}"
+                                       Text="Tek boyutlu büyüklük: renk kimlik değil miktar taşır, çoktan aza sıralıdır."/>
                         </StackPanel>
                     </Border>
 
-                    <!-- Grafik 3: Top 5 Kargo Firması -->
-                    <Border Grid.Column="4"
-                            BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1" CornerRadius="4" Padding="10">
+                    <!-- Grafik 3: Top 5 Kargo Firması — BÜYÜKLÜK verisi -->
+                    <Border Grid.Column="4" Style="{StaticResource Chart.Card}">
                         <StackPanel>
                             <TextBlock Text="Top 5 Kargo Firması"
-                                       Style="{StaticResource Text.H2}" Foreground="{DynamicResource Theme.Primary}"
-                                       Margin="0,0,0,6"/>
-                            <ItemsControl x:Name="CompanyChart">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid Margin="0,2">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="90"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="30"/>
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0"
-                                                       Text="{Binding Label}"
-                                                       Style="{StaticResource Text.Caption}" VerticalAlignment="Center"
-                                                       TextTrimming="CharacterEllipsis"/>
-                                            <Border Grid.Column="1"
-                                                    Height="18" CornerRadius="2"
-                                                    HorizontalAlignment="Left"
-                                                    MinWidth="4"
-                                                    Width="{Binding BarWidth}"
-                                                    Background="{Binding Color}"
-                                                    Margin="0,0,4,0"/>
-                                            <TextBlock Grid.Column="2"
-                                                       Text="{Binding Value}"
-                                                       Style="{StaticResource Text.Caption}" VerticalAlignment="Center"/>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                                       Style="{StaticResource Chart.Title}"/>
+                            <lvc:CartesianChart x:Name="CompanyChart"
+                                                Style="{StaticResource Chart.Cartesian}"
+                                                LegendPosition="Hidden"/>
+                            <TextBlock Style="{StaticResource Chart.Caption}"
+                                       Text="Beşten fazla firma varsa küçükler 'Diğer' altında toplanır."/>
                         </StackPanel>
                     </Border>
                 </Grid>

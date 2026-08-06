@@ -12,6 +12,9 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Querie
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
+using YonetimFinansalIslemTakipSistemi.UI.Common;
+using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Cargo;
 
@@ -24,11 +27,26 @@ public partial class CargoDashboardWindow : Window
     // ComboBox item sarmalayıcıları
     private record ComboItem<T>(string Label, T? Value);
 
+    // Grafiklerin ham verisi. Seriler bundan üretilir; tema değişiminde
+    // yeniden sorgu atmadan yeniden boyanabilsin diye saklanır.
+    private IReadOnlyList<(string Label, double Value)> _directionData = [];
+    private IReadOnlyList<(string Label, double Value)> _statusData    = [];
+    private IReadOnlyList<(string Label, double Value)> _companyData   = [];
+
+    private static IReadOnlyList<(string Label, double Value)> ToPairs(
+        IReadOnlyList<CargoDashboardChartItem> items)
+        => items.Select(i => (i.Label, (double)i.Value)).ToList();
+
     public CargoDashboardWindow(IServiceProvider services)
     {
         InitializeComponent();
         _services      = services;
         _dialogService = services.GetRequiredService<IDialogService>();
+
+        // LiveCharts SkiaSharp ile çizer, DynamicResource'u görmez: tema
+        // değişince seriler elle yeniden boyanmalı (yeniden sorgu atmadan).
+        ChartPalette.ThemeChanged += RebuildCharts;
+        Unloaded += (_, _) => ChartPalette.ThemeChanged -= RebuildCharts;
 
         Loaded += async (_, _) =>
         {
@@ -81,10 +99,11 @@ public partial class CargoDashboardWindow : Window
         CardUrgentVal.Text         = dto.UrgentPending.ToString();
         CardTodayDeliveredVal.Text = dto.TodayDelivered.ToString();
 
-        // Grafikler
-        DirectionChart.ItemsSource = BuildChartItems(dto.DirectionChart);
-        StatusChart.ItemsSource    = BuildChartItems(dto.StatusChart);
-        CompanyChart.ItemsSource   = BuildChartItems(dto.CompanyChart);
+        // Grafikler — ham veri saklanır, seriler ondan kurulur
+        _directionData = ToPairs(dto.DirectionChart);
+        _statusData    = ToPairs(dto.StatusChart);
+        _companyData   = ChartPalette.GroupSmall(ToPairs(dto.CompanyChart), keep: 5);
+        RebuildCharts();
 
         // Son 10 hareket
         RecentGrid.ItemsSource = dto.RecentShipments;
@@ -115,31 +134,130 @@ public partial class CargoDashboardWindow : Window
         CardNotifPendingVal.Text   = dto.NotificationPending.ToString();
         CardUrgentVal.Text         = dto.UrgentPending.ToString();
         CardTodayDeliveredVal.Text = dto.TodayDelivered.ToString();
-        DirectionChart.ItemsSource = BuildChartItems(dto.DirectionChart);
-        StatusChart.ItemsSource    = BuildChartItems(dto.StatusChart);
-        CompanyChart.ItemsSource   = BuildChartItems(dto.CompanyChart);
-        RecentGrid.ItemsSource     = dto.RecentShipments;
+
+        // Ham veri saklanır; seriler tema değişiminde bundan yeniden kurulur.
+        // Beşten fazla firma gelirse dördüncü renk üretmek yerine "Diğer"de toplanır.
+        _directionData = ToPairs(dto.DirectionChart);
+        _statusData    = ToPairs(dto.StatusChart);
+        _companyData   = ChartPalette.GroupSmall(ToPairs(dto.CompanyChart), keep: 5);
+
+        RebuildCharts();
+        RecentGrid.ItemsSource = dto.RecentShipments;
     }
 
-    // ── Grafik yardımcı ───────────────────────────────────────────────────
+    // ── Grafikler ─────────────────────────────────────────────────────────
+    //
+    // Elle çizilen Rectangle barlar LiveCharts'a taşındı. DTO'daki
+    // CargoDashboardChartItem.Color alanı BİLİNÇLİ OLARAK yok sayılıyor:
+    // Application katmanından gelen keyfi hex'lerdi (turkuaz/mor/macenta yan
+    // yana) ve tema sözlüğünü görmüyorlardı. Renk artık ChartPalette'ten,
+    // verinin TÜRÜNE göre seçilir.
 
-    /// <summary>Bar genişliğini maksimum değere göre normalize eder (0–200 px arası).</summary>
-    private static IReadOnlyList<ChartBarItem> BuildChartItems(IReadOnlyList<CargoDashboardChartItem> items)
+    /// <summary>
+    /// Tüm dashboard grafiklerini aktif tema renkleriyle kurar.
+    /// Veri yüklendiğinde ve tema değiştiğinde çağrılır.
+    /// </summary>
+    private void RebuildCharts()
     {
-        if (items.Count == 0) return [];
-        int maxVal = items.Max(i => i.Value);
-        return items.Select(i =>
-        {
-            // Hex string → SolidColorBrush (WPF binding Background için doğrudan Brush gerekir)
-            var brush = new SolidColorBrush(
-                (Color)ColorConverter.ConvertFromString(i.Color));
-            return new ChartBarItem(
-                i.Label,
-                i.Value,
-                brush,
-                maxVal > 0 ? (int)(i.Value * 200.0 / maxVal) : 0);
-        }).ToList();
+        BuildDirectionChart();
+        BuildStatusChart();
+        BuildCompanyChart();
     }
+
+    /// <summary>
+    /// Gelen / Giden — İKİ KATEGORİ, yön bilgisi taşır.
+    /// Kırmızı/yeşil değil mavi–turuncu; iki seri olduğu için legend zorunlu.
+    /// </summary>
+    private void BuildDirectionChart()
+    {
+        var data = _directionData;
+        if (data.Count == 0) { DirectionChart.Series = []; return; }
+
+        DirectionChart.Series = data.Select((item, i) => (ISeries)new ColumnSeries<double>
+        {
+            Name   = item.Label,
+            Values = [item.Value],
+            Fill   = ChartPalette.Fill(i == 0 ? ChartPalette.Inflow() : ChartPalette.Outflow()),
+        }).ToArray();
+
+        DirectionChart.XAxes = [CategoryAxis([""])];
+        DirectionChart.YAxes = [ValueAxis()];
+    }
+
+    /// <summary>
+    /// Durum Dağılımı — TEK BOYUTLU BÜYÜKLÜK verisi.
+    /// Burada renk kimlik değil büyüklük taşır: kategorik palet kullanılmaz,
+    /// tek hue'nun açık→koyu adımları kullanılır. Kategori sayısı paletle
+    /// sınırlı değildir çünkü ayrım renkle değil sırayla yapılır.
+    /// </summary>
+    private void BuildStatusChart()
+    {
+        var data = _statusData;
+        if (data.Count == 0) { StatusChart.Series = []; return; }
+
+        // Büyükten küçüğe: skala adımı sıralamayla anlam kazanır
+        var ordered = data.OrderByDescending(d => d.Value).ToList();
+
+        StatusChart.Series =
+        [
+            new ColumnSeries<double>
+            {
+                Name    = "Kayıt",
+                Values  = ordered.Select(d => (double)d.Value).ToArray(),
+                // Skalanın açık ucu yüzeyle düşük kontrastlı; görünürlüğü kenarlık taşır
+                Stroke  = ChartPalette.Stroke(ChartPalette.SequentialStroke(), 1f),
+                Fill    = ChartPalette.Fill(ChartPalette.Sequential(ordered.Count - 1, ordered.Count)),
+            }
+        ];
+
+        StatusChart.XAxes = [CategoryAxis(ordered.Select(d => d.Label).ToArray())];
+        StatusChart.YAxes = [ValueAxis()];
+    }
+
+    /// <summary>
+    /// Top 5 Kargo Firması — yine büyüklük verisi, kimlik değil.
+    /// Beşten fazla firma gelirse ChartPalette.GroupSmall devreye girer;
+    /// dördüncü bir kategorik renk ÜRETİLMEZ.
+    /// </summary>
+    private void BuildCompanyChart()
+    {
+        var data = _companyData;
+        if (data.Count == 0) { CompanyChart.Series = []; return; }
+
+        var ordered = data.OrderByDescending(d => d.Value).ToList();
+
+        CompanyChart.Series =
+        [
+            new ColumnSeries<double>
+            {
+                Name   = "Gönderi",
+                Values = ordered.Select(d => (double)d.Value).ToArray(),
+                Stroke = ChartPalette.Stroke(ChartPalette.SequentialStroke(), 1f),
+                Fill   = ChartPalette.Fill(ChartPalette.Sequential(ordered.Count - 1, ordered.Count)),
+            }
+        ];
+
+        CompanyChart.XAxes = [CategoryAxis(ordered.Select(d => d.Label).ToArray())];
+        CompanyChart.YAxes = [ValueAxis()];
+    }
+
+    private static Axis CategoryAxis(string[] labels) => new()
+    {
+        Labels          = labels,
+        LabelsPaint     = ChartPalette.Fill(ChartPalette.AxisText()),
+        TextSize        = 11,
+        SeparatorsPaint = null,
+        LabelsRotation  = labels.Length > 4 ? 30 : 0,
+    };
+
+    private static Axis ValueAxis() => new()
+    {
+        LabelsPaint     = ChartPalette.Fill(ChartPalette.AxisText()),
+        TextSize        = 11,
+        SeparatorsPaint = ChartPalette.Stroke(ChartPalette.GridLine(), 1),
+        MinLimit        = 0,
+        Labeler         = v => v.ToString("N0"),
+    };
 
     // ── Filtre Combobox Doldurma ──────────────────────────────────────────
 
@@ -211,6 +329,43 @@ public partial class CargoDashboardWindow : Window
     }
 
     // ── Rapor ─────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Sayaç kartına tıklama → raporu o kartın saydığı kayıtlara filtreler
+    /// (Faz C bonus). Yalnızca "Bugün Gelen" ve "Bugün Giden" için bağlıdır;
+    /// gerekçesi XAML'de yazılı — diğer kartların kümesi mevcut filtre
+    /// alanlarıyla birebir üretilemiyor ve farklı bir liste açmak karttaki
+    /// rakama olan güveni bozardı.
+    ///
+    /// Mevcut filtre alanlarını doldurup normal rapor yolunu kullanır;
+    /// yeni sorgu veya iş mantığı yazılmadı.
+    /// </summary>
+    private async void CountCard_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string direction }) return;
+
+        ClearFilterButton_Click(sender, e);
+
+        DateFromPicker.SelectedDate = DateTime.Today;
+        DateToPicker.SelectedDate   = DateTime.Today;
+
+        // "Tümü" 0. sırada; Gelen 1, Giden 2 (bkz. PopulateFilterCombos)
+        DirectionCombo.SelectedIndex = direction == "Incoming" ? 1 : 2;
+
+        try
+        {
+            await RunReportAsync();
+            // Rapor tablosu sayfanın altında; kullanıcı tıkladığı sonucu görsün
+            ReportGrid.BringIntoView();
+        }
+        catch (Exception ex)
+        {
+            _ = _services.GetRequiredService<ISystemLogService>()
+                .LogErrorAsync("Cargo", "Sayaç kartından rapor alınırken hata oluştu", ex,
+                               source: nameof(CargoDashboardWindow));
+            _dialogService.ShowError("Rapor alınırken hata oluştu. Ayrıntılar sistem loguna kaydedildi.", "Rapor Hatası");
+        }
+    }
 
     private async void FilterButton_Click(object sender, RoutedEventArgs e)
     {
@@ -520,5 +675,6 @@ public partial class CargoDashboardWindow : Window
     private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
 }
 
-/// <summary>Grafik çubuğu için UI modeli — BarWidth px genişlik, ColorBrush WPF Brush'ı içerir.</summary>
-internal record ChartBarItem(string Label, int Value, System.Windows.Media.SolidColorBrush Color, int BarWidth);
+// ChartBarItem KALDIRILDI (Faz C). Elle çizilen Rectangle barların UI modeliydi;
+// px genişliği kendisi hesaplıyor ve rengi Application katmanındaki hex'ten
+// alıyordu. Barlar LiveCharts'a taşındı, renk ChartPalette'ten geliyor.

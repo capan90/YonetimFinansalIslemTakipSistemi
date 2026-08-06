@@ -69,10 +69,14 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     }
 
     /// <summary>
-    /// Ekran bu kullanıcıya görünür mü: yetkisi var mı VE taşınmış mı.
+    /// Ekran navigasyon rayında görünür mü.
+    ///
+    /// Parametreli ekranlar rayda YER ALMAZ: bir kayıt üzerinde çalışırlar ve
+    /// raydan tıklanınca hangi kaydı açacakları belli değildir. Onlar kendi
+    /// liste ekranlarından açılır (ör. kargo listesindeki "Operasyon" butonu).
     /// </summary>
     private bool IsVisible(ScreenDefinition screen) =>
-        screen.IsMigrated && HasPermission(screen);
+        screen.IsMigrated && !screen.IsParameterized && HasPermission(screen);
 
     private bool HasPermission(ScreenDefinition screen) =>
         screen.IsAllowedFor(_userContext.HasPermission);
@@ -97,30 +101,82 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     /// </returns>
     public ShellTab? OpenScreen(ScreenKey key)
     {
+        var definition = Resolve(key);
+        if (definition is null) return null;
+
+        // Parametreli ekran parametresiz açılamaz — çağıran taraftaki hata.
+        if (definition.IsParameterized) return null;
+
         // Zaten açık mı — tekillik kontrolü sekme üretiminden ÖNCE
-        var existing = Tabs.FirstOrDefault(t => t.Key == key);
+        var existing = Find(key, instanceKey: null);
         if (existing is not null)
         {
             ActiveTab = existing;
             return existing;
         }
 
-        var definition = _screens.FirstOrDefault(s => s.Key == key);
-        if (definition is null) return null;
-
-        // Yetki kontrolü burada da yapılır: navigasyonda gizlemek yetmez,
-        // ekran programatik olarak da (kısayol, komut paleti, kod) açılamamalı.
-        if (!HasPermission(definition)) return null;
-
-        if (!definition.IsMigrated) return null;
-
-        var view = definition.CreateView!(_services);
-        var tab  = new ShellTab(definition, view);
+        var tab = new ShellTab(definition, definition.CreateView!(_services));
 
         Tabs.Add(tab);
         ActiveTab = tab;
         return tab;
     }
+
+    /// <summary>
+    /// Bir KAYIT üzerinde çalışan ekranı açar (ör. Kargo Operasyon Merkezi).
+    ///
+    /// Aynı ekran türü altında farklı kayıtlar ayrı sekmelerde açılır; aynı
+    /// kayıt ikinci kez açılırsa mevcut sekmeye odaklanılır.
+    /// </summary>
+    /// <param name="key">Ekran kimliği.</param>
+    /// <param name="parameter">Ekranın üzerinde çalışacağı kayıt.</param>
+    public ShellTab? OpenScreen(ScreenKey key, object parameter)
+    {
+        ArgumentNullException.ThrowIfNull(parameter);
+
+        var definition = Resolve(key);
+        if (definition is null) return null;
+
+        // Tekil ekran parametre kabul etmez — yine çağıran taraftaki hata.
+        if (!definition.IsParameterized) return null;
+
+        // Örnek burada üretilir çünkü kimliği (InstanceKey) parametreden çıkar;
+        // üretmeden hangi sekmeye denk geldiğini bilemeyiz.
+        var instance = definition.CreateInstance!(_services, parameter);
+
+        var existing = Find(key, instance.InstanceKey);
+        if (existing is not null)
+        {
+            ActiveTab = existing;
+            return existing;
+        }
+
+        var tab = new ShellTab(definition, instance.View, instance.InstanceKey, instance.Title);
+
+        Tabs.Add(tab);
+        ActiveTab = tab;
+        return tab;
+    }
+
+    /// <summary>
+    /// Ekranı kayıt tablosunda bulur ve açılabilirliğini doğrular.
+    ///
+    /// Yetki kontrolü burada yapılır: navigasyonda gizlemek YETMEZ, ekran
+    /// programatik olarak da (kısayol, komut paleti, kod) açılamamalı.
+    /// </summary>
+    private ScreenDefinition? Resolve(ScreenKey key)
+    {
+        var definition = _screens.FirstOrDefault(s => s.Key == key);
+
+        if (definition is null)            return null;
+        if (!HasPermission(definition))    return null;
+        if (!definition.IsMigrated)        return null;
+
+        return definition;
+    }
+
+    private ShellTab? Find(ScreenKey key, string? instanceKey)
+        => Tabs.FirstOrDefault(t => t.Matches(key, instanceKey));
 
     /// <summary>
     /// Sekmeyi kapatır. Kapatılamaz sekmeler ve kaydedilmemiş değişikliği olan

@@ -71,6 +71,18 @@ public static class ScreenRegistry
         new(ScreenKey.OutgoingCargo, "Giden Kargolar",
             [PermissionType.CanViewOutgoingCargo, PermissionType.CanManageOutgoingCargo]),
 
+        // PARAMETRELİ: seçili bir kargo üzerinde çalışır, navigasyon rayında
+        // görünmez. Kargo listesindeki "Operasyon" butonundan açılır; farklı
+        // kargolar ayrı sekmelerde durabilir.
+        // Yetki kapısı listeyi açan kapının aynısı — operasyon o listeden
+        // erişilen bir eylem.
+        new(ScreenKey.CargoOperationCenter, "Operasyon Merkezi",
+            [
+                PermissionType.CanViewIncomingCargo, PermissionType.CanManageIncomingCargo,
+                PermissionType.CanViewOutgoingCargo, PermissionType.CanManageOutgoingCargo,
+            ],
+            IsParameterized: true),
+
         new(ScreenKey.CompanyDirectory, "Firma Rehberi",
             [PermissionType.CanManageCompanyDirectory, PermissionType.CanViewCargoModule]),
 

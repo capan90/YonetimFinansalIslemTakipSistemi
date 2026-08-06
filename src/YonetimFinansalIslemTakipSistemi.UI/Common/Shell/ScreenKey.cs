@@ -20,14 +20,17 @@ public enum ScreenKey
     ExchangeRates,
 
     // ── Kargo ─────────────────────────────────────────────────────────────
-    // NOT: Kargo Operasyon Merkezi burada YOK. Bağımsız bir ekran değil —
-    // kurucusu seçili bir CargoShipmentDto alıyor ve kargo listesinden
-    // "Operasyon" butonuyla açılıyor. Sekme olabilmesi için sözleşmenin
-    // parametreli ekranları desteklemesi gerekir; bu adımda öyle bir
-    // mekanizma kurulmadı (bkz. rapor).
     CargoDashboard,
     IncomingCargo,
     OutgoingCargo,
+
+    /// <summary>
+    /// PARAMETRELİ ekran: seçili bir kargo gönderisi üzerinde çalışır.
+    /// Navigasyon rayında görünmez; kargo listesindeki "Operasyon" butonundan
+    /// açılır. Farklı kargolar ayrı sekmelerde açılabilir.
+    /// </summary>
+    CargoOperationCenter,
+
     CompanyDirectory,
     CargoCompanies,
     WhatsAppContacts,

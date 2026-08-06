@@ -69,6 +69,16 @@ public class ScreenRegistryPermissionTests
             [PermissionType.CanViewOutgoingCargo, PermissionType.CanManageOutgoingCargo]
         },
 
+        // PARAMETRELİ ekran. Operasyon, kargo listesinden erişilen bir eylem;
+        // yetki kapısı o listelerin kapılarının birleşimi.
+        {
+            ScreenKey.CargoOperationCenter,
+            [
+                PermissionType.CanViewIncomingCargo, PermissionType.CanManageIncomingCargo,
+                PermissionType.CanViewOutgoingCargo, PermissionType.CanManageOutgoingCargo,
+            ]
+        },
+
         // MenuItemFirmaRehberi / NavFirmaRehberiButton
         {
             ScreenKey.CompanyDirectory,
@@ -184,17 +194,34 @@ public class ScreenRegistryPermissionTests
     }
 
     /// <summary>
-    /// Kargo Operasyon Merkezi kayıt tablosunda OLMAMALI: bağımsız bir ekran
-    /// değil, seçili bir kargo kaydı üzerinde çalışıyor
+    /// Kargo Operasyon Merkezi PARAMETRELİ olarak işaretli olmalı: bağımsız bir
+    /// ekran değil, seçili bir kargo kaydı üzerinde çalışıyor
     /// (<c>CargoOperationCenterWindow(IServiceProvider, CargoShipmentDto)</c>).
-    /// Sekme yapılabilmesi için sözleşmenin parametreli ekranları desteklemesi
-    /// gerekir; bu adımda öyle bir mekanizma kurulmadı.
+    ///
+    /// Tekil olarak işaretlenirse navigasyon rayında görünür ve tıklandığında
+    /// hangi kaydı açacağı belirsiz kalırdı.
     /// </summary>
     [Fact]
-    public void Parametreli_ekranlar_sekme_olarak_kayitli_degil()
+    public void Operasyon_merkezi_parametreli_ekran_olarak_isaretli()
     {
-        var keys = ScreenRegistry.All.Select(s => s.Key.ToString()).ToList();
+        var screen = ScreenRegistry.All.Single(s => s.Key == ScreenKey.CargoOperationCenter);
 
-        Assert.DoesNotContain("CargoOperationCenter", keys);
+        Assert.True(screen.IsParameterized,
+            "Operasyon Merkezi kayıt üzerinde çalışır; tekil ekran olarak işaretlenemez.");
+    }
+
+    /// <summary>
+    /// Parametreli olmayan her ekran tekil açılabilmeli — ikisi birden
+    /// tanımlanamaz, hiçbiri tanımlanmazsa ekran taşınmamış sayılır.
+    /// </summary>
+    [Fact]
+    public void Bir_ekran_hem_tekil_hem_parametreli_olamaz()
+    {
+        var both = ScreenRegistry.All
+            .Where(s => s.CreateView is not null && s.CreateInstance is not null)
+            .ToList();
+
+        Assert.True(both.Count == 0,
+            "Hem CreateView hem CreateInstance tanımlı: " + string.Join(", ", both.Select(s => s.Key)));
     }
 }

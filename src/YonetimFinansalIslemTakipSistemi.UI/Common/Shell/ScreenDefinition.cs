@@ -32,21 +32,45 @@ namespace YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
 /// taşıyamıyordu ve kabuk mevcut davranıştan sapardı.
 /// </param>
 /// <param name="CreateView">
-/// Ekranın görünümünü üretir. <c>null</c> ise ekran henüz taşınmamıştır.
+/// TEKİL ekranın görünümünü üretir — kabukta bir kez açılır.
+/// Parametreli ekranlarda <c>null</c> bırakılır.
+/// </param>
+/// <param name="CreateInstance">
+/// PARAMETRELİ ekranın örneğini üretir. Aynı ekran türü altında farklı
+/// kayıtlar için ayrı sekmeler açılabilir (bkz. <see cref="ScreenInstance"/>).
+/// Tekil ekranlarda <c>null</c> bırakılır.
 /// </param>
 /// <param name="CanClose">
 /// Sekme KULLANICI tarafından kapatılabilir mi. Logout sırasında bu bayrak
 /// dikkate alınmaz; kabuk her hâlükârda boşalır.
 /// </param>
+/// <param name="IsParameterized">
+/// Ekran bir KAYIT üzerinde mi çalışıyor.
+///
+/// Ekranın doğasıdır ve taşınmadan ÖNCE de bilinir; bu yüzden fabrikadan
+/// türetilmez, açıkça bildirilir. Türetilseydi "henüz taşınmamış parametreli
+/// ekran" ifade edilemezdi — kayıt tablosu bugün tam olarak o durumda.
+///
+/// Parametreli ekran parametresiz açılamaz, tekil ekran da parametreyle
+/// açılamaz; ikisi de çağıran tarafındaki hatayı gösterir.
+/// </param>
 public sealed record ScreenDefinition(
-    ScreenKey                                 Key,
-    string                                    Title,
-    IReadOnlyList<PermissionType>             RequiredPermissions,
-    Func<IServiceProvider, FrameworkElement>? CreateView = null,
-    bool                                      CanClose   = true)
+    ScreenKey                                         Key,
+    string                                            Title,
+    IReadOnlyList<PermissionType>                     RequiredPermissions,
+    Func<IServiceProvider, FrameworkElement>?         CreateView      = null,
+    Func<IServiceProvider, object, ScreenInstance>?   CreateInstance  = null,
+    bool                                              IsParameterized = false,
+    bool                                              CanClose        = true)
 {
-    /// <summary>Ekran UserControl'e taşındı ve kabukta açılabilir mi.</summary>
-    public bool IsMigrated => CreateView is not null;
+    /// <summary>
+    /// Ekran UserControl'e taşındı ve kabukta açılabilir mi.
+    /// Doğasına uyan fabrikanın dolu olması gerekir: tekil ekran
+    /// <see cref="CreateView"/>, parametreli ekran <see cref="CreateInstance"/>.
+    /// </summary>
+    public bool IsMigrated => IsParameterized
+        ? CreateInstance is not null
+        : CreateView is not null;
 
     /// <summary>
     /// Kullanıcı bu ekranı görebilir mi. Yetki listesi boşsa herkese açıktır;

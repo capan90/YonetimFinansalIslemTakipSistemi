@@ -52,7 +52,9 @@ public class ShellViewModelTests
         => new(key, key.ToString(),
                permission is null ? [] : [permission.Value],
                migrated ? factory ?? (_ => new UserControl()) : null,
-               canClose);
+               CreateInstance: null,
+               IsParameterized: false,
+               CanClose: canClose);
 
     /// <summary>
     /// ShellViewModel yalnızca IUserContext ve ekran listesine bağlı;
@@ -202,6 +204,136 @@ public class ShellViewModelTests
         vm.OpenScreen(ScreenKey.CashTransactions);
 
         Assert.Equal(1, created);
+    });
+
+    // ── Parametreli ekranlar ─────────────────────────────────────────────
+
+    /// <summary>Kayıt üzerinde çalışan ekran tanımı (ör. Kargo Operasyon Merkezi).</summary>
+    private static ScreenDefinition ParameterizedScreen(
+        ScreenKey key,
+        PermissionType permission,
+        Action? onCreate = null)
+        => new(key, key.ToString(), [permission],
+               CreateInstance: (_, parameter) =>
+               {
+                   onCreate?.Invoke();
+                   return new ScreenInstance(
+                       InstanceKey: parameter.ToString()!,
+                       Title:       $"{key} — {parameter}",
+                       View:        new UserControl());
+               },
+               IsParameterized: true);
+
+    [Fact]
+    public void Farkli_kayitlar_ayri_sekmelerde_acilir() => ThemeTestHost.Run(() =>
+    {
+        var vm = Build(
+            [ParameterizedScreen(ScreenKey.CargoOperationCenter, PermissionType.CanViewIncomingCargo)],
+            PermissionType.CanViewIncomingCargo);
+
+        var first  = vm.OpenScreen(ScreenKey.CargoOperationCenter, "KRG-0001");
+        var second = vm.OpenScreen(ScreenKey.CargoOperationCenter, "KRG-0002");
+
+        Assert.Equal(2, vm.Tabs.Count);
+        Assert.NotSame(first, second);
+        Assert.Same(second, vm.ActiveTab);
+    });
+
+    [Fact]
+    public void Ayni_kayit_ikinci_kez_acilirsa_mevcut_sekmeye_odaklanilir() => ThemeTestHost.Run(() =>
+    {
+        var created = 0;
+        var vm = Build(
+            [ParameterizedScreen(ScreenKey.CargoOperationCenter, PermissionType.CanViewIncomingCargo,
+                                 onCreate: () => created++)],
+            PermissionType.CanViewIncomingCargo);
+
+        var first = vm.OpenScreen(ScreenKey.CargoOperationCenter, "KRG-0001");
+        vm.OpenScreen(ScreenKey.CargoOperationCenter, "KRG-0002");
+        var again = vm.OpenScreen(ScreenKey.CargoOperationCenter, "KRG-0001");
+
+        Assert.Equal(2, vm.Tabs.Count);
+        Assert.Same(first, again);
+        Assert.Same(first, vm.ActiveTab);
+
+        // Örnek kimliği parametreden çıktığı için üretim kaçınılmaz; sekme
+        // İKİ kez oluşmadığı sürece sorun yok.
+        Assert.Equal(3, created);
+    });
+
+    [Fact]
+    public void Parametreli_ekran_basligi_kayda_ozgudur() => ThemeTestHost.Run(() =>
+    {
+        var vm = Build(
+            [ParameterizedScreen(ScreenKey.CargoOperationCenter, PermissionType.CanViewIncomingCargo)],
+            PermissionType.CanViewIncomingCargo);
+
+        var tab = vm.OpenScreen(ScreenKey.CargoOperationCenter, "KRG-0042")!;
+
+        Assert.Contains("KRG-0042", tab.Title, StringComparison.Ordinal);
+    });
+
+    [Fact]
+    public void Parametreli_ekran_parametresiz_acilamaz() => ThemeTestHost.Run(() =>
+    {
+        var vm = Build(
+            [ParameterizedScreen(ScreenKey.CargoOperationCenter, PermissionType.CanViewIncomingCargo)],
+            PermissionType.CanViewIncomingCargo);
+
+        Assert.Null(vm.OpenScreen(ScreenKey.CargoOperationCenter));
+        Assert.Empty(vm.Tabs);
+    });
+
+    [Fact]
+    public void Tekil_ekran_parametreyle_acilamaz() => ThemeTestHost.Run(() =>
+    {
+        var vm = Build([Screen(ScreenKey.Analysis, PermissionType.CanViewReports)],
+                       PermissionType.CanViewReports);
+
+        Assert.Null(vm.OpenScreen(ScreenKey.Analysis, "herhangi"));
+        Assert.Empty(vm.Tabs);
+    });
+
+    [Fact]
+    public void Parametreli_ekranda_da_yetki_aranir() => ThemeTestHost.Run(() =>
+    {
+        var vm = Build(
+            [ParameterizedScreen(ScreenKey.CargoOperationCenter, PermissionType.CanViewIncomingCargo)]);
+
+        Assert.Null(vm.OpenScreen(ScreenKey.CargoOperationCenter, "KRG-0001"));
+        Assert.Empty(vm.Tabs);
+    });
+
+    [Fact]
+    public void Parametreli_ekran_navigasyon_rayinda_gorunmez() => ThemeTestHost.Run(() =>
+    {
+        // Raydan tıklanınca hangi kaydı açacağı belli değil; kendi liste
+        // ekranından açılır.
+        var vm = Build(
+        [
+            Screen(ScreenKey.IncomingCargo, PermissionType.CanViewIncomingCargo),
+            ParameterizedScreen(ScreenKey.CargoOperationCenter, PermissionType.CanViewIncomingCargo),
+        ],
+        PermissionType.CanViewIncomingCargo);
+
+        Assert.Single(vm.NavigationItems);
+        Assert.Equal(ScreenKey.IncomingCargo, vm.NavigationItems[0].Key);
+    });
+
+    [Fact]
+    public void Parametreli_sekmeler_ayri_ayri_kapatilir() => ThemeTestHost.Run(() =>
+    {
+        var vm = Build(
+            [ParameterizedScreen(ScreenKey.CargoOperationCenter, PermissionType.CanViewIncomingCargo)],
+            PermissionType.CanViewIncomingCargo);
+
+        var first = vm.OpenScreen(ScreenKey.CargoOperationCenter, "KRG-0001")!;
+        vm.OpenScreen(ScreenKey.CargoOperationCenter, "KRG-0002");
+
+        Assert.True(vm.CloseTab(first));
+
+        Assert.Single(vm.Tabs);
+        Assert.Equal("KRG-0002", vm.Tabs[0].InstanceKey);
     });
 
     // ── Sekme kapatma ve aktif sekme ─────────────────────────────────────

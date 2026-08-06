@@ -1,0 +1,74 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF">
+
+    <!--
+    ══════════════════════════════════════════════════════════════════════════
+    GRAFİK KABUĞU
+
+    Renk TOKEN'LARI burada değil, tema sözlüklerindedir
+    (LightTheme.xaml / DarkTheme.xaml → Chart.*).
+
+    NEDEN: tek bir dosya iki temanın değerlerini taşıyamaz. Token'lar tema
+    sözlüğünde durunca hem tema takası kendiliğinden çalışır hem de Faz B'de
+    yazılan parite/kontrast testleri grafik paletini otomatik kapsar.
+    Bu dosya grafiklerin YERLEŞİM ve KAP stillerini taşır.
+
+    Renklerin okunduğu tek yer: Common/ChartPalette.cs
+    Palet kuralları: docs/02-Architecture/ChartPalette.md
+    ══════════════════════════════════════════════════════════════════════════
+    -->
+
+    <!-- Grafik kabı — başlık + grafik + (varsa) katlanabilir tablo -->
+    <Style x:Key="Chart.Card" TargetType="Border">
+        <Setter Property="Background"      Value="{DynamicResource Theme.Surface}"/>
+        <Setter Property="BorderBrush"     Value="{DynamicResource Theme.Border}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius"    Value="6"/>
+        <Setter Property="Padding"         Value="12,10"/>
+    </Style>
+
+    <!-- Grafik METİN stilleri (Chart.Title / Chart.Caption / Chart.EmptyState)
+         bilinçli olarak AppStyles.xaml'dedir: BasedOn ile Text.* ölçeğine
+         dayanıyorlar ve BasedOn kardeş sözlükler arası StaticResource'u
+         güvenilir çözemiyor (BasedOn bir DependencyProperty değil, bu yüzden
+         DynamicResource da kabul etmiyor). Burada yalnızca grafik KONTROL
+         stilleri var. -->
+
+    <!-- Kartezyen grafiklerin ortak yerleşimi. Renkler code-behind'da
+         ChartPalette.cs üzerinden verilir — burada renk YOKTUR. -->
+    <Style x:Key="Chart.Cartesian" TargetType="{x:Type lvc:CartesianChart}">
+        <Setter Property="Height"                 Value="220"/>
+        <Setter Property="LegendPosition"         Value="Bottom"/>
+        <Setter Property="TooltipPosition"        Value="Top"/>
+        <Setter Property="ZoomMode"               Value="None"/>
+        <Setter Property="AnimationsSpeed"        Value="0:0:0.4"/>
+    </Style>
+
+    <!-- Sparkline: eksen, legend, tooltip yok — yalnızca eğilim.
+         Bakiye kartının içinde küçük bir şerittir.
+         IsHitTestVisible=False: kart tıklanabilir olduğu için grafik tıklamayı
+         yutmamalı. -->
+    <Style x:Key="Chart.Sparkline" TargetType="{x:Type lvc:CartesianChart}">
+        <Setter Property="Height"           Value="28"/>
+        <Setter Property="LegendPosition"   Value="Hidden"/>
+        <Setter Property="TooltipPosition"  Value="Hidden"/>
+        <Setter Property="ZoomMode"         Value="None"/>
+        <Setter Property="AnimationsSpeed"  Value="0:0:0.2"/>
+        <Setter Property="IsHitTestVisible" Value="False"/>
+    </Style>
+
+    <!-- Bakiye kartındaki sparkline. Yeterli nokta yoksa gizlenir: iki noktadan
+         az veriyle "eğilim" çizmek yanıltıcıdır. -->
+    <Style x:Key="BalanceSparkline" TargetType="{x:Type lvc:CartesianChart}"
+           BasedOn="{StaticResource Chart.Sparkline}">
+        <Setter Property="Margin"     Value="0,6,0,0"/>
+        <Setter Property="Visibility" Value="Collapsed"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding HasSparkline}" Value="True">
+                <Setter Property="Visibility" Value="Visible"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+</ResourceDictionary>

@@ -4,6 +4,7 @@ using Microsoft.Win32;
 using Serilog;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Repositories;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
+using YonetimFinansalIslemTakipSistemi.UI.Common;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Services;
 
@@ -99,6 +100,12 @@ public class ThemeService : IThemeService
 
         // Yeni temayı sona ekle (son kayıt önceliklidir)
         dicts.Add(new ResourceDictionary { Source = newUri });
+
+        // XAML'deki DynamicResource'lar buraya kadar kendiliğinden güncellendi.
+        // Grafikler GÜNCELLENMEDİ: LiveCharts SkiaSharp ile çizer ve kaynak
+        // sözlüğünü izlemez. Açık pencerelerin serilerini yeniden kurması için
+        // ayrıca haber verilir (bkz. Common/ChartPalette.cs).
+        ChartPalette.NotifyThemeChanged();
     }
 
     /// <summary>

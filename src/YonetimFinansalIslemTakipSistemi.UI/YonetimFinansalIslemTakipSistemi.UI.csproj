@@ -6,6 +6,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--
+      Grafik motoru (Faz C). SkiaSharp ile çizer; WPF fırçalarını KULLANMAZ,
+      dolayısıyla DynamicResource'u görmez — renkler Common/ChartPalette.cs
+      üzerinden token'lardan okunur ve tema değiştiğinde yeniden uygulanır.
+
+      NU1701 bastırması için bkz. aşağıdaki PropertyGroup.
+    -->
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.1">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -54,6 +62,22 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <!--
+      NU1701 — LiveCharts'ın transitif bağımlılıkları (SkiaSharp.Views.WPF,
+      OpenTK, OpenTK.GLWpfControl) yalnızca .NET Framework hedefliyor ve restore
+      sırasında altı uyarı üretiyorlar. Doğrudan referansımız olmadığı için
+      PackageReference üzerinde NoWarn işe yaramıyor; bastırma proje düzeyinde.
+
+      BASTIRMADAN ÖNCE ÇALIŞTIĞI DOĞRULANDI (UiTests/ChartRuntimeTests.cs):
+      .NET 9 WPF üzerinde CartesianChart oluşturulup ölçüldü ve native
+      libSkiaSharp yüklendi. Uyarı gerçek bir uyumsuzluğu değil, paketlerin eski
+      hedef çerçevesini bildiriyor.
+
+      Kapsam bilinçli olarak dar: yalnızca UI ve UiTests projelerinde bastırılır.
+      Domain / Application / Infrastructure tam uyarı seviyesinde kalır, oraya
+      uyumsuz bir paket girerse uyarı görünür.
+    -->
+    <NoWarn>$(NoWarn);NU1701</NoWarn>
     <!-- Her release öncesi artırılır; pubxml PublishVersion ve version.json ile senkron tutulmalıdır -->
     <AssemblyVersion>1.0.1.2</AssemblyVersion>
     <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>

@@ -99,15 +99,29 @@ public static class ThemeTestHost
     public static bool CanResolve(string key) =>
         Run(() => WpfApp.Current.TryFindResource(key) is not null);
 
+    /// <summary>
+    /// App.xaml'in yüklediği sözlükler — AYNI SIRAYLA. Sıra önemlidir:
+    /// Controls, AppStyles'taki ortak kaynaklara başvurur.
+    ///
+    /// Bu liste App.xaml ile elle senkron tutulur; kaymayı
+    /// <see cref="ResourceDictionaryParityTests"/> yakalar.
+    /// </summary>
+    public static readonly IReadOnlyList<string> AppDictionaries =
+    [
+        "Resources/AppStyles.xaml",
+        "Resources/Controls.xaml",
+        "Resources/PrintStyles.xaml",
+        "Resources/ChartPalette.xaml",
+        "Resources/Icons.xaml",
+    ];
+
     private static ResourceDictionary BuildApplicationResources(string themeName)
     {
         var root = new ResourceDictionary();
-        // App.xaml ile AYNI sıra — sıra önemlidir (Controls, AppStyles'taki
-        // ortak kaynaklara DynamicResource ile başvurur).
-        root.MergedDictionaries.Add(LoadDictionary("Resources/AppStyles.xaml"));
-        root.MergedDictionaries.Add(LoadDictionary("Resources/Controls.xaml"));
-        root.MergedDictionaries.Add(LoadDictionary("Resources/PrintStyles.xaml"));
-        root.MergedDictionaries.Add(LoadDictionary("Resources/Icons.xaml"));
+
+        foreach (var path in AppDictionaries)
+            root.MergedDictionaries.Add(LoadDictionary(path));
+
         root.MergedDictionaries.Add(LoadDictionary($"Resources/Themes/{themeName}.xaml"));
         return root;
     }

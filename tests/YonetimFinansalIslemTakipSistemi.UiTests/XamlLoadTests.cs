@@ -56,8 +56,15 @@ public class XamlLoadTests
             }
             catch (Exception ex)
             {
+                // XamlParseException'ın kendi mesajı çoğu zaman nedeni söylemez
+                // ("değer sağlama işlemi özel durum döndürdü"); asıl neden iç
+                // istisnadadır. Zincirin tamamı yazılır.
+                var chain = new System.Text.StringBuilder();
+                for (var e = ex; e is not null; e = e.InnerException)
+                    chain.AppendLine($"  {e.GetType().Name}: {e.Message}");
+
                 throw new Xunit.Sdk.XunitException(
-                    $"{relativePath} ({themeName}) ayrıştırılamadı:{Environment.NewLine}{ex.Message}");
+                    $"{relativePath} ({themeName}) ayrıştırılamadı:{Environment.NewLine}{chain}");
             }
         });
     }

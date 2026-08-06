@@ -1,0 +1,81 @@
+<Window x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.Shell.ShellWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Yönetim"
+        Height="720" Width="1280"
+        MinWidth="1000" MinHeight="600"
+        WindowStartupLocation="CenterScreen">
+
+    <!--
+    TEK KABUK — İSKELET (Faz D, adim 2)
+
+    Bu pencere HENUZ BASLANGIC EKRANI DEGIL. App.xaml.cs hala MainWindow ve
+    CargoDashboardWindow'u aciyor; kullanicinin akisi degismedi. Buradaki yapi
+    ekranlar UserControl'e tasindikca doldurulacak.
+
+    Yerlesim brief'teki tarife gore:
+      sol   navigasyon rayi
+      ust   sekme seridi
+      orta  icerik (aktif sekmenin gorunumu)
+      alt   durum seridi
+    Sag panel (420px duzenleme formlari) formlar tasinirken eklenecek.
+    -->
+
+    <DockPanel>
+
+        <!-- Alt durum şeridi -->
+        <Border DockPanel.Dock="Bottom"
+                Background="{DynamicResource Theme.SurfaceAlt}"
+                BorderBrush="{DynamicResource Theme.Border}"
+                BorderThickness="0,1,0,0"
+                Padding="12,5">
+            <DockPanel>
+                <TextBlock x:Name="StatusVersionText"
+                           DockPanel.Dock="Right"
+                           Style="{StaticResource Text.Caption}"/>
+                <TextBlock x:Name="StatusUserText"
+                           Style="{StaticResource Text.Caption}"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Sol navigasyon rayı -->
+        <Border DockPanel.Dock="Left"
+                Width="232"
+                Background="{DynamicResource Theme.Nav.Background}">
+            <DockPanel>
+                <Button DockPanel.Dock="Bottom"
+                        Content="Çıkış Yap"
+                        Margin="10"
+                        Style="{StaticResource DangerButton}"
+                        Command="{Binding LogoutCommand}"/>
+
+                <!-- Yetkisi olmayan öğe listeye HİÇ girmez (bkz. ShellViewModel) -->
+                <ListBox x:Name="NavigationList"
+                         ItemsSource="{Binding NavigationItems}"
+                         SelectedItem="{Binding SelectedNavigationItem, Mode=TwoWay}"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         Margin="6"
+                         DisplayMemberPath="Title"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Sekme şeridi + içerik -->
+        <TabControl x:Name="ScreenTabs"
+                    ItemsSource="{Binding Tabs}"
+                    SelectedItem="{Binding ActiveTab, Mode=TwoWay}"
+                    Margin="8">
+            <TabControl.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Title}"/>
+                </DataTemplate>
+            </TabControl.ItemTemplate>
+            <TabControl.ContentTemplate>
+                <DataTemplate>
+                    <ContentControl Content="{Binding View}"/>
+                </DataTemplate>
+            </TabControl.ContentTemplate>
+        </TabControl>
+
+    </DockPanel>
+</Window>

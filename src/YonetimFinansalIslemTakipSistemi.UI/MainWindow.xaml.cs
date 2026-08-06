@@ -88,6 +88,11 @@ public partial class MainWindow : Window
             }
         };
 
+        // Sparkline SkiaSharp ile çizilir ve DynamicResource'u görmez;
+        // tema değişince yeniden boyanmalı (yeniden sorgu atmadan).
+        Common.ChartPalette.ThemeChanged += _listVm.RebuildSparklines;
+        Unloaded += (_, _) => Common.ChartPalette.ThemeChanged -= _listVm.RebuildSparklines;
+
         Loaded += async (_, _) =>
         {
             ApplyColumnHeaderContextMenu();
@@ -99,6 +104,22 @@ public partial class MainWindow : Window
             // Açılışta güncelleme kontrolü — ekran yüklendikten sonra, kullanıcıyı bloklamadan
             await Services.StartupUpdateChecker.RunOnceAsync(_services, _dialogService);
         };
+    }
+
+    /// <summary>
+    /// Bakiye kartına tıklama → listeyi o para birimine filtreler (Faz C bonus).
+    /// Aynı kart yeniden tıklanırsa filtre kaldırılır; kullanıcı kartı geri
+    /// almak için filtre panelini aramak zorunda kalmasın.
+    /// Filtreleme mevcut ViewModel yolundan geçer — yeni iş mantığı yazılmadı.
+    /// </summary>
+    private async void BalanceCard_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string currency }) return;
+
+        _listVm.SelectedCurrencyType =
+            _listVm.SelectedCurrencyType == currency ? "Tümü" : currency;
+
+        await _listVm.LoadTransactionsAsync();
     }
 
     // ── Column Header Context Menu ────────────────────────────────────────────

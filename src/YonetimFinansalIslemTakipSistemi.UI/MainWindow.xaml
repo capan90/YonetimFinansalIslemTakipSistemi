@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:common="clr-namespace:YonetimFinansalIslemTakipSistemi.UI.Common"
+        xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
         mc:Ignorable="d"
         Title="Yönetim — Nakit İşlemler"
         Height="640" Width="1280"
@@ -139,15 +140,14 @@
 
         <DockPanel Margin="10">
 
-            <!-- Bakiye Kartları — para birimi başına ayrı kart, renk bağlaması converter ile -->
+            <!-- Bakiye Kartları — para birimi başına ayrı kart.
+                 Kart tıklanınca o para birimine filtre uygulanır (Faz C bonus);
+                 bu yüzden Border değil Button, klavyeyle de erişilebilsin diye. -->
             <UniformGrid DockPanel.Dock="Top" Columns="3" Margin="0,0,0,10">
 
-                <Border Background="{DynamicResource Theme.Surface}" BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1"
-                        CornerRadius="6" Margin="0,0,6,0" Padding="14,10">
-                    <Border.Effect>
-                        <DropShadowEffect Color="{DynamicResource Theme.ShadowColor}" Direction="270" ShadowDepth="1"
-                                          BlurRadius="6" Opacity="0.3"/>
-                    </Border.Effect>
+                <Button Style="{StaticResource BalanceCard}" Margin="0,0,6,0"
+                        Tag="TRY" Click="BalanceCard_Click"
+                        ToolTip="Listeyi TL işlemlerine filtreler.">
                     <StackPanel>
                         <TextBlock Text="TL BAKİYE"
                                    Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}" FontWeight="SemiBold"
@@ -156,15 +156,14 @@
                         <TextBlock Text="{Binding TlBalance, StringFormat=N2}"
                                    Tag="{Binding TlBalance, Converter={StaticResource DecimalSign}}"
                                    Style="{StaticResource Text.BalanceAmount}"/>
+                        <lvc:CartesianChart Series="{Binding TlSparkline}"
+                                            Style="{StaticResource BalanceSparkline}"/>
                     </StackPanel>
-                </Border>
+                </Button>
 
-                <Border Background="{DynamicResource Theme.Surface}" BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1"
-                        CornerRadius="6" Margin="3,0,3,0" Padding="14,10">
-                    <Border.Effect>
-                        <DropShadowEffect Color="{DynamicResource Theme.ShadowColor}" Direction="270" ShadowDepth="1"
-                                          BlurRadius="6" Opacity="0.3"/>
-                    </Border.Effect>
+                <Button Style="{StaticResource BalanceCard}" Margin="3,0,3,0"
+                        Tag="USD" Click="BalanceCard_Click"
+                        ToolTip="Listeyi USD işlemlerine filtreler.">
                     <StackPanel>
                         <TextBlock Text="USD BAKİYE"
                                    Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}" FontWeight="SemiBold"
@@ -172,15 +171,14 @@
                         <TextBlock Text="{Binding UsdBalance, StringFormat=N2}"
                                    Tag="{Binding UsdBalance, Converter={StaticResource DecimalSign}}"
                                    Style="{StaticResource Text.BalanceAmount}"/>
+                        <lvc:CartesianChart Series="{Binding UsdSparkline}"
+                                            Style="{StaticResource BalanceSparkline}"/>
                     </StackPanel>
-                </Border>
+                </Button>
 
-                <Border Background="{DynamicResource Theme.Surface}" BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1"
-                        CornerRadius="6" Margin="6,0,0,0" Padding="14,10">
-                    <Border.Effect>
-                        <DropShadowEffect Color="{DynamicResource Theme.ShadowColor}" Direction="270" ShadowDepth="1"
-                                          BlurRadius="6" Opacity="0.3"/>
-                    </Border.Effect>
+                <Button Style="{StaticResource BalanceCard}" Margin="6,0,0,0"
+                        Tag="EUR" Click="BalanceCard_Click"
+                        ToolTip="Listeyi EUR işlemlerine filtreler.">
                     <StackPanel>
                         <TextBlock Text="EUR BAKİYE"
                                    Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}" FontWeight="SemiBold"
@@ -188,10 +186,30 @@
                         <TextBlock Text="{Binding EurBalance, StringFormat=N2}"
                                    Tag="{Binding EurBalance, Converter={StaticResource DecimalSign}}"
                                    Style="{StaticResource Text.BalanceAmount}"/>
+                        <lvc:CartesianChart Series="{Binding EurSparkline}"
+                                            Style="{StaticResource BalanceSparkline}"/>
                     </StackPanel>
-                </Border>
+                </Button>
 
             </UniformGrid>
+
+            <!-- Sparkline kapsamı. Liste filtreliyse eğilim de filtrelidir —
+                 finansal bir çizginin kapsamı belirsiz bırakılamaz. -->
+            <TextBlock DockPanel.Dock="Top"
+                       Text="{Binding SparklineNote}"
+                       HorizontalAlignment="Right"
+                       Margin="0,-6,2,8">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding HasSparkline}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
 
             <!-- Araç çubuğu -->
             <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">

@@ -13,6 +13,9 @@
                 <ResourceDictionary Source="Resources/Controls.xaml"/>
                 <!-- Rapor önizleme baskı katmanı — temadan bağımsız sabit yüzey -->
                 <ResourceDictionary Source="Resources/PrintStyles.xaml"/>
+                <!-- Grafik kabı stilleri. Renkler burada değil, tema
+                     sözlüğündeki Chart.* token'larında. -->
+                <ResourceDictionary Source="Resources/ChartPalette.xaml"/>
                 <!-- Vektör ikon geometrileri — emoji karakterlerinin yerini alır -->
                 <ResourceDictionary Source="Resources/Icons.xaml"/>
                 <!-- Varsayılan tema — IThemeService startup'ta kaydedilmiş temayı uygular -->

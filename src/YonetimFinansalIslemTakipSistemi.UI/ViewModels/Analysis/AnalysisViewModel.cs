@@ -2,6 +2,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
 using YonetimFinansalIslemTakipSistemi.Application.Features.Analysis.Queries.GetDashboard;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.UI.Common;
@@ -102,6 +104,130 @@ public class AnalysisViewModel : INotifyPropertyChanged
 
     public ObservableCollection<DailyTrendDto> DailyTrend { get; } = new();
 
+    // Grafik durumu. Seriler LiveCharts nesneleridir ve renklerini
+    // ChartPalette'ten alır; tema değişiminde yeniden kurulurlar
+    // (bkz. AnalysisWindow.xaml.cs → ChartPalette.ThemeChanged).
+
+    private ISeries[] _trendSeries = [];
+    public ISeries[] TrendSeries
+    {
+        get => _trendSeries;
+        private set { _trendSeries = value; OnPropertyChanged(); }
+    }
+
+    private Axis[] _trendXAxes = [];
+    public Axis[] TrendXAxes
+    {
+        get => _trendXAxes;
+        private set { _trendXAxes = value; OnPropertyChanged(); }
+    }
+
+    private Axis[] _trendYAxes = [];
+    public Axis[] TrendYAxes
+    {
+        get => _trendYAxes;
+        private set { _trendYAxes = value; OnPropertyChanged(); }
+    }
+
+    /// <summary>Veri yokken boş eksen çizmek yanıltıcıdır; grafik gizlenir.</summary>
+    public bool HasTrendData => DailyTrend.Count > 0;
+
+    /// <summary>
+    /// Trend serilerini AKTİF tema renkleriyle yeniden kurar.
+    /// Hem veri yüklendiğinde hem tema değiştiğinde çağrılır — LiveCharts
+    /// SkiaSharp ile çizer ve DynamicResource'u izlemez.
+    /// </summary>
+    public void RebuildTrendChart()
+    {
+        if (DailyTrend.Count == 0)
+        {
+            TrendSeries = [];
+            TrendXAxes  = [];
+            TrendYAxes  = [];
+            OnPropertyChanged(nameof(HasTrendData));
+            return;
+        }
+
+        var inflow  = DailyTrend.Select(d => (double)d.TotalBorc).ToArray();
+        var outflow = DailyTrend.Select(d => (double)d.TotalAlacak).ToArray();
+        var labels  = DailyTrend.Select(d => d.DateDisplay).ToArray();
+
+        // Kümülatif bakiye: aralık boyunca net farkın koşan toplamı.
+        // Sunum matematiğidir — Application katmanında karşılığı yok, burada türetilir.
+        var cumulative = new double[DailyTrend.Count];
+        var running    = 0d;
+        for (var i = 0; i < DailyTrend.Count; i++)
+        {
+            running      += (double)DailyTrend[i].NetFark;
+            cumulative[i] = running;
+        }
+
+        // YÖN verisi: kırmızı/yeşil DEĞİL, mavi–turuncu (renk körlüğü ekseni).
+        var inflowColor  = ChartPalette.Inflow();
+        var outflowColor = ChartPalette.Outflow();
+        var balanceColor = ChartPalette.Categorical(2);
+
+        TrendSeries =
+        [
+            new LineSeries<double>
+            {
+                Name           = "Giriş",
+                Values         = inflow,
+                Stroke         = ChartPalette.Stroke(inflowColor),
+                Fill           = ChartPalette.AreaFill(inflowColor),
+                GeometryStroke = ChartPalette.Stroke(inflowColor),
+                GeometryFill   = ChartPalette.Fill(inflowColor),
+                GeometrySize   = 6,
+            },
+            new LineSeries<double>
+            {
+                Name           = "Çıkış",
+                Values         = outflow,
+                Stroke         = ChartPalette.Stroke(outflowColor),
+                Fill           = ChartPalette.AreaFill(outflowColor),
+                GeometryStroke = ChartPalette.Stroke(outflowColor),
+                GeometryFill   = ChartPalette.Fill(outflowColor),
+                GeometrySize   = 6,
+            },
+            // Kümülatif bakiye günlük toplamlarla aynı ölçekte değil; dolgusuz
+            // ve kesikli çizilir ki iki günlük seriyle karışmasın.
+            new LineSeries<double>
+            {
+                Name         = "Kümülatif bakiye",
+                Values       = cumulative,
+                Stroke       = ChartPalette.Stroke(balanceColor, 2.5f),
+                Fill         = null,
+                GeometrySize = 0,
+            },
+        ];
+
+        TrendXAxes =
+        [
+            new Axis
+            {
+                Labels        = labels,
+                LabelsPaint   = ChartPalette.Fill(ChartPalette.AxisText()),
+                TextSize      = 11,
+                SeparatorsPaint = ChartPalette.Stroke(ChartPalette.GridLine(), 1),
+                // Çok gün varsa etiketler üst üste biner; eğik yazılır
+                LabelsRotation = labels.Length > 12 ? 45 : 0,
+            }
+        ];
+
+        TrendYAxes =
+        [
+            new Axis
+            {
+                LabelsPaint     = ChartPalette.Fill(ChartPalette.AxisText()),
+                TextSize        = 11,
+                SeparatorsPaint = ChartPalette.Stroke(ChartPalette.GridLine(), 1),
+                Labeler         = value => value.ToString("N0"),
+            }
+        ];
+
+        OnPropertyChanged(nameof(HasTrendData));
+    }
+
     // ── Son İşlemler ──────────────────────────────────────────────────────────
 
     public ObservableCollection<RecentTransactionDto> RecentTransactions { get; } = new();
@@ -148,6 +274,7 @@ public class AnalysisViewModel : INotifyPropertyChanged
 
             DailyTrend.Clear();
             foreach (var d in dto.DailyTrend) DailyTrend.Add(d);
+            RebuildTrendChart();
 
             RecentTransactions.Clear();
             foreach (var r in dto.RecentTransactions) RecentTransactions.Add(r);

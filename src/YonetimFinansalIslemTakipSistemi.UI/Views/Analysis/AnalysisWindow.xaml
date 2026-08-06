@@ -1,6 +1,7 @@
 <Window x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.Analysis.AnalysisWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
         Title="Finans Analiz Merkezi"
         Height="780" Width="1100"
         WindowStartupLocation="CenterOwner"
@@ -185,11 +186,53 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <!-- Günlük Trend -->
-                <!-- NOT: Grafik kütüphanesi (LiveCharts2 veya OxyPlot) bu sprintte eklenmemektedir.
-                     Trend verileri DataGrid ile gösterilmekte; görsel grafik sonraki sprintte eklenecektir. -->
+                <!-- ── Günlük Trend ────────────────────────────────────────────
+                     Grafik ANA gösterimdir; tablo silinmedi, altına katlanabilir
+                     hâlde alındı (varsayılan kapalı). Böylece hiçbir veri
+                     kaybolmaz — rakamı okumak isteyen tabloyu açar. -->
                 <GroupBox Header="Günlük Trend" Margin="0,0,0,12">
-                    <DataGrid ItemsSource="{Binding DailyTrend}"
+                    <StackPanel>
+                        <!-- Görünürlük DataTrigger ile: "Yenile" sonrası veri
+                             boşalırsa grafik kendiliğinden gizlenir. Boş eksen
+                             çizmek "sıfır değer" izlenimi verirdi. -->
+                        <lvc:CartesianChart x:Name="TrendChart"
+                                            Series="{Binding TrendSeries}"
+                                            XAxes="{Binding TrendXAxes}"
+                                            YAxes="{Binding TrendYAxes}">
+                            <lvc:CartesianChart.Style>
+                                <Style TargetType="lvc:CartesianChart" BasedOn="{StaticResource Chart.Cartesian}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasTrendData}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </lvc:CartesianChart.Style>
+                        </lvc:CartesianChart>
+
+                        <TextBlock x:Name="TrendEmptyText"
+                                   Text="Seçili aralıkta gösterilecek hareket yok.">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource Chart.EmptyState}">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasTrendData}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <TextBlock Style="{StaticResource Chart.Caption}"
+                                   Text="Giriş ve çıkış günlük toplamlardır; bakiye çizgisi aralık boyunca kümülatif nettir."/>
+
+                        <Expander Header="Rakamları göster"
+                                  IsExpanded="False"
+                                  Margin="0,8,0,0"
+                                  Padding="0,6,0,0">
+                            <DataGrid ItemsSource="{Binding DailyTrend}"
                               AutoGenerateColumns="False"
                               IsReadOnly="True"
                               CanUserAddRows="False"
@@ -222,7 +265,9 @@
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
                         </DataGrid.Columns>
-                    </DataGrid>
+                            </DataGrid>
+                        </Expander>
+                    </StackPanel>
                 </GroupBox>
 
                 <!-- Son İşlemler -->

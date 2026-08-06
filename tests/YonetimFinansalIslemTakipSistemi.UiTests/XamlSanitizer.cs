@@ -48,9 +48,15 @@ public static class XamlSanitizer
         // 4) clr-namespace'lere assembly adı eklenir. Kaynak XAML'de bu bilgi
         //    örtüktür ("derlendiği assembly"); XamlReader ise çağıran assembly'ye
         //    bakar ve tipleri test assembly'sinde arar.
+        //
+        //    Kapanış tırnağına kadar EŞLEŞTİRİLİR. Önceki hâli negatif ileri
+        //    bakış kullanıyordu ("...(?!;assembly)") ve geri izleme yüzünden
+        //    zaten assembly taşıyan bir namespace'i de bozuyordu: motor
+        //    namespace'in bir harf kısasını eşleştirip lookahead'i geçiriyordu.
+        //    Harici paket namespace'i (LiveCharts) gelene kadar fark edilmedi.
         markup = Regex.Replace(
             markup,
-            @"clr-namespace:(?<ns>[A-Za-z0-9_.]+)(?!;assembly)",
+            @"clr-namespace:(?<ns>[A-Za-z0-9_.]+)(?="")",
             m => $"clr-namespace:{m.Groups["ns"].Value};assembly={UiAssembly}");
 
         return markup;

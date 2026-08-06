@@ -3,6 +3,8 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Data;
 using System.Windows.Input;
+using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Queries.GetCashTransactions;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Queries.GetCurrentBalances;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
@@ -193,6 +195,104 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ListSummary));
     }
 
+    // ── Bakiye kartı sparkline'ları ───────────────────────────────────────────
+    //
+    // VERİ KAYNAĞI VE SINIRI:
+    // Son 30 günün para birimi bazında bakiye serisi Application katmanında YOK.
+    // Elde olan tek geçmiş, ekrandaki işlem satırlarının taşıdığı
+    // *BalanceAfter alanlarıdır — yani FİLTREYE TABİDİR.
+    //
+    // Kullanıcı listeyi daraltırsa sparkline da daralır. Bu sessizce olmasın
+    // diye kartın altında "filtrelenmiş görünüm" ibaresi gösterilir
+    // (bkz. SparklineNote). Filtreden bağımsız gerçek 30 günlük seri için
+    // Application katmanında yeni bir sorgu gerekir; Faz C kapsamı dışı.
+
+    private const int SparklineDays = 30;
+
+    private ISeries[] _tlSparkline  = [];
+    private ISeries[] _usdSparkline = [];
+    private ISeries[] _eurSparkline = [];
+
+    public ISeries[] TlSparkline  { get => _tlSparkline;  private set { _tlSparkline  = value; OnPropertyChanged(); } }
+    public ISeries[] UsdSparkline { get => _usdSparkline; private set { _usdSparkline = value; OnPropertyChanged(); } }
+    public ISeries[] EurSparkline { get => _eurSparkline; private set { _eurSparkline = value; OnPropertyChanged(); } }
+
+    /// <summary>Sparkline çizilecek kadar nokta var mı? Tek noktalı "eğilim" yanıltıcıdır.</summary>
+    public bool HasSparkline { get; private set; }
+
+    /// <summary>
+    /// Kullanıcıya serinin neyi kapsadığını söyler. Filtre daraltılmışsa
+    /// bunu açıkça yazar — finansal bir eğilim çizgisinin kapsamı belirsiz olamaz.
+    /// </summary>
+    public string SparklineNote { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// Sparkline serilerini AKTİF tema renkleriyle kurar.
+    /// Liste yüklendiğinde ve tema değiştiğinde çağrılır — LiveCharts
+    /// DynamicResource'u izlemez.
+    /// </summary>
+    public void RebuildSparklines()
+    {
+        var cutoff = DateTime.Today.AddDays(-SparklineDays);
+
+        // Eskiden yeniye: bakiye çizgisi zaman yönünde okunmalı
+        var window = Transactions
+            .Where(t => t.TransactionDate >= cutoff)
+            .OrderBy(t => t.TransactionDate)
+            .ThenBy(t => t.CreatedAt)
+            .ToList();
+
+        HasSparkline = window.Count >= 2;
+
+        if (!HasSparkline)
+        {
+            TlSparkline = UsdSparkline = EurSparkline = [];
+            SparklineNote = string.Empty;
+            NotifySparklineChanged();
+            return;
+        }
+
+        TlSparkline  = [BuildSparkline(window.Select(t => (double)t.TlBalanceAfter))];
+        UsdSparkline = [BuildSparkline(window.Select(t => (double)t.UsdBalanceAfter))];
+        EurSparkline = [BuildSparkline(window.Select(t => (double)t.EurBalanceAfter))];
+
+        // Yüklü liste filtrelenmişse eğilim o filtreyi yansıtır; belirtilir.
+        SparklineNote = IsFilterActive
+            ? $"Son {SparklineDays} gün · filtrelenmiş görünüm ({window.Count} hareket)"
+            : $"Son {SparklineDays} gün ({window.Count} hareket)";
+
+        NotifySparklineChanged();
+    }
+
+    /// <summary>Herhangi bir filtre alanı doluysa liste daraltılmış demektir.</summary>
+    private bool IsFilterActive =>
+        DateFrom is not null
+        || DateTo is not null
+        || !string.IsNullOrWhiteSpace(DescriptionFilter)
+        || (SelectedTransactionType is not null && SelectedTransactionType != "Tümü")
+        || (SelectedCurrencyType is not null && SelectedCurrencyType != "Tümü")
+        || !string.IsNullOrWhiteSpace(AmountValueText);
+
+    private static ISeries BuildSparkline(IEnumerable<double> values)
+    {
+        var color = ChartPalette.Sparkline();
+
+        return new LineSeries<double>
+        {
+            Values         = values.ToArray(),
+            Stroke         = ChartPalette.Stroke(color, 1.6f),
+            Fill           = ChartPalette.AreaFill(color, alpha: 30),
+            GeometrySize   = 0,          // nokta yok: kart içinde gürültü yapar
+            LineSmoothness = 0.3,
+        };
+    }
+
+    private void NotifySparklineChanged()
+    {
+        OnPropertyChanged(nameof(HasSparkline));
+        OnPropertyChanged(nameof(SparklineNote));
+    }
+
     // --- Komutlar ---
 
     public ICommand FilterCommand { get; }
@@ -249,6 +349,7 @@ public class CashTransactionListViewModel : INotifyPropertyChanged
 
         OnPropertyChanged(nameof(Transactions));
         NotifySummaryChanged();
+        RebuildSparklines();
     }
 
     private void UpdateBalanceColumnVisibility()

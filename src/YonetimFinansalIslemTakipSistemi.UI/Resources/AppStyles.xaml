@@ -127,6 +127,29 @@
         <Setter Property="Visibility"          Value="Collapsed"/>
     </Style>
 
+    <!-- ── Grafik metinleri (Faz C) ──────────────────────────────────────────
+         Grafik KONTROL stilleri Resources/ChartPalette.xaml'dedir; bu üçü
+         burada durur çünkü Text.* ölçeğine BasedOn ile dayanıyorlar ve BasedOn
+         kardeş sözlükler arası StaticResource'u güvenilir çözemiyor. -->
+    <Style x:Key="Chart.Title" TargetType="TextBlock" BasedOn="{StaticResource Text.H2}">
+        <Setter Property="Foreground" Value="{DynamicResource Theme.Primary}"/>
+        <Setter Property="Margin"     Value="0,0,0,8"/>
+    </Style>
+
+    <!-- Grafiğin ne anlattığını yazan alt satır. Renk tek başına anlam taşımaz;
+         özellikle büyüklük skalasında okuyucunun neye baktığını bilmesi gerekir. -->
+    <Style x:Key="Chart.Caption" TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
+        <Setter Property="Foreground"   Value="{DynamicResource Theme.MutedText}"/>
+        <Setter Property="Margin"       Value="0,6,0,0"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+
+    <!-- Veri yoksa grafik yerine bu gösterilir; boş eksen çizmek "sıfır değer"
+         izlenimi verir. Görünürlüğü kullanan pencere DataTrigger ile yönetir. -->
+    <Style x:Key="Chart.EmptyState" TargetType="TextBlock" BasedOn="{StaticResource EmptyStateText}">
+        <Setter Property="Margin" Value="0,24"/>
+    </Style>
+
     <!-- ── Odak halkası ─────────────────────────────────────────────────────
          WPF'in varsayılan noktalı odak dikdörtgeni koyu zeminde kaybolur ve
          klavyeyle gezerken nerede olunduğu anlaşılmaz. Ortak halka: 2px marka

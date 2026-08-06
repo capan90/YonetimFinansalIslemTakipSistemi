@@ -192,6 +192,34 @@
     <SolidColorBrush x:Key="Theme.PrintPreview.Positive"           Color="#14532D"/>
     <SolidColorBrush x:Key="Theme.PrintPreview.Negative"           Color="#7F1D1D"/>
 
+    <!-- ══ GRAFİK PALETİ (Faz C) ═════════════════════════════════════════════
+         Açık temanın OTOMATİK TERSİ DEĞİL. Aynı üç hue, koyu yüzey (#1E293B)
+         üzerinde ayrı ayrı ölçülerek açıldı:
+             açık temadaki değerlerle  mavi 3.31 · turuncu 4.57 · yeşil 5.20
+             buradaki değerlerle       mavi 5.23 · turuncu 5.90 · yeşil 6.92
+         Mavi koyu zeminde en zayıf uçtaydı; üçü birlikte dengelendi ki hiçbir
+         seri diğerini bastırmasın.
+    ═══════════════════════════════════════════════════════════════════════ -->
+
+    <SolidColorBrush x:Key="Chart.Series1"            Color="#5B9EE8"/>
+    <SolidColorBrush x:Key="Chart.Series2"            Color="#F2894F"/>
+    <SolidColorBrush x:Key="Chart.Series3"            Color="#35C994"/>
+
+    <SolidColorBrush x:Key="Chart.Direction.Inflow"   Color="#5B9EE8"/>
+    <SolidColorBrush x:Key="Chart.Direction.Outflow"  Color="#F2894F"/>
+
+    <!-- Koyu temada skala ters yönde ilerler: zeminden UZAKLAŞARAK açılır.
+         En koyu adım (#2B5488) yüzeyle 1.90:1 — kenarlık olmadan kaybolur;
+         Chart.Sequential.Stroke bu yüzden zorunludur. -->
+    <SolidColorBrush x:Key="Chart.Sequential.1"       Color="#2B5488"/>
+    <SolidColorBrush x:Key="Chart.Sequential.2"       Color="#3C74B4"/>
+    <SolidColorBrush x:Key="Chart.Sequential.3"       Color="#5B9EE8"/>
+    <SolidColorBrush x:Key="Chart.Sequential.4"       Color="#8FC0F5"/>
+    <SolidColorBrush x:Key="Chart.Sequential.5"       Color="#BBD9FB"/>
+    <SolidColorBrush x:Key="Chart.Sequential.Stroke"  Color="#CBD5E1"/>
+
+    <SolidColorBrush x:Key="Chart.Sparkline"          Color="#5B9EE8"/>
+
     <!-- ── Sistem: DataGrid seçim rengi override (koyu tema) ─────────────────── -->
     <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
                      Color="#1E3A5F"/>

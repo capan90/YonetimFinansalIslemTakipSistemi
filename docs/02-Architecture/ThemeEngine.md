@@ -147,6 +147,44 @@ sarmalanır — `ResourceDictionary` değişimi UI thread ister.
 
 ---
 
+## Ekran Kökleri: Window ve UserControl
+
+Tema zeminini (`Background`, `Foreground`, `FontFamily`, `FontSize`) **iki**
+örtük stil verir ve **eşdeğer kalmak zorundadırlar**:
+
+```xml
+<Style TargetType="{x:Type Window}">      <!-- pencere kökü -->
+<Style TargetType="{x:Type UserControl}"> <!-- kabuk ekranı kökü -->
+```
+
+`UserControl` stili tek kabuk mimarisi (Faz D) için eklendi: ekranlar Window
+değil UserControl olacak ve Window stilinden hiçbir şey miras almıyorlardı.
+Bağlanmasaydı Faz B'de 31 pencereyi bozan hata ters yönden tekrarlanırdı.
+
+Parite `ThemeSurfaceParityTests` ile korunur — birini güncelleyip diğerini
+unutmak testi kırar.
+
+> ⚠ **İç içe UserControl uyarısı**
+>
+> `UserControl` stili **örtüktür**: uygulamadaki HER `UserControl`'e uygulanır,
+> iç içe olanlar dâhil. Bir ekranın içinde parça olarak `UserControl`
+> kullanılırsa o da `Theme.AppBackground` zeminini alır ve kart/panel gibi
+> farklı bir yüzey üzerinde **yanlış zemin** oluşturur.
+>
+> Bu stil **ekran köküne** göre tasarlandı, yeniden kullanılabilir parçalara
+> göre değil.
+>
+> Ekran içi parça yazarken iki seçenek var:
+> - `Background="Transparent"` verip kapsayıcı yüzeyi göstermek *(tercih edilen)*
+> - Parçanın oturduğu yüzeyin token'ını açıkça vermek (`Theme.Surface` vb.)
+>
+> Yeni bir örtük stil eklemeyin; `UserControl` stili tek kalmalı.
+>
+> Faz D adım 2 itibarıyla uygulamada hiç `UserControl` yok, dolayısıyla bu
+> durum henüz oluşmadı. Pilot dönüşümle birlikte geçerli hâle gelir.
+
+---
+
 ## Renk Verirken Uyulacak Kurallar
 
 | Bağlam | Doğru | Yanlış |

@@ -30,7 +30,10 @@ public class StyleChainTests
         "Label", "GroupBox", "Menu", "MenuItem", "ContextMenu",
         "ListBox", "ListBoxItem", "ProgressBar", "Separator", "ToolTip",
         "DataGrid", "DataGridRow", "DataGridCell", "DataGridColumnHeader",
-        "ScrollBar", "Calendar", "CalendarDayButton", "CalendarItem", "Window",
+        "ScrollBar", "Calendar", "CalendarDayButton", "CalendarItem",
+        // Window ve UserControl tema zeminini (Background/Foreground/font)
+        // örtük stilden alır; BasedOn'suz yerel bir stil o zemini koparir.
+        "Window", "UserControl", "Expander",
     ];
 
     [Fact]

@@ -176,6 +176,35 @@ Saklanan tercih ile uygulanan tema ayrıdır: `System` saklanır, `Light`/`Dark`
 
 ---
 
+## Ekran Kökü: Window ve UserControl Paritesi (2026-08-06)
+
+Tek kabuk mimarisinde (Faz D) ekranlar `Window` değil `UserControl` olacak.
+`Window` stili tema zeminini veriyordu; `UserControl` hiçbirini almıyordu.
+
+**Karar:** İki örtük stil eşdeğer tutulur ve parite testle sabitlenir. Zemin,
+hiçbir ekran taşınmadan ÖNCE kuruldu — hazır olmadan taşımaya başlamak, Faz
+B'de 31 pencereyi bozan hatayı 24 ekrana birden yaymak demekti.
+
+**Kabul edilen bedel — örtük stilin kapsamı.** `UserControl` stili uygulamadaki
+her `UserControl`'e uygulanır, iç içe olanlar dâhil. Bir ekranın içinde parça
+olarak `UserControl` kullanılırsa o da `Theme.AppBackground` alır ve kart/panel
+gibi farklı bir yüzey üzerinde yanlış zemin oluşturur.
+
+Alternatifler:
+
+- **A: Yalnızca ekran köklerine anahtarlı bir stil.** Her ekranın
+  `Style="{StaticResource ScreenRoot}"` yazması gerekirdi; unutulan bir ekran
+  sessizce zeminsiz kalırdı — Faz B'nin hatasının aynısı.
+- **B: Örtük stil (seçilen).** Unutma riski yok. Bedeli, ekran içi parçaların
+  `Background="Transparent"` demesi.
+- **C: Kabuk ekranı için özel taban sınıf.** Ayrı bir tip hiyerarşisi ve
+  "Window/UserControl için iki ayrı iş mantığı" riski getirirdi.
+
+B seçildi: unutulabilir bir kural yerine, ekran içi parçada bilinçli tek satır.
+Kural `docs/02-Architecture/ThemeEngine.md` → *Ekran Kökleri* bölümünde yazılı.
+
+---
+
 ## Nasıl Korunuyor
 
 `tests/YonetimFinansalIslemTakipSistemi.UiTests` (197 test) bu ADR'nin kararlarını

@@ -57,6 +57,23 @@
              (bkz. ShellViewModel.CloseTab). -->
         <KeyBinding Key="Q" Modifiers="Ctrl" Command="{Binding CloseTabCommand}"/>
         <KeyBinding Key="W" Modifiers="Ctrl" Command="{Binding CloseTabCommand}"/>
+
+        <!-- Sekmeler arası gezinme (Faz E5). Sıra sekme ŞERİDİNDEKİ sıradır,
+             kullanım sırası değil: kullanıcı baktığı yerden sayıyor.
+             Ctrl+1..9 yalnızca ilk dokuz sekmeye ulaşır; sonrası için
+             Ctrl+Tab ya da fare. -->
+        <KeyBinding Key="Tab" Modifiers="Ctrl"       Command="{Binding NextTabCommand}"/>
+        <KeyBinding Key="Tab" Modifiers="Ctrl+Shift" Command="{Binding PreviousTabCommand}"/>
+
+        <KeyBinding Key="D1" Modifiers="Ctrl" Command="{Binding ActivateTabCommand}" CommandParameter="1"/>
+        <KeyBinding Key="D2" Modifiers="Ctrl" Command="{Binding ActivateTabCommand}" CommandParameter="2"/>
+        <KeyBinding Key="D3" Modifiers="Ctrl" Command="{Binding ActivateTabCommand}" CommandParameter="3"/>
+        <KeyBinding Key="D4" Modifiers="Ctrl" Command="{Binding ActivateTabCommand}" CommandParameter="4"/>
+        <KeyBinding Key="D5" Modifiers="Ctrl" Command="{Binding ActivateTabCommand}" CommandParameter="5"/>
+        <KeyBinding Key="D6" Modifiers="Ctrl" Command="{Binding ActivateTabCommand}" CommandParameter="6"/>
+        <KeyBinding Key="D7" Modifiers="Ctrl" Command="{Binding ActivateTabCommand}" CommandParameter="7"/>
+        <KeyBinding Key="D8" Modifiers="Ctrl" Command="{Binding ActivateTabCommand}" CommandParameter="8"/>
+        <KeyBinding Key="D9" Modifiers="Ctrl" Command="{Binding ActivateTabCommand}" CommandParameter="9"/>
     </Window.InputBindings>
 
     <DockPanel>
@@ -184,7 +201,31 @@
         <TabControl x:Name="ScreenTabs"
                     ItemsSource="{Binding Tabs}"
                     SelectedItem="{Binding ActiveTab, Mode=TwoWay}"
+                    Style="{StaticResource ShellTabControl}"
                     PreviewMouseDown="ScreenTabs_PreviewMouseDown">
+
+            <!-- Sekme sağ tık menüsü (Faz E4). Biriken sekmeleri tek tek
+                 kapatmak zorunda kalmamak için; tarayıcı alışkanlığının aynısı.
+                 Menü ÖĞENİN üzerinde açılır, DataContext o sekmedir.
+
+                 Kararı yine ShellViewModel verir: kapatılamaz sekme ve
+                 kaydedilmemiş değişikliği olan ekran burada da korunur. -->
+            <TabControl.ItemContainerStyle>
+                <Style TargetType="TabItem">
+                    <Setter Property="ContextMenu">
+                        <Setter.Value>
+                            <ContextMenu>
+                                <MenuItem Header="Kapat"            Click="TabMenuClose_Click"/>
+                                <MenuItem Header="Diğerlerini Kapat" Click="TabMenuCloseOthers_Click"/>
+                                <MenuItem Header="Sağdakileri Kapat" Click="TabMenuCloseRight_Click"/>
+                                <Separator/>
+                                <MenuItem Header="Tümünü Kapat"     Click="TabMenuCloseAll_Click"/>
+                            </ContextMenu>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </TabControl.ItemContainerStyle>
+
             <!-- Sekme başlığı + kapatma düğmesi.
                  Kapatma düğmesi PENCERENİN X'inin karşılığıdır: ekranlar
                  pencereyken X ile kapanıyordu, sekmede karşılığı olmalı.
@@ -204,7 +245,7 @@
                                 Padding="4,0"
                                 VerticalAlignment="Center"
                                 Focusable="False"
-                                ToolTip="Sekmeyi kapat (Ctrl+W)"
+                                ToolTip="Sekmeyi kapat (Ctrl+Q)"
                                 Click="CloseTabButton_Click">
                             <Button.Style>
                                 <Style TargetType="Button" BasedOn="{StaticResource TabCloseButton}">

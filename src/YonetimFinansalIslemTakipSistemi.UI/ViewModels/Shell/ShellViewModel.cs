@@ -61,6 +61,17 @@ public sealed class ShellViewModel : INotifyPropertyChanged, IShellNavigator
         CloseTabCommand = new RelayCommand(
             () => { if (ActiveTab is not null) CloseTab(ActiveTab); });
 
+        NextTabCommand     = new RelayCommand(ActivateNextTab);
+        PreviousTabCommand = new RelayCommand(ActivatePreviousTab);
+
+        // Sıra XAML'den metin olarak gelir (CommandParameter="1"); çözülemeyen
+        // değer yok sayılır — kısayol hiçbir şey yapmaz, hata üretmez.
+        ActivateTabCommand = new RelayCommand(parameter =>
+        {
+            if (int.TryParse(parameter?.ToString(), out var position))
+                ActivateTabAt(position);
+        });
+
         // RequestLogout bool döner (çıkış iptal edilebilir); RelayCommand Action ister
         LogoutCommand = new RelayCommand(() => RequestLogout());
     }
@@ -273,6 +284,90 @@ public sealed class ShellViewModel : INotifyPropertyChanged, IShellNavigator
         return true;
     }
 
+    // ── Toplu kapatma (Faz E4) ────────────────────────────────────────────
+    //
+    // Üçü de tek tek CloseTab'dan geçer: CanClose ve RequestClose kontrolü
+    // TEKRARLANMAZ. Kapanmayı reddeden bir ekran diğerlerini durdurmaz —
+    // kullanıcı "diğerlerini kapat" dediyse kapanabilenler kapanmalı; tek bir
+    // itiraz yüzünden hiçbir şey olmaması sessiz bir başarısızlık olurdu.
+    //
+    // CloseAllTabs (çıkış akışı) ile karıştırılmamalı: o CanClose'u BİLEREK
+    // yok sayar, çünkü çıkışta kabuk tamamen boşalmalıdır.
+
+    /// <summary>Verilen sekme dışındaki tüm sekmeleri kapatır.</summary>
+    /// <returns>Kapatılan sekme sayısı.</returns>
+    public int CloseOtherTabs(ShellTab keep)
+    {
+        ArgumentNullException.ThrowIfNull(keep);
+
+        return CloseEach(Tabs.Where(t => !ReferenceEquals(t, keep)));
+    }
+
+    /// <summary>Verilen sekmenin SAĞINDAKİ sekmeleri kapatır.</summary>
+    /// <returns>Kapatılan sekme sayısı.</returns>
+    public int CloseTabsToTheRight(ShellTab from)
+    {
+        ArgumentNullException.ThrowIfNull(from);
+
+        var index = Tabs.IndexOf(from);
+        if (index < 0) return 0;
+
+        return CloseEach(Tabs.Skip(index + 1));
+    }
+
+    /// <summary>
+    /// Kullanıcının "tümünü kapat" isteği. Kapatılamaz sekme (Nakit İşlemler)
+    /// açık kalır — çıkıştaki CloseAllTabs'tan farkı budur.
+    /// </summary>
+    /// <returns>Kapatılan sekme sayısı.</returns>
+    public int CloseClosableTabs() => CloseEach(Tabs);
+
+    private int CloseEach(IEnumerable<ShellTab> tabs)
+    {
+        // Anlık görüntü: CloseTab koleksiyonu değiştiriyor.
+        var closed = 0;
+
+        foreach (var tab in tabs.ToList())
+            if (CloseTab(tab)) closed++;
+
+        return closed;
+    }
+
+    // ── Sekmeler arası gezinme (Faz E5) ───────────────────────────────────
+
+    /// <summary>
+    /// Sonraki sekmeye geçer; sondaysa başa döner. Tek sekmede hiçbir şey
+    /// yapmaz.
+    /// </summary>
+    public void ActivateNextTab() => ActivateRelative(+1);
+
+    /// <summary>Önceki sekmeye geçer; baştaysa sona döner.</summary>
+    public void ActivatePreviousTab() => ActivateRelative(-1);
+
+    private void ActivateRelative(int step)
+    {
+        if (Tabs.Count == 0) return;
+
+        var current = ActiveTab is null ? -1 : Tabs.IndexOf(ActiveTab);
+        if (current < 0) { ActiveTab = Tabs[0]; return; }
+
+        // Negatif mod C#'ta negatif kalır; Count eklenip tekrar mod alınıyor.
+        var next = ((current + step) % Tabs.Count + Tabs.Count) % Tabs.Count;
+        ActiveTab = Tabs[next];
+    }
+
+    /// <summary>
+    /// Sıradaki sekmeyi etkinleştirir (Ctrl+1..9). Aralık dışı istek yok
+    /// sayılır — kullanıcı olmayan bir sekmeye basınca hiçbir şey olmamalı.
+    /// </summary>
+    /// <param name="position">1 tabanlı sekme sırası.</param>
+    public void ActivateTabAt(int position)
+    {
+        if (position < 1 || position > Tabs.Count) return;
+
+        ActiveTab = Tabs[position - 1];
+    }
+
     // ── Çıkış ─────────────────────────────────────────────────────────────
 
     /// <summary>
@@ -335,9 +430,12 @@ public sealed class ShellViewModel : INotifyPropertyChanged, IShellNavigator
 
     // ── Komutlar ──────────────────────────────────────────────────────────
 
-    public ICommand OpenScreenCommand { get; }
-    public ICommand CloseTabCommand   { get; }
-    public ICommand LogoutCommand     { get; }
+    public ICommand OpenScreenCommand  { get; }
+    public ICommand CloseTabCommand    { get; }
+    public ICommand LogoutCommand      { get; }
+    public ICommand NextTabCommand     { get; }
+    public ICommand PreviousTabCommand { get; }
+    public ICommand ActivateTabCommand { get; }
 
     // ── INotifyPropertyChanged ────────────────────────────────────────────
 

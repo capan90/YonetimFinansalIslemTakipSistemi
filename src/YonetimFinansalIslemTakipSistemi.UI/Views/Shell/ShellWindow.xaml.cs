@@ -258,6 +258,38 @@ public partial class ShellWindow : Window
         }
     }
 
+    // ── Sekme sağ tık menüsü (Faz E4) ─────────────────────────────────────
+    //
+    // Menü öğesinin DataContext'i, menünün açıldığı TabItem'dan miras kalır;
+    // yani üzerinde sağ tıklanan SEKMEDİR. Toplu kapatma kararlarını yine
+    // ShellViewModel verir — kapatılamaz sekme ve kaydedilmemiş değişiklik
+    // kontrolü burada tekrarlanmaz.
+
+    private void TabMenuClose_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: ShellTab tab })
+            _vm.CloseTab(tab);
+    }
+
+    private void TabMenuCloseOthers_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: ShellTab tab })
+            _vm.CloseOtherTabs(tab);
+    }
+
+    private void TabMenuCloseRight_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: ShellTab tab })
+            _vm.CloseTabsToTheRight(tab);
+    }
+
+    /// <summary>
+    /// Kapatılamaz sekme (Nakit İşlemler) açık kalır — çıkıştaki
+    /// CloseAllTabs'tan farkı budur.
+    /// </summary>
+    private void TabMenuCloseAll_Click(object sender, RoutedEventArgs e)
+        => _vm.CloseClosableTabs();
+
     private static T? FindAncestor<T>(DependencyObject node) where T : DependencyObject
     {
         for (; node is not null; node = System.Windows.Media.VisualTreeHelper.GetParent(node))

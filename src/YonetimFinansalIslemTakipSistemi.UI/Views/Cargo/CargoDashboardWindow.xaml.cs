@@ -2,7 +2,11 @@ using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
 
+using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
+
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Cargo;
+
+#region Legacy - Shell Migration
 
 /// <summary>
 /// Kargo Dashboard — ince barındırıcı (Faz D6).
@@ -16,6 +20,7 @@ namespace YonetimFinansalIslemTakipSistemi.UI.Views.Cargo;
 /// yardım menüsü burada barındığında ÇALIŞMAYA DEVAM EDER; kabukta ise
 /// gizlenir ve yerini kabuğun navigasyon rayı alır.
 /// </summary>
+[Obsolete(LegacyShellMigration.Reason)]
 public partial class CargoDashboardWindow : Window
 {
     private readonly IServiceProvider _services;
@@ -48,3 +53,5 @@ public partial class CargoDashboardWindow : Window
         Close();
     }
 }
+
+#endregion

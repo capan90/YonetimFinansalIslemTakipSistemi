@@ -1,7 +1,11 @@
 using System.Windows;
 using System.Windows.Controls;
 
+using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
+
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Cargo;
+
+#region Legacy - Shell Migration
 
 /// <summary>
 /// CargoCompanyListWindow — ince barindirici (Faz D6).
@@ -13,6 +17,7 @@ namespace YonetimFinansalIslemTakipSistemi.UI.Views.Cargo;
 /// Ayni ekran kabukta sekme olarak da aciliyor — barindiricidan bagimsiz
 /// calistiginin canli kaniti.
 /// </summary>
+[Obsolete(LegacyShellMigration.Reason)]
 public partial class CargoCompanyListWindow : Window
 {
     public CargoCompanyListWindow(IServiceProvider services)
@@ -21,3 +26,5 @@ public partial class CargoCompanyListWindow : Window
         ScreenHost.Content = new CargoCompanyListScreen(services);
     }
 }
+
+#endregion

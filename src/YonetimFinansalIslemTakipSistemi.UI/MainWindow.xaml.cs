@@ -18,7 +18,11 @@ using YonetimFinansalIslemTakipSistemi.UI.Views.Permissions;
 using YonetimFinansalIslemTakipSistemi.UI.Views.Reports;
 using YonetimFinansalIslemTakipSistemi.UI.Views.Users;
 
+using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
+
 namespace YonetimFinansalIslemTakipSistemi.UI;
+
+#region Legacy - Shell Migration
 
 /// <summary>
 /// Finans kabuğu — Faz D pilot dönüşümünden sonra.
@@ -36,6 +40,7 @@ namespace YonetimFinansalIslemTakipSistemi.UI;
 /// Kısayollar burada TANIMLI kalır ki odak menüdeyken de çalışsınlar; gövdeleri
 /// ekrandaki genel metotlara YÖNLENDİRİLİR — mantık iki yerde tutulmaz.
 /// </summary>
+[Obsolete(LegacyShellMigration.Reason)]
 public partial class MainWindow : Window
 {
     private readonly IServiceProvider       _services;
@@ -282,3 +287,5 @@ public partial class MainWindow : Window
         => await Common.UpdateCheckFlow.RunAsync(_services, _dialogService);
 }
 
+
+#endregion

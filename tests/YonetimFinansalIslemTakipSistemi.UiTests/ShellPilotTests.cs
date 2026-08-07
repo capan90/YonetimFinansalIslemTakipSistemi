@@ -444,17 +444,8 @@ public class ShellPilotTests
         Assert.Contains("TextCaseSettingsWindow", ShellWindowCode, StringComparison.Ordinal);
     }
 
-    /// <summary>
-    /// MainWindow silinmedi ve hâlâ derlenebilir durumda — geri dönüş yolu
-    /// açık. Ama başlangıç akışı onu açmıyor (bkz. ShellStartupContractTests).
-    /// </summary>
-    [Fact]
-    public void MainWindow_kodda_duruyor()
-    {
-        Assert.True(File.Exists(Path.Combine(UiSourceLocator.UiProjectDirectory, "MainWindow.xaml")));
-        Assert.True(File.Exists(Path.Combine(UiSourceLocator.UiProjectDirectory, "MainWindow.xaml.cs")));
-        Assert.NotNull(typeof(MainWindow));
-    }
+    // MainWindow'un varlığı ve donmuş olması artık LegacyFreezeTests'in
+    // sözleşmesi (Faz E3). Testler legacy tipleri DOĞRUDAN kullanmaz.
 
     // ── Başlangıç kararı ─────────────────────────────────────────────────
     //

@@ -1,7 +1,11 @@
 using System.Windows;
 using System.Windows.Controls;
 
+using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
+
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Mail;
+
+#region Legacy - Shell Migration
 
 /// <summary>
 /// MailContactListWindow — ince barindirici (Faz D6).
@@ -13,6 +17,7 @@ namespace YonetimFinansalIslemTakipSistemi.UI.Views.Mail;
 /// Ayni ekran kabukta sekme olarak da aciliyor — barindiricidan bagimsiz
 /// calistiginin canli kaniti.
 /// </summary>
+[Obsolete(LegacyShellMigration.Reason)]
 public partial class MailContactListWindow : Window
 {
     public MailContactListWindow(IServiceProvider services)
@@ -21,3 +26,5 @@ public partial class MailContactListWindow : Window
         ScreenHost.Content = new MailContactListScreen(services);
     }
 }
+
+#endregion

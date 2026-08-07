@@ -1,7 +1,11 @@
 using System.Windows;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CargoShipment.Queries.GetCargoShipmentList;
 
+using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
+
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Cargo;
+
+#region Legacy - Shell Migration
 
 /// <summary>
 /// Operasyon Merkezi — ince barındırıcı (Faz D6).
@@ -13,6 +17,7 @@ namespace YonetimFinansalIslemTakipSistemi.UI.Views.Cargo;
 /// operasyon merkezi ayrı bir sekme olduğu için orada tazeleme sekmeye geri
 /// dönüldüğünde yapılır (bkz. CargoShipmentListScreen).
 /// </summary>
+[Obsolete(LegacyShellMigration.Reason)]
 public partial class CargoOperationCenterWindow : Window
 {
     private readonly CargoOperationCenterScreen _screen;
@@ -31,3 +36,5 @@ public partial class CargoOperationCenterWindow : Window
         ScreenHost.Content = _screen;
     }
 }
+
+#endregion

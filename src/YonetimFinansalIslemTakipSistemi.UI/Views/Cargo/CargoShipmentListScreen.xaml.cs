@@ -258,10 +258,16 @@ public partial class CargoShipmentListScreen : UserControl, IShellCloseSource, I
             return;
         }
 
+        // LEGACY - SHELL MIGRATION (Faz E3): yalnızca dondurulmuş ince
+        // barındırıcı pencere yolunda çalışır; kabukta Navigator hep atanır.
+        // Kaldırma sonraki sprintte — bkz. LegacyShellMigration.
+#pragma warning disable CS0618 // dondurulmuş pencereler
         var opCenter = new CargoOperationCenterWindow(_services, _vm.Selected)
         {
             Owner = HostWindow
         };
+#pragma warning restore CS0618
+
         opCenter.ShowDialog();
         if (opCenter.WasModified)
             await _vm.LoadAsync();

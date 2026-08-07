@@ -1,7 +1,11 @@
 using System.Windows;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 
+using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
+
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Cargo;
+
+#region Legacy - Shell Migration
 
 /// <summary>
 /// Kargo listesi — ince barındırıcı (Faz D6).
@@ -12,6 +16,7 @@ namespace YonetimFinansalIslemTakipSistemi.UI.Views.Cargo;
 ///
 /// SİLİNMEDİ: MainWindow ve Kargo Dashboard menüleri hâlâ bu pencereyi açıyor.
 /// </summary>
+[Obsolete(LegacyShellMigration.Reason)]
 public partial class CargoShipmentListWindow : Window
 {
     public CargoShipmentListWindow(IServiceProvider services, CargoShipmentDirection direction)
@@ -25,3 +30,5 @@ public partial class CargoShipmentListWindow : Window
         ScreenHost.Content = screen;
     }
 }
+
+#endregion

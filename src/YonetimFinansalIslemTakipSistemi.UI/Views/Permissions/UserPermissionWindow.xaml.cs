@@ -1,7 +1,11 @@
 using System.Windows;
 using System.Windows.Controls;
 
+using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
+
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Permissions;
+
+#region Legacy - Shell Migration
 
 /// <summary>
 /// UserPermissionWindow — ince barindirici (Faz D6).
@@ -13,6 +17,7 @@ namespace YonetimFinansalIslemTakipSistemi.UI.Views.Permissions;
 /// Ayni ekran kabukta sekme olarak da aciliyor — barindiricidan bagimsiz
 /// calistiginin canli kaniti.
 /// </summary>
+[Obsolete(LegacyShellMigration.Reason)]
 public partial class UserPermissionWindow : Window
 {
     public UserPermissionWindow(IServiceProvider services)
@@ -21,3 +26,5 @@ public partial class UserPermissionWindow : Window
         ScreenHost.Content = new UserPermissionScreen(services);
     }
 }
+
+#endregion

@@ -1,7 +1,11 @@
 using System.Windows;
 using System.Windows.Controls;
 
+using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
+
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Users;
+
+#region Legacy - Shell Migration
 
 /// <summary>
 /// UserManagementWindow — ince barindirici (Faz D6).
@@ -13,6 +17,7 @@ namespace YonetimFinansalIslemTakipSistemi.UI.Views.Users;
 /// Ayni ekran kabukta sekme olarak da aciliyor — barindiricidan bagimsiz
 /// calistiginin canli kaniti.
 /// </summary>
+[Obsolete(LegacyShellMigration.Reason)]
 public partial class UserManagementWindow : Window
 {
     public UserManagementWindow(IServiceProvider services)
@@ -21,3 +26,5 @@ public partial class UserManagementWindow : Window
         ScreenHost.Content = new UserManagementScreen(services);
     }
 }
+
+#endregion

@@ -1,7 +1,11 @@
 using System.Windows;
 using System.Windows.Controls;
 
+using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
+
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Health;
+
+#region Legacy - Shell Migration
 
 /// <summary>
 /// SystemHealthWindow — ince barindirici (Faz D6).
@@ -13,6 +17,7 @@ namespace YonetimFinansalIslemTakipSistemi.UI.Views.Health;
 /// Ayni ekran kabukta sekme olarak da aciliyor — barindiricidan bagimsiz
 /// calistiginin canli kaniti.
 /// </summary>
+[Obsolete(LegacyShellMigration.Reason)]
 public partial class SystemHealthWindow : Window
 {
     public SystemHealthWindow(IServiceProvider services)
@@ -21,3 +26,5 @@ public partial class SystemHealthWindow : Window
         ScreenHost.Content = new SystemHealthScreen(services);
     }
 }
+
+#endregion

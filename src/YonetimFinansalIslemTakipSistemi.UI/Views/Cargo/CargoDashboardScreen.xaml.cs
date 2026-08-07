@@ -616,6 +616,19 @@ public partial class CargoDashboardScreen : UserControl, IShellLogoutSource, ISh
         window.ShowDialog();
     }
 
+    // LEGACY - SHELL MIGRATION (Faz E3)
+    //
+    // Aşağıdaki yedek fabrikalar YALNIZCA Navigator null iken, yani ekran
+    // dondurulmuş ince barındırıcı pencerede barınırken çalışır. Kabukta
+    // Navigator her zaman atanır (bkz. ShellViewModel.Attach), dolayısıyla
+    // bu dallar pratikte ölüdür.
+    //
+    // Bu sprintte SİLİNMEDİ (bilinçli karar: önce kabuk gerçek kullanımda
+    // sınansın). Uyarı bastırma kapsamı bilerek dar: yeni bir legacy
+    // kullanımı buraya sızarsa derleme yine uyarır.
+    // Kaldırma: sonraki sprint — bkz. LegacyShellMigration.
+#pragma warning disable CS0618 // dondurulmuş pencereler
+
     private void NavGelenButton_Click(object sender, RoutedEventArgs e)
         => OpenScreen(ScreenKey.IncomingCargo,
                       () => new CargoShipmentListWindow(_services, CargoShipmentDirection.Incoming));
@@ -632,6 +645,8 @@ public partial class CargoDashboardScreen : UserControl, IShellLogoutSource, ISh
 
     private void NavWhatsAppRehberiButton_Click(object sender, RoutedEventArgs e)
         => OpenScreen(ScreenKey.WhatsAppContacts, () => new Views.WhatsApp.WhatsAppContactListWindow(_services));
+
+#pragma warning restore CS0618
 
     // ── Pencere Kapat ─────────────────────────────────────────────────────
 

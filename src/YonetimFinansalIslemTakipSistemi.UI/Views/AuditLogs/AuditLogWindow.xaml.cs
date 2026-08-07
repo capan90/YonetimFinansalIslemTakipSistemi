@@ -1,7 +1,11 @@
 using System.Windows;
 using System.Windows.Controls;
 
+using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
+
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.AuditLogs;
+
+#region Legacy - Shell Migration
 
 /// <summary>
 /// AuditLogWindow — ince barindirici (Faz D6).
@@ -13,6 +17,7 @@ namespace YonetimFinansalIslemTakipSistemi.UI.Views.AuditLogs;
 /// Ayni ekran kabukta sekme olarak da aciliyor — barindiricidan bagimsiz
 /// calistiginin canli kaniti.
 /// </summary>
+[Obsolete(LegacyShellMigration.Reason)]
 public partial class AuditLogWindow : Window
 {
     public AuditLogWindow(IServiceProvider services)
@@ -21,3 +26,5 @@ public partial class AuditLogWindow : Window
         ScreenHost.Content = new AuditLogScreen(services);
     }
 }
+
+#endregion

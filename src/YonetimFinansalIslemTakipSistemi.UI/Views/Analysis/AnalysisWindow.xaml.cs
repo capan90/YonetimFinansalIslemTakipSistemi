@@ -1,7 +1,11 @@
 using System.Windows;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Analysis;
 
+using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
+
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Analysis;
+
+#region Legacy - Shell Migration
 
 /// <summary>
 /// Finans Analiz Merkezi — ince barındırıcı (Faz D6).
@@ -10,6 +14,7 @@ namespace YonetimFinansalIslemTakipSistemi.UI.Views.Analysis;
 /// (mevcut sözleşme): analiz ekranı ViewModel'ini kendisi çözmüyor, dışarıdan
 /// alıyor — çağıranlar değişmesin diye bu korundu.
 /// </summary>
+[Obsolete(LegacyShellMigration.Reason)]
 public partial class AnalysisWindow : Window
 {
     public AnalysisWindow(AnalysisViewModel viewModel)
@@ -18,3 +23,5 @@ public partial class AnalysisWindow : Window
         ScreenHost.Content = new AnalysisScreen(viewModel);
     }
 }
+
+#endregion

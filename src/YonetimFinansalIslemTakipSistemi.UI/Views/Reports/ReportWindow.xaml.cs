@@ -1,7 +1,11 @@
 using System.Windows;
 using System.Windows.Controls;
 
+using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
+
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Reports;
+
+#region Legacy - Shell Migration
 
 /// <summary>
 /// ReportWindow — ince barindirici (Faz D6).
@@ -13,6 +17,7 @@ namespace YonetimFinansalIslemTakipSistemi.UI.Views.Reports;
 /// Ayni ekran kabukta sekme olarak da aciliyor — barindiricidan bagimsiz
 /// calistiginin canli kaniti.
 /// </summary>
+[Obsolete(LegacyShellMigration.Reason)]
 public partial class ReportWindow : Window
 {
     public ReportWindow(IServiceProvider services)
@@ -21,3 +26,5 @@ public partial class ReportWindow : Window
         ScreenHost.Content = new ReportScreen(services);
     }
 }
+
+#endregion

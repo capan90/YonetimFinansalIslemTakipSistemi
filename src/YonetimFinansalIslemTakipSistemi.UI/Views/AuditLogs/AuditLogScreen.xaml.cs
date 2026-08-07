@@ -1,6 +1,6 @@
-using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Extensions.DependencyInjection;
+using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.AuditLogs;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.AuditLogs;
@@ -14,8 +14,7 @@ public partial class AuditLogScreen : UserControl
         InitializeComponent();
         _vm         = services.GetRequiredService<AuditLogViewModel>();
         DataContext = _vm;
-    }
 
-    private async void Window_Loaded(object sender, RoutedEventArgs e)
-        => await _vm.LoadAsync();
+        ScreenData.Bind(this, () => _vm.LoadAsync());
+    }
 }

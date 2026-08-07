@@ -79,30 +79,48 @@ public partial class CargoDashboardScreen : UserControl, IShellLogoutSource, ISh
         ChartPalette.ThemeChanged += RebuildCharts;
         Unloaded += (_, _) => ChartPalette.ThemeChanged -= RebuildCharts;
 
-        Loaded += async (_, _) =>
-        {
-            try
-            {
-                ApplyNavBarVisibility();
-                PopulateFilterCombos();
-                await LoadCargoCompaniesAsync();
-                await LoadDashboardAsync();
+        // Filtre kutuları ve kargo firması listesi YALNIZCA ilk gösterimde
+        // doldurulur; yenilemede tekrarlanırsa kullanıcının seçtiği filtre
+        // sıfırlanır ve yenile "filtremi sil" anlamına gelirdi.
+        ScreenData.Bind(this,
+            load:       () => GuardedAsync(LoadDashboardAsync),
+            initialize: () => GuardedAsync(InitializeAsync));
+    }
 
-                // Açılışta güncelleme kontrolü uygulama seviyesi bir iştir.
-                // Kabukta ShellWindow yürütüyor; burada tekrarlanırsa kullanıcı
-                // aynı bildirimi iki kez görürdü. İnce barındırıcı pencerede
-                // kabuk yok, o yüzden orada bu çağrı kalıyor.
-                if (!InShell)
-                    await Services.StartupUpdateChecker.RunOnceAsync(_services, _dialogService);
-            }
-            catch (Exception ex)
-            {
-                // Teknik detay diyaloga yazılmaz (bağlantı bilgisi sızabilir); log'a gider
-                _ = _services.GetRequiredService<ISystemLogService>()
-                    .LogErrorAsync("Cargo", "Dashboard yüklenirken hata oluştu", ex, source: nameof(CargoDashboardScreen));
-                _dialogService.ShowError("Dashboard yüklenirken hata oluştu. Ayrıntılar sistem loguna kaydedildi.", "Dashboard Hatası");
-            }
-        };
+    /// <summary>
+    /// İlk gösterim hazırlığı. Panonun verisi buraya girmez — o yenilenebilir
+    /// olmalı (bkz. <see cref="ScreenData"/>).
+    /// </summary>
+    private async Task InitializeAsync()
+    {
+        ApplyNavBarVisibility();
+        PopulateFilterCombos();
+        await LoadCargoCompaniesAsync();
+
+        // Açılışta güncelleme kontrolü uygulama seviyesi bir iştir. Kabukta
+        // ShellWindow yürütüyor; burada tekrarlanırsa kullanıcı aynı bildirimi
+        // iki kez görürdü. Yalnızca DONDURULMUŞ ince barındırıcı pencere
+        // yolunda anlamlı (bkz. Legacy - Shell Migration).
+        if (!InShell)
+            await Services.StartupUpdateChecker.RunOnceAsync(_services, _dialogService);
+    }
+
+    /// <summary>
+    /// Pano yükleme hatalarının ortak kapısı. Teknik detay diyaloga yazılmaz
+    /// (bağlantı bilgisi sızabilir); log'a gider.
+    /// </summary>
+    private async Task GuardedAsync(Func<Task> work)
+    {
+        try
+        {
+            await work();
+        }
+        catch (Exception ex)
+        {
+            _ = _services.GetRequiredService<ISystemLogService>()
+                .LogErrorAsync("Cargo", "Dashboard yüklenirken hata oluştu", ex, source: nameof(CargoDashboardScreen));
+            _dialogService.ShowError("Dashboard yüklenirken hata oluştu. Ayrıntılar sistem loguna kaydedildi.", "Dashboard Hatası");
+        }
     }
 
     // ── Dashboard ──────────────────────────────────────────────────────────

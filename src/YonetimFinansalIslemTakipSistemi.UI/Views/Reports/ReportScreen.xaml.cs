@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
+using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Reports;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Reports;
@@ -25,10 +26,9 @@ public partial class ReportScreen : UserControl
         _services   = services;
         _vm         = services.GetRequiredService<ReportViewModel>();
         DataContext = _vm;
-    }
 
-    private async void Window_Loaded(object sender, RoutedEventArgs e)
-        => await _vm.LoadAsync();
+        ScreenData.Bind(this, () => _vm.LoadAsync());
+    }
 
     private void Preview_Click(object sender, RoutedEventArgs e)
     {

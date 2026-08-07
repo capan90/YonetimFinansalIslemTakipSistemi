@@ -9,6 +9,7 @@ using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
 using YonetimFinansalIslemTakipSistemi.UI.Common;
+using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Health;
 
@@ -29,11 +30,9 @@ public partial class SystemHealthScreen : UserControl
         // Menü zaten admin-only olsa da pencere seviyesinde de kontrol ederiz (savunma derinliği)
         _isAdmin       = services.GetRequiredService<IUserContext>().HasPermission(PermissionType.CanManageUsers);
 
-        Loaded += async (_, _) =>
-        {
-            ConfigureAdminControls();
-            await LoadAsync();
-        };
+        ScreenData.Bind(this,
+            load:       LoadAsync,
+            initialize: () => { ConfigureAdminControls(); return Task.CompletedTask; });
     }
 
     // ── Yükleme / Yenileme ──────────────────────────────────────────────────

@@ -122,19 +122,22 @@ public partial class CashTransactionsScreen : UserControl, IShellLogoutSource, I
         ChartPalette.ThemeChanged += _listVm.RebuildSparklines;
         Unloaded += (_, _) => ChartPalette.ThemeChanged -= _listVm.RebuildSparklines;
 
-        Loaded += async (_, _) =>
-        {
-            // Kabukta kullanıcı adı durum şeridinde, çıkış navigasyon rayında.
-            // Gezgin ancak sekme oluşturulurken atandığı için karar Loaded'da
-            // veriliyor; kurucuda henüz bilinmiyor.
-            if (Navigator is not null)
-                SessionBar.Visibility = Visibility.Collapsed;
+        // Hazırlık YALNIZCA ilk gösterimde; yenilemede tekrarlanırsa
+        // kullanıcının kolon düzeni ve bakiye kolonu tercihi sıfırlanırdı.
+        ScreenData.Bind(this,
+            load: () => _listVm.LoadTransactionsAsync(),
+            initialize: async () =>
+            {
+                // Kabukta kullanıcı adı durum şeridinde, çıkış navigasyon rayında.
+                // Gezgin ancak sekme oluşturulurken atandığı için karar burada
+                // veriliyor; kurucuda henüz bilinmiyor.
+                if (Navigator is not null)
+                    SessionBar.Visibility = Visibility.Collapsed;
 
-            ApplyColumnHeaderContextMenu();
-            await ApplySavedLayoutAsync();
-            ApplyBalanceColumnVisibility();
-            await _listVm.LoadTransactionsAsync();
-        };
+                ApplyColumnHeaderContextMenu();
+                await ApplySavedLayoutAsync();
+                ApplyBalanceColumnVisibility();
+            });
     }
 
     /// <summary>

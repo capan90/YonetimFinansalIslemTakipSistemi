@@ -71,15 +71,29 @@ public partial class CargoShipmentListScreen : UserControl, IShellCloseSource, I
         DeleteButton.Visibility = manageVisibility;
         ImportButton.Visibility = manageVisibility;
 
-        Loaded += async (_, _) => await _vm.LoadAsync();
+        ScreenData.Bind(this, () => _vm.LoadAsync());
 
-        // Kabukta operasyon merkezi AYRI BİR SEKMEDE açılıyor ve modal değil;
-        // "kapanınca yenile" varsayımı orada geçersiz. Sekmeye geri dönüldüğünde
-        // tazelemek ekranlar arasına bağ kurmadan aynı sonucu veriyor.
-        // IsLoaded kontrolü ilk gösterimde çift sorguyu engeller.
+        // BİLİNÇLİ İSTİSNA (Faz E1). Diğer ekranlar sekmeye dönüldüğünde
+        // yeniden sorgulamaz; bu ekran sorgular. Nedeni doğruluk: operasyon
+        // merkezi AYRI BİR SEKMEDE açılıyor ve modal değil, orada değişen
+        // kargo durumu bu listede eski görünürdü. "Kapanınca yenile"
+        // varsayımı sekmeli dünyada geçersiz.
+        //
+        // İlk gösterim ScreenData'nın işi; buradaki ilk geçiş tüketilir,
+        // yoksa açılışta iki sorgu giderdi (eski IsLoaded kontrolü sekme
+        // geçişlerinde bunu engellemiyordu).
+        var ilkGosterim = true;
         IsVisibleChanged += async (_, e) =>
         {
-            if (e.NewValue is true && IsLoaded) await _vm.LoadAsync();
+            if (e.NewValue is not true) return;
+
+            if (ilkGosterim)
+            {
+                ilkGosterim = false;
+                return;
+            }
+
+            await _vm.LoadAsync();
         };
     }
 

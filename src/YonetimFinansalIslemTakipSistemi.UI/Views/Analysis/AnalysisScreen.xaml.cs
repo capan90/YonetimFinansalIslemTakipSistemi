@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using YonetimFinansalIslemTakipSistemi.UI.Common;
+using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Analysis;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Analysis;
@@ -20,7 +21,7 @@ public partial class AnalysisScreen : UserControl
         ChartPalette.ThemeChanged += OnThemeChanged;
         Unloaded += (_, _) => ChartPalette.ThemeChanged -= OnThemeChanged;
 
-        Loaded += async (_, _) => await _vm.LoadAsync();
+        ScreenData.Bind(this, () => _vm.LoadAsync());
     }
 
     // Boş durum görünürlüğü XAML'de DataTrigger ile bağlıdır (HasTrendData);

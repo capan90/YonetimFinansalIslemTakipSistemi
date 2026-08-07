@@ -3,6 +3,7 @@ using System.Windows.Input;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Microsoft.Extensions.DependencyInjection;
+using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.SystemLogs;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.SystemLogs;
@@ -25,11 +26,8 @@ public partial class SystemLogsScreen : UserControl
         _vm       = services.GetRequiredService<SystemLogsViewModel>();
         InitializeComponent();
         DataContext = _vm;
-    }
 
-    private async void Window_Loaded(object sender, RoutedEventArgs e)
-    {
-        await _vm.LoadAsync();
+        ScreenData.Bind(this, () => _vm.LoadAsync());
     }
 
     private async void RefreshButton_Click(object sender, RoutedEventArgs e)

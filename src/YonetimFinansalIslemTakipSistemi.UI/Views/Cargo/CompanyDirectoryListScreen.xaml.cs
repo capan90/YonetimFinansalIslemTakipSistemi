@@ -6,6 +6,7 @@ using YonetimFinansalIslemTakipSistemi.Application.Features.CompanyDirectory.Com
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
+using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Cargo;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Cargo;
@@ -40,7 +41,7 @@ public partial class CompanyDirectoryListScreen : UserControl
         DeleteButton.Visibility = manageVisibility;
         ImportButton.Visibility = manageVisibility;
 
-        Loaded += async (_, _) => await _vm.LoadAsync();
+        ScreenData.Bind(this, () => _vm.LoadAsync());
     }
 
     private async void NewButton_Click(object sender, RoutedEventArgs e)

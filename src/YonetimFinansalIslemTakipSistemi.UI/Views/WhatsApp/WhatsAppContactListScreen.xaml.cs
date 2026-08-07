@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using YonetimFinansalIslemTakipSistemi.Application.Features.WhatsAppContacts.DeleteWhatsAppContact;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
+using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.WhatsApp;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.WhatsApp;
@@ -45,7 +46,7 @@ public partial class WhatsAppContactListScreen : UserControl
         DeleteButton.Visibility = manageVisibility;
         ImportButton.Visibility = manageVisibility;
 
-        Loaded += async (_, _) => await _vm.LoadAsync();
+        ScreenData.Bind(this, () => _vm.LoadAsync());
     }
 
     private async void NewButton_Click(object sender, RoutedEventArgs e)

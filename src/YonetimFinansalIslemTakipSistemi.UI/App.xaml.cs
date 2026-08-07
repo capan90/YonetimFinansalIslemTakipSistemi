@@ -435,23 +435,138 @@ public partial class App : System.Windows.Application
     private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
         var ex = e.ExceptionObject as Exception;
+
+        // Önce dosya: Serilog kapatıldıktan sonra ya da log altyapısı hiç
+        // kurulamadığında bile hatanın izi kalmalı.
+        WriteCrashFile(ex, $"Yakalanmamış AppDomain istisnası (IsTerminating={e.IsTerminating})");
+
         Log.Fatal(ex, "Yakalanmamış uygulama istisnası (AppDomain). Kapanıyor: {IsTerminating}", e.IsTerminating);
         // SystemLogService kritik log yazar ve içinden mail tetikler
         SafeLog(s => s.LogCriticalAsync("UI", "Yakalanmamış AppDomain istisnası", ex, source: "AppDomain"));
         Log.CloseAndFlush();
 
-        if (e.IsTerminating)
+        if (e.IsTerminating && ShouldNotify(ex))
         {
             try { Dispatcher.Invoke(ShowUnexpectedError); } catch { }
         }
     }
 
+    /// <summary>
+    /// UI iş parçacığındaki yakalanmamış istisnalar.
+    ///
+    /// SIRA ÖNEMLİ: önce KAYIT, sonra bildirim. Bildirim aşaması kendi başına
+    /// patlayabilir (diyalog da bir UI işidir); kayıt önce yapılmazsa hatanın
+    /// izi tamamen kaybolur.
+    ///
+    /// Bu akış bir kez gerçek hasara yol açtı: ShellWindow yüklenirken çıkan
+    /// bir XAML hatası burada yutuluyordu (Handled=true), kabuk yeniden
+    /// ölçülüyor, aynı hata yeniden çıkıyor, her seferinde yeni bir MessageBox
+    /// açılıyordu — kullanıcı üst üste hata kutusu görüyor, süreç yığını
+    /// tüketip StackOverflow ile ölüyordu. Asıl hata da bu gürültünün altında
+    /// kalıyordu.
+    /// </summary>
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
-        Log.Error(e.Exception, "Yakalanmamış UI (Dispatcher) istisnası");
-        SafeLog(s => s.LogCriticalAsync("UI", "Yakalanmamış Dispatcher istisnası", e.Exception, source: "UI (Dispatcher)"));
-        ShowUnexpectedError();
+        // Yeniden giriş koruması: bildirim aşamasında çıkan istisna buraya
+        // geri gelirse döngü kurulur. O durumda yalnızca kaydet ve çık.
+        if (_handlingFailure)
+        {
+            WriteCrashFile(e.Exception, "Hata işlenirken ikinci istisna");
+            e.Handled = true;
+            return;
+        }
+
+        _handlingFailure = true;
+        try
+        {
+            WriteCrashFile(e.Exception, "Yakalanmamış UI (Dispatcher) istisnası");
+            Log.Error(e.Exception, "Yakalanmamış UI (Dispatcher) istisnası");
+            SafeLog(s => s.LogCriticalAsync("UI", "Yakalanmamış Dispatcher istisnası", e.Exception, source: "UI (Dispatcher)"));
+
+            // Aynı hata tekrar tekrar üretiliyorsa (yeniden çizim/ölçüm
+            // döngüsü) kullanıcıya BİR KEZ söylenir; kayıt her seferinde
+            // tutulmaya devam eder.
+            if (ShouldNotify(e.Exception))
+                ShowUnexpectedError();
+        }
+        finally
+        {
+            _handlingFailure = false;
+        }
+
         e.Handled = true; // uygulamanın kapanmasını engelle
+    }
+
+    // ── Hata bildirimi: tek hata → tek bildirim ──────────────────────────────
+
+    [ThreadStatic]
+    private static bool _handlingFailure;
+
+    private static readonly HashSet<string> NotifiedFailures = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Bu hata için kullanıcıya daha önce bildirim yapıldı mı.
+    ///
+    /// İmza tür + mesaj + ilk yığın satırından üretilir: aynı kaynaktan gelen
+    /// tekrarlar tek sayılır, FARKLI bir hata yine bildirilir. Aksi hâlde ilk
+    /// hatadan sonra oluşan gerçek sorunlar sessizce yutulurdu.
+    /// </summary>
+    private static bool ShouldNotify(Exception? exception)
+    {
+        var signature = Signature(exception);
+
+        lock (NotifiedFailures)
+        {
+            // Emniyet supabı: hata fırtınasında bildirim sayısı sınırlı kalsın
+            if (NotifiedFailures.Count >= 5) return false;
+
+            return NotifiedFailures.Add(signature);
+        }
+    }
+
+    private static string Signature(Exception? exception)
+    {
+        if (exception is null) return "null";
+
+        var firstFrame = exception.StackTrace?
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault()?
+            .Trim() ?? string.Empty;
+
+        return $"{exception.GetType().FullName}|{exception.Message}|{firstFrame}";
+    }
+
+    /// <summary>
+    /// SON ÇARE kayıt: Serilog ya da veritabanı erişilemese bile hatanın izi
+    /// kalsın diye doğrudan dosyaya yazar. İç içe istisnalar dahil edilir —
+    /// asıl neden çoğunlukla InnerException'dadır (bu olayda XAML ayrıştırma
+    /// hatasının altındaki tip dönüşüm hatasıydı).
+    /// </summary>
+    private static void WriteCrashFile(Exception? exception, string context)
+    {
+        try
+        {
+            var directory = string.IsNullOrWhiteSpace(LogDirectory)
+                ? Path.Combine(Path.GetTempPath(), "YonetimFinansal")
+                : LogDirectory;
+
+            Directory.CreateDirectory(directory);
+
+            var path = Path.Combine(directory, $"crash-{DateTime.Now:yyyyMMdd}.log");
+
+            File.AppendAllText(path,
+                $"""
+
+                ===== {DateTime.Now:yyyy-MM-dd HH:mm:ss} — {context} =====
+                {exception}
+
+                """);
+        }
+        catch
+        {
+            // Dosyaya da yazılamıyorsa yapılabilecek bir şey yok; buradan
+            // fırlayan bir istisna hata işlemeyi tamamen çökertirdi.
+        }
     }
 
     private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)

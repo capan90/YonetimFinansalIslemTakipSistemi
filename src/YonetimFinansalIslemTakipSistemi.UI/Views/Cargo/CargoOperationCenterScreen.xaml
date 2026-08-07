@@ -1,0 +1,187 @@
+<UserControl x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.Cargo.CargoOperationCenterScreen"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{DynamicResource Theme.AppBackground}">
+
+    <UserControl.Resources>
+        <!-- Operasyon kartı stili: büyük, tıklanabilir, hover efektli -->
+        <Style x:Key="OpCard" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Width"           Value="130"/>
+            <Setter Property="Height"          Value="80"/>
+            <Setter Property="Margin"          Value="4"/>
+            <Setter Property="Background" Value="{DynamicResource Theme.SurfaceSubtle}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Theme.InputBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+            <Setter Property="FontFamily"      Value="Segoe UI"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource Theme.Info.Background}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource Theme.PrimaryHover}"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource Theme.Info.Background}"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="{DynamicResource Theme.SurfaceAlt}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource Theme.MutedText}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource Theme.Border}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <DockPanel Margin="14">
+
+        <!-- Başlık -->
+        <TextBlock DockPanel.Dock="Top"
+                   Text="Operasyon Merkezi"
+                   Style="{StaticResource Text.Body}" FontWeight="SemiBold"
+                   Margin="0,0,0,10"/>
+
+        <!-- Alt: Kapat -->
+        <Button DockPanel.Dock="Bottom"
+                Content="Kapat" Width="80"
+                HorizontalAlignment="Right"
+                IsCancel="True"
+                Margin="0,10,0,0"
+                Style="{StaticResource SecondaryButton}"
+                Click="CloseButton_Click"/>
+
+        <!-- İşlem sonucu bildirimi — Mail/WhatsApp tamamlandığında görünür, pencere kapanana kadar kalır -->
+        <Border x:Name="OpStatusBorder"
+                DockPanel.Dock="Bottom"
+                Background="{DynamicResource Theme.Success.Background}" BorderBrush="{DynamicResource Theme.Success.Border}" BorderThickness="1"
+                CornerRadius="4" Padding="10,7" Margin="0,8,0,0"
+                Visibility="Collapsed">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="✓  " Foreground="{DynamicResource Theme.Success}"
+                           Style="{StaticResource Text.Body}" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBlock x:Name="OpStatusBlock" Foreground="{DynamicResource Theme.Success}"
+                           Style="{StaticResource Text.Caption}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Kargo bilgi kartı -->
+        <Border DockPanel.Dock="Top"
+                Background="{DynamicResource Theme.Info.Background}" BorderBrush="{DynamicResource Theme.Info.Border}" BorderThickness="1"
+                CornerRadius="4" Padding="12,10" Margin="0,0,0,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0"
+                           Text="Kargo No:" FontWeight="SemiBold" Margin="0,0,6,4"/>
+                <TextBlock Grid.Row="0" Grid.Column="1"
+                           x:Name="ShipmentNumberBlock" FontWeight="SemiBold"
+                           Foreground="{DynamicResource Theme.Primary}" Margin="0,0,12,4"/>
+
+                <TextBlock Grid.Row="0" Grid.Column="2"
+                           Text="Karşı Taraf:" FontWeight="SemiBold" Margin="0,0,6,4"/>
+                <TextBlock Grid.Row="0" Grid.Column="3"
+                           x:Name="PartyBlock" Margin="0,0,0,4"
+                           TextTrimming="CharacterEllipsis"/>
+
+                <TextBlock Grid.Row="1" Grid.Column="0"
+                           Text="Öncelik:" FontWeight="SemiBold" Margin="0,0,6,4"/>
+                <TextBlock Grid.Row="1" Grid.Column="1"
+                           x:Name="PriorityBlock" Margin="0,0,12,4"/>
+
+                <TextBlock Grid.Row="1" Grid.Column="2"
+                           Text="Durum:" FontWeight="SemiBold" Margin="0,0,6,4"/>
+                <TextBlock Grid.Row="1" Grid.Column="3"
+                           x:Name="StatusBlock" Margin="0,0,0,4"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="0"
+                           Text="Bildirim:" FontWeight="SemiBold" Margin="0,0,6,0"
+                           ToolTip="WhatsApp veya mail hazırlama durumu"/>
+                <TextBlock Grid.Row="2" Grid.Column="1"
+                           x:Name="NotificationBlock" Grid.ColumnSpan="3"/>
+            </Grid>
+        </Border>
+
+        <!-- Operasyon kartları başlığı -->
+        <TextBlock DockPanel.Dock="Top"
+                   Text="İşlemler"
+                   Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.LabelText}"
+                   Margin="0,0,0,6"/>
+
+        <!-- Operasyon kartları (WrapPanel: 5 kart) -->
+        <WrapPanel DockPanel.Dock="Top"
+                   Orientation="Horizontal"
+                   HorizontalAlignment="Left">
+
+            <!-- Etiket Önizle -->
+            <Button x:Name="LabelButton"
+                    Style="{StaticResource OpCard}"
+                    Click="LabelButton_Click"
+                    ToolTip="Seçili kargo için A4 PDF kargo etiketi oluşturur ve açar.">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="🏷" Style="{StaticResource Text.Display}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Etiket Önizle" Style="{StaticResource Text.Caption}"
+                               HorizontalAlignment="Center" TextAlignment="Center"
+                               TextWrapping="Wrap" MaxWidth="110"/>
+                </StackPanel>
+            </Button>
+
+            <!-- WhatsApp Hazırla -->
+            <Button x:Name="WhatsAppButton"
+                    Style="{StaticResource OpCard}"
+                    Click="WhatsAppButton_Click"
+                    ToolTip="Seçili kargo için WhatsApp mesajı hazırlar ve önizleme açar">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="💬" Style="{StaticResource Text.Display}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="WhatsApp&#x0a;Hazırla" Style="{StaticResource Text.Caption}"
+                               HorizontalAlignment="Center" TextAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <!-- Mail Hazırla -->
+            <Button x:Name="MailButton"
+                    Style="{StaticResource OpCard}"
+                    Click="MailButton_Click"
+                    ToolTip="Seçili kargo için mail mesajı hazırlar ve önizleme açar">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="✉" Style="{StaticResource Text.Display}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Mail Hazırla" Style="{StaticResource Text.Caption}"
+                               HorizontalAlignment="Center" TextAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <!-- Portalı / Takibi Aç — tek kaynak: firma PortalUrl (DTO'da birleşik gelir) -->
+            <Button x:Name="TrackButton"
+                    Style="{StaticResource OpCard}"
+                    Click="TrackButton_Click"
+                    ToolTip="Kargo firmasının portal/takip sayfasını tarayıcıda açar">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="🔗" Style="{StaticResource Text.Display}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Portalı /&#x0a;Takibi Aç" Style="{StaticResource Text.Caption}"
+                               HorizontalAlignment="Center" TextAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <!-- Durum Değiştir -->
+            <Button x:Name="StatusButton"
+                    Style="{StaticResource OpCard}"
+                    Click="StatusButton_Click"
+                    ToolTip="Kargo durumunu değiştirir (izin verilen geçişler gösterilir)">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="⚡" Style="{StaticResource Text.Display}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Durum&#x0a;Değiştir" Style="{StaticResource Text.Caption}"
+                               HorizontalAlignment="Center" TextAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+        </WrapPanel>
+
+    </DockPanel>
+</UserControl>

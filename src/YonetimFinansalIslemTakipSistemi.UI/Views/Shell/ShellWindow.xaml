@@ -1,0 +1,346 @@
+<Window x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.Shell.ShellWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:common="clr-namespace:YonetimFinansalIslemTakipSistemi.UI.Common"
+        Title="Yönetim"
+        Height="720" Width="1280"
+        MinWidth="1000" MinHeight="600"
+        Icon="../../Assets/AppIcon.ico"
+        WindowStartupLocation="CenterScreen">
+
+    <!--
+    TEK KABUK
+
+    Yetkili her kullanici giristen sonra bu pencereyi goruyor. Ne gorecegini
+    yetkileri belirler: navigasyon rayi ve acilis sekmesi ScreenRegistry'deki
+    yetki kapilarindan turer. "none" davranisi App.xaml.cs'te ayri kaldi.
+
+    Yerlesim:
+      sol   navigasyon rayi (gruplu; menu cubugunun karsiligi) + Araclar
+      ust   sekme seridi (kapatma dugmeli)
+      orta  aktif sekmenin gorunumu
+      alt   durum seridi
+    Sag panel (420px duzenleme formlari) ve Ctrl+K komut paleti HENUZ YOK.
+
+    FABRIKASI BOS KAYIT RAYDA GORUNMEZ ve programatik olarak acilamaz
+    (bkz. ShellViewModel.IsVisible) — tiklaninca hicbir sey yapmayan sahte
+    sekme uretilmez. D6 sonunda tum kayitlarin fabrikasi dolu.
+    -->
+
+    <!-- KISAYOLLAR: tus atamalari burada, GOVDELERI ekranda.
+         Odak navigasyon rayinda ya da durum seridindeyken de calismalari
+         gerekiyor; bu yuzden atama pencere seviyesinde. Komut once odaktaki
+         ogeden yukselir — odak ekranin icindeyse ekran kendi
+         CommandBindings'i ile isi bitirir ve pencere hic devreye girmez.
+         Odak disaridaysa asagidaki Command_Forward komutu AKTIF SEKMEYE
+         yonlendirir. Kabuk hangi ekranin acik oldugunu bilmez. -->
+    <Window.CommandBindings>
+        <CommandBinding Command="common:AppCommands.New"            Executed="Command_Forward"/>
+        <CommandBinding Command="common:AppCommands.Duplicate"      Executed="Command_Forward"/>
+        <CommandBinding Command="common:AppCommands.DeleteSelected" Executed="Command_Forward"/>
+        <CommandBinding Command="common:AppCommands.FocusSearch"    Executed="Command_Forward"/>
+        <CommandBinding Command="common:AppCommands.ImportExcel"    Executed="Command_Forward"/>
+        <CommandBinding Command="common:AppCommands.RefreshList"    Executed="Command_Forward"/>
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Key="N"      Modifiers="Ctrl" Command="common:AppCommands.New"/>
+        <KeyBinding Key="D"      Modifiers="Ctrl" Command="common:AppCommands.Duplicate"/>
+        <KeyBinding Key="Delete"                  Command="common:AppCommands.DeleteSelected"/>
+        <KeyBinding Key="F"      Modifiers="Ctrl" Command="common:AppCommands.FocusSearch"/>
+        <KeyBinding Key="E"      Modifiers="Ctrl" Command="common:AppCommands.ImportExcel"/>
+        <KeyBinding Key="F5"                      Command="common:AppCommands.RefreshList"/>
+
+        <!-- Aktif sekmeyi kapatır. Ctrl+Q tercih edilen kısayol; Ctrl+W
+             GERİYE DÖNÜK UYUMLULUK için korunuyor (tarayıcı alışkanlığı).
+             İkisi de aynı komuta bağlı — davranış tek yerde.
+             Kapatılamaz sekmede ve ekran reddederse hiçbir şey olmaz
+             (bkz. ShellViewModel.CloseTab). -->
+        <KeyBinding Key="Q" Modifiers="Ctrl" Command="{Binding CloseTabCommand}"/>
+        <KeyBinding Key="W" Modifiers="Ctrl" Command="{Binding CloseTabCommand}"/>
+
+        <!-- Sekmeler arası gezinme (Faz E5). Sıra sekme ŞERİDİNDEKİ sıradır,
+             kullanım sırası değil: kullanıcı baktığı yerden sayıyor.
+             Ctrl+1..9 yalnızca ilk dokuz sekmeye ulaşır; sonrası için
+             Ctrl+Tab ya da fare. -->
+        <KeyBinding Key="Tab" Modifiers="Ctrl"       Command="{Binding NextTabCommand}"/>
+        <KeyBinding Key="Tab" Modifiers="Ctrl+Shift" Command="{Binding PreviousTabCommand}"/>
+
+        <KeyBinding Key="D1" Modifiers="Ctrl" Command="{Binding ActivateTabCommand}" CommandParameter="1"/>
+        <KeyBinding Key="D2" Modifiers="Ctrl" Command="{Binding ActivateTabCommand}" CommandParameter="2"/>
+        <KeyBinding Key="D3" Modifiers="Ctrl" Command="{Binding ActivateTabCommand}" CommandParameter="3"/>
+        <KeyBinding Key="D4" Modifiers="Ctrl" Command="{Binding ActivateTabCommand}" CommandParameter="4"/>
+        <KeyBinding Key="D5" Modifiers="Ctrl" Command="{Binding ActivateTabCommand}" CommandParameter="5"/>
+        <KeyBinding Key="D6" Modifiers="Ctrl" Command="{Binding ActivateTabCommand}" CommandParameter="6"/>
+        <KeyBinding Key="D7" Modifiers="Ctrl" Command="{Binding ActivateTabCommand}" CommandParameter="7"/>
+        <KeyBinding Key="D8" Modifiers="Ctrl" Command="{Binding ActivateTabCommand}" CommandParameter="8"/>
+        <KeyBinding Key="D9" Modifiers="Ctrl" Command="{Binding ActivateTabCommand}" CommandParameter="9"/>
+
+        <!-- Komut paleti (Faz E6). Ray 18 ekranı dört grupta taşıyor; bilinen
+             bir ekrana gitmek için doğru grubu bulmak gerekiyor. Palet aynı
+             işi adını yazarak yaptırır. -->
+        <KeyBinding Key="K" Modifiers="Ctrl" Command="{Binding OpenPaletteCommand}"/>
+    </Window.InputBindings>
+
+    <!-- Kök Grid YALNIZCA paleti çalışma alanının ÜSTÜNE serebilmek için var;
+         yerleşimin kendisi aşağıdaki DockPanel'de. Palet ayrı bir pencere
+         değil: sahiplik/odak sorunları çıkarmadan kabuğun içinde kalıyor. -->
+    <Grid>
+    <DockPanel>
+
+        <!-- Alt durum şeridi -->
+        <Border DockPanel.Dock="Bottom"
+                Background="{DynamicResource Theme.SurfaceAlt}"
+                BorderBrush="{DynamicResource Theme.Border}"
+                BorderThickness="0,1,0,0"
+                Padding="12,5">
+            <DockPanel>
+                <TextBlock x:Name="StatusVersionText"
+                           DockPanel.Dock="Right"
+                           Style="{StaticResource Text.Caption}"/>
+                <TextBlock x:Name="StatusUserText"
+                           Style="{StaticResource Text.Caption}"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Sol navigasyon rayı -->
+        <Border DockPanel.Dock="Left"
+                Width="232"
+                Background="{DynamicResource Theme.Nav.Background}"
+                BorderBrush="{DynamicResource Theme.Border}"
+                BorderThickness="0,0,1,0">
+            <DockPanel>
+
+                <!-- Alt blok: EKRAN OLMAYAN eylemler + çıkış.
+                     Buradakiler sekmeye dönüşmez; modal diyalog açar ya da bir
+                     iş yapar. Menü çubuğunun ekran açmayan öğeleri buraya
+                     taşındı, ekran açanlar yukarıdaki gruplu raya.
+
+                     Harf Duyarlılığı YETKİ GEREKTİRMEZ: kişisel bir tercihtir,
+                     giriş yapan her kullanıcı kendi ayarını yönetir
+                     (bkz. docs/03-Modules/UserSettings.md). -->
+                <StackPanel DockPanel.Dock="Bottom" Margin="10,0,10,10">
+                    <TextBlock Text="Araçlar"
+                               Margin="4,0,0,4"
+                               Foreground="{DynamicResource Theme.Nav.Foreground}"
+                               Style="{StaticResource Text.Caption}"/>
+
+                    <Button x:Name="ToolMailSettings"
+                            Content="Mail Ayarları"
+                            HorizontalContentAlignment="Left"
+                            ToolTip="SMTP sunucusu ve e-posta bildirim ayarlarını yönetin."
+                            Style="{StaticResource NavButton}"
+                            Click="OpenMailSettings_Click"/>
+                    <Button x:Name="ToolAppearance"
+                            Content="Görünüm Ayarları"
+                            HorizontalContentAlignment="Left"
+                            ToolTip="Uygulama temasını (açık / koyu) değiştirin."
+                            Style="{StaticResource NavButton}"
+                            Click="OpenAppearanceSettings_Click"/>
+                    <Button x:Name="ToolDbTest"
+                            Content="Veritabanı Testi"
+                            HorizontalContentAlignment="Left"
+                            ToolTip="Mevcut veritabanı bağlantısını hemen test eder ve sonucu gösterir."
+                            Style="{StaticResource NavButton}"
+                            Click="TestDbConnection_Click"/>
+                    <Button x:Name="ToolLogFolder"
+                            Content="Log Klasörünü Aç"
+                            HorizontalContentAlignment="Left"
+                            ToolTip="Uygulama log dosyalarının bulunduğu klasörü Explorer'da açar."
+                            Style="{StaticResource NavButton}"
+                            Click="OpenLogDirectory_Click"/>
+                    <Button x:Name="ToolCheckUpdates"
+                            Content="Güncellemeleri Denetle"
+                            HorizontalContentAlignment="Left"
+                            ToolTip="Yayın klasöründeki en güncel sürümü kontrol eder."
+                            Style="{StaticResource NavButton}"
+                            Click="CheckForUpdates_Click"/>
+                    <Button x:Name="ToolPersonalMail"
+                            Content="Mail Ayarlarım"
+                            HorizontalContentAlignment="Left"
+                            ToolTip="Kendi mail gönderim bilgilerinizi düzenleyin."
+                            Style="{StaticResource NavButton}"
+                            Click="OpenPersonalMailSettings_Click"/>
+                    <Button Content="Harf Duyarlılığı"
+                            Margin="0,0,0,10"
+                            HorizontalContentAlignment="Left"
+                            ToolTip="Girdiğiniz metinlerin BÜYÜK/küçük harf dönüşüm tercihini belirleyin (kişisel ayar)."
+                            Style="{StaticResource NavButton}"
+                            Click="OpenTextCaseSettings_Click"/>
+
+                    <Button Content="Çıkış Yap"
+                            Style="{StaticResource DangerButton}"
+                            Command="{Binding LogoutCommand}"/>
+                </StackPanel>
+
+                <!-- Menü çubuğunun yerini alan gruplu ray.
+                     Yetkisi olmayan VEYA henüz taşınmamış öğe listeye HİÇ
+                     girmez; tamamen boşalan grup da oluşmaz
+                     (bkz. ShellViewModel). -->
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl x:Name="NavigationGroupList"
+                                  ItemsSource="{Binding NavigationGroups}" Margin="6,6,6,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,0,0,10">
+                                    <TextBlock Text="{Binding Title}"
+                                               Margin="4,0,0,4"
+                                               Foreground="{DynamicResource Theme.Nav.Foreground}"
+                                               Style="{StaticResource Text.Caption}"/>
+
+                                    <!-- Ray KOYU bir yüzey (her iki temada da);
+                                         öğeler Theme.Nav.* tokenlarını okur.
+                                         Örtük ListBoxItem stili gövde metni
+                                         içindir ve burada okunmaz kalırdı. -->
+                                    <ListBox ItemsSource="{Binding Screens}"
+                                             Style="{StaticResource NavList}"
+                                             ItemContainerStyle="{StaticResource NavListItem}"
+                                             DisplayMemberPath="Title"
+                                             SelectionChanged="NavigationList_SelectionChanged"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+
+        <!-- Sekme şeridi + içerik.
+             Margin YOK ve zemin ekranınkiyle AYNI token: kabuk ile ekran tek
+             yüzey olarak okunur, iç içe kart / çift zemin oluşmaz. -->
+        <TabControl x:Name="ScreenTabs"
+                    ItemsSource="{Binding Tabs}"
+                    SelectedItem="{Binding ActiveTab, Mode=TwoWay}"
+                    Style="{StaticResource ShellTabControl}"
+                    PreviewMouseDown="ScreenTabs_PreviewMouseDown">
+
+            <!-- Sekme başlığı + kapatma düğmesi.
+                 Kapatma düğmesi PENCERENİN X'inin karşılığıdır: ekranlar
+                 pencereyken X ile kapanıyordu, sekmede karşılığı olmalı.
+
+                 KAPATILAMAZ sekmede düğme hiç görünmez (Nakit İşlemler);
+                 CanClose kararı ScreenRegistry'de, burada yalnızca gösteriliyor.
+
+                 Şablon kabuğa özgü — genel TabItem stiline konmadı; oradaki
+                 bir düğme uygulamadaki her TabControl'de belirirdi. -->
+            <TabControl.ItemTemplate>
+                <DataTemplate>
+                    <!-- Background="Transparent" sağ tık alanı için: boyasız
+                         panel fare olaylarını almaz, menü yalnızca yazının
+                         üstünde açılırdı. -->
+                    <StackPanel Orientation="Horizontal" Background="Transparent">
+
+                        <!-- Sekme sağ tık menüsü (Faz E4). Biriken sekmeleri
+                             tek tek kapatmak zorunda kalmamak için.
+
+                             MENÜ BURADA, ItemContainerStyle'da DEĞİL. Setter.Value
+                             içindeki olay bağlantıları XAML derleyicisinde
+                             connectionId çakışmasına yol açıyor: MenuItem
+                             handler'ları başka bir x:Name'li öğeyle aynı numaraya
+                             katlanıyor ve şablon yüklenirken tip dönüşümü
+                             patlıyordu (Button → Border). Şablon içi olaylar
+                             IStyleConnector üzerinden gidiyor ve bu sorun çıkmıyor
+                             — kapatma düğmesi zaten öyle çalışıyordu.
+
+                             Kararı yine ShellViewModel verir: kapatılamaz sekme ve
+                             kaydedilmemiş değişikliği olan ekran burada da korunur. -->
+                        <StackPanel.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Kapat"             Click="TabMenuClose_Click"/>
+                                <MenuItem Header="Diğerlerini Kapat" Click="TabMenuCloseOthers_Click"/>
+                                <MenuItem Header="Sağdakileri Kapat" Click="TabMenuCloseRight_Click"/>
+                                <Separator/>
+                                <MenuItem Header="Tümünü Kapat"      Click="TabMenuCloseAll_Click"/>
+                            </ContextMenu>
+                        </StackPanel.ContextMenu>
+
+                        <TextBlock Text="{Binding Title}" VerticalAlignment="Center"/>
+
+                        <Button Content="✕"
+                                Margin="8,0,-4,0"
+                                Padding="4,0"
+                                VerticalAlignment="Center"
+                                Focusable="False"
+                                ToolTip="Sekmeyi kapat (Ctrl+Q)"
+                                Click="CloseTabButton_Click">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource TabCloseButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CanClose}" Value="False">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+                </DataTemplate>
+            </TabControl.ItemTemplate>
+            <TabControl.ContentTemplate>
+                <DataTemplate>
+                    <ContentControl Content="{Binding View}"/>
+                </DataTemplate>
+            </TabControl.ContentTemplate>
+        </TabControl>
+
+    </DockPanel>
+
+        <!-- ══════════════════════════════════════════════════════════════
+             KOMUT PALETİ  (Faz E6)
+
+             Kabuğun ÜSTÜNE serilir; arkadaki karartma hem odağı toplar hem
+             de dışarı tıklayınca kapanma alanıdır.
+
+             Palet yeni bir kapı AÇMAZ: listesi kabuğun görünür ekranlarından
+             gelir, seçim yine ShellViewModel.OpenScreen'den geçer ve yetki
+             orada yeniden kontrol edilir.
+        ══════════════════════════════════════════════════════════════ -->
+        <Border x:Name="PaletteOverlay"
+                Visibility="Collapsed"
+                Background="{DynamicResource Theme.Scrim}"
+                MouseDown="PaletteOverlay_MouseDown">
+
+            <Border Width="520"
+                    MaxHeight="420"
+                    VerticalAlignment="Top"
+                    Margin="0,90,0,0"
+                    Background="{DynamicResource Theme.Surface}"
+                    BorderBrush="{DynamicResource Theme.Border}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Padding="10">
+                <DockPanel>
+                    <TextBox x:Name="PaletteQuery"
+                             DockPanel.Dock="Top"
+                             Margin="0,0,0,8"
+                             Text="{Binding Palette.Query, UpdateSourceTrigger=PropertyChanged}"
+                             PreviewKeyDown="PaletteQuery_PreviewKeyDown"/>
+
+                    <TextBlock DockPanel.Dock="Bottom"
+                               Margin="2,8,0,0"
+                               Text="↑↓ gez · Enter aç · Esc kapat"
+                               Style="{StaticResource Text.Caption}"/>
+
+                    <ListBox x:Name="PaletteResults"
+                             ItemsSource="{Binding Palette.Results}"
+                             SelectedIndex="{Binding Palette.SelectedIndex, Mode=TwoWay}"
+                             MouseDoubleClick="PaletteResults_MouseDoubleClick">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel>
+                                    <!-- Grup adı sağda ve soluk: aynı adı taşıyan
+                                         iki ekran varsa ayırt ettirir, yoksa
+                                         okumayı bölmez. -->
+                                    <TextBlock DockPanel.Dock="Right"
+                                               Margin="10,0,0,0"
+                                               Text="{Binding NavGroup}"
+                                               Style="{StaticResource Text.Caption}"/>
+                                    <TextBlock Text="{Binding Title}"/>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+        </Border>
+    </Grid>
+</Window>

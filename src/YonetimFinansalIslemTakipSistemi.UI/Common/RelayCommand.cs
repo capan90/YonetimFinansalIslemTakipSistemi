@@ -10,6 +10,7 @@ namespace YonetimFinansalIslemTakipSistemi.UI.Common;
 public class RelayCommand : ICommand
 {
     private readonly Action? _execute;
+    private readonly Action<object?>? _executeWithParameter;
     private readonly Func<Task>? _executeAsync;
     private readonly Func<bool>? _canExecute;
     private bool _isExecuting;
@@ -18,6 +19,20 @@ public class RelayCommand : ICommand
     {
         _execute    = execute;
         _canExecute = canExecute;
+    }
+
+    /// <summary>
+    /// Parametreli komut. Aynı davranışın farklı girdilerle tekrarlandığı
+    /// yerler için — ör. Ctrl+1..9 sekme seçimi; dokuz ayrı komut yerine tek
+    /// komut + sıra parametresi.
+    ///
+    /// Parametre XAML'den geldiğinde METİNDİR (CommandParameter="1"); çeviri
+    /// çağıran tarafın işi, komut ham değeri iletir.
+    /// </summary>
+    public RelayCommand(Action<object?> execute, Func<bool>? canExecute = null)
+    {
+        _executeWithParameter = execute;
+        _canExecute           = canExecute;
     }
 
     /// <summary>
@@ -35,6 +50,12 @@ public class RelayCommand : ICommand
 
     public async void Execute(object? parameter)
     {
+        if (_executeWithParameter is not null)
+        {
+            _executeWithParameter(parameter);
+            return;
+        }
+
         if (_executeAsync is null)
         {
             _execute!();

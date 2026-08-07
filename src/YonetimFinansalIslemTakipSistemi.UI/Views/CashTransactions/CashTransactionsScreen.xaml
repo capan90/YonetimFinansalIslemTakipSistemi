@@ -1,0 +1,328 @@
+<UserControl x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.CashTransactions.CashTransactionsScreen"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+             xmlns:common="clr-namespace:YonetimFinansalIslemTakipSistemi.UI.Common"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="1200"
+             Background="{DynamicResource Theme.AppBackground}">
+
+    <!--
+    NAKIT ISLEMLER EKRANI (Faz D pilot)
+
+    MainWindow'un icerigi buraya tasindi. Faz D5'ten itibaren finans
+    kullanicisi bu ekrani ShellWindow icinde sekme olarak goruyor; MainWindow
+    ayni ekrani barindirmaya devam ediyor ama artik baslangic akisinda degil.
+
+    Menu, cikis ve baslangicta guncelleme kontrolu PENCEREDE kaldi — bunlar
+    pencere/kabuk seviyesi davranislar. Bu ekran yalnizca nakit islem icerigi.
+
+    Zemin Theme.AppBackground: kabugun sekme icerik alani ve DIGER 15 ekran da
+    ayni token uzerinde duruyor. D5'te bu ekran tek basina SurfaceSubtle idi;
+    koyu temada digerlerinden ayrisiyordu. Acik temada iki token ayni renk.
+    -->
+
+    <!-- Kisayollarin GOVDESI burada: ekran hangi pencerede barinirsa barinsin
+         komutlar kendisine ulasir. TUS atamalari (InputBindings) barindiran
+         pencerede kalir — odak menude ya da navigasyon rayindayken de
+         calismalari gerekiyor. Iki yol da ayni tek govdeye cikar. -->
+    <UserControl.CommandBindings>
+        <CommandBinding Command="common:AppCommands.New"            Executed="Command_New"/>
+        <CommandBinding Command="common:AppCommands.Duplicate"      Executed="Command_Duplicate"/>
+        <CommandBinding Command="common:AppCommands.DeleteSelected" Executed="Command_Delete"/>
+        <CommandBinding Command="common:AppCommands.FocusSearch"    Executed="Command_FocusSearch"/>
+        <CommandBinding Command="common:AppCommands.ImportExcel"    Executed="Command_ImportExcel"/>
+        <CommandBinding Command="common:AppCommands.RefreshList"    Executed="Command_Refresh"/>
+    </UserControl.CommandBindings>
+
+    <DockPanel Margin="10">
+
+        <!-- Bakiye Kartları — para birimi başına ayrı kart.
+             Kart tıklanınca o para birimine filtre uygulanır (Faz C bonus);
+             bu yüzden Border değil Button, klavyeyle de erişilebilsin diye. -->
+        <UniformGrid DockPanel.Dock="Top" Columns="3" Margin="0,0,0,10">
+
+            <Button Style="{StaticResource BalanceCard}" Margin="0,0,6,0"
+                    Tag="TRY" Click="BalanceCard_Click"
+                    ToolTip="Listeyi TL işlemlerine filtreler.">
+                <StackPanel>
+                    <TextBlock Text="TL BAKİYE"
+                               Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}" FontWeight="SemiBold"
+                               Margin="0,0,0,4"/>
+                    <!-- Tag işareti taşır; renk stildeki DataTrigger'dan gelir (tema uyumlu) -->
+                    <TextBlock Text="{Binding TlBalance, StringFormat=N2}"
+                               Tag="{Binding TlBalance, Converter={StaticResource DecimalSign}}"
+                               Style="{StaticResource Text.BalanceAmount}"/>
+                    <lvc:CartesianChart Series="{Binding TlSparkline}"
+                                        Style="{StaticResource BalanceSparkline}"/>
+                </StackPanel>
+            </Button>
+
+            <Button Style="{StaticResource BalanceCard}" Margin="3,0,3,0"
+                    Tag="USD" Click="BalanceCard_Click"
+                    ToolTip="Listeyi USD işlemlerine filtreler.">
+                <StackPanel>
+                    <TextBlock Text="USD BAKİYE"
+                               Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}" FontWeight="SemiBold"
+                               Margin="0,0,0,4"/>
+                    <TextBlock Text="{Binding UsdBalance, StringFormat=N2}"
+                               Tag="{Binding UsdBalance, Converter={StaticResource DecimalSign}}"
+                               Style="{StaticResource Text.BalanceAmount}"/>
+                    <lvc:CartesianChart Series="{Binding UsdSparkline}"
+                                        Style="{StaticResource BalanceSparkline}"/>
+                </StackPanel>
+            </Button>
+
+            <Button Style="{StaticResource BalanceCard}" Margin="6,0,0,0"
+                    Tag="EUR" Click="BalanceCard_Click"
+                    ToolTip="Listeyi EUR işlemlerine filtreler.">
+                <StackPanel>
+                    <TextBlock Text="EUR BAKİYE"
+                               Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}" FontWeight="SemiBold"
+                               Margin="0,0,0,4"/>
+                    <TextBlock Text="{Binding EurBalance, StringFormat=N2}"
+                               Tag="{Binding EurBalance, Converter={StaticResource DecimalSign}}"
+                               Style="{StaticResource Text.BalanceAmount}"/>
+                    <lvc:CartesianChart Series="{Binding EurSparkline}"
+                                        Style="{StaticResource BalanceSparkline}"/>
+                </StackPanel>
+            </Button>
+
+        </UniformGrid>
+
+        <!-- Sparkline kapsamı. Liste filtreliyse eğilim de filtrelidir —
+             finansal bir çizginin kapsamı belirsiz bırakılamaz. -->
+        <TextBlock DockPanel.Dock="Top"
+                   Text="{Binding SparklineNote}"
+                   HorizontalAlignment="Right"
+                   Margin="0,-6,2,8">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding HasSparkline}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+
+        <!-- Araç çubuğu -->
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <!-- Sağ: kullanıcı + çıkış.
+                 KABUKTA GİZLENİR: kullanıcı adı durum şeridinde, çıkış
+                 navigasyon rayında zaten var; ikisini burada da göstermek
+                 aynı bilgiyi ve aynı eylemi tekrarlamak olurdu.
+
+                 İnce barındırıcı pencerede (MainWindow) görünür kalır —
+                 orada başka çıkış yolu yok. Çıkış DAVRANIŞI her iki
+                 durumda da barındıranın: buton yalnızca LogoutRequested
+                 olayını yayar (bkz. CashTransactionsScreen.xaml.cs). -->
+            <StackPanel x:Name="SessionBar"
+                        DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock x:Name="LoggedInUserText"
+                           VerticalAlignment="Center"
+                           Margin="0,0,10,0"
+                           Foreground="{DynamicResource Theme.LabelText}"
+                           Style="{StaticResource Text.Body}"/>
+                <Button Content="Çıkış Yap"
+                        Width="90"
+                        Style="{StaticResource SecondaryButton}"
+                        Click="Logout_Click"/>
+            </StackPanel>
+            <!-- Sol: işlem butonları -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Content="+ Yeni İşlem"
+                        Width="110" Margin="0,0,6,0"
+                        Style="{StaticResource PrimaryButton}"
+                        ToolTip="Yeni bir nakit işlem kaydı oluşturur."
+                        Click="NewTransactionButton_Click"/>
+                <Button x:Name="CashImportButton"
+                        Width="170" Margin="0,0,6,0"
+                        Style="{StaticResource SecondaryButton}"
+                        ToolTip="Excel dosyasından toplu finans işlemi oluşturur: analiz → önizleme → onay → içe aktarma"
+                        Click="CashImportButton_Click">
+                    <StackPanel Style="{StaticResource IconTextPanel}">
+                        <Path Style="{StaticResource IconPath}" Data="{StaticResource Icon.Download}" Margin="0,0,6,0"/>
+                        <TextBlock Text="Excel'den İçe Aktar"/>
+                    </StackPanel>
+                </Button>
+                <Button Content="Düzenle"
+                        Width="80" Margin="0,0,6,0"
+                        Style="{StaticResource SecondaryButton}"
+                        ToolTip="Seçili işlemi düzenler."
+                        IsEnabled="{Binding HasSelectedTransaction}"
+                        Click="EditTransactionButton_Click"/>
+                <Button x:Name="CopyTransactionButton"
+                        Content="Kopyala"
+                        Width="80" Margin="0,0,6,0"
+                        Style="{StaticResource SecondaryButton}"
+                        ToolTip="Seçili işlemin bilgileriyle yeni işlem formu açar."
+                        IsEnabled="{Binding HasSelectedTransaction}"
+                        Click="CopyTransactionButton_Click"/>
+                <Button Content="Sil"
+                        Width="60"
+                        Style="{StaticResource DangerButton}"
+                        ToolTip="Seçili işlemi siler. Kayıt denetim günlüğünde saklanır."
+                        IsEnabled="{Binding HasSelectedTransaction}"
+                        Click="DeleteTransactionButton_Click"/>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Filtre Paneli -->
+        <Border DockPanel.Dock="Top"
+                Background="{DynamicResource Theme.Surface}" BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1"
+                CornerRadius="6" Padding="10,8" Margin="0,0,0,8">
+            <WrapPanel Orientation="Horizontal" ItemHeight="30">
+
+                <Label Content="Başlangıç:" VerticalAlignment="Center" Foreground="{DynamicResource Theme.LabelText}"/>
+                <DatePicker SelectedDate="{Binding DateFrom, Mode=TwoWay}"
+                            Width="130" Margin="0,0,10,0"/>
+
+                <Label Content="Bitiş:" VerticalAlignment="Center" Foreground="{DynamicResource Theme.LabelText}"/>
+                <DatePicker SelectedDate="{Binding DateTo, Mode=TwoWay}"
+                            Width="130" Margin="0,0,10,0"/>
+
+                <Label Content="İşlem Türü:" VerticalAlignment="Center" Foreground="{DynamicResource Theme.LabelText}"/>
+                <ComboBox ItemsSource="{Binding TransactionTypeOptions}"
+                          SelectedItem="{Binding SelectedTransactionType, Mode=TwoWay}"
+                          Width="90" Margin="0,0,10,0"/>
+
+                <Label Content="Para Birimi:" VerticalAlignment="Center" Foreground="{DynamicResource Theme.LabelText}"/>
+                <ComboBox ItemsSource="{Binding CurrencyTypeOptions}"
+                          SelectedItem="{Binding SelectedCurrencyType, Mode=TwoWay}"
+                          Width="90" Margin="0,0,10,0"/>
+
+                <Label Content="Açıklama:" VerticalAlignment="Center" Foreground="{DynamicResource Theme.LabelText}"/>
+                <!-- Ctrl+F bu alana odaklanır -->
+                <TextBox x:Name="DescriptionFilterBox"
+                         Text="{Binding DescriptionFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         Width="160" Margin="0,0,10,0"
+                         ToolTip="Açıklamada ara (Ctrl+F)"/>
+
+                <Label Content="Tutar:" VerticalAlignment="Center" Foreground="{DynamicResource Theme.LabelText}"/>
+                <ComboBox ItemsSource="{Binding AmountOperatorOptions}"
+                          SelectedItem="{Binding SelectedAmountOperator, Mode=TwoWay}"
+                          Width="48" Margin="0,0,4,0"/>
+                <TextBox Text="{Binding AmountValueText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         Width="90" Margin="0,0,10,0"/>
+
+                <Button Content="Filtrele"
+                        Command="{Binding FilterCommand}"
+                        Width="80"
+                        Style="{StaticResource PrimaryButton}"/>
+
+            </WrapPanel>
+        </Border>
+
+        <!-- Liste özet şeridi — DataGrid'den ÖNCE tanımlanır çünkü DockPanel'de
+             son çocuk kalan alanı doldurur; tablo son çocuk olmalı.
+             Üstteki bakiye kartlarından farkı: kartlar filtreden bağımsız genel
+             bakiyeyi, bu şerit ekranda görünen filtrelenmiş satırları özetler. -->
+        <Border DockPanel.Dock="Bottom"
+                Background="{DynamicResource Theme.DataGridHeader}"
+                BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1,0,1,1"
+                Padding="10,6" Margin="0,0,0,0">
+            <TextBlock Text="{Binding ListSummary}"
+                       Style="{StaticResource Text.Caption}"
+                       ToolTip="Filtre uygulandıktan sonra listede görünen satırların özeti. Para birimleri karışık olabilir."/>
+        </Border>
+
+        <!-- İşlem Listesi -->
+        <DataGrid x:Name="TransactionDataGrid"
+                  ItemsSource="{Binding Transactions}"
+                  SelectedItem="{Binding SelectedTransaction, Mode=TwoWay}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserAddRows="False"
+                  GridLinesVisibility="Horizontal"
+                  HorizontalGridLinesBrush="{DynamicResource Theme.Border}"
+                  AlternatingRowBackground="{DynamicResource Theme.DataGridAltRow}"
+                  RowBackground="{DynamicResource Theme.DataGridRow}"
+                  HeadersVisibility="Column"
+                  BorderBrush="{DynamicResource Theme.Border}"
+                  BorderThickness="1"
+                  MouseDoubleClick="TransactionDataGrid_MouseDoubleClick">
+
+            <!-- Sağ tıklama context menu'su kod arkasında atanır -->
+
+            <DataGrid.Columns>
+                <DataGridTextColumn x:Name="ColTarih"
+                                    Header="Tarih"
+                                    Binding="{Binding TransactionDate, StringFormat=dd.MM.yyyy}"
+                                    Width="90"
+                                ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridTextColumn x:Name="ColTur"
+                                    Header="Tür"
+                                    Binding="{Binding TransactionTypeDisplay}"
+                                    Width="80"
+                                ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridTextColumn x:Name="ColParaBir"
+                                    Header="Para Bir."
+                                    Binding="{Binding CurrencyTypeDisplay}"
+                                    Width="75"
+                                ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridTextColumn x:Name="ColAciklama"
+                                    Header="Açıklama"
+                                    Binding="{Binding Description}"
+                                    Width="*"
+                                ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridTextColumn x:Name="ColBorc"
+                                    Header="Borç"
+                                    Binding="{Binding Borc, StringFormat=N2}"
+                                    Width="110">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource NumericCell}">
+                            <Setter Property="Foreground" Value="{DynamicResource Theme.Success}"/>
+                            <Setter Property="Padding" Value="0,0,4,0"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn x:Name="ColAlacak"
+                                    Header="Alacak"
+                                    Binding="{Binding Alacak, StringFormat=N2}"
+                                    Width="110">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource NumericCell}">
+                            <Setter Property="Foreground" Value="{DynamicResource Theme.Danger}"/>
+                            <Setter Property="Padding" Value="0,0,4,0"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn x:Name="ColTlBakiye"
+                                    Header="TL Bakiye"
+                                    Binding="{Binding TlBalanceAfter, StringFormat=N2}"
+                                    Width="100">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource NumericCell}"/>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn x:Name="ColUsdBakiye"
+                                    Header="USD Bakiye"
+                                    Binding="{Binding UsdBalanceAfter, StringFormat=N2}"
+                                    Width="100">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource NumericCell}"/>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn x:Name="ColEurBakiye"
+                                    Header="EUR Bakiye"
+                                    Binding="{Binding EurBalanceAfter, StringFormat=N2}"
+                                    Width="100">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource NumericCell}"/>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn x:Name="ColOlusturulmaT"
+                                    Header="Oluşturulma"
+                                    Binding="{Binding CreatedAt, StringFormat=dd.MM.yyyy HH:mm}"
+                                    Width="130"
+                                ElementStyle="{StaticResource EllipsisCell}"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+    </DockPanel>
+</UserControl>

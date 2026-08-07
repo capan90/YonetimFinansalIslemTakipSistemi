@@ -5,110 +5,17 @@
         Height="560" Width="1000"
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanResizeWithGrip"
-        Icon="pack://application:,,,/Assets/AppIcon.ico"
-        Loaded="Window_Loaded">
+        Icon="pack://application:,,,/Assets/AppIcon.ico">
 
-    <DockPanel Margin="10">
+    <!--
+    INCE BARINDIRICI (Faz D6)
 
-        <!-- Filtre paneli -->
-        <Border DockPanel.Dock="Top"
-                BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1"
-                CornerRadius="4" Padding="10,8"
-                Margin="0,0,0,8">
-            <WrapPanel Orientation="Horizontal">
+    Icerik AuditLogScreen UserControl'une tasindi ve kabukta sekme olarak
+    aciliyor. Bu pencere yalnizca baslik, boyut ve ikon tutar.
 
-                <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
-                    <TextBlock Text="Kullanıcı:" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                    <ComboBox Width="160"
-                              ItemsSource="{Binding Users}"
-                              SelectedItem="{Binding FilterUser, Mode=TwoWay}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding FullName}"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                </StackPanel>
+    SILINMEDI: MainWindow menuleri hala bu pencereyi aciyor ve geri donus
+    yolu acik kaliyor. Is mantigi burada DEGIL - iki yerde tutulmuyor.
+    -->
+    <ContentControl x:Name="ScreenHost"/>
 
-                <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
-                    <TextBlock Text="Başlangıç:" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                    <DatePicker Width="120"
-                                SelectedDate="{Binding FilterDateFrom, Mode=TwoWay}"/>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
-                    <TextBlock Text="Bitiş:" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                    <DatePicker Width="120"
-                                SelectedDate="{Binding FilterDateTo, Mode=TwoWay}"/>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
-                    <TextBlock Text="İşlem Tipi:" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                    <ComboBox Width="180"
-                              ItemsSource="{Binding Actions}"
-                              SelectedItem="{Binding FilterAction, Mode=TwoWay}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Display}"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                </StackPanel>
-
-                <Button Content="Filtrele" Width="80" Margin="0,0,6,4"
-                        Command="{Binding FilterCommand}"/>
-                <Button Content="Temizle" Width="80" Margin="0,0,0,4"
-                        Command="{Binding ClearCommand}"/>
-
-            </WrapPanel>
-        </Border>
-
-        <!-- Kayıt sayısı -->
-        <TextBlock DockPanel.Dock="Bottom"
-                   Margin="0,6,0,0"
-                   Foreground="{DynamicResource Theme.LabelText}"
-                   Text="{Binding Logs.Count, StringFormat='Toplam {0} kayıt'}"/>
-
-        <!-- Audit log listesi -->
-        <DataGrid ItemsSource="{Binding Logs}"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  CanUserAddRows="False"
-                  SelectionMode="Single"
-                  GridLinesVisibility="Horizontal"
-                  AlternatingRowBackground="{DynamicResource Theme.SurfaceSubtle}"
-                  HeadersVisibility="Column">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Zaman"
-                                    Binding="{Binding Timestamp, StringFormat=dd.MM.yyyy HH:mm:ss}"
-                                    Width="140"
-                                    ElementStyle="{StaticResource EllipsisCell}"/>
-                <DataGridTextColumn Header="Kullanıcı"
-                                    Binding="{Binding UserName}"
-                                    Width="120"
-                                    ElementStyle="{StaticResource EllipsisCell}"/>
-                <DataGridTextColumn Header="İşlem"
-                                    Binding="{Binding ActionDisplay}"
-                                    Width="160"
-                                    ElementStyle="{StaticResource EllipsisCell}"/>
-                <DataGridTextColumn Header="Varlık"
-                                    Binding="{Binding EntityType}"
-                                    Width="110"
-                                    ElementStyle="{StaticResource EllipsisCell}"/>
-                <DataGridTextColumn Header="Bilgisayar"
-                                    Binding="{Binding ComputerName}"
-                                    Width="110"
-                                    ElementStyle="{StaticResource EllipsisCell}"/>
-                <DataGridTextColumn Header="Eski Değer"
-                                    Binding="{Binding OldValues}"
-                                    Width="*"
-                                    ElementStyle="{StaticResource EllipsisCell}"/>
-                <DataGridTextColumn Header="Yeni Değer"
-                                    Binding="{Binding NewValues}"
-                                    Width="*"
-                                    ElementStyle="{StaticResource EllipsisCell}"/>
-            </DataGrid.Columns>
-        </DataGrid>
-
-    </DockPanel>
 </Window>

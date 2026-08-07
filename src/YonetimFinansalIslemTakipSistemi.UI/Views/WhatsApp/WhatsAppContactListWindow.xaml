@@ -5,89 +5,15 @@
         WindowStartupLocation="CenterOwner"
         Icon="pack://application:,,,/Assets/AppIcon.ico">
 
-    <DockPanel Margin="8">
+    <!--
+    INCE BARINDIRICI (Faz D6)
 
-        <!-- Araç çubuğu -->
-        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
-            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                <Button x:Name="NewButton" Content="+ Yeni" Width="70" Margin="0,0,6,0"
-                        Style="{StaticResource PrimaryButton}"
-                        Click="NewButton_Click"/>
-                <Button x:Name="EditButton" Content="Düzenle" Width="75" Margin="0,0,6,0"
-                        Style="{StaticResource SecondaryButton}"
-                        IsEnabled="{Binding HasSelected}"
-                        Click="EditButton_Click"/>
-                <Button x:Name="DeleteButton" Content="Sil" Width="60"
-                        Style="{StaticResource DangerButton}"
-                        IsEnabled="{Binding HasSelected}"
-                        Click="DeleteButton_Click"/>
-                <Button x:Name="ImportButton" Width="170" Margin="6,0,0,0"
-                        Style="{StaticResource SecondaryButton}"
-                        Click="ImportButton_Click"
-                        ToolTip="Excel dosyasından toplu kişi kaydı oluşturur: analiz → önizleme → onay → içe aktarma">
-                    <StackPanel Style="{StaticResource IconTextPanel}">
-                        <Path Style="{StaticResource IconPath}" Data="{StaticResource Icon.Download}" Margin="0,0,6,0"/>
-                        <TextBlock Text="Excel'den İçe Aktar"/>
-                    </StackPanel>
-                </Button>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <TextBox Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}"
-                         Width="200" Margin="0,0,6,0"
-                         KeyDown="SearchBox_KeyDown"
-                         ToolTip="Ad, telefon veya firma ile arayın"/>
-                <Button Content="Ara" Width="60" Margin="0,0,10,0"
-                        Style="{StaticResource PrimaryButton}"
-                        Command="{Binding SearchCommand}"/>
-                <TextBlock Text="Firma:" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                <ComboBox Width="160" Margin="0,0,10,0"
-                          ItemsSource="{Binding CompanyOptions}"
-                          SelectedItem="{Binding SelectedCompany, Mode=TwoWay}"/>
-                <CheckBox Content="Pasifleri göster"
-                          VerticalAlignment="Center"
-                          IsChecked="{Binding IncludeInactive, Mode=TwoWay}"/>
-            </StackPanel>
-        </DockPanel>
+    Icerik WhatsAppContactListScreen UserControl'une tasindi ve kabukta sekme olarak
+    aciliyor. Bu pencere yalnizca baslik, boyut ve ikon tutar.
 
-        <!-- Liste + boş durum mesajı -->
-        <Grid>
-        <DataGrid x:Name="MainGrid"
-                  ItemsSource="{Binding Items}"
-                  SelectedItem="{Binding Selected, Mode=TwoWay}"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  SelectionMode="Single"
-                  CanUserAddRows="False"
-                  GridLinesVisibility="Horizontal"
-                  HorizontalGridLinesBrush="{DynamicResource Theme.Border}"
-                  AlternatingRowBackground="{DynamicResource Theme.DataGridAltRow}"
-                  RowBackground="{DynamicResource Theme.DataGridRow}"
-                  BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1"
-                  MouseDoubleClick="MainGrid_MouseDoubleClick">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Ad Soyad / Kayıt Adı" Binding="{Binding FullName}"    Width="220"
-                                    ElementStyle="{StaticResource EllipsisCell}"/>
-                <DataGridTextColumn Header="Telefon"              Binding="{Binding Phone}"       Width="140"
-                                    ElementStyle="{StaticResource EllipsisCell}"/>
-                <DataGridTextColumn Header="Firma"                Binding="{Binding Company}"     Width="180"
-                                    ElementStyle="{StaticResource EllipsisCell}"/>
-                <DataGridTextColumn Header="Açıklama"             Binding="{Binding Description}" Width="*"
-                                    ElementStyle="{StaticResource EllipsisCell}"/>
-                <DataGridCheckBoxColumn Header="Aktif"            Binding="{Binding IsActive}"    Width="60"/>
-            </DataGrid.Columns>
-        </DataGrid>
-        <TextBlock Text="Gösterilecek kayıt bulunamadı">
-            <TextBlock.Style>
-                <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateText}">
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding Items.Count, ElementName=MainGrid}" Value="0">
-                            <Setter Property="Visibility" Value="Visible"/>
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </TextBlock.Style>
-        </TextBlock>
-        </Grid>
+    SILINMEDI: MainWindow menuleri hala bu pencereyi aciyor ve geri donus
+    yolu acik kaliyor. Is mantigi burada DEGIL - iki yerde tutulmuyor.
+    -->
+    <ContentControl x:Name="ScreenHost"/>
 
-    </DockPanel>
 </Window>

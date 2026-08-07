@@ -42,6 +42,10 @@ public class ControlStateMatrixTests
     [InlineData(typeof(System.Windows.Controls.ToolTip))]
     [InlineData(typeof(System.Windows.Controls.Primitives.ScrollBar))]
     [InlineData(typeof(System.Windows.Controls.Separator))]
+    // Kabuk sekme şeridi (Faz D5). Aero2'nin hazır TabItem şablonu sabit
+    // degrade + sabit koyu yazı kullanır; koyu temada şerit açık gri kalırdı.
+    [InlineData(typeof(System.Windows.Controls.TabControl))]
+    [InlineData(typeof(System.Windows.Controls.TabItem))]
     public void Kontrolun_ortuk_stili_ve_kendi_sablonu_var(Type controlType)
     {
         ThemeTestHost.Run(() =>
@@ -127,6 +131,26 @@ public class ControlStateMatrixTests
         new("NavButton",       "Hover",    "Theme.Nav.HoverForeground",       "Theme.Nav.HoverBackground",       Contrast.AA),
         new("NavButton",       "Pressed",  "Theme.Nav.ActiveForeground",      "Theme.Nav.ActiveBackground",      Contrast.AA),
         new("NavButton",       "Disabled", "Theme.Button.DisabledForeground", "Theme.Button.DisabledBackground", Contrast.AALarge),
+
+        // Navigasyon rayı listesi (Faz D7.1). Ray HER İKİ TEMADA DA koyu bir
+        // yüzey; öğeler örtük ListBoxItem stilinden Theme.Text alıyordu ve
+        // açık temada 1,40:1 veriyordu. Artık Nav token ailesini okuyorlar.
+        new("NavListItem",     "Normal",   "Theme.Nav.Foreground",       "Theme.Nav.Background",       Contrast.AA),
+        new("NavListItem",     "Hover",    "Theme.Nav.HoverForeground",  "Theme.Nav.HoverBackground",  Contrast.AA),
+        new("NavListItem",     "Selected", "Theme.Nav.ActiveForeground", "Theme.Nav.ActiveBackground", Contrast.AA),
+
+        // Grup başlıkları da aynı zeminde durur
+        new("NavGroupHeader",  "Normal",   "Theme.Nav.Foreground",       "Theme.Nav.Background",       Contrast.AA),
+
+        // Kabuk sekmesi (Faz D5). Seçili sekme ile içerik alanı BİLEREK aynı
+        // yüzeyde (Theme.SurfaceSubtle) durur — kabuk ile ekran tek parça
+        // okunsun diye. Ayrımı taşıyan 2px Theme.Primary şeridi grafik bir
+        // bileşendir, eşiği 3:1.
+        new("TabItem",         "Normal",   "Theme.MutedText",           "Theme.SurfaceSubtle",     Contrast.AA),
+        new("TabItem",         "Hover",    "Theme.Text",                "Theme.DataGridHoverRow",  Contrast.AA),
+        new("TabItem",         "Selected", "Theme.Text",                "Theme.SurfaceSubtle",     Contrast.AA),
+        new("TabItem",         "Marker",   "Theme.Primary",             "Theme.SurfaceSubtle",     Contrast.AALarge),
+        new("TabItem",         "Disabled", "Theme.Button.DisabledForeground", "Theme.SurfaceSubtle", Contrast.AALarge),
     ];
 
     [Theory]

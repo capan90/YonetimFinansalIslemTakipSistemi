@@ -1,0 +1,311 @@
+<UserControl x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.Analysis.AnalysisScreen"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+             Background="{DynamicResource Theme.AppBackground}">
+
+    <DockPanel Margin="12">
+
+        <!-- Filtre Paneli -->
+        <GroupBox DockPanel.Dock="Top" Header="Filtrele" Margin="0,0,0,8" Padding="8">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="Yenile" Width="80"
+                            ToolTip="Seçili filtrelerle analiz verilerini yeniden yükler."
+                            Command="{Binding LoadCommand}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+                <WrapPanel Orientation="Horizontal" ItemHeight="30" VerticalAlignment="Center">
+                    <Label Content="Başlangıç:" VerticalAlignment="Center"/>
+                    <DatePicker SelectedDate="{Binding StartDate, Mode=TwoWay}"
+                                Width="130" Margin="0,0,12,0"/>
+                    <Label Content="Bitiş:" VerticalAlignment="Center"/>
+                    <DatePicker SelectedDate="{Binding EndDate, Mode=TwoWay}"
+                                Width="130" Margin="0,0,12,0"/>
+                    <Label Content="Para Birimi:" VerticalAlignment="Center"/>
+                    <ComboBox ItemsSource="{Binding CurrencyTypeOptions}"
+                              SelectedItem="{Binding SelectedCurrencyType, Mode=TwoWay}"
+                              Width="80" Margin="0,0,12,0"/>
+                    <Label Content="İşlem Türü:" VerticalAlignment="Center"/>
+                    <ComboBox ItemsSource="{Binding TransactionTypeOptions}"
+                              SelectedItem="{Binding SelectedTransactionType, Mode=TwoWay}"
+                              Width="80" Margin="0,0,12,0"/>
+                    <Label Content="Açıklama:" VerticalAlignment="Center"/>
+                    <TextBox Text="{Binding DescriptionFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             Width="160" Margin="0,0,12,0" VerticalContentAlignment="Center"/>
+                </WrapPanel>
+            </DockPanel>
+        </GroupBox>
+
+        <!-- Hata satırı -->
+        <TextBlock DockPanel.Dock="Top"
+                   Text="{Binding ErrorMessage}"
+                   Foreground="{DynamicResource Theme.Danger}"
+                   Margin="0,0,0,8"
+                   TextWrapping="Wrap">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ErrorMessage}" Value="{x:Null}">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ErrorMessage}" Value="">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+
+        <!-- İçerik -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+
+                <!-- Üst Özet Kartları (6 kart) -->
+                <TextBlock Text="Özet" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                <UniformGrid Columns="6" Margin="0,0,0,12">
+
+                    <Border Margin="0,0,4,0" Padding="10,8" BorderThickness="1" BorderBrush="{DynamicResource Theme.Border}" CornerRadius="4">
+                        <StackPanel>
+                            <TextBlock Text="Toplam Alacak" Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}"/>
+                            <TextBlock Text="{Binding TotalAlacak, StringFormat=N2}"
+                                       Style="{StaticResource Text.H2}" FontWeight="Bold" Foreground="{DynamicResource Theme.Danger}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Margin="2,0,4,0" Padding="10,8" BorderThickness="1" BorderBrush="{DynamicResource Theme.Border}" CornerRadius="4">
+                        <StackPanel>
+                            <TextBlock Text="Toplam Borç" Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}"/>
+                            <TextBlock Text="{Binding TotalBorc, StringFormat=N2}"
+                                       Style="{StaticResource Text.H2}" FontWeight="Bold" Foreground="{DynamicResource Theme.Success}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Margin="2,0,4,0" Padding="10,8" BorderThickness="1" BorderBrush="{DynamicResource Theme.Border}" CornerRadius="4">
+                        <StackPanel>
+                            <TextBlock Text="Net Fark" Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}"/>
+                            <TextBlock Text="{Binding NetFark, StringFormat=N2}"
+                                       x:Name="NetFarkText"
+                                       Style="{StaticResource Text.H2}" FontWeight="Bold" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Margin="2,0,4,0" Padding="10,8" BorderThickness="1" BorderBrush="{DynamicResource Theme.Border}" CornerRadius="4">
+                        <StackPanel>
+                            <TextBlock Text="İşlem Sayısı" Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}"/>
+                            <TextBlock Text="{Binding TotalCount}"
+                                       Style="{StaticResource Text.H2}" FontWeight="Bold" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Margin="2,0,4,0" Padding="10,8" BorderThickness="1" BorderBrush="{DynamicResource Theme.Border}" CornerRadius="4">
+                        <StackPanel>
+                            <TextBlock Text="En Büyük Giriş" Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}"/>
+                            <TextBlock Text="{Binding MaxGiris, StringFormat=N2}"
+                                       Style="{StaticResource Text.H2}" FontWeight="Bold" Foreground="{DynamicResource Theme.Success}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Margin="2,0,0,0" Padding="10,8" BorderThickness="1" BorderBrush="{DynamicResource Theme.Border}" CornerRadius="4">
+                        <StackPanel>
+                            <TextBlock Text="En Büyük Çıkış" Foreground="{DynamicResource Theme.LabelText}" Style="{StaticResource Text.Caption}"/>
+                            <TextBlock Text="{Binding MaxCikis, StringFormat=N2}"
+                                       Style="{StaticResource Text.H2}" FontWeight="Bold" Foreground="{DynamicResource Theme.Danger}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                </UniformGrid>
+
+                <!-- Para Birimi Kartları -->
+                <TextBlock Text="Para Birimi Özeti" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                <ItemsControl ItemsSource="{Binding CurrencyCards}" Margin="0,0,0,12">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Rows="1"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="0,0,6,0" Padding="10,8" BorderThickness="1" BorderBrush="{DynamicResource Theme.Border}" CornerRadius="4">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.ColumnSpan="2"
+                                               Text="{Binding CurrencyDisplay}"
+                                               FontWeight="Bold" Style="{StaticResource Text.Body}" Margin="0,0,0,6"/>
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Toplam Alacak:" Margin="0,2"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1"
+                                               Text="{Binding TotalAlacak, StringFormat=N2}"
+                                               HorizontalAlignment="Right" Foreground="{DynamicResource Theme.Danger}" Margin="0,2"/>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Toplam Borç:" Margin="0,2"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1"
+                                               Text="{Binding TotalBorc, StringFormat=N2}"
+                                               HorizontalAlignment="Right" Foreground="{DynamicResource Theme.Success}" Margin="0,2"/>
+
+                                    <Separator Grid.Row="3" Grid.ColumnSpan="2" Margin="0,4"/>
+
+                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Net Fark:" FontWeight="SemiBold" Margin="0,2"/>
+                                    <TextBlock Grid.Row="4" Grid.Column="1"
+                                               Text="{Binding NetFark, StringFormat=N2}"
+                                               HorizontalAlignment="Right" FontWeight="SemiBold" Margin="0,2"/>
+
+                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="İşlem Sayısı:" Foreground="{DynamicResource Theme.MutedText}" Style="{StaticResource Text.Caption}" Margin="0,4,0,0"/>
+                                    <TextBlock Grid.Row="5" Grid.Column="1"
+                                               Text="{Binding Count}"
+                                               Foreground="{DynamicResource Theme.MutedText}" Style="{StaticResource Text.Caption}"
+                                               HorizontalAlignment="Right" Margin="0,4,0,0"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- ── Günlük Trend ────────────────────────────────────────────
+                     Grafik ANA gösterimdir; tablo silinmedi, altına katlanabilir
+                     hâlde alındı (varsayılan kapalı). Böylece hiçbir veri
+                     kaybolmaz — rakamı okumak isteyen tabloyu açar. -->
+                <GroupBox Header="Günlük Trend" Margin="0,0,0,12">
+                    <StackPanel>
+                        <!-- Görünürlük DataTrigger ile: "Yenile" sonrası veri
+                             boşalırsa grafik kendiliğinden gizlenir. Boş eksen
+                             çizmek "sıfır değer" izlenimi verirdi. -->
+                        <lvc:CartesianChart x:Name="TrendChart"
+                                            Series="{Binding TrendSeries}"
+                                            XAxes="{Binding TrendXAxes}"
+                                            YAxes="{Binding TrendYAxes}">
+                            <lvc:CartesianChart.Style>
+                                <Style TargetType="lvc:CartesianChart" BasedOn="{StaticResource Chart.Cartesian}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasTrendData}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </lvc:CartesianChart.Style>
+                        </lvc:CartesianChart>
+
+                        <TextBlock x:Name="TrendEmptyText"
+                                   Text="Seçili aralıkta gösterilecek hareket yok.">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource Chart.EmptyState}">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasTrendData}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <TextBlock Style="{StaticResource Chart.Caption}"
+                                   Text="Giriş ve çıkış günlük toplamlardır; bakiye çizgisi aralık boyunca kümülatif nettir."/>
+
+                        <Expander Header="Rakamları göster"
+                                  IsExpanded="False"
+                                  Margin="0,8,0,0"
+                                  Padding="0,6,0,0">
+                            <DataGrid ItemsSource="{Binding DailyTrend}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              CanUserAddRows="False"
+                              GridLinesVisibility="Horizontal"
+                              AlternatingRowBackground="{DynamicResource Theme.SurfaceAlt}"
+                              HeadersVisibility="Column"
+                              MaxHeight="200">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Tarih"       Binding="{Binding DateDisplay}"  Width="90"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                            <DataGridTextColumn Header="Toplam Alacak" Binding="{Binding TotalAlacak, StringFormat=N2}" Width="*">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource NumericCell}">
+                                        
+                                        <Setter Property="Foreground" Value="{DynamicResource Theme.Danger}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Toplam Borç" Binding="{Binding TotalBorc, StringFormat=N2}" Width="*">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource NumericCell}">
+                                        
+                                        <Setter Property="Foreground" Value="{DynamicResource Theme.Success}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Net Fark" Binding="{Binding NetFark, StringFormat=N2}" Width="*">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource NumericCell}"/>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                            </DataGrid>
+                        </Expander>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Son İşlemler -->
+                <GroupBox Header="Son İşlemler (en güncel 20)" Margin="0,0,0,0">
+                    <DataGrid ItemsSource="{Binding RecentTransactions}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              CanUserAddRows="False"
+                              GridLinesVisibility="Horizontal"
+                              AlternatingRowBackground="{DynamicResource Theme.SurfaceAlt}"
+                              HeadersVisibility="Column">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Tarih"      Binding="{Binding DateDisplay}"     Width="90"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                            <DataGridTextColumn Header="Açıklama"   Binding="{Binding Description}"     Width="*"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                            <DataGridTextColumn Header="Tür"        Binding="{Binding TypeDisplay}"     Width="65"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                            <DataGridTextColumn Header="Para Bir."  Binding="{Binding CurrencyDisplay}" Width="65"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                            <DataGridTextColumn Header="Borç"       Binding="{Binding Borc,   StringFormat=N2}" Width="110">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource NumericCell}">
+                                        
+                                        <Setter Property="Foreground" Value="{DynamicResource Theme.Success}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Alacak"     Binding="{Binding Alacak, StringFormat=N2}" Width="110">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource NumericCell}">
+                                        
+                                        <Setter Property="Foreground" Value="{DynamicResource Theme.Danger}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </GroupBox>
+
+            </StackPanel>
+        </ScrollViewer>
+
+    </DockPanel>
+</UserControl>

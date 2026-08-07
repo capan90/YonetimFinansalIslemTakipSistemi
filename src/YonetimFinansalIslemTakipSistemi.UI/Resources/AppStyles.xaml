@@ -40,6 +40,27 @@
         <Setter Property="Background" Value="{DynamicResource Theme.AppBackground}"/>
     </Style>
 
+    <!-- ── UserControl taban stili ───────────────────────────────────────────
+         Window stiliyle EŞDEĞER olmak zorunda.
+
+         NEDEN: Tek kabuk mimarisinde (Faz D) ekranlar Window değil UserControl
+         olacak. Window stili Background/Foreground/FontFamily/FontSize veriyor;
+         UserControl bunların hiçbirini almıyordu. Ekranlar dönüştürüldüğünde
+         Faz B'de 31 pencereyi bozan hatanın aynısı ters yönden tekrarlanırdı:
+         zemin kaybolur, koyu temada açık metin beyaz/şeffaf yüzeye biner.
+
+         Foreground ve font zaten miras alınan özelliklerdir; barındıran kabuk
+         onları verse de bu stil ekranı barındırıcıdan BAĞIMSIZ olarak doğru
+         kılar — tasarım zamanında, testte ve modal olarak açıldığında da.
+
+         İki stilin aynı kaldığı ThemeSurfaceParityTests ile korunur. -->
+    <Style TargetType="{x:Type UserControl}">
+        <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI, Segoe UI Emoji"/>
+        <Setter Property="FontSize"   Value="14"/>
+        <Setter Property="Foreground" Value="{DynamicResource Theme.Text}"/>
+        <Setter Property="Background" Value="{DynamicResource Theme.AppBackground}"/>
+    </Style>
+
     <Style x:Key="Text.Display" TargetType="TextBlock">
         <Setter Property="FontSize"   Value="28"/>
         <Setter Property="LineHeight" Value="34"/>

@@ -11,6 +11,7 @@ using YonetimFinansalIslemTakipSistemi.UI.Common;
 using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Shell;
 using YonetimFinansalIslemTakipSistemi.UI.Views.Shell;
+using static YonetimFinansalIslemTakipSistemi.UiTests.ShellTestDoubles;
 
 namespace YonetimFinansalIslemTakipSistemi.UiTests;
 
@@ -31,15 +32,10 @@ namespace YonetimFinansalIslemTakipSistemi.UiTests;
 public class ShellPilotTests
 {
     // ── Test yardımcıları ────────────────────────────────────────────────
-
-    private sealed class FakeUserContext(params PermissionType[] permissions) : IUserContext
-    {
-        public Guid   UserId   => Guid.Empty;
-        public string FullName => "Test Kullanıcı";
-        public TextCasePreference TextCasePreference => TextCasePreference.Preserve;
-        public IReadOnlySet<PermissionType> Permissions { get; } = permissions.ToHashSet();
-        public bool HasPermission(PermissionType permission) => Permissions.Contains(permission);
-    }
+    //
+    // FakeUserContext ve BlockingScreen ShellTestDoubles'tan gelir (Faz E9).
+    // Aşağıdakiler bu dosyaya ÖZGÜ: diyalog sayacı ve kısayol ekranı yalnızca
+    // buradaki testlerin ölçtüğü şeyler.
 
     private sealed class FakeDialogService : IDialogService
     {
@@ -88,12 +84,6 @@ public class ShellPilotTests
                     (_, _) => Executed.Add(captured.Name)));
             }
         }
-    }
-
-    private sealed class BlockingScreen : UserControl, IShellScreen
-    {
-        public bool AllowClose { get; set; }
-        public bool RequestClose() => AllowClose;
     }
 
     private static readonly RoutedUICommand[] AllShortcuts =

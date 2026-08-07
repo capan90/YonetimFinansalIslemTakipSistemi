@@ -1,9 +1,9 @@
 using System.Windows;
 using System.Windows.Controls;
-using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Shell;
+using static YonetimFinansalIslemTakipSistemi.UiTests.ShellTestDoubles;
 
 namespace YonetimFinansalIslemTakipSistemi.UiTests;
 
@@ -20,50 +20,14 @@ namespace YonetimFinansalIslemTakipSistemi.UiTests;
 public class ShellViewModelTests
 {
     // ── Test yardımcıları ────────────────────────────────────────────────
+    //
+    // Sahte nesneler ve ekran fabrikası ShellTestDoubles'ta (Faz E9);
+    // aynı kopyalar dört test dosyasında duruyordu.
 
-    private sealed class FakeUserContext(params PermissionType[] permissions) : IUserContext
-    {
-        public Guid   UserId   => Guid.Empty;
-        public string FullName => "Test Kullanıcı";
-        public TextCasePreference TextCasePreference => TextCasePreference.Preserve;
-        public IReadOnlySet<PermissionType> Permissions { get; } = permissions.ToHashSet();
-        public bool HasPermission(PermissionType permission) => Permissions.Contains(permission);
-    }
-
-    /// <summary>Kapanmayı reddeden ekran — kaydedilmemiş değişiklik benzetimi.</summary>
-    private sealed class BlockingScreen : UserControl, IShellScreen
-    {
-        public bool AllowClose    { get; set; }
-        public int  CloseAttempts { get; private set; }
-
-        public bool RequestClose()
-        {
-            CloseAttempts++;
-            return AllowClose;
-        }
-    }
-
-    private static ScreenDefinition Screen(
-        ScreenKey key,
-        PermissionType? permission = null,
-        bool migrated = true,
-        bool canClose = true,
-        Func<IServiceProvider, FrameworkElement>? factory = null)
-        => new(key, key.ToString(),
-               permission is null ? [] : [permission.Value],
-               migrated ? factory ?? (_ => new UserControl()) : null,
-               CreateInstance: null,
-               IsParameterized: false,
-               CanClose: canClose);
-
-    /// <summary>
-    /// ShellViewModel yalnızca IUserContext ve ekran listesine bağlı;
-    /// IServiceProvider ekran fabrikalarına geçilir ve testte kullanılmaz.
-    /// </summary>
     private static ShellViewModel Build(
         IReadOnlyList<ScreenDefinition> screens,
         params PermissionType[] permissions)
-        => new(services: null!, new FakeUserContext(permissions), screens);
+        => Shell(screens, permissions);
 
     private static ShellViewModel ThreeTabs()
     {

@@ -1,12 +1,8 @@
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Windows;
-using System.Windows.Controls;
-using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
-using YonetimFinansalIslemTakipSistemi.Domain.Enums;
-using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
 using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Shell;
+using static YonetimFinansalIslemTakipSistemi.UiTests.ShellTestDoubles;
 
 namespace YonetimFinansalIslemTakipSistemi.UiTests;
 
@@ -25,55 +21,10 @@ namespace YonetimFinansalIslemTakipSistemi.UiTests;
 /// </summary>
 public class TabCloseTests
 {
-    // ── Yardımcılar ──────────────────────────────────────────────────────
+    // Sahte nesneler ve ekran fabrikası ShellTestDoubles'ta — aynı kopyalar
+    // dört test dosyasında duruyordu (Faz E9).
 
-    private sealed class FakeUserContext(params PermissionType[] permissions) : IUserContext
-    {
-        public Guid   UserId   => Guid.Empty;
-        public string FullName => "Test Kullanıcı";
-        public TextCasePreference TextCasePreference => TextCasePreference.Preserve;
-        public IReadOnlySet<PermissionType> Permissions { get; } = permissions.ToHashSet();
-        public bool HasPermission(PermissionType permission) => Permissions.Contains(permission);
-    }
-
-    private sealed class FakeDialogService : IDialogService
-    {
-        public void ShowInfo(string message, string title = "Bilgi") { }
-        public void ShowSuccess(string message, string title = "Başarılı") { }
-        public void ShowWarning(string message, string title = "Uyarı") { }
-        public void ShowError(string message, string title = "Hata") { }
-        public bool ShowConfirmation(string message, string title = "Onay") => true;
-    }
-
-    private sealed class FakeServices(IUserContext userContext) : IServiceProvider
-    {
-        public object? GetService(Type serviceType)
-        {
-            if (serviceType == typeof(IUserContext))   return userContext;
-            if (serviceType == typeof(IDialogService)) return new FakeDialogService();
-            return null;
-        }
-    }
-
-    /// <summary>Kaydedilmemiş değişikliği olan ekran benzetimi.</summary>
-    private sealed class BlockingScreen : UserControl, IShellScreen
-    {
-        public bool AllowClose { get; set; }
-        public bool RequestClose() => AllowClose;
-    }
-
-    private const PermissionType Any = PermissionType.CanViewReports;
-
-    private static ScreenDefinition Screen(
-        ScreenKey key,
-        bool canClose = true,
-        Func<IServiceProvider, FrameworkElement>? factory = null)
-        => new(key, key.ToString(), [Any],
-               CreateView: factory ?? (_ => new UserControl()),
-               CanClose: canClose);
-
-    private static ShellViewModel Vm(params ScreenDefinition[] screens)
-        => new(new FakeServices(new FakeUserContext(Any)), new FakeUserContext(Any), screens);
+    private static ShellViewModel Vm(params ScreenDefinition[] screens) => Shell(screens);
 
     // ── Kapatma kapısı ───────────────────────────────────────────────────
 

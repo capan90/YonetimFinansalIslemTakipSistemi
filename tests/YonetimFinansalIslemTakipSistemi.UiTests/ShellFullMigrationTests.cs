@@ -7,6 +7,7 @@ using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
 using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Shell;
+using static YonetimFinansalIslemTakipSistemi.UiTests.ShellTestDoubles;
 
 namespace YonetimFinansalIslemTakipSistemi.UiTests;
 
@@ -25,34 +26,8 @@ namespace YonetimFinansalIslemTakipSistemi.UiTests;
 public class ShellFullMigrationTests
 {
     // ── Yardımcılar ──────────────────────────────────────────────────────
-
-    private sealed class FakeUserContext(params PermissionType[] permissions) : IUserContext
-    {
-        public Guid   UserId   => Guid.Empty;
-        public string FullName => "Test Kullanıcı";
-        public TextCasePreference TextCasePreference => TextCasePreference.Preserve;
-        public IReadOnlySet<PermissionType> Permissions { get; } = permissions.ToHashSet();
-        public bool HasPermission(PermissionType permission) => Permissions.Contains(permission);
-    }
-
-    private sealed class FakeDialogService : IDialogService
-    {
-        public void ShowInfo(string message, string title = "Bilgi") { }
-        public void ShowSuccess(string message, string title = "Başarılı") { }
-        public void ShowWarning(string message, string title = "Uyarı") { }
-        public void ShowError(string message, string title = "Hata") { }
-        public bool ShowConfirmation(string message, string title = "Onay") => true;
-    }
-
-    private sealed class FakeServices(IUserContext userContext) : IServiceProvider
-    {
-        public object? GetService(Type serviceType)
-        {
-            if (serviceType == typeof(IUserContext))   return userContext;
-            if (serviceType == typeof(IDialogService)) return new FakeDialogService();
-            return null;
-        }
-    }
+    //
+    // Sahte nesneler ShellTestDoubles'ta (Faz E9).
 
     /// <summary>Gerçek kayıt tablosunun sahte görünümlü kopyası.</summary>
     private static IReadOnlyList<ScreenDefinition> StubRegistry() =>
@@ -65,9 +40,7 @@ public class ShellFullMigrationTests
         }).ToList();
 
     private static ShellViewModel Vm(params PermissionType[] permissions)
-        => new(new FakeServices(new FakeUserContext(permissions)),
-               new FakeUserContext(permissions),
-               StubRegistry());
+        => Shell(StubRegistry(), permissions);
 
     /// <summary>Kargo-only kullanıcının yetki kümesi — App.ResolveStartupMode "cargo" der.</summary>
     private static readonly PermissionType[] CargoOnly =

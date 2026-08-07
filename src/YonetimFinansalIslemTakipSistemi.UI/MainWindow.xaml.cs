@@ -201,49 +201,10 @@ public partial class MainWindow : Window
     }
 
     private void OpenLogDirectory_Click(object sender, RoutedEventArgs e)
-    {
-        var logDir = App.LogDirectory;
-
-        if (string.IsNullOrEmpty(logDir))
-        {
-            _dialogService.ShowWarning("Log klasör yolu belirlenemedi.");
-            return;
-        }
-
-        if (!Directory.Exists(logDir))
-        {
-            try
-            {
-                Directory.CreateDirectory(logDir);
-            }
-            catch (Exception ex)
-            {
-                _dialogService.ShowError($"Log klasörü oluşturulamadı: {ex.Message}");
-                return;
-            }
-        }
-
-        try
-        {
-            Process.Start(new ProcessStartInfo("explorer.exe", logDir) { UseShellExecute = true });
-        }
-        catch (Exception ex)
-        {
-            _dialogService.ShowError($"Log klasörü açılamadı: {ex.Message}");
-        }
-    }
+        => Common.ToolActions.OpenLogDirectory(_dialogService);
 
     private async void TestDbConnection_Click(object sender, RoutedEventArgs e)
-    {
-        var testService = _services.GetRequiredService<IDatabaseConnectionTestService>();
-        var canConnect = await testService.CanConnectAsync();
-
-        if (canConnect)
-            _dialogService.ShowSuccess("Veritabanı bağlantısı başarılı.");
-        else
-            _dialogService.ShowError(
-                "Veritabanı bağlantısı kurulamadı.\nLütfen ağ bağlantınızı veya sunucu erişimini kontrol edin.");
-    }
+        => await Common.ToolActions.TestDatabaseAsync(_services, _dialogService);
 
     private void OpenSystemHealth_Click(object sender, RoutedEventArgs e)
     {
@@ -314,57 +275,10 @@ public partial class MainWindow : Window
         new Views.Settings.TextCaseSettingsWindow(_services) { Owner = this }.ShowDialog();
     }
 
+    // Akisin govdesi Common/UpdateCheckFlow icinde: ayni akis birden fazla
+    // giris noktasindan baslatiliyor ve kopyalanirsa metinler/onay sirasi
+    // birinde duzeltilip digerinde eski kalir.
     private async void CheckForUpdates_Click(object sender, RoutedEventArgs e)
-    {
-        var updateService = _services.GetRequiredService<IUpdateService>();
-
-        if (!updateService.IsClickOnceDeployment)
-        {
-            _dialogService.ShowInfo("Güncelleme kontrolü yalnızca ClickOnce ile kurulu sürümde kullanılabilir.");
-            return;
-        }
-
-        var result = await updateService.CheckForUpdateAsync();
-
-        if (result.ErrorMessage == "io_error")
-        {
-            _dialogService.ShowWarning("Güncelleme sunucusuna erişilemiyor. Ağ bağlantınızı kontrol edin.");
-            return;
-        }
-
-        if (result.ErrorMessage is not null)
-        {
-            _dialogService.ShowWarning("Güncelleme kontrolü sırasında beklenmeyen bir hata oluştu.");
-            return;
-        }
-
-        if (!result.IsUpdateAvailable)
-        {
-            _dialogService.ShowInfo($"Uygulamanız güncel.\nMevcut sürüm: v{result.CurrentVersion}");
-            return;
-        }
-
-        if (!_dialogService.ShowConfirmation(
-                $"Yeni sürüm mevcut: v{result.LatestVersion}\nMevcut sürüm: v{result.CurrentVersion}\n\nŞimdi güncellemek ister misiniz?",
-                "Güncelleme Mevcut"))
-            return;
-
-        if (!_dialogService.ShowConfirmation(
-                "Güncelleme başlatılacak ve uygulama kapatılacak.\nDevam etmek istiyor musunuz?",
-                "Uygulama Kapatılıyor"))
-            return;
-
-        // LaunchInstaller başarısız olursa (dosya yok, shell hatası) Shutdown çağrılmaz.
-        if (!updateService.LaunchInstaller())
-        {
-            _dialogService.ShowError(
-                "Güncelleme başlatılamadı. Güncelleme sunucusuna erişilemiyor veya kurulum dosyası bulunamadı.");
-            return;
-        }
-
-        // Yeni sürecin spawn olması için kısa bekleme; ardından eski sürüm güvenle kapanır.
-        await Task.Delay(800);
-        System.Windows.Application.Current.Shutdown();
-    }
+        => await Common.UpdateCheckFlow.RunAsync(_services, _dialogService);
 }
 

@@ -39,8 +39,18 @@ namespace YonetimFinansalIslemTakipSistemi.UI.Views.CashTransactions;
 ///   • Kendi <c>CommandBindings</c>'i (bkz. XAML) — kısayollar barındıran
 ///     pencereden bağımsız olarak bu ekrana ulaşsın diye
 /// </summary>
-public partial class CashTransactionsScreen : UserControl, IShellLogoutSource
+public partial class CashTransactionsScreen : UserControl, IShellLogoutSource, IShellNavigationAware
 {
+    /// <summary>
+    /// Kabuk sekme oluştururken atar; ince barındırıcı pencerede null kalır.
+    ///
+    /// Bu ekran başka ekran AÇMIYOR — gezgini yalnızca "kabuk içinde miyim?"
+    /// sorusuna cevap olarak kullanıyor: araç çubuğundaki oturum bölümü
+    /// (kullanıcı adı + çıkış) kabukta durum şeridi ve navigasyon rayıyla
+    /// tekrarlanacağı için orada gizleniyor.
+    /// </summary>
+    public IShellNavigator? Navigator { get; set; }
+
     /// <summary>Kolon düzeninin kullanıcı bazında saklandığı ekran anahtarı.</summary>
     private const string LayoutScreenKey = "CashTransactionList";
 
@@ -114,6 +124,12 @@ public partial class CashTransactionsScreen : UserControl, IShellLogoutSource
 
         Loaded += async (_, _) =>
         {
+            // Kabukta kullanıcı adı durum şeridinde, çıkış navigasyon rayında.
+            // Gezgin ancak sekme oluşturulurken atandığı için karar Loaded'da
+            // veriliyor; kurucuda henüz bilinmiyor.
+            if (Navigator is not null)
+                SessionBar.Visibility = Visibility.Collapsed;
+
             ApplyColumnHeaderContextMenu();
             await ApplySavedLayoutAsync();
             ApplyBalanceColumnVisibility();

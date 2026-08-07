@@ -333,26 +333,37 @@ public class ShellPilotTests
             @"<!--.*?-->", string.Empty, RegexOptions.Singleline);
 
     /// <summary>
-    /// Kayıt tablosunda YALNIZCA taşınmış ekranın fabrikası dolu olmalı.
-    /// Boş fabrikayla ekran eklemek sahte sekme üretirdi.
+    /// Her kayıtlı ekranın fabrikası dolu ve doğasına uygun olmalı: tekil
+    /// ekran <c>CreateView</c>, parametreli ekran <c>CreateInstance</c>.
     /// </summary>
     [Fact]
-    public void Kayit_tablosunda_yalnizca_Nakit_Islemler_tasinmis()
+    public void Her_ekranin_fabrikasi_dogasina_uygun()
     {
-        var migrated = ScreenRegistry.All.Where(s => s.IsMigrated).Select(s => s.Key).ToList();
+        var wrong = ScreenRegistry.All
+            .Where(s => s.IsParameterized ? s.CreateInstance is null : s.CreateView is null)
+            .Select(s => s.Key)
+            .ToList();
 
-        Assert.Equal([ScreenKey.CashTransactions], migrated);
+        Assert.True(wrong.Count == 0,
+            "Fabrikası eksik/yanlış türde ekran(lar): " + string.Join(", ", wrong));
     }
 
     /// <summary>
-    /// Kabuk kurulumda varsayılan sekmeyi açar. Yetki kontrolü burada
-    /// TEKRARLANMAZ — tek kapı ShellViewModel.Resolve'dur.
+    /// Kabuk kurulumda varsayılan sekmeyi açar.
+    ///
+    /// EKRAN yetkisi burada TEKRARLANMAZ — tek kapı ShellViewModel.Resolve.
+    /// Kabuktaki tek yetki kontrolü ekran AÇMAYAN araç düğmeleri içindir
+    /// (ApplyToolVisibility); onların kaydı ScreenRegistry'de yok.
     /// </summary>
     [Fact]
     public void Kabuk_varsayilan_sekmeyi_aciyor()
     {
         Assert.Contains("OpenScreen(ScreenKey.CashTransactions)", ShellWindowCode, StringComparison.Ordinal);
-        Assert.DoesNotContain("HasPermission", ShellWindowCode, StringComparison.Ordinal);
+
+        // Ekran yetkisi kabukta çözülmemeli: ScreenRegistry'ye bakan bir
+        // yetki filtresi kabuk kodunda olmamalı.
+        Assert.DoesNotContain("IsAllowedFor", ShellWindowCode, StringComparison.Ordinal);
+        Assert.DoesNotContain("RequiredPermissions", ShellWindowCode, StringComparison.Ordinal);
     }
 
     /// <summary>

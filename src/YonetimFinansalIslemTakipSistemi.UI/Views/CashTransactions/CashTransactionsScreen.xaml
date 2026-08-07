@@ -7,7 +7,7 @@
              xmlns:common="clr-namespace:YonetimFinansalIslemTakipSistemi.UI.Common"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="1200"
-             Background="{DynamicResource Theme.SurfaceSubtle}">
+             Background="{DynamicResource Theme.AppBackground}">
 
     <!--
     NAKIT ISLEMLER EKRANI (Faz D pilot)
@@ -19,10 +19,9 @@
     Menu, cikis ve baslangicta guncelleme kontrolu PENCEREDE kaldi — bunlar
     pencere/kabuk seviyesi davranislar. Bu ekran yalnizca nakit islem icerigi.
 
-    Zemin acikca veriliyor: ortuk UserControl stili Theme.AppBackground verir,
-    oysa bu icerik Theme.SurfaceSubtle uzerinde duruyordu. Acik temada ikisi
-    ayni renk; koyu temada degil. Kabukta da sekme icerik alani ayni token
-    oldugu icin kabuk + ekran tek parca gorunur.
+    Zemin Theme.AppBackground: kabugun sekme icerik alani ve DIGER 15 ekran da
+    ayni token uzerinde duruyor. D5'te bu ekran tek basina SurfaceSubtle idi;
+    koyu temada digerlerinden ayrisiyordu. Acik temada iki token ayni renk.
     -->
 
     <!-- Kisayollarin GOVDESI burada: ekran hangi pencerede barinirsa barinsin
@@ -114,10 +113,16 @@
         <!-- Araç çubuğu -->
         <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
             <!-- Sağ: kullanıcı + çıkış.
-                 Çıkış BUTONU burada ama çıkış DAVRANIŞI pencere seviyesindedir:
-                 buton yalnızca LogoutRequested olayını yayar, onay/audit/kapatma
-                 MainWindow'da kalır (bkz. CashTransactionsScreen.xaml.cs). -->
-            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                 KABUKTA GİZLENİR: kullanıcı adı durum şeridinde, çıkış
+                 navigasyon rayında zaten var; ikisini burada da göstermek
+                 aynı bilgiyi ve aynı eylemi tekrarlamak olurdu.
+
+                 İnce barındırıcı pencerede (MainWindow) görünür kalır —
+                 orada başka çıkış yolu yok. Çıkış DAVRANIŞI her iki
+                 durumda da barındıranın: buton yalnızca LogoutRequested
+                 olayını yayar (bkz. CashTransactionsScreen.xaml.cs). -->
+            <StackPanel x:Name="SessionBar"
+                        DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock x:Name="LoggedInUserText"
                            VerticalAlignment="Center"
                            Margin="0,0,10,0"

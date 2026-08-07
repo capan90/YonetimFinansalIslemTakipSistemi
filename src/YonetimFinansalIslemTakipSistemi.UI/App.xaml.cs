@@ -684,20 +684,21 @@ public partial class App : System.Windows.Application
                         "Erişim Yok");
                     isLogout = true;
                 }
-                else if (startupMode == "cargo")
-                {
-                    // Sadece kargo yetkisi var — finans ekranı gösterilmez
-                    var cargoWindow = new CargoDashboardWindow(scope.ServiceProvider);
-                    Current.MainWindow = cargoWindow;
-                    cargoWindow.ShowDialog();
-                    isLogout = cargoWindow.IsLogoutRequested;
-                }
                 else
                 {
-                    // Finans yetkisi var — Faz D5'ten itibaren tek kabuk.
+                    // TEK KABUK (Faz D6). Finans ve kargo kullanıcısı aynı
+                    // pencereyi görür; ne göreceklerini yetkileri belirler —
+                    // navigasyon rayı ve açılış sekmesi ScreenRegistry'deki
+                    // yetki kapılarından türer (bkz. ShellWindow).
                     //
-                    // MainWindow SİLİNMEDİ; geri dönüş ve karşılaştırma için
-                    // kodda duruyor ama başlangıç akışı artık onu açmıyor.
+                    // startupMode kararı DEĞİŞMEDİ: "none" hâlâ ayrı ele
+                    // alınıyor ve yetkisiz kullanıcıya pencere açılmıyor.
+                    // "cargo" ile "finance" ayrımı artık pencere seçmiyor,
+                    // yalnızca kullanıcının yetkili olduğunu doğruluyor.
+                    //
+                    // MainWindow ve CargoDashboardWindow SİLİNMEDİ; geri dönüş
+                    // ve karşılaştırma için kodda duruyorlar ama başlangıç
+                    // akışı artık ikisini de açmıyor.
                     // Sözleşme aynı: ShowDialog + IsLogoutRequested.
                     var shellWindow = new Views.Shell.ShellWindow(scope.ServiceProvider);
                     Current.MainWindow = shellWindow;

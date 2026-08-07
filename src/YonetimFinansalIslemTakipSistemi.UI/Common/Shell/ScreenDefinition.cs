@@ -54,6 +54,13 @@ namespace YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
 /// Parametreli ekran parametresiz açılamaz, tekil ekran da parametreyle
 /// açılamaz; ikisi de çağıran tarafındaki hatayı gösterir.
 /// </param>
+/// <param name="NavGroup">
+/// Navigasyon rayındaki başlık grubu.
+///
+/// Gruplar MainWindow'un menü çubuğundan birebir alındı (Yönetim / Kargo Takip
+/// / Ayarlar): kullanıcının bildiği sıralama korunsun diye. Boş bırakılırsa
+/// öğe gruplandırılmadan en üstte durur.
+/// </param>
 public sealed record ScreenDefinition(
     ScreenKey                                         Key,
     string                                            Title,
@@ -61,7 +68,8 @@ public sealed record ScreenDefinition(
     Func<IServiceProvider, FrameworkElement>?         CreateView      = null,
     Func<IServiceProvider, object, ScreenInstance>?   CreateInstance  = null,
     bool                                              IsParameterized = false,
-    bool                                              CanClose        = true)
+    bool                                              CanClose        = true,
+    string                                            NavGroup        = "")
 {
     /// <summary>
     /// Ekran UserControl'e taşındı ve kabukta açılabilir mi.

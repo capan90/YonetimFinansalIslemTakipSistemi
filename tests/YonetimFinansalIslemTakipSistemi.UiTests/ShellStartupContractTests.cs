@@ -20,28 +20,19 @@ public class ShellStartupContractTests
     }
 
     /// <summary>
-    /// Finans dalı ShellWindow açar ve MainWindow'u ARTIK oluşturmaz.
-    /// MainWindow dosyası yerinde duruyor (geri dönüş için) ama başlangıç
-    /// akışının içinde değil.
+    /// Yetkili kullanıcı hangi modülden olursa olsun ShellWindow görür;
+    /// başlangıç akışı eski iki kabuğu ARTIK oluşturmaz.
+    ///
+    /// Dosyalar yerinde duruyor (geri dönüş için) ama startup içinde değil.
     /// </summary>
     [Fact]
-    public void Finans_dali_ShellWindow_aciyor()
+    public void Startup_yalnizca_ShellWindow_aciyor()
     {
         var source = AppStartupSource();
 
         Assert.Contains("new Views.Shell.ShellWindow(", source, StringComparison.Ordinal);
         Assert.DoesNotContain("new MainWindow(", source, StringComparison.Ordinal);
-    }
-
-    /// <summary>
-    /// Kargo dalı aynen duruyor — bu adımda kabuğa taşınmadı.
-    /// </summary>
-    [Fact]
-    public void Kargo_dali_hala_CargoDashboardWindow_aciyor()
-    {
-        var source = AppStartupSource();
-
-        Assert.Contains("new CargoDashboardWindow(", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("new CargoDashboardWindow(", source, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -106,19 +97,26 @@ public class ShellStartupContractTests
     }
 
     /// <summary>
-    /// Kargo yetkili kullanıcının kişisel Harf Duyarlılığı erişimi kaybolmamalı.
-    /// Kabuğa taşınana kadar tek yolu Kargo Dashboard'daki Yardım menüsüdür
+    /// Kargo yetkili kullanıcının kişisel Harf Duyarlılığı erişimi kaybolmamalı
     /// (bkz. docs/03-Modules/UserSettings.md).
+    ///
+    /// Kargo kullanıcısı artık kabuğu görüyor; erişim kabuğun araç bölümünden.
+    /// Kargo panosu ekranındaki yardım menüsü de duruyor — ince barındırıcı
+    /// pencerede barındığında tek yol o.
     /// </summary>
     [Fact]
     public void Kargo_kullanicisinin_harf_duyarliligi_erisimi_duruyor()
     {
-        var path   = Path.Combine(UiSourceLocator.UiProjectDirectory,
-                                  "Views", "Cargo", "CargoDashboardWindow.xaml");
-        var source = File.ReadAllText(path, Encoding.UTF8);
+        var shell = File.ReadAllText(
+            Path.Combine(UiSourceLocator.UiProjectDirectory, "Views", "Shell", "ShellWindow.xaml"), Encoding.UTF8);
 
-        Assert.Contains("Harf Duyarlılığı", source, StringComparison.Ordinal);
-        Assert.Contains("OpenTextCaseSettings_Click", source, StringComparison.Ordinal);
+        Assert.Contains("Harf Duyarlılığı", shell, StringComparison.Ordinal);
+        Assert.Contains("OpenTextCaseSettings_Click", shell, StringComparison.Ordinal);
+
+        var dashboard = File.ReadAllText(
+            Path.Combine(UiSourceLocator.UiProjectDirectory, "Views", "Cargo", "CargoDashboardScreen.xaml"), Encoding.UTF8);
+
+        Assert.Contains("Harf Duyarlılığı", dashboard, StringComparison.Ordinal);
     }
 
     /// <summary>

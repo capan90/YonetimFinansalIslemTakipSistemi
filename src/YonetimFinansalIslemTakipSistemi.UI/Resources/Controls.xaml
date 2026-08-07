@@ -1281,13 +1281,13 @@
          şerit açık gri bir kuşak olarak kalıyordu.
 
          SEKME ŞERİDİ AYRI BİR YÜZEY DEĞİL: seçili sekme ile içerik alanı aynı
-         Theme.SurfaceSubtle üzerinde durur; ekranın kendi zemini de aynı token.
+         Theme.AppBackground üzerinde durur; ekranın kendi zemini de aynı token.
          Böylece kabuk + ekran tek parça görünür, iç içe kart oluşmaz.
          Seçili sekme üstündeki 2px Theme.Primary şeridi ayrımı taşır — renk
          farkı değil, vurgu çizgisi.
     ═══════════════════════════════════════════════════════════════════════ -->
     <Style TargetType="{x:Type TabControl}">
-        <Setter Property="Background"      Value="{DynamicResource Theme.SurfaceSubtle}"/>
+        <Setter Property="Background"      Value="{DynamicResource Theme.AppBackground}"/>
         <Setter Property="Foreground"      Value="{DynamicResource Theme.Text}"/>
         <Setter Property="BorderBrush"     Value="{DynamicResource Theme.Border}"/>
         <Setter Property="BorderThickness" Value="0"/>
@@ -1348,7 +1348,7 @@
                             <Setter TargetName="Cp" Property="TextElement.Foreground" Value="{DynamicResource Theme.Text}"/>
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="Bd"           Property="Background" Value="{DynamicResource Theme.SurfaceSubtle}"/>
+                            <Setter TargetName="Bd"           Property="Background" Value="{DynamicResource Theme.AppBackground}"/>
                             <Setter TargetName="Cp"           Property="TextElement.Foreground" Value="{DynamicResource Theme.Text}"/>
                             <Setter TargetName="ActiveMarker" Property="Background" Value="{DynamicResource Theme.Primary}"/>
                         </Trigger>

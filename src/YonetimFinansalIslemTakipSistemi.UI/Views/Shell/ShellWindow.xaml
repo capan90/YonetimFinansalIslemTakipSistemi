@@ -77,37 +77,92 @@
                 BorderThickness="0,0,1,0">
             <DockPanel>
 
-                <!-- Alt blok: kişisel ayar + çıkış.
+                <!-- Alt blok: EKRAN OLMAYAN eylemler + çıkış.
+                     Buradakiler sekmeye dönüşmez; modal diyalog açar ya da bir
+                     iş yapar. Menü çubuğunun ekran açmayan öğeleri buraya
+                     taşındı, ekran açanlar yukarıdaki gruplu raya.
+
                      Harf Duyarlılığı YETKİ GEREKTİRMEZ: kişisel bir tercihtir,
                      giriş yapan her kullanıcı kendi ayarını yönetir
-                     (bkz. docs/03-Modules/UserSettings.md). Modal kalır —
-                     sekmeye dönüştürülmedi. -->
+                     (bkz. docs/03-Modules/UserSettings.md). -->
                 <StackPanel DockPanel.Dock="Bottom" Margin="10,0,10,10">
-                    <TextBlock Text="Kullanıcı Ayarlarım"
-                               Margin="2,0,0,4"
+                    <TextBlock Text="Araçlar"
+                               Margin="4,0,0,4"
                                Foreground="{DynamicResource Theme.Nav.Foreground}"
                                Style="{StaticResource Text.Caption}"/>
+
+                    <Button x:Name="ToolMailSettings"
+                            Content="Mail Ayarları"
+                            HorizontalContentAlignment="Left"
+                            ToolTip="SMTP sunucusu ve e-posta bildirim ayarlarını yönetin."
+                            Style="{StaticResource NavButton}"
+                            Click="OpenMailSettings_Click"/>
+                    <Button x:Name="ToolAppearance"
+                            Content="Görünüm Ayarları"
+                            HorizontalContentAlignment="Left"
+                            ToolTip="Uygulama temasını (açık / koyu) değiştirin."
+                            Style="{StaticResource NavButton}"
+                            Click="OpenAppearanceSettings_Click"/>
+                    <Button x:Name="ToolDbTest"
+                            Content="Veritabanı Testi"
+                            HorizontalContentAlignment="Left"
+                            ToolTip="Mevcut veritabanı bağlantısını hemen test eder ve sonucu gösterir."
+                            Style="{StaticResource NavButton}"
+                            Click="TestDbConnection_Click"/>
+                    <Button x:Name="ToolLogFolder"
+                            Content="Log Klasörünü Aç"
+                            HorizontalContentAlignment="Left"
+                            ToolTip="Uygulama log dosyalarının bulunduğu klasörü Explorer'da açar."
+                            Style="{StaticResource NavButton}"
+                            Click="OpenLogDirectory_Click"/>
+                    <Button x:Name="ToolCheckUpdates"
+                            Content="Güncellemeleri Denetle"
+                            HorizontalContentAlignment="Left"
+                            ToolTip="Yayın klasöründeki en güncel sürümü kontrol eder."
+                            Style="{StaticResource NavButton}"
+                            Click="CheckForUpdates_Click"/>
+                    <Button x:Name="ToolPersonalMail"
+                            Content="Mail Ayarlarım"
+                            HorizontalContentAlignment="Left"
+                            ToolTip="Kendi mail gönderim bilgilerinizi düzenleyin."
+                            Style="{StaticResource NavButton}"
+                            Click="OpenPersonalMailSettings_Click"/>
                     <Button Content="Harf Duyarlılığı"
                             Margin="0,0,0,10"
                             HorizontalContentAlignment="Left"
                             ToolTip="Girdiğiniz metinlerin BÜYÜK/küçük harf dönüşüm tercihini belirleyin (kişisel ayar)."
                             Style="{StaticResource NavButton}"
                             Click="OpenTextCaseSettings_Click"/>
+
                     <Button Content="Çıkış Yap"
                             Style="{StaticResource DangerButton}"
                             Command="{Binding LogoutCommand}"/>
                 </StackPanel>
 
-                <!-- Yetkisi olmayan VEYA henüz taşınmamış öğe listeye HİÇ girmez
-                     (bkz. ShellViewModel.IsVisible) -->
-                <ListBox x:Name="NavigationList"
-                         ItemsSource="{Binding NavigationItems}"
-                         SelectedItem="{Binding SelectedNavigationItem, Mode=TwoWay}"
-                         Background="Transparent"
-                         BorderThickness="0"
-                         Margin="6"
-                         DisplayMemberPath="Title"
-                         SelectionChanged="NavigationList_SelectionChanged"/>
+                <!-- Menü çubuğunun yerini alan gruplu ray.
+                     Yetkisi olmayan VEYA henüz taşınmamış öğe listeye HİÇ
+                     girmez; tamamen boşalan grup da oluşmaz
+                     (bkz. ShellViewModel). -->
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding NavigationGroups}" Margin="6,6,6,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,0,0,10">
+                                    <TextBlock Text="{Binding Title}"
+                                               Margin="4,0,0,4"
+                                               Foreground="{DynamicResource Theme.Nav.Foreground}"
+                                               Style="{StaticResource Text.Caption}"/>
+
+                                    <ListBox ItemsSource="{Binding Screens}"
+                                             Background="Transparent"
+                                             BorderThickness="0"
+                                             DisplayMemberPath="Title"
+                                             SelectionChanged="NavigationList_SelectionChanged"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
             </DockPanel>
         </Border>
 

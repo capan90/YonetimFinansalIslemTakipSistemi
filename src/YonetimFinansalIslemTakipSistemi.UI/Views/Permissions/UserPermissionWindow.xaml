@@ -6,42 +6,17 @@
         MinHeight="580" MinWidth="480"
         WindowStartupLocation="CenterOwner"
         Icon="pack://application:,,,/Assets/AppIcon.ico"
-        ResizeMode="CanResizeWithGrip"
-        Loaded="Window_Loaded">
+        ResizeMode="CanResizeWithGrip">
 
-    <DockPanel Margin="16">
+    <!--
+    INCE BARINDIRICI (Faz D6)
 
-        <!-- Kullanıcı seçimi -->
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
-            <TextBlock Text="Kullanıcı:" VerticalAlignment="Center" Width="80"/>
-            <ComboBox Width="260"
-                      ItemsSource="{Binding Users}"
-                      SelectedItem="{Binding SelectedUser}"
-                      DisplayMemberPath="FullName"/>
-        </StackPanel>
+    Icerik UserPermissionScreen UserControl'une tasindi ve kabukta sekme olarak
+    aciliyor. Bu pencere yalnizca baslik, boyut ve ikon tutar.
 
-        <!-- Kaydet butonu -->
-        <Button DockPanel.Dock="Bottom"
-                Content="Kaydet"
-                Width="100" HorizontalAlignment="Right"
-                Margin="0,12,0,0"
-                Command="{Binding SaveCommand}"/>
+    SILINMEDI: MainWindow menuleri hala bu pencereyi aciyor ve geri donus
+    yolu acik kaliyor. Is mantigi burada DEGIL - iki yerde tutulmuyor.
+    -->
+    <ContentControl x:Name="ScreenHost"/>
 
-        <!-- Yetki listesi -->
-        <Border BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1" CornerRadius="4" Padding="12">
-            <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="420">
-                <ItemsControl ItemsSource="{Binding Perms}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <CheckBox Content="{Binding Label}"
-                                      IsChecked="{Binding IsGranted}"
-                                      Margin="0,4,0,4"
-                                      FontSize="14"/>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
-        </Border>
-
-    </DockPanel>
 </Window>

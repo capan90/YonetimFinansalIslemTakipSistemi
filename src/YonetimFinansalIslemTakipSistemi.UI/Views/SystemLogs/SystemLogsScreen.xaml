@@ -1,0 +1,218 @@
+<UserControl x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.SystemLogs.SystemLogsScreen"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Loaded="Window_Loaded"
+             Background="{DynamicResource Theme.AppBackground}">
+
+    <UserControl.Resources>
+        <!-- ── Seviye rozeti ─────────────────────────────────────────────────
+             Renkler eskiden converter'dan geliyordu; converter bağlama başına
+             bir kez çalıştığı için tema değişince açık listedeki satırlar eski
+             renklerinde kalıyordu. Artık DataTrigger + DynamicResource:
+             tema anahtarı çevrilince satırlar anında güncellenir.
+
+             Seviye ayrımı yalnızca RENGE bağlı değildir — rozet metni
+             (LevelDisplay: Bilgi/Uyarı/Hata/Kritik) her zaman yazılıdır.
+             Renk körlüğünde de seviye okunabilir kalır. -->
+        <Style x:Key="LogLevelBadge" TargetType="Border">
+            <Setter Property="CornerRadius"        Value="3"/>
+            <Setter Property="Padding"             Value="6,1"/>
+            <Setter Property="BorderThickness"     Value="1"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment"   Value="Center"/>
+            <!-- Varsayılan: bilinmeyen seviye → nötr yüzey -->
+            <Setter Property="Background"  Value="{DynamicResource Theme.SurfaceAlt}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Theme.Border}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Level}" Value="Info">
+                    <Setter Property="Background"  Value="{DynamicResource Theme.Info.BackgroundStrong}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource Theme.Info.Border}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Level}" Value="Warning">
+                    <Setter Property="Background"  Value="{DynamicResource Theme.Warning.BackgroundStrong}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource Theme.Warning.Border}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Level}" Value="Error">
+                    <Setter Property="Background"  Value="{DynamicResource Theme.Danger.BackgroundStrong}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource Theme.Danger.Border}"/>
+                </DataTrigger>
+                <!-- Kritik tek DOLU seviyedir: listede ilk görülmesi gereken satır -->
+                <DataTrigger Binding="{Binding Level}" Value="Critical">
+                    <Setter Property="Background"  Value="{DynamicResource Theme.Critical.BackgroundStrong}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource Theme.Critical.Border}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="LogLevelBadgeText" TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource Theme.Text}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Level}" Value="Info">
+                    <Setter Property="Foreground" Value="{DynamicResource Theme.Info.Text}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Level}" Value="Warning">
+                    <Setter Property="Foreground" Value="{DynamicResource Theme.Warning.Text}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Level}" Value="Error">
+                    <Setter Property="Foreground" Value="{DynamicResource Theme.Danger.Text}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Level}" Value="Critical">
+                    <Setter Property="Foreground" Value="{DynamicResource Theme.Critical.Text}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Çözüldü / Açık durumu -->
+        <Style x:Key="LogStatusText" TargetType="TextBlock">
+            <Setter Property="FontWeight"        Value="SemiBold"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Foreground"        Value="{DynamicResource Theme.Warning}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsResolved}" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource Theme.Success}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <DockPanel Margin="10">
+
+        <!-- Özet kartlar -->
+        <UniformGrid DockPanel.Dock="Top" Rows="1" Margin="0,0,0,10">
+            <Border Background="{DynamicResource Theme.Danger.BackgroundStrong}" CornerRadius="6" Margin="0,0,6,0" Padding="12,8">
+                <StackPanel>
+                    <TextBlock Text="Bugünkü Kritik" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Danger.Text}"/>
+                    <TextBlock Text="{Binding TodayCriticalCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="{DynamicResource Theme.Danger}"/>
+                </StackPanel>
+            </Border>
+            <Border Background="{DynamicResource Theme.Warning.Background}" CornerRadius="6" Margin="0,0,6,0" Padding="12,8">
+                <StackPanel>
+                    <TextBlock Text="Bugünkü Hata" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Warning.Text}"/>
+                    <TextBlock Text="{Binding TodayErrorCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="{DynamicResource Theme.Warning}"/>
+                </StackPanel>
+            </Border>
+            <Border Background="{DynamicResource Theme.Warning.Background}" CornerRadius="6" Margin="0,0,6,0" Padding="12,8">
+                <StackPanel>
+                    <TextBlock Text="Son 24h Uyarı" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Warning.Text}"/>
+                    <TextBlock Text="{Binding Last24hWarningCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="{DynamicResource Theme.Warning.Text}"/>
+                </StackPanel>
+            </Border>
+            <Border Background="{DynamicResource Theme.Info.Background}" CornerRadius="6" Padding="12,8">
+                <StackPanel>
+                    <TextBlock Text="Çözülmemiş Kritik" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Info.Text}"/>
+                    <TextBlock Text="{Binding OpenCriticalCount}" Style="{StaticResource Text.Display}" FontWeight="Bold" Foreground="{DynamicResource Theme.Info.Text}"/>
+                </StackPanel>
+            </Border>
+        </UniformGrid>
+
+        <!-- Filtre paneli -->
+        <Border DockPanel.Dock="Top"
+                BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1"
+                CornerRadius="4" Padding="10,8"
+                Margin="0,0,0,8">
+            <WrapPanel Orientation="Horizontal">
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                    <TextBlock Text="Başlangıç:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <DatePicker Width="110" SelectedDate="{Binding DateFrom, Mode=TwoWay}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                    <TextBlock Text="Bitiş:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <DatePicker Width="110" SelectedDate="{Binding DateTo, Mode=TwoWay}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                    <TextBlock Text="Seviye:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <ComboBox Width="90"
+                              ItemsSource="{Binding LevelOptions}"
+                              SelectedItem="{Binding SelectedLevel, Mode=TwoWay}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                    <TextBlock Text="Kategori:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <ComboBox Width="110"
+                              ItemsSource="{Binding CategoryOptions}"
+                              SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                    <TextBlock Text="Durum:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <ComboBox Width="90"
+                              ItemsSource="{Binding StatusOptions}"
+                              SelectedItem="{Binding SelectedStatus, Mode=TwoWay}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,12,4">
+                    <TextBlock Text="Ara:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <TextBox Width="150" Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+
+                <Button Content="Filtrele"  Command="{Binding SearchCommand}" Margin="0,0,6,4" Padding="12,4"/>
+                <Button Content="Temizle"   Command="{Binding ClearCommand}"  Margin="0,0,6,4" Padding="12,4"/>
+                <Button Content="Yenile"    Click="RefreshButton_Click"       Margin="0,0,0,4" Padding="12,4"/>
+
+            </WrapPanel>
+        </Border>
+
+        <!-- Sayfalama -->
+        <Border DockPanel.Dock="Bottom"
+                BorderBrush="{DynamicResource Theme.Border}" BorderThickness="0,1,0,0"
+                Padding="0,6,0,0" Margin="0,6,0,0">
+            <DockPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                    <Button Content="◀ Önceki" Command="{Binding PrevCommand}"
+                            Margin="0,0,6,0" Padding="10,3"
+                            IsEnabled="{Binding CanGoPrev}"/>
+                    <Button Content="Sonraki ▶" Command="{Binding NextCommand}"
+                            Padding="10,3"
+                            IsEnabled="{Binding CanGoNext}"/>
+                </StackPanel>
+                <TextBlock Text="{Binding PageInfo}"
+                           VerticalAlignment="Center" Foreground="{DynamicResource Theme.LabelText}"/>
+            </DockPanel>
+        </Border>
+
+        <!-- DataGrid -->
+        <DataGrid x:Name="MainGrid"
+                  ItemsSource="{Binding Items}"
+                  SelectedItem="{Binding Selected, Mode=TwoWay}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  AlternatingRowBackground="{DynamicResource Theme.DataGridAltRow}"
+                  MouseDoubleClick="MainGrid_MouseDoubleClick">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Tarih"     Binding="{Binding CreatedAt, StringFormat=dd.MM.yyyy HH:mm:ss}" Width="140"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridTemplateColumn Header="Seviye" Width="80">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource LogLevelBadge}">
+                                <TextBlock Text="{Binding LevelDisplay}"
+                                           Style="{StaticResource LogLevelBadgeText}"/>
+                            </Border>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Kategori"  Binding="{Binding Category}"      Width="100"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridTextColumn Header="Kullanıcı" Binding="{Binding Username}"      Width="120"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridTextColumn Header="Makine"    Binding="{Binding MachineName}"   Width="120"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridTextColumn Header="Mesaj"     Binding="{Binding Message}"       Width="*"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridTemplateColumn Header="Durum" Width="80">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding StatusDisplay}"
+                                       Style="{StaticResource LogStatusText}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+    </DockPanel>
+</UserControl>

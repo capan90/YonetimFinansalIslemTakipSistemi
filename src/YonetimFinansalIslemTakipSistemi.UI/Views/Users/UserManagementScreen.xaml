@@ -1,0 +1,73 @@
+<UserControl x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.Users.UserManagementScreen"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Loaded="Window_Loaded"
+             Background="{DynamicResource Theme.AppBackground}">
+
+    <DockPanel Margin="10">
+
+        <!-- Toolbar -->
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+            <Button Content="Ekle"    Width="80" Margin="0,0,6,0" Click="AddButton_Click"/>
+            <Button Content="Düzenle" Width="80" Margin="0,0,6,0" Click="EditButton_Click"/>
+            <Button Content="Sil"     Width="80" Command="{Binding DeleteCommand}"/>
+        </StackPanel>
+
+        <!-- Hata mesajı -->
+        <TextBlock DockPanel.Dock="Bottom"
+                   Text="{Binding ErrorMessage}"
+                   Foreground="{DynamicResource Theme.Danger}"
+                   Margin="0,6,0,0"
+                   TextWrapping="Wrap">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Visibility" Value="Visible"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ErrorMessage}" Value="{x:Null}">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+
+        <!-- Kullanıcı listesi + boş durum mesajı; çift tıklama = düzenle (liste standardı) -->
+        <Grid>
+        <DataGrid x:Name="MainGrid"
+                  ItemsSource="{Binding Users}"
+                  SelectedItem="{Binding SelectedUser, Mode=TwoWay}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserAddRows="False"
+                  SelectionMode="Single"
+                  GridLinesVisibility="Horizontal"
+                  AlternatingRowBackground="{DynamicResource Theme.SurfaceAlt}"
+                  HeadersVisibility="Column"
+                  MouseDoubleClick="EditButton_Click">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Ad Soyad"       Binding="{Binding FullName}"  Width="*"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridTextColumn Header="Kullanıcı Adı"  Binding="{Binding UserName}"  Width="150"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                <DataGridCheckBoxColumn Header="Aktif"       Binding="{Binding IsActive}"  Width="55"/>
+                <DataGridTextColumn Header="Oluşturulma"
+                                    Binding="{Binding CreatedAt, StringFormat=dd.MM.yyyy HH:mm}"
+                                    Width="140"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <TextBlock Text="Gösterilecek kullanıcı bulunamadı">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateText}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Items.Count, ElementName=MainGrid}" Value="0">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+        </Grid>
+
+    </DockPanel>
+</UserControl>

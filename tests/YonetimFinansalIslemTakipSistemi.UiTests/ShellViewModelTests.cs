@@ -559,19 +559,19 @@ public class ShellViewModelTests
     }
 
     /// <summary>
-    /// Taşınmamış ekranın fabrikası BOŞ kalmalı. Boş fabrika, ekranın
-    /// navigasyonda görünmemesini ve programatik olarak açılamamasını sağlar —
-    /// tıklandığında hiçbir şey yapmayan sahte sekme üretilmez.
+    /// Faz D6 sonunda kayıt tablosundaki HER ekran taşınmış olmalı.
     ///
-    /// Faz D5'te taşınmış tek ekran Nakit İşlemler'dir; o kontrol
-    /// <see cref="ShellPilotTests"/> içinde.
+    /// Fabrikası boş kalan bir ekran navigasyonda görünmez ve programatik
+    /// olarak açılamaz — sessizce erişilemez hâle gelirdi. Menüler kabuğa
+    /// taşındığı için artık alternatif bir yolu da yok.
     /// </summary>
     [Fact]
-    public void Tasinmamis_ekranlarin_fabrikasi_bos()
+    public void Kayit_tablosundaki_tum_ekranlar_tasinmis()
     {
-        var notMigrated = ScreenRegistry.All.Where(s => s.Key != ScreenKey.CashTransactions);
+        var notMigrated = ScreenRegistry.All.Where(s => !s.IsMigrated).Select(s => s.Key).ToList();
 
-        Assert.All(notMigrated, s => Assert.False(s.IsMigrated));
+        Assert.True(notMigrated.Count == 0,
+            "Fabrikası boş ekran(lar): " + string.Join(", ", notMigrated));
     }
 
     [Fact]

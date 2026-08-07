@@ -43,6 +43,12 @@ public sealed class ShellTab
     public ScreenKey Key      => Definition.Key;
     public bool      CanClose => Definition.CanClose;
 
+    /// <summary>
+    /// Ekranın "kapat" isteğine bağlanan eylem. Kabuk kurar ve söker; sekmeye
+    /// özgü olduğu için burada saklanır (bkz. ShellViewModel.Attach).
+    /// </summary>
+    internal Action? CloseHandler { get; set; }
+
     /// <summary>Bu sekme verilen kimliğe mi ait.</summary>
     public bool Matches(ScreenKey key, string? instanceKey)
         => Key == key && string.Equals(InstanceKey, instanceKey, StringComparison.Ordinal);

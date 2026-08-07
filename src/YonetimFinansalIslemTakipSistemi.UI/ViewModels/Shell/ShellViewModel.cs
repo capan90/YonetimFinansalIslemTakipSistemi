@@ -21,7 +21,7 @@ namespace YonetimFinansalIslemTakipSistemi.UI.ViewModels.Shell;
 /// login → kabuk → logout → login döngüsü aynen çalışır; kabuk o döngüye
 /// yeni bir kavram sokmaz.
 /// </summary>
-public sealed class ShellViewModel : INotifyPropertyChanged
+public sealed class ShellViewModel : INotifyPropertyChanged, IShellNavigator
 {
     private readonly IServiceProvider                 _services;
     private readonly IUserContext                     _userContext;
@@ -46,6 +46,15 @@ public sealed class ShellViewModel : INotifyPropertyChanged
         NavigationItems = new ObservableCollection<ScreenDefinition>(
             _screens.Where(IsVisible));
 
+        // Gruplu görünüm: menü çubuğunun yerini alan başlıklar (Finans, Kargo
+        // Takip, Yönetim, Ayarlar). Grup sırası kayıt tablosundaki İLK
+        // görünme sırasıdır — alfabetik değil; kullanıcının menüde alıştığı
+        // sıra korunuyor. Tamamen boşalan grup hiç görünmez.
+        NavigationGroups = new ObservableCollection<ScreenGroup>(
+            NavigationItems
+                .GroupBy(s => s.NavGroup)
+                .Select(g => new ScreenGroup(g.Key, g.ToList())));
+
         OpenScreenCommand = new RelayCommand(
             () => { if (SelectedNavigationItem is not null) OpenScreen(SelectedNavigationItem.Key); });
 
@@ -60,6 +69,13 @@ public sealed class ShellViewModel : INotifyPropertyChanged
 
     /// <summary>Kullanıcının görebildiği ekranlar. Yetkisiz olanlar hiç girmez.</summary>
     public ObservableCollection<ScreenDefinition> NavigationItems { get; }
+
+    /// <summary>
+    /// Aynı ekranların başlık altında gruplanmış hâli — navigasyon rayı bunu
+    /// gösterir. <see cref="NavigationItems"/> düz liste olarak kalır; yetki
+    /// ve tekillik testleri onun üzerinden yürüyor.
+    /// </summary>
+    public ObservableCollection<ScreenGroup> NavigationGroups { get; }
 
     private ScreenDefinition? _selectedNavigationItem;
     public ScreenDefinition? SelectedNavigationItem
@@ -171,15 +187,48 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     {
         if (tab.View is IShellLogoutSource source)
             source.LogoutRequested += OnScreenLogoutRequested;
+
+        // Başka ekran açması gereken ekranlara gezgin verilir. Kabuk dışında
+        // (MainWindow) barındıklarında bu atanmaz ve null kalır.
+        if (tab.View is IShellNavigationAware aware)
+            aware.Navigator = this;
+
+        // "Kapat" düğmesi/Esc: pencerede pencereyi kapatıyordu, kabukta
+        // SEKMEYİ kapatmalı. Hangi sekme olduğunu ekran bilmediği için
+        // kapanış eylemi burada, sekmeye bağlı olarak kurulur.
+        if (tab.View is IShellCloseSource closable)
+        {
+            tab.CloseHandler = () => CloseTab(tab);
+            closable.CloseRequested += tab.CloseHandler;
+        }
     }
 
     private void Detach(ShellTab tab)
     {
         if (tab.View is IShellLogoutSource source)
             source.LogoutRequested -= OnScreenLogoutRequested;
+
+        if (tab.View is IShellNavigationAware aware)
+            aware.Navigator = null;
+
+        if (tab.View is IShellCloseSource closable && tab.CloseHandler is not null)
+        {
+            closable.CloseRequested -= tab.CloseHandler;
+            tab.CloseHandler = null;
+        }
     }
 
     private void OnScreenLogoutRequested() => RequestLogout();
+
+    // ── IShellNavigator ───────────────────────────────────────────────────
+    //
+    // Ekranlar yalnızca "şu ekranı aç" diyebilir. Yetki ve tekillik kontrolü
+    // aşağıdaki OpenScreen'lerin içinde — ekran kendi başına kapı açamaz.
+
+    bool IShellNavigator.OpenScreen(ScreenKey key) => OpenScreen(key) is not null;
+
+    bool IShellNavigator.OpenScreen(ScreenKey key, object parameter)
+        => OpenScreen(key, parameter) is not null;
 
     /// <summary>
     /// Ekranı kayıt tablosunda bulur ve açılabilirliğini doğrular.

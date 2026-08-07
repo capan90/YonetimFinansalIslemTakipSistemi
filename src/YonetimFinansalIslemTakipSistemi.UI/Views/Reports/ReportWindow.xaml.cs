@@ -1,39 +1,23 @@
-using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
-using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
-using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
-using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Reports;
+using System.Windows.Controls;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Reports;
 
+/// <summary>
+/// ReportWindow — ince barindirici (Faz D6).
+///
+/// Icerigin tamami <see cref="ReportScreen"/>'de. Bu pencere yalnizca
+/// pencere-seviyesi ozellikleri (baslik, boyut, ikon) tasir ve ekrani
+/// barindirir; is mantigi kopyalanmaz.
+///
+/// Ayni ekran kabukta sekme olarak da aciliyor — barindiricidan bagimsiz
+/// calistiginin canli kaniti.
+/// </summary>
 public partial class ReportWindow : Window
 {
-    private readonly IServiceProvider _services;
-    private readonly ReportViewModel  _vm;
-
     public ReportWindow(IServiceProvider services)
     {
         InitializeComponent();
-        _services   = services;
-        _vm         = services.GetRequiredService<ReportViewModel>();
-        DataContext = _vm;
-    }
-
-    private async void Window_Loaded(object sender, RoutedEventArgs e)
-        => await _vm.LoadAsync();
-
-    private void Preview_Click(object sender, RoutedEventArgs e)
-    {
-        if (_vm.LastReportDto is null) return;
-
-        new ReportPreviewWindow(
-                _vm.LastReportDto,
-                _services.GetRequiredService<IReportExportService>(),
-                _services.GetRequiredService<IDialogService>(),
-                _services.GetRequiredService<IAuditLogService>(),
-                _services.GetRequiredService<ISystemLogService>(),
-                _services.GetRequiredService<IUserContext>())
-            { Owner = this }
-            .ShowDialog();
+        ScreenHost.Content = new ReportScreen(services);
     }
 }

@@ -1,0 +1,88 @@
+<UserControl x:Class="YonetimFinansalIslemTakipSistemi.UI.Views.Mail.MailContactListScreen"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{DynamicResource Theme.AppBackground}">
+
+    <DockPanel Margin="8">
+
+        <!-- Araç çubuğu -->
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button x:Name="NewButton" Content="+ Yeni" Width="70" Margin="0,0,6,0"
+                        Style="{StaticResource PrimaryButton}"
+                        Click="NewButton_Click"/>
+                <Button x:Name="EditButton" Content="Düzenle" Width="75" Margin="0,0,6,0"
+                        Style="{StaticResource SecondaryButton}"
+                        IsEnabled="{Binding HasSelected}"
+                        Click="EditButton_Click"/>
+                <Button x:Name="DeleteButton" Content="Sil" Width="60"
+                        Style="{StaticResource DangerButton}"
+                        IsEnabled="{Binding HasSelected}"
+                        Click="DeleteButton_Click"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBox Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}"
+                         Width="220" Margin="0,0,6,0"
+                         KeyDown="SearchBox_KeyDown"
+                         ToolTip="Ad, e-posta veya firma ile arayın"/>
+                <Button Content="Ara" Width="60" Margin="0,0,10,0"
+                        Style="{StaticResource PrimaryButton}"
+                        Command="{Binding SearchCommand}"/>
+                <CheckBox Content="Pasifleri göster"
+                          VerticalAlignment="Center"
+                          IsChecked="{Binding IncludeInactive, Mode=TwoWay}"/>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Bilgi şeridi: "Varsayılan CC" kolonunun ne işe yaradığını ekranda açıklar -->
+        <Border DockPanel.Dock="Bottom"
+                Background="{DynamicResource Theme.Accent.Background}" BorderBrush="{DynamicResource Theme.Accent.Border}" BorderThickness="1"
+                CornerRadius="4" Padding="8,6" Margin="0,8,0,0">
+            <TextBlock Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Theme.Accent.Text}" TextWrapping="Wrap"
+                       Text="ℹ  'Varsayılan CC' işaretli kişiler, kargo mail bildirimi ekranı açıldığında CC alanına otomatik eklenir."/>
+        </Border>
+
+        <!-- Liste + boş durum mesajı -->
+        <Grid>
+            <DataGrid x:Name="MainGrid"
+                      ItemsSource="{Binding Items}"
+                      SelectedItem="{Binding Selected, Mode=TwoWay}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      SelectionMode="Single"
+                      CanUserAddRows="False"
+                      GridLinesVisibility="Horizontal"
+                      HorizontalGridLinesBrush="{DynamicResource Theme.Border}"
+                      AlternatingRowBackground="{DynamicResource Theme.DataGridAltRow}"
+                      RowBackground="{DynamicResource Theme.DataGridRow}"
+                      BorderBrush="{DynamicResource Theme.Border}" BorderThickness="1"
+                      MouseDoubleClick="MainGrid_MouseDoubleClick">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Ad Soyad / Kayıt Adı" Binding="{Binding FullName}"    Width="200"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header="E-posta"              Binding="{Binding Email}"       Width="220"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridTextColumn Header="Firma"                Binding="{Binding Company}"     Width="160"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridCheckBoxColumn Header="Varsayılan CC"    Binding="{Binding IsDefaultCc}" Width="100"/>
+                    <DataGridTextColumn Header="Son Kullanım"
+                                        Binding="{Binding LastUsedAt, StringFormat=dd.MM.yyyy HH:mm}" Width="120"
+                                    ElementStyle="{StaticResource EllipsisCell}"/>
+                    <DataGridCheckBoxColumn Header="Aktif"            Binding="{Binding IsActive}"    Width="60"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            <TextBlock Text="Gösterilecek kayıt bulunamadı">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateText}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Items.Count, ElementName=MainGrid}" Value="0">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </Grid>
+
+    </DockPanel>
+</UserControl>

@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
+using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
 using YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
 using YonetimFinansalIslemTakipSistemi.UI.ViewModels.Shell;
@@ -66,26 +67,127 @@ public partial class ShellWindow : Window
         StatusUserText.Text    = userContext.FullName;
         StatusVersionText.Text = $"Sürüm {Assembly.GetExecutingAssembly().GetName().Version}";
 
-        // Varsayılan sekme. Yetkisiz kullanıcıda OpenScreen null döner ve kabuk
-        // sekmesiz açılır — burada ayrıca yetki kontrolü YAPILMAZ, tek kapı
-        // ShellViewModel.Resolve'dur (iki yerde yetki mantığı tutulmaz).
-        var opened = _vm.OpenScreen(ScreenKey.CashTransactions);
-        if (opened is not null)
-            _vm.SelectedNavigationItem = opened.Definition;
+        ApplyToolVisibility(userContext);
+        OpenDefaultScreen();
 
         // Pencere X ile kapatılırsa da açık ekranlara söz hakkı verilir;
         // kaydedilmemiş değişiklik sessizce kaybolmasın.
         Closing += OnClosing;
+
+        // Açılışta güncelleme kontrolü — uygulama seviyesi bir iş ve artık
+        // kabuğun sorumluluğu. Eskiden MainWindow ve Kargo Panosu ayrı ayrı
+        // yürütüyordu; kabuk ikisinin de yerini alınca tek yerde kaldı.
+        // Ekran yüklendikten sonra, kullanıcıyı bloklamadan çalışır.
+        Loaded += async (_, _) =>
+            await Services.StartupUpdateChecker.RunOnceAsync(_services, _dialogService);
     }
+
+    /// <summary>
+    /// Açılışta hangi sekme açılır.
+    ///
+    /// Finans kullanıcısında Nakit İşlemler, kargo kullanıcısında rayın ilk
+    /// öğesi (Kargo Dashboard). Ayrı bir tablo tutulmuyor: yetkisi olmayan
+    /// ekran zaten rayda yok ve OpenScreen null döner. Yetki kontrolü burada
+    /// TEKRARLANMAZ — tek kapı ShellViewModel.Resolve'dur.
+    /// </summary>
+    private void OpenDefaultScreen()
+    {
+        var opened = _vm.OpenScreen(ScreenKey.CashTransactions);
+
+        if (opened is null && _vm.NavigationItems.Count > 0)
+            opened = _vm.OpenScreen(_vm.NavigationItems[0].Key);
+
+        if (opened is not null)
+            _vm.SelectedNavigationItem = opened.Definition;
+    }
+
+    /// <summary>
+    /// Ekran AÇMAYAN araç düğmelerinin yetki kapıları.
+    ///
+    /// Kapılar MainWindow.RefreshMenuVisibility ve
+    /// CargoDashboardScreen.ApplyNavBarVisibility'den birebir alındı; kabuk
+    /// yeni bir yetki kuralı uydurmuyor. Ekranların kapıları burada DEĞİL,
+    /// ScreenRegistry'de (bkz. ShellViewModel.IsVisible).
+    /// </summary>
+    private void ApplyToolVisibility(IUserContext userContext)
+    {
+        static Visibility Show(bool allowed) => allowed ? Visibility.Visible : Visibility.Collapsed;
+
+        var canSettings = userContext.HasPermission(PermissionType.CanAccessSettings);
+        var canManage   = userContext.HasPermission(PermissionType.CanManageUsers);
+        var canHelp     = userContext.HasPermission(PermissionType.CanAccessHelpMenu);
+
+        ToolMailSettings.Visibility = Show(canSettings);
+        ToolAppearance.Visibility   = Show(canSettings);
+
+        // DB testi ve log klasörü MainWindow'da yönetici kapısındaydı
+        ToolDbTest.Visibility    = Show(canManage);
+        ToolLogFolder.Visibility = Show(canManage || canHelp);
+
+        ToolCheckUpdates.Visibility = Show(canHelp);
+        ToolPersonalMail.Visibility = Show(canHelp);
+
+        // Harf Duyarlılığı ve Çıkış her kullanıcıda görünür — kapı yok.
+    }
+
+    // ── Ekran açmayan araç eylemleri ──────────────────────────────────────
+    //
+    // Gövdeleri Common/ToolActions ve Common/UpdateCheckFlow içinde: aynı
+    // eylemler MainWindow ve Kargo Panosu'ndan da başlatılabiliyor.
+
+    private void OpenMailSettings_Click(object sender, RoutedEventArgs e)
+        => new Settings.MailSettingsWindow(_services, isPersonal: false) { Owner = this }.ShowDialog();
+
+    private void OpenPersonalMailSettings_Click(object sender, RoutedEventArgs e)
+        => new Settings.MailSettingsWindow(_services, isPersonal: true) { Owner = this }.ShowDialog();
+
+    private void OpenAppearanceSettings_Click(object sender, RoutedEventArgs e)
+        => new Settings.AppearanceSettingsWindow(_services) { Owner = this }.ShowDialog();
+
+    private async void TestDbConnection_Click(object sender, RoutedEventArgs e)
+        => await Common.ToolActions.TestDatabaseAsync(_services, _dialogService);
+
+    private void OpenLogDirectory_Click(object sender, RoutedEventArgs e)
+        => Common.ToolActions.OpenLogDirectory(_dialogService);
+
+    private async void CheckForUpdates_Click(object sender, RoutedEventArgs e)
+        => await Common.UpdateCheckFlow.RunAsync(_services, _dialogService);
 
     // ── Navigasyon ────────────────────────────────────────────────────────
 
     private void NavigationList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (e.AddedItems.Count == 0) return;
+        if (e.AddedItems[0] is not ScreenDefinition screen) return;
+
+        // Ray gruplara bölündüğü için her grubun kendi ListBox'ı var; birinden
+        // seçim yapılınca diğerlerinin seçimi temizlenmeli, yoksa rayda birden
+        // çok "seçili" öğe görünür.
+        ClearOtherSelections(sender);
+
+        _vm.SelectedNavigationItem = screen;
+
         // Zaten açık ekran ikinci sekme üretmez; ShellViewModel mevcut sekmeye
         // odaklanır (bkz. OpenScreen).
-        if (_vm.SelectedNavigationItem is { } screen)
-            _vm.OpenScreen(screen.Key);
+        _vm.OpenScreen(screen.Key);
+    }
+
+    private void ClearOtherSelections(object current)
+    {
+        foreach (var list in Descendants(this).OfType<ListBox>())
+            if (!ReferenceEquals(list, current))
+                list.SelectedItem = null;
+    }
+
+    private static IEnumerable<DependencyObject> Descendants(DependencyObject root)
+    {
+        var count = System.Windows.Media.VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < count; i++)
+        {
+            var child = System.Windows.Media.VisualTreeHelper.GetChild(root, i);
+            yield return child;
+            foreach (var nested in Descendants(child)) yield return nested;
+        }
     }
 
     // ── Klavye kısayolları ────────────────────────────────────────────────

@@ -80,6 +80,9 @@ public partial class ShellWindow : Window
         {
             if (e.PropertyName == nameof(ShellViewModel.ActiveTab))
                 SyncNavigationSelection();
+
+            if (e.PropertyName == nameof(ShellViewModel.IsPaletteOpen))
+                OnPaletteVisibilityChanged();
         };
 
         Loaded += async (_, _) =>
@@ -256,6 +259,74 @@ public partial class ShellWindow : Window
             _vm.CloseTab(tab);
             e.Handled = true;
         }
+    }
+
+    // ── Komut paleti (Faz E6) ─────────────────────────────────────────────
+    //
+    // Palet ayrı bir pencere DEĞİL, kabuğun üstüne serilen bir katman: sahiplik
+    // ve odak sorunları çıkmıyor, kabuk kapanınca kendiliğinden gidiyor.
+    //
+    // Görünürlük ViewModel'deki IsPaletteOpen'a bağlı; kod arkası yalnızca
+    // odağı ve klavyeyi yönetir — hangi ekranın açılacağına ViewModel karar
+    // verir (bkz. ShellViewModel.AcceptPalette).
+
+    private void OnPaletteVisibilityChanged()
+    {
+        PaletteOverlay.Visibility = _vm.IsPaletteOpen ? Visibility.Visible : Visibility.Collapsed;
+
+        if (!_vm.IsPaletteOpen) return;
+
+        // Katman yeni görünür oldu; odak ancak yerleşimden sonra verilebilir.
+        Dispatcher.BeginInvoke(() =>
+        {
+            PaletteQuery.Focus();
+            PaletteQuery.SelectAll();
+        }, System.Windows.Threading.DispatcherPriority.Input);
+    }
+
+    /// <summary>
+    /// Klavye paletin TAMAMINI sürer: yazarken eller arama kutusunda kalsın
+    /// diye gezinme de buradan yönetilir, listeye odak geçmez.
+    /// </summary>
+    private void PaletteQuery_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case Key.Escape:
+                _vm.ClosePalette();
+                e.Handled = true;
+                break;
+
+            case Key.Enter:
+                _vm.AcceptPalette();
+                e.Handled = true;
+                break;
+
+            case Key.Down:
+                _vm.Palette.MoveNext();
+                PaletteResults.ScrollIntoView(_vm.Palette.Selected);
+                e.Handled = true;
+                break;
+
+            case Key.Up:
+                _vm.Palette.MovePrevious();
+                PaletteResults.ScrollIntoView(_vm.Palette.Selected);
+                e.Handled = true;
+                break;
+        }
+    }
+
+    private void PaletteResults_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        => _vm.AcceptPalette();
+
+    /// <summary>
+    /// Karartmaya tıklamak paleti kapatır. Yalnızca KARARTMANIN kendisine
+    /// yapılan tıklama sayılır; paletin içine tıklamak kapatmamalı.
+    /// </summary>
+    private void PaletteOverlay_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (ReferenceEquals(e.OriginalSource, PaletteOverlay))
+            _vm.ClosePalette();
     }
 
     // ── Sekme sağ tık menüsü (Faz E4) ─────────────────────────────────────

@@ -74,8 +74,17 @@
         <KeyBinding Key="D7" Modifiers="Ctrl" Command="{Binding ActivateTabCommand}" CommandParameter="7"/>
         <KeyBinding Key="D8" Modifiers="Ctrl" Command="{Binding ActivateTabCommand}" CommandParameter="8"/>
         <KeyBinding Key="D9" Modifiers="Ctrl" Command="{Binding ActivateTabCommand}" CommandParameter="9"/>
+
+        <!-- Komut paleti (Faz E6). Ray 18 ekranı dört grupta taşıyor; bilinen
+             bir ekrana gitmek için doğru grubu bulmak gerekiyor. Palet aynı
+             işi adını yazarak yaptırır. -->
+        <KeyBinding Key="K" Modifiers="Ctrl" Command="{Binding OpenPaletteCommand}"/>
     </Window.InputBindings>
 
+    <!-- Kök Grid YALNIZCA paleti çalışma alanının ÜSTÜNE serebilmek için var;
+         yerleşimin kendisi aşağıdaki DockPanel'de. Palet ayrı bir pencere
+         değil: sahiplik/odak sorunları çıkarmadan kabuğun içinde kalıyor. -->
+    <Grid>
     <DockPanel>
 
         <!-- Alt durum şeridi -->
@@ -268,4 +277,64 @@
         </TabControl>
 
     </DockPanel>
+
+        <!-- ══════════════════════════════════════════════════════════════
+             KOMUT PALETİ  (Faz E6)
+
+             Kabuğun ÜSTÜNE serilir; arkadaki karartma hem odağı toplar hem
+             de dışarı tıklayınca kapanma alanıdır.
+
+             Palet yeni bir kapı AÇMAZ: listesi kabuğun görünür ekranlarından
+             gelir, seçim yine ShellViewModel.OpenScreen'den geçer ve yetki
+             orada yeniden kontrol edilir.
+        ══════════════════════════════════════════════════════════════ -->
+        <Border x:Name="PaletteOverlay"
+                Visibility="Collapsed"
+                Background="{DynamicResource Theme.Scrim}"
+                MouseDown="PaletteOverlay_MouseDown">
+
+            <Border Width="520"
+                    MaxHeight="420"
+                    VerticalAlignment="Top"
+                    Margin="0,90,0,0"
+                    Background="{DynamicResource Theme.Surface}"
+                    BorderBrush="{DynamicResource Theme.Border}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Padding="10">
+                <DockPanel>
+                    <TextBox x:Name="PaletteQuery"
+                             DockPanel.Dock="Top"
+                             Margin="0,0,0,8"
+                             Text="{Binding Palette.Query, UpdateSourceTrigger=PropertyChanged}"
+                             PreviewKeyDown="PaletteQuery_PreviewKeyDown"/>
+
+                    <TextBlock DockPanel.Dock="Bottom"
+                               Margin="2,8,0,0"
+                               Text="↑↓ gez · Enter aç · Esc kapat"
+                               Style="{StaticResource Text.Caption}"/>
+
+                    <ListBox x:Name="PaletteResults"
+                             ItemsSource="{Binding Palette.Results}"
+                             SelectedIndex="{Binding Palette.SelectedIndex, Mode=TwoWay}"
+                             MouseDoubleClick="PaletteResults_MouseDoubleClick">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel>
+                                    <!-- Grup adı sağda ve soluk: aynı adı taşıyan
+                                         iki ekran varsa ayırt ettirir, yoksa
+                                         okumayı bölmez. -->
+                                    <TextBlock DockPanel.Dock="Right"
+                                               Margin="10,0,0,0"
+                                               Text="{Binding NavGroup}"
+                                               Style="{StaticResource Text.Caption}"/>
+                                    <TextBlock Text="{Binding Title}"/>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+        </Border>
+    </Grid>
 </Window>

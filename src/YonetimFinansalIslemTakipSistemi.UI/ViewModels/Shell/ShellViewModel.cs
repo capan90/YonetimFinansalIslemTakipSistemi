@@ -61,6 +61,9 @@ public sealed class ShellViewModel : INotifyPropertyChanged, IShellNavigator
         CloseTabCommand = new RelayCommand(
             () => { if (ActiveTab is not null) CloseTab(ActiveTab); });
 
+        Palette            = new CommandPaletteViewModel(NavigationItems);
+        OpenPaletteCommand = new RelayCommand(OpenPalette);
+
         NextTabCommand     = new RelayCommand(ActivateNextTab);
         PreviousTabCommand = new RelayCommand(ActivatePreviousTab);
 
@@ -284,6 +287,50 @@ public sealed class ShellViewModel : INotifyPropertyChanged, IShellNavigator
         return true;
     }
 
+    // ── Komut paleti (Faz E6) ─────────────────────────────────────────────
+
+    /// <summary>
+    /// Ctrl+K paleti. Listesi <see cref="NavigationItems"/>'dan gelir, yani
+    /// kullanıcının zaten görebildiği ekranlardan — palet yeni bir kapı
+    /// açmaz, var olana kısa yoldur.
+    /// </summary>
+    public CommandPaletteViewModel Palette { get; }
+
+    private bool _isPaletteOpen;
+    public bool IsPaletteOpen
+    {
+        get => _isPaletteOpen;
+        private set { _isPaletteOpen = value; OnPropertyChanged(); }
+    }
+
+    /// <summary>
+    /// Paleti açar. Sorgu her açılışta SIFIRLANIR: palet bir "kaldığın yerden
+    /// devam" aracı değil, her seferinde baştan arama.
+    /// </summary>
+    public void OpenPalette()
+    {
+        Palette.Query = string.Empty;
+        IsPaletteOpen = true;
+    }
+
+    public void ClosePalette() => IsPaletteOpen = false;
+
+    /// <summary>
+    /// Paletteki seçimi açar ve paleti kapatır.
+    /// </summary>
+    /// <returns>Bir ekran açıldıysa <c>true</c>.</returns>
+    public bool AcceptPalette()
+    {
+        var screen = Palette.Selected;
+        if (screen is null) return false;
+
+        // Yetki kontrolü yine OpenScreen'in içinde — palet onu atlamaz.
+        var opened = OpenScreen(screen.Key) is not null;
+
+        ClosePalette();
+        return opened;
+    }
+
     // ── Toplu kapatma (Faz E4) ────────────────────────────────────────────
     //
     // Üçü de tek tek CloseTab'dan geçer: CanClose ve RequestClose kontrolü
@@ -436,6 +483,7 @@ public sealed class ShellViewModel : INotifyPropertyChanged, IShellNavigator
     public ICommand NextTabCommand     { get; }
     public ICommand PreviousTabCommand { get; }
     public ICommand ActivateTabCommand { get; }
+    public ICommand OpenPaletteCommand { get; }
 
     // ── INotifyPropertyChanged ────────────────────────────────────────────
 

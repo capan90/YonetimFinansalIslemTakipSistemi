@@ -6,6 +6,11 @@
     <SolidColorBrush x:Key="Theme.Surface"               Color="#1E293B"/>
     <SolidColorBrush x:Key="Theme.CardBackground"        Color="#1E293B"/>
 
+    <!-- Kabuk üstü katmanların (komut paleti) karartması. Koyu temada daha
+         GÜÇLÜ: zaten koyu bir zeminde hafif karartma fark edilmez, palet de
+         arkasından ayrışmaz. -->
+    <SolidColorBrush x:Key="Theme.Scrim"                 Color="#99000000"/>
+
     <!-- ── Marka ──────────────────────────────────────────────────────────────── -->
     <SolidColorBrush x:Key="Theme.Primary"               Color="#60A5FA"/>
     <SolidColorBrush x:Key="Theme.PrimaryHover"          Color="#93C5FD"/>

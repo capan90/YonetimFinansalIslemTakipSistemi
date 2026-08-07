@@ -213,28 +213,6 @@
                     Style="{StaticResource ShellTabControl}"
                     PreviewMouseDown="ScreenTabs_PreviewMouseDown">
 
-            <!-- Sekme sağ tık menüsü (Faz E4). Biriken sekmeleri tek tek
-                 kapatmak zorunda kalmamak için; tarayıcı alışkanlığının aynısı.
-                 Menü ÖĞENİN üzerinde açılır, DataContext o sekmedir.
-
-                 Kararı yine ShellViewModel verir: kapatılamaz sekme ve
-                 kaydedilmemiş değişikliği olan ekran burada da korunur. -->
-            <TabControl.ItemContainerStyle>
-                <Style TargetType="TabItem">
-                    <Setter Property="ContextMenu">
-                        <Setter.Value>
-                            <ContextMenu>
-                                <MenuItem Header="Kapat"            Click="TabMenuClose_Click"/>
-                                <MenuItem Header="Diğerlerini Kapat" Click="TabMenuCloseOthers_Click"/>
-                                <MenuItem Header="Sağdakileri Kapat" Click="TabMenuCloseRight_Click"/>
-                                <Separator/>
-                                <MenuItem Header="Tümünü Kapat"     Click="TabMenuCloseAll_Click"/>
-                            </ContextMenu>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </TabControl.ItemContainerStyle>
-
             <!-- Sekme başlığı + kapatma düğmesi.
                  Kapatma düğmesi PENCERENİN X'inin karşılığıdır: ekranlar
                  pencereyken X ile kapanıyordu, sekmede karşılığı olmalı.
@@ -246,7 +224,35 @@
                  bir düğme uygulamadaki her TabControl'de belirirdi. -->
             <TabControl.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
+                    <!-- Background="Transparent" sağ tık alanı için: boyasız
+                         panel fare olaylarını almaz, menü yalnızca yazının
+                         üstünde açılırdı. -->
+                    <StackPanel Orientation="Horizontal" Background="Transparent">
+
+                        <!-- Sekme sağ tık menüsü (Faz E4). Biriken sekmeleri
+                             tek tek kapatmak zorunda kalmamak için.
+
+                             MENÜ BURADA, ItemContainerStyle'da DEĞİL. Setter.Value
+                             içindeki olay bağlantıları XAML derleyicisinde
+                             connectionId çakışmasına yol açıyor: MenuItem
+                             handler'ları başka bir x:Name'li öğeyle aynı numaraya
+                             katlanıyor ve şablon yüklenirken tip dönüşümü
+                             patlıyordu (Button → Border). Şablon içi olaylar
+                             IStyleConnector üzerinden gidiyor ve bu sorun çıkmıyor
+                             — kapatma düğmesi zaten öyle çalışıyordu.
+
+                             Kararı yine ShellViewModel verir: kapatılamaz sekme ve
+                             kaydedilmemiş değişikliği olan ekran burada da korunur. -->
+                        <StackPanel.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Kapat"             Click="TabMenuClose_Click"/>
+                                <MenuItem Header="Diğerlerini Kapat" Click="TabMenuCloseOthers_Click"/>
+                                <MenuItem Header="Sağdakileri Kapat" Click="TabMenuCloseRight_Click"/>
+                                <Separator/>
+                                <MenuItem Header="Tümünü Kapat"      Click="TabMenuCloseAll_Click"/>
+                            </ContextMenu>
+                        </StackPanel.ContextMenu>
+
                         <TextBlock Text="{Binding Title}" VerticalAlignment="Center"/>
 
                         <Button Content="✕"

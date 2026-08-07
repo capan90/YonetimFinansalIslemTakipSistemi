@@ -38,12 +38,28 @@ public static class ShellTestDoubles
         public bool ShowConfirmation(string message, string title = "Onay") => true;
     }
 
+    /// <summary>
+    /// Açılışta güncelleme denetimi yapmayan sahte servis. Kabuk GÖSTERİLDİĞİNDE
+    /// (Loaded) bu servisi ister; gerçek olanı testte ağa/yayın klasörüne
+    /// giderdi.
+    /// </summary>
+    public sealed class FakeUpdateService : IUpdateService
+    {
+        public bool IsClickOnceDeployment => false;
+
+        public Task<UpdateCheckResult> CheckForUpdateAsync() =>
+            Task.FromResult(new UpdateCheckResult(false, null, null, null));
+
+        public bool LaunchInstaller() => false;
+    }
+
     public sealed class FakeServices(IUserContext userContext) : IServiceProvider
     {
         public object? GetService(Type serviceType)
         {
             if (serviceType == typeof(IUserContext))   return userContext;
             if (serviceType == typeof(IDialogService)) return new FakeDialogService();
+            if (serviceType == typeof(IUpdateService)) return new FakeUpdateService();
             return null;
         }
     }

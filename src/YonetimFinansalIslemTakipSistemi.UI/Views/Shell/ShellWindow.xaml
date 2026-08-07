@@ -9,23 +9,22 @@
         WindowStartupLocation="CenterScreen">
 
     <!--
-    TEK KABUK — FINANS PILOTU (Faz D5)
+    TEK KABUK
 
-    Finans yetkili kullanici artik giristen sonra bu pencereyi goruyor;
-    Nakit Islemler sekmesi acilista otomatik acilir. Kargo-only kullanici
-    hala CargoDashboardWindow'a gider, "none" davranisi degismedi.
+    Yetkili her kullanici giristen sonra bu pencereyi goruyor. Ne gorecegini
+    yetkileri belirler: navigasyon rayi ve acilis sekmesi ScreenRegistry'deki
+    yetki kapilarindan turer. "none" davranisi App.xaml.cs'te ayri kaldi.
 
     Yerlesim:
-      sol   navigasyon rayi (yalnizca TASINMIS ve YETKILI ekranlar)
-      ust   sekme seridi
+      sol   navigasyon rayi (gruplu; menu cubugunun karsiligi) + Araclar
+      ust   sekme seridi (kapatma dugmeli)
       orta  aktif sekmenin gorunumu
       alt   durum seridi
-    Sag panel ve komut paleti bu asamada YOK.
+    Sag panel (420px duzenleme formlari) ve Ctrl+K komut paleti HENUZ YOK.
 
-    TASINMAMIS EKRANLAR RAYDA GORUNMEZ. CreateView'i bos olan kayit
-    navigasyona hic girmez (bkz. ShellViewModel.IsVisible) — tiklaninca
-    hicbir sey yapmayan sahte sekme uretilmez. Menuden acilan diger ekranlar
-    su an yalnizca MainWindow uzerinden erisilebilir durumda; D6'da tasinacak.
+    FABRIKASI BOS KAYIT RAYDA GORUNMEZ ve programatik olarak acilamaz
+    (bkz. ShellViewModel.IsVisible) — tiklaninca hicbir sey yapmayan sahte
+    sekme uretilmez. D6 sonunda tum kayitlarin fabrikasi dolu.
     -->
 
     <!-- KISAYOLLAR: tus atamalari burada, GOVDELERI ekranda.
@@ -50,6 +49,14 @@
         <KeyBinding Key="F"      Modifiers="Ctrl" Command="common:AppCommands.FocusSearch"/>
         <KeyBinding Key="E"      Modifiers="Ctrl" Command="common:AppCommands.ImportExcel"/>
         <KeyBinding Key="F5"                      Command="common:AppCommands.RefreshList"/>
+
+        <!-- Aktif sekmeyi kapatır. Ctrl+Q tercih edilen kısayol; Ctrl+W
+             GERİYE DÖNÜK UYUMLULUK için korunuyor (tarayıcı alışkanlığı).
+             İkisi de aynı komuta bağlı — davranış tek yerde.
+             Kapatılamaz sekmede ve ekran reddederse hiçbir şey olmaz
+             (bkz. ShellViewModel.CloseTab). -->
+        <KeyBinding Key="Q" Modifiers="Ctrl" Command="{Binding CloseTabCommand}"/>
+        <KeyBinding Key="W" Modifiers="Ctrl" Command="{Binding CloseTabCommand}"/>
     </Window.InputBindings>
 
     <DockPanel>
@@ -144,7 +151,8 @@
                      girmez; tamamen boşalan grup da oluşmaz
                      (bkz. ShellViewModel). -->
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <ItemsControl ItemsSource="{Binding NavigationGroups}" Margin="6,6,6,0">
+                    <ItemsControl x:Name="NavigationGroupList"
+                                  ItemsSource="{Binding NavigationGroups}" Margin="6,6,6,0">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Margin="0,0,0,10">
@@ -153,9 +161,13 @@
                                                Foreground="{DynamicResource Theme.Nav.Foreground}"
                                                Style="{StaticResource Text.Caption}"/>
 
+                                    <!-- Ray KOYU bir yüzey (her iki temada da);
+                                         öğeler Theme.Nav.* tokenlarını okur.
+                                         Örtük ListBoxItem stili gövde metni
+                                         içindir ve burada okunmaz kalırdı. -->
                                     <ListBox ItemsSource="{Binding Screens}"
-                                             Background="Transparent"
-                                             BorderThickness="0"
+                                             Style="{StaticResource NavList}"
+                                             ItemContainerStyle="{StaticResource NavListItem}"
                                              DisplayMemberPath="Title"
                                              SelectionChanged="NavigationList_SelectionChanged"/>
                                 </StackPanel>
@@ -171,10 +183,40 @@
              yüzey olarak okunur, iç içe kart / çift zemin oluşmaz. -->
         <TabControl x:Name="ScreenTabs"
                     ItemsSource="{Binding Tabs}"
-                    SelectedItem="{Binding ActiveTab, Mode=TwoWay}">
+                    SelectedItem="{Binding ActiveTab, Mode=TwoWay}"
+                    PreviewMouseDown="ScreenTabs_PreviewMouseDown">
+            <!-- Sekme başlığı + kapatma düğmesi.
+                 Kapatma düğmesi PENCERENİN X'inin karşılığıdır: ekranlar
+                 pencereyken X ile kapanıyordu, sekmede karşılığı olmalı.
+
+                 KAPATILAMAZ sekmede düğme hiç görünmez (Nakit İşlemler);
+                 CanClose kararı ScreenRegistry'de, burada yalnızca gösteriliyor.
+
+                 Şablon kabuğa özgü — genel TabItem stiline konmadı; oradaki
+                 bir düğme uygulamadaki her TabControl'de belirirdi. -->
             <TabControl.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding Title}"/>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Title}" VerticalAlignment="Center"/>
+
+                        <Button Content="✕"
+                                Margin="8,0,-4,0"
+                                Padding="4,0"
+                                VerticalAlignment="Center"
+                                Focusable="False"
+                                ToolTip="Sekmeyi kapat (Ctrl+W)"
+                                Click="CloseTabButton_Click">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource TabCloseButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CanClose}" Value="False">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
                 </DataTemplate>
             </TabControl.ItemTemplate>
             <TabControl.ContentTemplate>

@@ -870,6 +870,58 @@
     </Style>
 
     <!-- ══════════════════════════════════════════════════════════════════════
+         NAVİGASYON RAYI LİSTESİ  (Faz D7.1)
+
+         Ray KOYU bir yüzeydir — açık temada da (Theme.Nav.Background #1E3A5F).
+         Örtük ListBoxItem stili ise gövde metni için tasarlandı ve
+         Theme.Text kullanıyor; açık temada bu #1A202C, yani koyu lacivert
+         üstünde neredeyse siyah → 1,40:1. Koyu temada Theme.Text açık renk
+         olduğu için sorun görünmüyordu.
+
+         Çözüm ray için ZATEN VAR OLAN token ailesini okumak: Nav.Foreground,
+         Nav.HoverBackground/HoverForeground, Nav.ActiveBackground/
+         ActiveForeground. NavButton stili bunları kullanıyordu; liste
+         kullanmıyordu. Yeni token eklenmedi, tema mimarisi değişmedi.
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <Style x:Key="NavList" TargetType="{x:Type ListBox}">
+        <Setter Property="Background"      Value="Transparent"/>
+        <Setter Property="Foreground"      Value="{DynamicResource Theme.Nav.Foreground}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+
+    <Style x:Key="NavListItem" TargetType="{x:Type ListBoxItem}">
+        <Setter Property="Background"                 Value="Transparent"/>
+        <Setter Property="Foreground"                 Value="{DynamicResource Theme.Nav.Foreground}"/>
+        <Setter Property="Padding"                    Value="8,5"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            Padding="{TemplateBinding Padding}"
+                            CornerRadius="3"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter x:Name="Cp"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          TextElement.Foreground="{TemplateBinding Foreground}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Theme.Nav.HoverBackground}"/>
+                            <Setter TargetName="Cp" Property="TextElement.Foreground" Value="{DynamicResource Theme.Nav.HoverForeground}"/>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Theme.Nav.ActiveBackground}"/>
+                            <Setter TargetName="Cp" Property="TextElement.Foreground" Value="{DynamicResource Theme.Nav.ActiveForeground}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
          CHECKBOX / RADIOBUTTON
          Aero2 kutuyu sabit beyaz zemin + sabit gri kenarlıkla çizer; koyu
          temada işaretsiz kutu görünmez oluyordu.
@@ -1311,6 +1363,39 @@
                                           Margin="{TemplateBinding Padding}"
                                           SnapsToDevicePixels="True"/>
                     </DockPanel>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Sekme kapatma düğmesi. Sessiz durur, üzerine gelinince belirginleşir:
+         başlığın okunmasını bozmamalı ama yanlışlıkla tıklanacak kadar da
+         silik olmamalı. Kapatma ONAYI burada değil — ekranın RequestClose
+         kapısında (bkz. IShellScreen). -->
+    <Style x:Key="TabCloseButton" TargetType="{x:Type Button}">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource Theme.MutedText}"/>
+        <Setter Property="FontSize"   Value="11"/>
+        <Setter Property="Cursor"     Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            Padding="{TemplateBinding Padding}"
+                            CornerRadius="3"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter x:Name="Cp"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          TextElement.Foreground="{TemplateBinding Foreground}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Theme.Danger}"/>
+                            <Setter TargetName="Cp" Property="TextElement.Foreground" Value="{DynamicResource Theme.OnDanger}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

@@ -74,12 +74,26 @@ public partial class ShellWindow : Window
         // kaydedilmemiş değişiklik sessizce kaybolmasın.
         Closing += OnClosing;
 
-        // Açılışta güncelleme kontrolü — uygulama seviyesi bir iş ve artık
-        // kabuğun sorumluluğu. Eskiden MainWindow ve Kargo Panosu ayrı ayrı
-        // yürütüyordu; kabuk ikisinin de yerini alınca tek yerde kaldı.
-        // Ekran yüklendikten sonra, kullanıcıyı bloklamadan çalışır.
+        // Rayın vurgusu aktif sekmeyi takip eder — sekme kapanınca kapalı
+        // ekran seçili kalmasın.
+        _vm.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(ShellViewModel.ActiveTab))
+                SyncNavigationSelection();
+        };
+
         Loaded += async (_, _) =>
+        {
+            // Ray öğeleri ItemsControl tarafından üretiliyor; kurucu anında
+            // henüz görsel ağaçta yoklar.
+            SyncNavigationSelection();
+
+            // Açılışta güncelleme kontrolü — uygulama seviyesi bir iş ve artık
+            // kabuğun sorumluluğu. Eskiden MainWindow ve Kargo Panosu ayrı ayrı
+            // yürütüyordu; kabuk ikisinin de yerini alınca tek yerde kaldı.
+            // Ekran yüklendikten sonra, kullanıcıyı bloklamadan çalışır.
             await Services.StartupUpdateChecker.RunOnceAsync(_services, _dialogService);
+        };
     }
 
     /// <summary>
@@ -157,26 +171,48 @@ public partial class ShellWindow : Window
 
     private void NavigationList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        // Seçimi kabuk kendisi ayarlıyorsa (aktif sekme değişti) yeniden
+        // ekran açmaya çalışma — sonsuz döngü olur.
+        if (_syncingNavigation) return;
+
         if (e.AddedItems.Count == 0) return;
         if (e.AddedItems[0] is not ScreenDefinition screen) return;
-
-        // Ray gruplara bölündüğü için her grubun kendi ListBox'ı var; birinden
-        // seçim yapılınca diğerlerinin seçimi temizlenmeli, yoksa rayda birden
-        // çok "seçili" öğe görünür.
-        ClearOtherSelections(sender);
 
         _vm.SelectedNavigationItem = screen;
 
         // Zaten açık ekran ikinci sekme üretmez; ShellViewModel mevcut sekmeye
-        // odaklanır (bkz. OpenScreen).
+        // odaklanır (bkz. OpenScreen). Rayın vurgusu ActiveTab değişince
+        // SyncNavigationSelection tarafından güncellenir.
         _vm.OpenScreen(screen.Key);
     }
 
-    private void ClearOtherSelections(object current)
+    private bool _syncingNavigation;
+
+    /// <summary>
+    /// Rayın vurgusunu AKTİF SEKMEYE eşitler.
+    ///
+    /// İki nedenle gerekli:
+    ///   • Ray gruplara bölündü ve her grubun kendi ListBox'ı var; ikisinde
+    ///     birden seçili öğe kalmamalı.
+    ///   • Sekme kapanınca kapalı ekran rayda seçili kalmamalı — kullanıcıya
+    ///     açık olmayan bir ekranı açıkmış gibi gösterirdi.
+    /// </summary>
+    private void SyncNavigationSelection()
     {
-        foreach (var list in Descendants(this).OfType<ListBox>())
-            if (!ReferenceEquals(list, current))
-                list.SelectedItem = null;
+        var key = _vm.ActiveTab?.Key;
+
+        _syncingNavigation = true;
+        try
+        {
+            foreach (var list in Descendants(NavigationGroupList).OfType<ListBox>())
+                list.SelectedItem = list.Items
+                    .OfType<ScreenDefinition>()
+                    .FirstOrDefault(s => key is not null && s.Key == key);
+        }
+        finally
+        {
+            _syncingNavigation = false;
+        }
     }
 
     private static IEnumerable<DependencyObject> Descendants(DependencyObject root)
@@ -188,6 +224,46 @@ public partial class ShellWindow : Window
             yield return child;
             foreach (var nested in Descendants(child)) yield return nested;
         }
+    }
+
+    // ── Sekme kapatma ─────────────────────────────────────────────────────
+    //
+    // Ekranlar pencereyken X ile kapanıyordu; sekmede karşılığı üç yoldan
+    // verilir: başlıktaki düğme, orta tık, Ctrl+W. Üçü de aynı kapıdan
+    // geçer — ShellViewModel.CloseTab, CanClose ve RequestClose'u kontrol
+    // eder, karar burada TEKRARLANMAZ.
+
+    private void CloseTabButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: ShellTab tab })
+            _vm.CloseTab(tab);
+    }
+
+    /// <summary>
+    /// Orta tıkla sekme kapatma — tarayıcı alışkanlığı.
+    ///
+    /// Tıklanan noktadaki TabItem görsel ağaçtan bulunur: TabControl'ün
+    /// kendisi hangi sekmeye basıldığını olay üzerinden vermez.
+    /// </summary>
+    private void ScreenTabs_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton != MouseButton.Middle) return;
+        if (e.OriginalSource is not DependencyObject source) return;
+
+        var item = FindAncestor<TabItem>(source);
+        if (item?.DataContext is ShellTab tab)
+        {
+            _vm.CloseTab(tab);
+            e.Handled = true;
+        }
+    }
+
+    private static T? FindAncestor<T>(DependencyObject node) where T : DependencyObject
+    {
+        for (; node is not null; node = System.Windows.Media.VisualTreeHelper.GetParent(node))
+            if (node is T match) return match;
+
+        return null;
     }
 
     // ── Klavye kısayolları ────────────────────────────────────────────────

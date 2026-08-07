@@ -132,6 +132,16 @@ public class ControlStateMatrixTests
         new("NavButton",       "Pressed",  "Theme.Nav.ActiveForeground",      "Theme.Nav.ActiveBackground",      Contrast.AA),
         new("NavButton",       "Disabled", "Theme.Button.DisabledForeground", "Theme.Button.DisabledBackground", Contrast.AALarge),
 
+        // Navigasyon rayı listesi (Faz D7.1). Ray HER İKİ TEMADA DA koyu bir
+        // yüzey; öğeler örtük ListBoxItem stilinden Theme.Text alıyordu ve
+        // açık temada 1,40:1 veriyordu. Artık Nav token ailesini okuyorlar.
+        new("NavListItem",     "Normal",   "Theme.Nav.Foreground",       "Theme.Nav.Background",       Contrast.AA),
+        new("NavListItem",     "Hover",    "Theme.Nav.HoverForeground",  "Theme.Nav.HoverBackground",  Contrast.AA),
+        new("NavListItem",     "Selected", "Theme.Nav.ActiveForeground", "Theme.Nav.ActiveBackground", Contrast.AA),
+
+        // Grup başlıkları da aynı zeminde durur
+        new("NavGroupHeader",  "Normal",   "Theme.Nav.Foreground",       "Theme.Nav.Background",       Contrast.AA),
+
         // Kabuk sekmesi (Faz D5). Seçili sekme ile içerik alanı BİLEREK aynı
         // yüzeyde (Theme.SurfaceSubtle) durur — kabuk ile ekran tek parça
         // okunsun diye. Ayrımı taşıyan 2px Theme.Primary şeridi grafik bir

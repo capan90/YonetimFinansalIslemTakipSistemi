@@ -10,10 +10,14 @@ namespace YonetimFinansalIslemTakipSistemi.Tests.Integration;
 /// <summary>
 /// Gerçek dev PostgreSQL üzerinde repository SQL doğrulaması.
 /// DB erişilemiyorsa testler işlem yapmadan geçer (offline/CI kırılmaz).
-/// Testler kendi oluşturduğu kayıtları siler ve sayaçları eski değerine geri yükler.
+///
+/// İZOLASYON: her test kendi kayıtlarını <see cref="TestMarker"/> ile
+/// işaretler, sonunda siler ve sayaçları eski değerine döndürür. Silmenin
+/// işe yaradığı DOĞRULANIR (bkz. LiveDatabaseFixture.AssertNoResidueAsync) —
+/// artık satır bırakan bir temizlik, hatayı bir sonraki koşuya taşır.
 /// </summary>
-[Collection("LiveDatabase")] // aynı DB'yi kullanan diğer integration sınıfıyla seri çalışır (flaky önlenir)
-public class CargoShipmentRepositoryIntegrationTests
+[Collection(LiveDatabaseCollection.Name)] // diğer canlı-DB sınıfıyla seri çalışır (flaky önlenir)
+public class CargoShipmentRepositoryIntegrationTests(LiveDatabaseFixture db)
 {
     private const string TestMarker = "__integration_test__";
 
@@ -28,31 +32,22 @@ public class CargoShipmentRepositoryIntegrationTests
         IsDeleted    = false
     };
 
-    /// <summary>Sayaç değerlerini kaydeder; test sonunda kayıtları siler ve sayaçları geri yükler.</summary>
-    private static async Task<Dictionary<int, long>> SnapshotCountersAsync(AppDbContext ctx)
-        => await ctx.CargoNumberCounters.AsNoTracking()
-            .ToDictionaryAsync(c => (int)c.Direction, c => c.LastValue);
-
     private static async Task CleanupAsync(AppDbContext ctx, Dictionary<int, long> counters)
     {
-        await ctx.Database.ExecuteSqlAsync(
-            $"DELETE FROM cargo_shipments WHERE \"Notes\" = {TestMarker}");
-        foreach (var (direction, value) in counters)
-            await ctx.Database.ExecuteSqlAsync($@"
-                UPDATE cargo_number_counters SET ""LastValue"" = {value}
-                WHERE ""Direction"" = {direction}");
+        await LiveDatabaseFixture.DeleteShipmentsAsync(ctx, TestMarker);
+        await LiveDatabaseFixture.RestoreCountersAsync(ctx, counters);
     }
 
     [Fact]
     public async Task Create_ArdisikNumaralarUretir_VeSayaciArtirir()
     {
-        await using var ctx = IntegrationDb.TryCreateContext()!;
-        if (ctx is null) return; // DB erişilemiyor — test atlanır
+        if (!db.IsAvailable) return; // DB erişilemiyor — test atlanır
 
-        var counters = await SnapshotCountersAsync(ctx);
+        await using var ctx = db.CreateContext();
+        var counters = await LiveDatabaseFixture.SnapshotCountersAsync(ctx);
         try
         {
-            var repo = new CargoShipmentRepository(IntegrationDb.TryCreateFactory()!, new NoOpSystemLogService());
+            var repo = new CargoShipmentRepository(db.Factory!, new NoOpSystemLogService());
             var baseSeq = counters.GetValueOrDefault((int)CargoShipmentDirection.Outgoing);
 
             var first  = NewShipment(CargoShipmentDirection.Outgoing);
@@ -63,7 +58,7 @@ public class CargoShipmentRepositoryIntegrationTests
             Assert.Equal(CargoNumberFormatter.Format(CargoShipmentDirection.Outgoing, baseSeq + 1), first.ShipmentNumber);
             Assert.Equal(CargoNumberFormatter.Format(CargoShipmentDirection.Outgoing, baseSeq + 2), second.ShipmentNumber);
 
-            var current = await SnapshotCountersAsync(ctx);
+            var current = await LiveDatabaseFixture.SnapshotCountersAsync(ctx);
             Assert.Equal(baseSeq + 2, current[(int)CargoShipmentDirection.Outgoing]);
         }
         finally
@@ -75,13 +70,13 @@ public class CargoShipmentRepositoryIntegrationTests
     [Fact]
     public async Task SonNumaraSilinirse_GeriAlinirVeYenidenKullanilir_AradakiSilinmez()
     {
-        await using var ctx = IntegrationDb.TryCreateContext()!;
-        if (ctx is null) return;
+        if (!db.IsAvailable) return;
 
-        var counters = await SnapshotCountersAsync(ctx);
+        await using var ctx = db.CreateContext();
+        var counters = await LiveDatabaseFixture.SnapshotCountersAsync(ctx);
         try
         {
-            var repo = new CargoShipmentRepository(IntegrationDb.TryCreateFactory()!, new NoOpSystemLogService());
+            var repo = new CargoShipmentRepository(db.Factory!, new NoOpSystemLogService());
             var baseSeq = counters.GetValueOrDefault((int)CargoShipmentDirection.Outgoing);
 
             var s1 = NewShipment(CargoShipmentDirection.Outgoing);
@@ -110,7 +105,7 @@ public class CargoShipmentRepositoryIntegrationTests
             Assert.Null(notReclaimed);
             Assert.Equal(CargoNumberFormatter.Format(CargoShipmentDirection.Outgoing, baseSeq + 1), s1.ShipmentNumber);
 
-            var current = await SnapshotCountersAsync(ctx);
+            var current = await LiveDatabaseFixture.SnapshotCountersAsync(ctx);
             Assert.Equal(baseSeq + 3, current[(int)CargoShipmentDirection.Outgoing]);
         }
         finally
@@ -122,16 +117,16 @@ public class CargoShipmentRepositoryIntegrationTests
     [Fact]
     public async Task EszamanliIkiKayit_DuplicateNumaraUretmez()
     {
-        await using var ctx = IntegrationDb.TryCreateContext()!;
-        if (ctx is null) return;
+        if (!db.IsAvailable) return;
 
-        var counters = await SnapshotCountersAsync(ctx);
+        await using var ctx = db.CreateContext();
+        var counters = await LiveDatabaseFixture.SnapshotCountersAsync(ctx);
         try
         {
             // Gerçek eşzamanlılık: iki repository aynı anda numara ister; her repo işlem başına
             // kendi context/connection'ını açar (Sprint 21) → sayaç satır kilidi ikisini serileştirmelidir
-            var repoA = new CargoShipmentRepository(IntegrationDb.TryCreateFactory()!, new NoOpSystemLogService());
-            var repoB = new CargoShipmentRepository(IntegrationDb.TryCreateFactory()!, new NoOpSystemLogService());
+            var repoA = new CargoShipmentRepository(db.Factory!, new NoOpSystemLogService());
+            var repoB = new CargoShipmentRepository(db.Factory!, new NoOpSystemLogService());
 
             var a = NewShipment(CargoShipmentDirection.Incoming);
             var b = NewShipment(CargoShipmentDirection.Incoming);

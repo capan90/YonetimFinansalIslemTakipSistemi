@@ -38,32 +38,13 @@ internal static class IntegrationDb
         return null;
     }
 
-    /// <summary>DB erişilebilirse yeni AppDbContext döner; değilse null (test atlanır).</summary>
-    public static AppDbContext? TryCreateContext()
-    {
-        var cs = ResolveConnectionString();
-        if (cs is null) return null;
-
-        try
-        {
-            var builder = new NpgsqlConnectionStringBuilder(cs) { Timeout = 3 };
-            using var probe = new NpgsqlConnection(builder.ConnectionString);
-            probe.Open();
-        }
-        catch
-        {
-            return null; // DB kapalı/erişilemez — integration testler atlanır
-        }
-
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseNpgsql(cs)
-            .Options;
-        return new AppDbContext(options);
-    }
-
     /// <summary>
-    /// Sprint 21: repository'ler artık IDbContextFactory alır. DB erişilebilirse
+    /// Sprint 21: repository'ler IDbContextFactory alır. DB erişilebilirse
     /// gerçek factory döner; değilse null (test atlanır).
+    ///
+    /// Faz F2: sonda TEST BAŞINA DEĞİL, koleksiyon başına bir kez yapılır —
+    /// çağıran <see cref="LiveDatabaseFixture"/>. Context üretimi de oradan
+    /// geçer; ayrı bir TryCreateContext yolu kalmadı.
     /// </summary>
     public static IDbContextFactory<AppDbContext>? TryCreateFactory()
     {

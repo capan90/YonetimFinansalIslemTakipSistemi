@@ -14,28 +14,20 @@ namespace YonetimFinansalIslemTakipSistemi.Tests.Integration;
 /// → ImportCargoShipmentsHandler → gerçek dev PostgreSQL (sayaç, transaction, unique index).
 /// DB erişilemiyorsa test işlem yapmadan geçer. Test kendi verisini oluşturur ve temizler.
 /// </summary>
-[Collection("LiveDatabase")] // CargoShipmentRepositoryIntegrationTests ile seri çalışır (flaky önlenir)
-public class CargoImportEndToEndIntegrationTests
+[Collection(LiveDatabaseCollection.Name)] // diğer canlı-DB sınıfıyla seri çalışır (flaky önlenir)
+public class CargoImportEndToEndIntegrationTests(LiveDatabaseFixture db)
 {
     private const string TestMarker = "__import_e2e_test__";
-
-    private static async Task<Dictionary<int, long>> SnapshotCountersAsync(AppDbContext ctx)
-        => await ctx.CargoNumberCounters.AsNoTracking()
-            .ToDictionaryAsync(c => (int)c.Direction, c => c.LastValue);
 
     private static async Task CleanupAsync(AppDbContext ctx, Dictionary<int, long> counters,
         Guid directoryId, Guid cargoCompanyId)
     {
-        await ctx.Database.ExecuteSqlAsync(
-            $"DELETE FROM cargo_shipments WHERE \"Notes\" LIKE {TestMarker + "%"}");
+        await LiveDatabaseFixture.DeleteShipmentsAsync(ctx, TestMarker, prefix: true);
         await ctx.Database.ExecuteSqlAsync(
             $"DELETE FROM company_directories WHERE \"Id\" = {directoryId}");
         await ctx.Database.ExecuteSqlAsync(
             $"DELETE FROM cargo_companies WHERE \"Id\" = {cargoCompanyId}");
-        foreach (var (direction, value) in counters)
-            await ctx.Database.ExecuteSqlAsync($@"
-                UPDATE cargo_number_counters SET ""LastValue"" = {value}
-                WHERE ""Direction"" = {direction}");
+        await LiveDatabaseFixture.RestoreCountersAsync(ctx, counters);
     }
 
     /// <summary>Gerçekçi bir Excel dosyası üretir: 3 geçerli, 1 bilinmeyen firma, 1 mükerrer takip no, 1 boş satır.</summary>
@@ -84,10 +76,10 @@ public class CargoImportEndToEndIntegrationTests
     [Fact]
     public async Task GercekDosyaVeGercekDb_AnalizVeImport_UctanUca()
     {
-        await using var ctx = IntegrationDb.TryCreateContext()!;
-        if (ctx is null) return; // DB erişilemiyor — test atlanır
+        if (!db.IsAvailable) return; // DB erişilemiyor — test atlanır
 
-        var counters       = await SnapshotCountersAsync(ctx);
+        await using var ctx = db.CreateContext();
+        var counters       = await LiveDatabaseFixture.SnapshotCountersAsync(ctx);
         var directoryId    = Guid.NewGuid();
         var cargoCompanyId = Guid.NewGuid();
         // Ad benzersiz olmalı — dev DB'deki gerçek firmalarla çakışmasın
@@ -116,7 +108,7 @@ public class CargoImportEndToEndIntegrationTests
 
             // ── Gerçek servis zinciri (DI ile aynı bileşenler) ──
             // Sprint 21: repository'ler IDbContextFactory alır (işlem başına taze context)
-            var factory       = IntegrationDb.TryCreateFactory()!;
+            var factory       = db.Factory!;
             var systemLog     = new NoOpSystemLogService();
             var shipmentRepo  = new CargoShipmentRepository(factory, systemLog);
             var directoryRepo = new CompanyDirectoryRepository(factory);
@@ -194,7 +186,7 @@ public class CargoImportEndToEndIntegrationTests
 
             // Numaralar ardışık ve sayaç tam +4 ilerledi
             var baseSeq = counters.GetValueOrDefault((int)CargoShipmentDirection.Outgoing);
-            var current = await SnapshotCountersAsync(ctx);
+            var current = await LiveDatabaseFixture.SnapshotCountersAsync(ctx);
             Assert.Equal(baseSeq + 4, current[(int)CargoShipmentDirection.Outgoing]);
 
             // Audit: 4 create + 1 özet
@@ -204,8 +196,7 @@ public class CargoImportEndToEndIntegrationTests
 
             // ── 4) Aynı dosya ikinci kez analiz edilirse: hepsi DB mükerreri olmalı ──
             // Taze factory ile ikinci analiz zinciri (production'da da her handler kendi context'ini alır)
-            var factory2 = IntegrationDb.TryCreateFactory();
-            if (factory2 is not null)
+            var factory2 = db.Factory!;
             {
                 var analyze2 = new AnalyzeCargoImportHandler(
                     new ExcelCargoImportReader(),

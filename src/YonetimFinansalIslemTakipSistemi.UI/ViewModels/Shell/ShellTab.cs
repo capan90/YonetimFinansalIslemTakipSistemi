@@ -54,6 +54,16 @@ public sealed class ShellTab
         => Key == key && string.Equals(InstanceKey, instanceKey, StringComparison.Ordinal);
 
     /// <summary>
+    /// ERİŞİLEBİLİRLİK (Faz F7): sekme başlığı.
+    ///
+    /// TabItem'ın otomasyon adı, başlık nesnesinin metin karşılığından türer.
+    /// Bu sınıf onu vermeyince ekran okuyucular ve otomasyon araçları ham tip
+    /// adını okuyordu ("…ViewModels.Shell.ShellTab") — kullanıcıya hangi
+    /// sekmede olduğunu söylemeyen bir metin.
+    /// </summary>
+    public override string ToString() => Title;
+
+    /// <summary>
     /// Ekran kapanmaya hazır mı. İçerik <see cref="IShellScreen"/> uyguluyorsa
     /// ona sorulur; uygulamıyorsa kaydedilmemiş durumu yok sayılır.
     /// </summary>

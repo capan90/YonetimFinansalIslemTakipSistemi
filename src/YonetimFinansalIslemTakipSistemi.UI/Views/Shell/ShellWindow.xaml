@@ -178,6 +178,7 @@
                      (bkz. ShellViewModel). -->
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <ItemsControl x:Name="NavigationGroupList"
+                                  AutomationProperties.Name="Navigasyon"
                                   ItemsSource="{Binding NavigationGroups}" Margin="6,6,6,0">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -211,6 +212,7 @@
                     ItemsSource="{Binding Tabs}"
                     SelectedItem="{Binding ActiveTab, Mode=TwoWay}"
                     Style="{StaticResource ShellTabControl}"
+                    AutomationProperties.Name="Açık ekranlar"
                     PreviewMouseDown="ScreenTabs_PreviewMouseDown">
 
             <!-- Sekme başlığı + kapatma düğmesi.
@@ -255,12 +257,17 @@
 
                         <TextBlock Text="{Binding Title}" VerticalAlignment="Center"/>
 
+                        <!-- Focusable="False" bilinçli: 10+ sekmede her başlık
+                             sekme sırasına iki durak eklerdi. Klavye kullanıcısı
+                             sekmeyi Ctrl+Q ile kapatır. Ekran okuyucu için ad
+                             AÇIKÇA verilir — "✕" tek başına anlam taşımaz. -->
                         <Button Content="✕"
                                 Margin="8,0,-4,0"
                                 Padding="4,0"
                                 VerticalAlignment="Center"
                                 Focusable="False"
                                 ToolTip="Sekmeyi kapat (Ctrl+Q)"
+                                AutomationProperties.Name="Sekmeyi kapat"
                                 Click="CloseTabButton_Click">
                             <Button.Style>
                                 <Style TargetType="Button" BasedOn="{StaticResource TabCloseButton}">
@@ -309,9 +316,13 @@
                     CornerRadius="6"
                     Padding="10">
                 <DockPanel>
+                    <!-- Palette'te görünür bir etiket yok (arama kutusu kendini
+                         anlatıyor); ekran okuyucu için ad açıkça verilir. -->
                     <TextBox x:Name="PaletteQuery"
                              DockPanel.Dock="Top"
                              Margin="0,0,0,8"
+                             AutomationProperties.Name="Ekran ara"
+                             AutomationProperties.HelpText="Ekran adı veya bölüm adı yazın; Enter ile açın."
                              Text="{Binding Palette.Query, UpdateSourceTrigger=PropertyChanged}"
                              PreviewKeyDown="PaletteQuery_PreviewKeyDown"/>
 
@@ -320,7 +331,12 @@
                                Text="↑↓ gez · Enter aç · Esc kapat"
                                Style="{StaticResource Text.Caption}"/>
 
+                    <!-- Odak arama kutusunda KALIR (yazarken eller orada olsun);
+                         gezinme ↑↓ ile ViewModel üzerinden yapılır. Bu yüzden
+                         liste sekme sırasına girmez ama adlandırılır. -->
                     <ListBox x:Name="PaletteResults"
+                             Focusable="False"
+                             AutomationProperties.Name="Arama sonuçları"
                              ItemsSource="{Binding Palette.Results}"
                              SelectedIndex="{Binding Palette.SelectedIndex, Mode=TwoWay}"
                              MouseDoubleClick="PaletteResults_MouseDoubleClick">

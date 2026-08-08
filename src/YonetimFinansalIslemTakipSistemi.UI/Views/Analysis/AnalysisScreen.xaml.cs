@@ -18,8 +18,10 @@ public partial class AnalysisScreen : UserControl
 
         // Grafik SkiaSharp ile çizilir ve DynamicResource'u görmez: tema
         // değişince seriler elle yeniden kurulmalı, yoksa eski renkte donar.
-        ChartPalette.ThemeChanged += OnThemeChanged;
-        Unloaded += (_, _) => ChartPalette.ThemeChanged -= OnThemeChanged;
+        // Abonelik Loaded/Unloaded ile SİMETRİK kurulur (bkz. BindThemeRepaint) —
+        // kurucuda abone olan eski desen, ilk sekme geçişinden sonra aboneliğini
+        // kaybediyordu.
+        ScreenData.BindThemeRepaint(this, OnThemeChanged);
 
         ScreenData.Bind(this, () => _vm.LoadAsync());
     }

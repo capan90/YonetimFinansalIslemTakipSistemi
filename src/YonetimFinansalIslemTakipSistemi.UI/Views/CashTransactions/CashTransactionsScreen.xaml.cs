@@ -106,8 +106,8 @@ public partial class CashTransactionsScreen : UserControl, IShellNavigationAware
 
         // Sparkline SkiaSharp ile çizilir ve DynamicResource'u görmez;
         // tema değişince yeniden boyanmalı (yeniden sorgu atmadan).
-        ChartPalette.ThemeChanged += _listVm.RebuildSparklines;
-        Unloaded += (_, _) => ChartPalette.ThemeChanged -= _listVm.RebuildSparklines;
+        // Abonelik Loaded/Unloaded ile SİMETRİK (bkz. BindThemeRepaint).
+        ScreenData.BindThemeRepaint(this, _listVm.RebuildSparklines);
 
         // Hazırlık YALNIZCA ilk gösterimde; yenilemede tekrarlanırsa
         // kullanıcının kolon düzeni ve bakiye kolonu tercihi sıfırlanırdı.

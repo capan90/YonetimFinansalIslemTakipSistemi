@@ -67,8 +67,8 @@ public partial class CargoDashboardScreen : UserControl, IShellCloseSource, IShe
 
         // LiveCharts SkiaSharp ile çizer, DynamicResource'u görmez: tema
         // değişince seriler elle yeniden boyanmalı (yeniden sorgu atmadan).
-        ChartPalette.ThemeChanged += RebuildCharts;
-        Unloaded += (_, _) => ChartPalette.ThemeChanged -= RebuildCharts;
+        // Abonelik Loaded/Unloaded ile SİMETRİK (bkz. BindThemeRepaint).
+        ScreenData.BindThemeRepaint(this, RebuildCharts);
 
         // Filtre kutuları ve kargo firması listesi YALNIZCA ilk gösterimde
         // doldurulur; yenilemede tekrarlanırsa kullanıcının seçtiği filtre

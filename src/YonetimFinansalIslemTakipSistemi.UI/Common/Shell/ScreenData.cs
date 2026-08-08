@@ -81,6 +81,48 @@ public static class ScreenData
             new CommandBinding(AppCommands.RefreshList, async (_, _) => await load()));
     }
 
+    /// <summary>
+    /// Tema değişince yeniden boyanması gereken ekranları bağlar (Faz F4).
+    ///
+    /// NEDEN VAR. Grafikler SkiaSharp ile çizilir ve DynamicResource'u
+    /// görmez; tema değişince seriler ELLE yeniden kurulmalıdır. Bunun için
+    /// ekranlar statik <see cref="ChartPalette.ThemeChanged"/> olayına abone
+    /// oluyordu — ama KURUCUDA abone olup <c>Unloaded</c>'da çıkarak.
+    ///
+    /// Pencere modelinde bu doğruydu: Unloaded ömürde bir kez, kapanışta
+    /// tetikleniyordu. Kabukta değil — her sekme geçişinde tetikleniyor
+    /// (bkz. TabLifecycleTests). Sonuç ölçüldü (ShellMemoryTests): ekran ilk
+    /// sekme geçişinde aboneliğini kaybediyor ve geri dönüldüğünde bir daha
+    /// abone olmuyor. Kullanıcıya görünen: tema değiştirilince grafikler eski
+    /// renginde donuyor — ama yalnızca daha önce sekme değiştirildiyse, yani
+    /// "bazen".
+    ///
+    /// Buradaki bağlama SİMETRİK: Loaded'da abone olur, Unloaded'da çıkar.
+    /// Ekran gizliyken boyama yapılmaz (gereksiz iş), gizliyken tema
+    /// değişmiş olabileceği için görünür olunca BİR KEZ telafi boyaması
+    /// yapılır.
+    /// </summary>
+    /// <param name="repaint">
+    /// Serileri yeniden kuran iş. VERİ ÇEKMEMELİ — yalnızca yeniden boyama;
+    /// tema değişimi sorgu tetiklememeli.
+    /// </param>
+    public static void BindThemeRepaint(FrameworkElement screen, Action repaint)
+    {
+        ArgumentNullException.ThrowIfNull(screen);
+        ArgumentNullException.ThrowIfNull(repaint);
+
+        screen.Loaded += (_, _) =>
+        {
+            ChartPalette.ThemeChanged -= repaint;   // çift abonelik olmasın
+            ChartPalette.ThemeChanged += repaint;
+
+            // Gizliyken tema değişmiş olabilir; görünür olunca bir kez telafi
+            repaint();
+        };
+
+        screen.Unloaded += (_, _) => ChartPalette.ThemeChanged -= repaint;
+    }
+
     private static bool HasRefreshBinding(FrameworkElement screen) =>
         screen.CommandBindings
               .OfType<CommandBinding>()

@@ -73,15 +73,19 @@ public partial class CargoShipmentListScreen : UserControl, IShellCloseSource, I
 
         ScreenData.Bind(this, () => _vm.LoadAsync());
 
-        // BİLİNÇLİ İSTİSNA (Faz E1). Diğer ekranlar sekmeye dönüldüğünde
-        // yeniden sorgulamaz; bu ekran sorgular. Nedeni doğruluk: operasyon
-        // merkezi AYRI BİR SEKMEDE açılıyor ve modal değil, orada değişen
-        // kargo durumu bu listede eski görünürdü. "Kapanınca yenile"
-        // varsayımı sekmeli dünyada geçersiz.
+        // Sekmeye dönüldüğünde YALNIZCA GEREKİYORSA tazele (Faz F5).
+        //
+        // Operasyon merkezi AYRI BİR SEKMEDE açılıyor ve modal değil; orada
+        // değişen kargo durumu bu listede eski görünürdü. Faz E1'de bu,
+        // "sekmeye her dönüşte yeniden sorgula" ile çözülmüştü — doğruydu
+        // ama pahalıydı: kullanıcı sekmeler arasında gezindikçe hiçbir şey
+        // değişmese de sorgu gidiyordu.
+        //
+        // Artık soru açık: açtığımız operasyon merkezi kaydı DEĞİŞTİRDİ Mİ?
+        // Değiştirmediyse sorgu yok.
         //
         // İlk gösterim ScreenData'nın işi; buradaki ilk geçiş tüketilir,
-        // yoksa açılışta iki sorgu giderdi (eski IsLoaded kontrolü sekme
-        // geçişlerinde bunu engellemiyordu).
+        // yoksa açılışta iki sorgu giderdi.
         var ilkGosterim = true;
         IsVisibleChanged += async (_, e) =>
         {
@@ -93,7 +97,9 @@ public partial class CargoShipmentListScreen : UserControl, IShellCloseSource, I
                 return;
             }
 
-            await _vm.LoadAsync();
+            if (!ConsumeOperationCenterChange()) return;
+
+            await ReloadAsync();
         };
     }
 
@@ -144,7 +150,7 @@ public partial class CargoShipmentListScreen : UserControl, IShellCloseSource, I
     {
         var form = new CargoShipmentEditWindow(_services) { Owner = HostWindow };
         await form.PrepareNewAsync(_vm.Direction);
-        if (form.ShowDialog() == true) await _vm.LoadAsync();
+        if (form.ShowDialog() == true) await ReloadAsync();
     }
 
     private async void ImportButton_Click(object sender, RoutedEventArgs e)
@@ -152,7 +158,7 @@ public partial class CargoShipmentListScreen : UserControl, IShellCloseSource, I
         var wizard = new CargoImportWindow(_services, _vm.Direction) { Owner = HostWindow };
         wizard.ShowDialog();
         // X ile kapatılsa bile içe aktarma yapıldıysa liste yenilenir
-        if (wizard.ImportCompleted) await _vm.LoadAsync();
+        if (wizard.ImportCompleted) await ReloadAsync();
     }
 
     private async void CopyButton_Click(object sender, RoutedEventArgs e)
@@ -160,7 +166,7 @@ public partial class CargoShipmentListScreen : UserControl, IShellCloseSource, I
         if (_vm.Selected is null) return;
         var form = new CargoShipmentEditWindow(_services) { Owner = HostWindow };
         await form.PrepareCopyAsync(_vm.Selected);
-        if (form.ShowDialog() == true) await _vm.LoadAsync();
+        if (form.ShowDialog() == true) await ReloadAsync();
     }
 
     private async void EditButton_Click(object sender, RoutedEventArgs e)
@@ -168,7 +174,7 @@ public partial class CargoShipmentListScreen : UserControl, IShellCloseSource, I
         if (_vm.Selected is null) return;
         var form = new CargoShipmentEditWindow(_services) { Owner = HostWindow };
         await form.PrepareEditAsync(_vm.Selected);
-        if (form.ShowDialog() == true) await _vm.LoadAsync();
+        if (form.ShowDialog() == true) await ReloadAsync();
     }
 
     private async void DeleteButton_Click(object sender, RoutedEventArgs e)
@@ -195,11 +201,11 @@ public partial class CargoShipmentListScreen : UserControl, IShellCloseSource, I
         if (!result.Success)
             _dialogService.ShowError(result.ErrorMessage ?? "Beklenmeyen bir hata oluştu.");
         else
-            await _vm.LoadAsync();
+            await ReloadAsync();
     }
 
     private async void RefreshButton_Click(object sender, RoutedEventArgs e)
-        => await _vm.LoadAsync();
+        => await ReloadAsync();
 
     private async void MainGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
@@ -212,12 +218,12 @@ public partial class CargoShipmentListScreen : UserControl, IShellCloseSource, I
         if (_vm.Selected is null) return;
         var form = new CargoShipmentEditWindow(_services) { Owner = HostWindow };
         await form.PrepareEditAsync(_vm.Selected);
-        if (form.ShowDialog() == true) await _vm.LoadAsync();
+        if (form.ShowDialog() == true) await ReloadAsync();
     }
 
     private async void SearchBox_KeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key == Key.Enter) await _vm.LoadAsync();
+        if (e.Key == Key.Enter) await ReloadAsync();
     }
 
     private async void StatusFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -225,13 +231,13 @@ public partial class CargoShipmentListScreen : UserControl, IShellCloseSource, I
         // InitializeComponent sırasında ComboBox ItemsSource bağlanınca SelectionChanged tetiklenir.
         // IsLoaded false iken henüz Loaded event ateşlenmemiştir; data yükü Loaded handler'a bırakılır.
         if (!IsLoaded) return;
-        await _vm.LoadAsync();
+        await ReloadAsync();
     }
 
     private async void PriorityFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (!IsLoaded) return;
-        await _vm.LoadAsync();
+        await ReloadAsync();
     }
 
     /// <summary>
@@ -246,11 +252,48 @@ public partial class CargoShipmentListScreen : UserControl, IShellCloseSource, I
     {
         if (_vm.Selected is null) return;
 
-        // Operasyon merkezi AYRI BİR SEKMEDE açılır. Modal pencere yolu
-        // kaldırıldı (Faz F1); tazeleme sekmeye geri dönüldüğünde yapılıyor
-        // (bkz. kurucu).
-        Navigator?.OpenScreen(ScreenKey.CargoOperationCenter, _vm.Selected);
+        // Açılan örnek saklanır: sekmeye dönüldüğünde "değişti mi" diye ona
+        // sorulur (bkz. ConsumeOperationCenterChange).
+        var view = Navigator?.OpenScreenView(ScreenKey.CargoOperationCenter, _vm.Selected);
+
+        if (view is CargoOperationCenterScreen opCenter)
+            _openedOperationCenter = new WeakReference<CargoOperationCenterScreen>(opCenter);
     }
+
+    /// <summary>
+    /// Açtığımız operasyon merkezinde değişiklik oldu mu — ve bayrağı TÜKET.
+    ///
+    /// ZAYIF REFERANS bilinçli: operasyon merkezi sekmesi kapandığında bu
+    /// liste onu bellekte tutmamalı (bkz. Faz F4 bellek ölçümü). Kapanmışsa
+    /// zaten sorulacak bir şey yok.
+    ///
+    /// Bayrak tüketilir: aynı değişiklik için iki kez sorgu atılmaz.
+    /// </summary>
+    private bool ConsumeOperationCenterChange()
+    {
+        if (_openedOperationCenter is null) return false;
+        if (!_openedOperationCenter.TryGetTarget(out var opCenter)) return false;
+        if (!opCenter.WasModified) return false;
+
+        opCenter.ClearModified();
+        return true;
+    }
+
+    private WeakReference<CargoOperationCenterScreen>? _openedOperationCenter;
+
+    /// <summary>
+    /// Listeyi tazeler ve KULLANICININ YERİNİ korur (Faz F5): seçili kargo
+    /// ve kaydırma konumu geri kurulur.
+    ///
+    /// Tazeleme koleksiyonu baştan kuruyor; seçim korunmazsa kullanıcı bir
+    /// kaydı düzenleyip kaydettiğinde liste başa atlıyor ve üzerinde
+    /// çalıştığı satırı yeniden arıyordu.
+    /// </summary>
+    private Task ReloadAsync() =>
+        ScreenData.RefreshPreservingSelectionAsync(
+            MainGrid,
+            item => (item as CargoShipmentDto)?.Id,
+            () => _vm.LoadAsync());
 
     /// <summary>Takip linkine tıklandığında default tarayıcıda açar.</summary>
     private void TrackingUrl_RequestNavigate(object sender, RequestNavigateEventArgs e)

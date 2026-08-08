@@ -42,9 +42,16 @@ public partial class CargoOperationCenterScreen : UserControl, IShellCloseSource
 
     /// <summary>
     /// Status değiştirildi veya bildirim hazırlandıysa true.
-    /// Liste ekranı bu değere göre yenileme kararı verir.
+    /// Liste ekranı bu değere göre yenileme kararı verir: değişiklik yoksa
+    /// sekmeye dönüldüğünde sorgu ATILMAZ (Faz F5).
     /// </summary>
     public bool WasModified { get; private set; }
+
+    /// <summary>
+    /// Bayrağı tüketir. Liste tazelendikten sonra çağrılır; aynı değişiklik
+    /// için ikinci kez sorgu atılmasın.
+    /// </summary>
+    public void ClearModified() => WasModified = false;
 
     public CargoOperationCenterScreen(IServiceProvider services, CargoShipmentDto dto)
     {

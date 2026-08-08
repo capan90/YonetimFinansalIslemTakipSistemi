@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Commands.DeleteCashTransaction;
+using YonetimFinansalIslemTakipSistemi.Application.Features.CashTransactions.Queries.GetCashTransactions;
 using YonetimFinansalIslemTakipSistemi.Application.Interfaces.Services;
 using YonetimFinansalIslemTakipSistemi.Domain.Enums;
 using YonetimFinansalIslemTakipSistemi.UI.Abstractions;
@@ -122,6 +123,20 @@ public partial class CashTransactionsScreen : UserControl, IShellNavigationAware
     }
 
     /// <summary>
+    /// Listeyi tazeler ve KULLANICININ YERİNİ korur (Faz F5): seçili işlem ve
+    /// kaydırma konumu geri kurulur.
+    ///
+    /// Tazeleme koleksiyonu baştan kuruyor; seçim korunmazsa kullanıcı bir
+    /// işlemi düzenleyip kaydettiğinde liste başa atlıyor ve üzerinde
+    /// çalıştığı satırı yeniden arıyordu.
+    /// </summary>
+    private Task ReloadAsync() =>
+        ScreenData.RefreshPreservingSelectionAsync(
+            TransactionDataGrid,
+            item => (item as CashTransactionDto)?.Id,
+            () => _listVm.LoadTransactionsAsync());
+
+    /// <summary>
     /// Yetkiye bağlı buton görünürlükleri. Pencere menü görünürlüğünü kendisi
     /// yönetir; ekran kendi butonlarını yönetir.
     /// </summary>
@@ -208,7 +223,7 @@ public partial class CashTransactionsScreen : UserControl, IShellNavigationAware
         _listVm.SelectedCurrencyType =
             _listVm.SelectedCurrencyType == currency ? "Tümü" : currency;
 
-        await _listVm.LoadTransactionsAsync();
+        await ReloadAsync();
     }
 
     // ── Column Header Context Menu ────────────────────────────────────────────
@@ -524,7 +539,7 @@ public partial class CashTransactionsScreen : UserControl, IShellNavigationAware
     {
         var form = new CashTransactionFormWindow(_services) { Owner = HostWindow };
         if (form.ShowDialog() == true)
-            await _listVm.LoadTransactionsAsync();
+            await ReloadAsync();
     }
 
     private async void CashImportButton_Click(object sender, RoutedEventArgs e)
@@ -533,7 +548,7 @@ public partial class CashTransactionsScreen : UserControl, IShellNavigationAware
         wizard.ShowDialog();
         // X ile kapatılsa bile içe aktarma yapıldıysa liste + bakiye barı yenilenir
         if (wizard.ImportCompleted)
-            await _listVm.LoadTransactionsAsync();
+            await ReloadAsync();
     }
 
     private async void EditTransactionButton_Click(object sender, RoutedEventArgs e)
@@ -564,7 +579,7 @@ public partial class CashTransactionsScreen : UserControl, IShellNavigationAware
         var form = new CashTransactionFormWindow(_services) { Owner = HostWindow };
         form.InitializeForEdit(selected);
         if (form.ShowDialog() == true)
-            await _listVm.LoadTransactionsAsync();
+            await ReloadAsync();
     }
 
     private async void CopyTransactionButton_Click(object sender, RoutedEventArgs e)
@@ -581,7 +596,7 @@ public partial class CashTransactionsScreen : UserControl, IShellNavigationAware
         if (form.ShowDialog() == true)
         {
             _dialogService.ShowSuccess("İşlem kopyalanarak yeni kayıt oluşturuldu.", "Kopyalama Başarılı");
-            await _listVm.LoadTransactionsAsync();
+            await ReloadAsync();
         }
     }
 
@@ -610,7 +625,7 @@ public partial class CashTransactionsScreen : UserControl, IShellNavigationAware
             return;
         }
 
-        await _listVm.LoadTransactionsAsync();
+        await ReloadAsync();
     }
 
     /// <summary>

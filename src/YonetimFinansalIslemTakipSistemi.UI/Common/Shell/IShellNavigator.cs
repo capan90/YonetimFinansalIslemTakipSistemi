@@ -26,6 +26,21 @@ public interface IShellNavigator
     /// Aynı kayıt ikinci kez açılırsa mevcut sekmeye odaklanılır.
     /// </summary>
     bool OpenScreen(ScreenKey key, object parameter);
+
+    /// <summary>
+    /// Yukarıdakiyle aynı; ek olarak AÇILAN GÖRÜNÜMÜ döndürür.
+    ///
+    /// NEDEN VAR (Faz F5): açan ekran, açtığı ekranda bir değişiklik olup
+    /// olmadığını bilmek isteyebilir. Kargo listesi operasyon merkezini ayrı
+    /// bir sekmede açıyor; merkez kaydı değiştirdiyse liste tazelenmeli,
+    /// DEĞİŞTİRMEDİYSE tazelenmemeli. Örneğe erişmeden bu ayrım yapılamıyordu
+    /// ve liste sekmeye her dönüldüğünde gereksiz sorgu atıyordu.
+    ///
+    /// Uygulama geneli bir "değişiklik yayını" KURULMADI: bağ yalnızca açan
+    /// ile açılan arasında, yereldir.
+    /// </summary>
+    /// <returns>Açılan (veya zaten açık olan) görünüm; açılamadıysa <c>null</c>.</returns>
+    System.Windows.FrameworkElement? OpenScreenView(ScreenKey key, object parameter);
 }
 
 /// <summary>

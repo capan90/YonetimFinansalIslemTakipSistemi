@@ -1,4 +1,6 @@
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Input;
 
 namespace YonetimFinansalIslemTakipSistemi.UI.Common.Shell;
@@ -121,6 +123,73 @@ public static class ScreenData
         };
 
         screen.Unloaded += (_, _) => ChartPalette.ThemeChanged -= repaint;
+    }
+
+    /// <summary>
+    /// Listeyi yeniler ve KULLANICININ YERİNİ korur (Faz F5).
+    ///
+    /// NEDEN VAR. Yenileme koleksiyonu baştan kurar; DataGrid seçimi ve
+    /// kaydırma konumu sıfırlanır. Kullanıcı bir kaydı düzenleyip kaydettiğinde
+    /// liste başa atlıyor ve az önce üzerinde çalıştığı satırı yeniden arıyordu
+    /// — 2000 satırlık rehberde bu gerçek bir iş kaybı.
+    ///
+    /// Seçim ANAHTARLA geri kurulur, sırayla değil: yenileme sonrası satır
+    /// sırası değişmiş olabilir (yeni kayıt, silinen kayıt, değişen filtre).
+    /// Sıra ile geri kurmak yanlış satırı seçer ve kullanıcı bunu fark etmez.
+    ///
+    /// Kayıt LİSTEDE KALMADIYSA (silindi ya da filtre dışına çıktı) seçim
+    /// zorlanmaz; uydurma bir satır seçmek yanıltıcı olurdu.
+    /// </summary>
+    /// <param name="grid">Yenilenecek listeyi gösteren DataGrid.</param>
+    /// <param name="keyOf">Satırdan kararlı kimlik üretir (genelde Id).</param>
+    /// <param name="reload">Veriyi yeniden yükleyen iş.</param>
+    public static async Task RefreshPreservingSelectionAsync(
+        DataGrid grid, Func<object, object?> keyOf, Func<Task> reload)
+    {
+        ArgumentNullException.ThrowIfNull(grid);
+        ArgumentNullException.ThrowIfNull(keyOf);
+        ArgumentNullException.ThrowIfNull(reload);
+
+        var selectedKey = grid.SelectedItem is null ? null : keyOf(grid.SelectedItem);
+        var offset      = VerticalOffsetOf(grid);
+
+        await reload();
+
+        if (selectedKey is null) return;
+
+        var match = grid.Items
+            .OfType<object>()
+            .FirstOrDefault(item => Equals(keyOf(item), selectedKey));
+
+        if (match is null) return;   // kayıt artık listede yok — seçim zorlanmaz
+
+        grid.SelectedItem = match;
+
+        // Kaydırma: önce eski konumu geri koy, sonra seçili satırı görünür yap.
+        // Sıra önemli — ScrollIntoView tek başına satırı ekranın kenarına
+        // yapıştırabiliyor.
+        var scrollViewer = ScrollViewerOf(grid);
+        scrollViewer?.ScrollToVerticalOffset(offset);
+        grid.ScrollIntoView(match);
+    }
+
+    private static double VerticalOffsetOf(DataGrid grid) => ScrollViewerOf(grid)?.VerticalOffset ?? 0;
+
+    private static ScrollViewer? ScrollViewerOf(DependencyObject root)
+    {
+        var count = VisualTreeHelper.GetChildrenCount(root);
+
+        for (var i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+
+            if (child is ScrollViewer viewer) return viewer;
+
+            var nested = ScrollViewerOf(child);
+            if (nested is not null) return nested;
+        }
+
+        return null;
     }
 
     private static bool HasRefreshBinding(FrameworkElement screen) =>

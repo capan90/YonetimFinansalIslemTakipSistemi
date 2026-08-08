@@ -234,6 +234,9 @@ public sealed class ShellViewModel : INotifyPropertyChanged, IShellNavigator
     bool IShellNavigator.OpenScreen(ScreenKey key, object parameter)
         => OpenScreen(key, parameter) is not null;
 
+    System.Windows.FrameworkElement? IShellNavigator.OpenScreenView(ScreenKey key, object parameter)
+        => OpenScreen(key, parameter)?.View;
+
     /// <summary>
     /// Ekranı kayıt tablosunda bulur ve açılabilirliğini doğrular.
     ///

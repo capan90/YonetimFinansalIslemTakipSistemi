@@ -34,12 +34,10 @@ namespace YonetimFinansalIslemTakipSistemi.UI.Views.CashTransactions;
 ///
 /// FAZ D5: Ekran artık kabukta gerçek sekme olarak da açılıyor. Bunun için
 /// iki bağlantı noktası eklendi, davranış değişmedi:
-///   • <see cref="IShellLogoutSource"/> — araç çubuğundaki çıkış düğmesi
-///     kabuk içinde de duyulsun diye
 ///   • Kendi <c>CommandBindings</c>'i (bkz. XAML) — kısayollar barındıran
 ///     pencereden bağımsız olarak bu ekrana ulaşsın diye
 /// </summary>
-public partial class CashTransactionsScreen : UserControl, IShellLogoutSource, IShellNavigationAware
+public partial class CashTransactionsScreen : UserControl, IShellNavigationAware
 {
     /// <summary>
     /// Kabuk sekme oluştururken atar; ince barındırıcı pencerede null kalır.
@@ -71,12 +69,6 @@ public partial class CashTransactionsScreen : UserControl, IShellLogoutSource, I
         ["EurBakiye"] = true
     };
 
-    /// <summary>
-    /// Kullanıcı çıkış istedi. Onay, audit ve pencere kapatma PENCERE
-    /// seviyesindedir; ekran yalnızca isteği yayar.
-    /// </summary>
-    public event Action? LogoutRequested;
-
     public CashTransactionsScreen(IServiceProvider services)
     {
         InitializeComponent();
@@ -101,11 +93,6 @@ public partial class CashTransactionsScreen : UserControl, IShellLogoutSource, I
             ["OlusturulmaT"] = ColOlusturulmaT
         };
 
-        var userContext = services.GetRequiredService<IUserContext>();
-        LoggedInUserText.Text = string.IsNullOrWhiteSpace(userContext.FullName)
-            ? string.Empty
-            : userContext.FullName;
-
         // Currency filter değişince bakiye kolonlarını güncelle
         _listVm.PropertyChanged += (_, e) =>
         {
@@ -128,12 +115,6 @@ public partial class CashTransactionsScreen : UserControl, IShellLogoutSource, I
             load: () => _listVm.LoadTransactionsAsync(),
             initialize: async () =>
             {
-                // Kabukta kullanıcı adı durum şeridinde, çıkış navigasyon rayında.
-                // Gezgin ancak sekme oluşturulurken atandığı için karar burada
-                // veriliyor; kurucuda henüz bilinmiyor.
-                if (Navigator is not null)
-                    SessionBar.Visibility = Visibility.Collapsed;
-
                 ApplyColumnHeaderContextMenu();
                 await ApplySavedLayoutAsync();
                 ApplyBalanceColumnVisibility();
@@ -636,7 +617,6 @@ public partial class CashTransactionsScreen : UserControl, IShellLogoutSource, I
     /// Çıkış butonu yalnızca isteği yayar. Onay diyaloğu, audit kaydı ve
     /// pencerenin kapatılması PENCERE seviyesindedir (bkz. MainWindow).
     /// </summary>
-    private void Logout_Click(object sender, RoutedEventArgs e) => LogoutRequested?.Invoke();
 }
 
 internal sealed record GridColumnState(

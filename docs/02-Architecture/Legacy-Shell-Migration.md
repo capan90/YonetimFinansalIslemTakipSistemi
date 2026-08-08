@@ -1,92 +1,86 @@
 # Legacy — Shell Migration
 
-**Durum:** Dondurulmuş (Faz E3, "Legacy Freeze")
-**Kaldırma:** Sonraki sprint ("Legacy Removal"), kabuk gerçek kullanımda birkaç gün sınandıktan sonra
+**Durum:** TAMAMLANDI (Faz F1, "Legacy Removal")
+**Önceki durum:** Dondurulmuş (Faz E3, "Legacy Freeze")
 
-## Karar
+## Özet
 
 Faz D tüm ekranları `UserControl`'e taşıdı ve `ShellWindow` tek başlangıç penceresi oldu.
-Eski pencereler bu geçişte **silinmedi**; geri dönüş yolu olarak bırakıldı.
+Eski pencereler geri dönüş yolu olarak bırakıldı, Faz E3'te donduruldu (`[Obsolete]` + bölge
++ bekçi test), Faz F1'de **kaldırıldı**.
 
-Faz E3'te durum ölçüldü: geri dönüş yolu **zaten kapalı**. `App` doğrudan `ShellWindow`
-açıyor, `MainWindow` hiçbir yerden örneklenmiyor, ince barındırıcı pencereleri de yalnızca
-`MainWindow` ve ekranlardaki "kabuk yoksa pencere aç" yedek dalları açıyordu.
+Uygulamada artık ekranlara ulaşmanın tek yolu kabuk sekmeleridir.
 
-Buna rağmen **silinmedi**: kabuk henüz gerçek kullanımda birkaç gün geçirmedi ve silmek
-geri dönüşü pahalı bir karardır. Bu sprint yalnızca **dondurur**.
+## Silinenler (Faz F1)
 
-## Donma kuralları
-
-- Bu sınıflara **yeni kod yazılmaz**.
-- Yeni özellikler **yalnızca kabuk mimarisine** eklenir.
-- **Testler yalnızca kabuk üzerinden** çalışır; donmuş tiplere derleme bağı kurmaz.
-- Her sınıf `[Obsolete(LegacyShellMigration.Reason)]` işaretlidir ve
-  `#region Legacy - Shell Migration` bölgesindedir.
-- Donmaya uyulduğunu `tests/…/LegacyFreezeTests.cs` bekçiler.
-
-## Envanter — 16 sınıf
-
-### Eski ana pencere (1)
-
-| Sınıf | Yerini alan |
-|---|---|
-| `MainWindow` | `ShellWindow` (navigasyon rayı + sekmeler) |
+### Eski ana pencere
+- `MainWindow.xaml` / `.xaml.cs` — menü çubuklu eski ana pencere. Hiçbir yerden örneklenmiyordu;
+  `App` doğrudan `ShellWindow` açıyor.
 
 ### İnce barındırıcı pencereler (15)
+`AnalysisWindow`, `AuditLogWindow`, `CargoCompanyListWindow`, `CargoDashboardWindow`,
+`CargoOperationCenterWindow`, `CargoShipmentListWindow`, `CompanyDirectoryListWindow`,
+`ExchangeRateWindow`, `SystemHealthWindow`, `MailContactListWindow`, `UserPermissionWindow`,
+`ReportWindow`, `SystemLogsWindow`, `UserManagementWindow`, `WhatsAppContactListWindow`
 
-İçerikleri ilgili `*Screen` kontrolündedir; bu pencereler yalnızca başlık/boyut/ikon taşır.
+İçerikleri zaten ilgili `*Screen` kontrolündeydi; bu pencereler yalnızca başlık/boyut/ikon
+taşıyordu. Onları yalnızca `MainWindow` ve ekranlardaki yedek dallar açıyordu.
 
-| Sınıf | İçeriği taşıyan ekran |
+### Yedek gezinme dalları
+- `CargoDashboardScreen`: `OpenScreen(key, Func<Window>)` yardımcısı + 5 şerit düğmesi handler'ı
+- `CargoShipmentListScreen`: operasyon merkezini modal pencerede açan dal
+
+Hepsi `Navigator is null` koşuluna bağlıydı ve kabukta `Navigator` her zaman atandığı için
+(bkz. `ShellViewModel.Attach`) pratikte ölüydü.
+
+### Yalnızca legacy yol için duran öğeler
+- `IShellLogoutSource` — ekranların kendi "Çıkış Yap" düğmesini kabuğa duyuran sözleşme.
+  Düğmeler kabukta zaten gizleniyordu; kaldırılınca sözleşmenin uygulayıcısı kalmadı.
+- `CargoDashboardScreen`'in navigasyon şeridi: Gelen/Giden/Rehber/Firmalar/WhatsApp düğmeleri,
+  Yardım menüsü (Güncellemeleri Denetle, Mail Ayarlarım, Log Klasörü, Harf Duyarlılığı) ve
+  Çıkış Yap. Hepsinin karşılığı kabuğun navigasyon rayında ve **Araçlar** bloğunda var.
+- `CashTransactionsScreen`'in oturum şeridi: kullanıcı adı + Çıkış Yap. Karşılıkları kabuğun
+  durum şeridinde ve rayında.
+- `CargoDashboardScreen`'deki açılış güncelleme kontrolü (`!InShell` dalı). Kontrol artık tek
+  yerde: `ShellWindow`.
+- `LegacyShellMigration` (donma gerekçesi) ve `LegacyFreezeTests` (donma bekçisi).
+
+## Korunanlar
+
+Aşağıdakiler **pencere olarak kullanılmaya devam ediyor** — ekran değil, ekranların açtığı
+modal adımlar:
+
+| Rol | Pencereler |
 |---|---|
-| `AnalysisWindow` | `AnalysisScreen` |
-| `AuditLogWindow` | `AuditLogScreen` |
-| `CargoCompanyListWindow` | `CargoCompanyListScreen` |
-| `CargoDashboardWindow` | `CargoDashboardScreen` |
-| `CargoOperationCenterWindow` | `CargoOperationCenterScreen` |
-| `CargoShipmentListWindow` | `CargoShipmentListScreen` |
-| `CompanyDirectoryListWindow` | `CompanyDirectoryListScreen` |
-| `ExchangeRateWindow` | `ExchangeRateScreen` |
-| `SystemHealthWindow` | `SystemHealthScreen` |
-| `MailContactListWindow` | `MailContactListScreen` |
-| `UserPermissionWindow` | `UserPermissionScreen` |
-| `ReportWindow` | `ReportScreen` |
-| `SystemLogsWindow` | `SystemLogsScreen` |
-| `UserManagementWindow` | `UserManagementScreen` |
-| `WhatsAppContactListWindow` | `WhatsAppContactListScreen` |
+| Oturum | `LoginWindow` |
+| Kabuk | `ShellWindow` |
+| Kayıt formu | `CashTransactionFormWindow`, `UserFormWindow`, `CargoShipmentEditWindow`, `CargoCompanyEditWindow`, `CompanyDirectoryEditWindow`, `MailContactEditWindow`, `WhatsAppContactEditWindow` |
+| İçe aktarma | `CashImportWindow`, `CargoImportWindow`, `DirectoryImportWindow`, `WhatsAppImportWindow` |
+| Önizleme / detay / seçici | `ReportPreviewWindow`, `CargoNotificationPreviewWindow`, `SystemLogDetailWindow`, `MailContactPickerWindow` |
+| Ayar | `MailSettingsWindow`, `TextCaseSettingsWindow`, `AppearanceSettingsWindow` |
 
-### Dondurulmayanlar
+Bu liste `ShellOnlyNavigationTests.AllowedWindows` içinde gerekçeleriyle birlikte tutulur ve
+testle doğrulanır: listede olmayan bir pencere eklenirse test düşer.
 
-Bunlar **gerçek pencere olarak kullanılmaya devam ediyor** ve kapsam dışıdır:
-düzenleme formları (`*EditWindow`, `UserFormWindow`, `CashTransactionFormWindow`),
-içe aktarma sihirbazları (`*ImportWindow`), `ReportPreviewWindow`,
-`CargoNotificationPreviewWindow`, `MailContactPickerWindow` ve ayar pencereleri
-(`MailSettingsWindow`, `TextCaseSettingsWindow`, `AppearanceSettingsWindow`).
+## Geri dönüş
 
-## Canlı koddan kalan bağlar (6)
+Git geçmişi. Silinen dosyalar `feature/single-shell` ve öncesindeki commitlerde duruyor;
+Faz E3 commit'i (`1768511`) hepsinin son çalışır hâlini içerir.
 
-Kaldırma sprintinde bu dallar da gidecek. Hepsi `Navigator is null` yedek dalıdır ve
-kabukta `Navigator` her zaman atandığı için **pratikte ölüdür**.
+## Bekçi testler
 
-| Dosya | Bağ sayısı | Ne yapıyor |
-|---|---|---|
-| `Views/Cargo/CargoDashboardScreen.xaml.cs` | 5 | Şerit düğmeleri: gelen/giden kargo, firma rehberi, kargo firmaları, WhatsApp rehberi |
-| `Views/Cargo/CargoShipmentListScreen.xaml.cs` | 1 | "Operasyon" düğmesi → operasyon merkezi |
+| Test | Neyi tutuyor |
+|---|---|
+| `ShellOnlyNavigationTests.Pencere_olarak_kalan_tipler_yalnizca_diyaloglar` | Yeni bir ekran pencere olarak eklenemez |
+| `ShellOnlyNavigationTests.Ekranlar_gezinmek_icin_pencere_acmiyor` | Ekran, gezinmek için pencere açamaz |
+| `ShellOnlyNavigationTests.Ekranlarin_kendi_navigasyon_seridi_yok` | İkinci kabuk geri gelemez |
+| `ShellOnlyNavigationTests.IShellNavigator_yalnizca_kabukta_uygulaniyor` | Tek yetki kapısı |
+| `ShellOnlyNavigationTests.Baslangic_yalnizca_kabugu_aciyor` | Başlangıçta ikinci pencere yok |
+| `ShellFullMigrationTests.Legacy_pencere_geri_gelmedi` | Silinen dosyalar geri gelmez |
+| `ShellStartupContractTests.Baslangicta_yalnizca_kabuk_penceresi_var` | Eski kabuklar geri gelmez |
 
-Bağlar `#pragma warning disable CS0618` ile dar kapsamda bastırıldı: **yeni** bir legacy
-kullanımı sızarsa derleme yine uyarır.
+## Karar geçmişi
 
-## Kaldırma sprintinde yapılacaklar
-
-1. `MainWindow` + 15 ince barındırıcı (`.xaml` + `.xaml.cs`) silinir.
-2. Ekranlardaki `Navigator is null` yedek dalları ve `Func<Window> asWindow`
-   parametreleri silinir; `OpenScreen` yalnızca gezgin üzerinden çalışır.
-3. `IShellCloseSource` / `HostWindow` gibi yalnızca pencere yolu için duran
-   üyeler gözden geçirilir.
-4. `LegacyShellMigration` ve `LegacyFreezeTests` silinir.
-5. `ShellPilotTests` / `ShellFullMigrationTests` içinde pencere yoluna değinen
-   sözleşmeler sadeleşir.
-
-## Karar sahibi
-
-Kullanıcı, 2026-08-07: *"Bu sprintte MainWindow ve ince barındırıcı pencereleri SİLME.
-Ancak onları artık aktif çalışma yolunun dışında bırak."*
+- **2026-08-07 (Faz E3):** *"Bu sprintte MainWindow ve ince barındırıcı pencereleri SİLME.
+  Ancak onları artık aktif çalışma yolunun dışında bırak."* → dondurma.
+- **Faz F1:** kabuk gerçek kullanımda doğrulandıktan sonra kaldırma.

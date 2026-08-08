@@ -20,35 +20,26 @@ using LiveChartsCore.SkiaSharpView;
 namespace YonetimFinansalIslemTakipSistemi.UI.Views.Cargo;
 
 /// <summary>
-/// Kargo panosu ekranı (Faz D6).
+/// Kargo panosu ekranı.
 ///
 /// BU EKRAN ESKİDEN İKİNCİ BİR KABUKTU: kendi navigasyon şeridi, yardım
-/// menüsü, çıkış ve kapatma sözleşmesi vardı. Kabuk içinde bunların hepsi
-/// tekrar olurdu — o yüzden kabukta barınırken şerit ve menü GİZLENİR ve
-/// navigasyon isteği kabuğa devredilir.
-///
-/// İnce barındırıcı pencerede (CargoDashboardWindow) eski davranış aynen
-/// sürer; geri dönüş yolu açık kalıyor.
+/// menüsü ve çıkış düğmesi vardı. Kabuğa taşındığında bunlar gizleniyordu;
+/// Faz F1'de barındırıcı pencereyle birlikte tamamen kaldırıldı. Ekran artık
+/// yalnızca PANO — navigasyon kabuğun işi.
 /// </summary>
-public partial class CargoDashboardScreen : UserControl, IShellLogoutSource, IShellCloseSource, IShellNavigationAware
+public partial class CargoDashboardScreen : UserControl, IShellCloseSource, IShellNavigationAware
 {
     /// <summary>
-    /// Alt diyalogların sahibi AĞAÇTAN bulunur. Aynı ekran hem ince
-    /// barındırıcı pencerede hem kabuk sekmesinde durabiliyor; sabit bir
-    /// pencereye bağlanırsa diğerinde sahipsiz diyalog açardı.
+    /// Alt diyalogların sahibi AĞAÇTAN bulunur: ekran kabuk sekmesinde
+    /// barınıyor ve sahibi kabuk penceresidir. Sabit bir pencereye
+    /// bağlanırsa sahipsiz diyalog açardı.
     /// </summary>
     private Window? HostWindow => Window.GetWindow(this);
 
-    /// <summary>Kabuk sekme oluştururken atar; ince barındırıcıda null kalır.</summary>
+    /// <summary>Kabuk sekme oluştururken atar (bkz. ShellViewModel.Attach).</summary>
     public IShellNavigator? Navigator { get; set; }
 
-    /// <summary>Kabuk içinde mi barınıyor — gezginin varlığı tek gösterge.</summary>
-    private bool InShell => Navigator is not null;
-
-    /// <summary>Çıkış isteği; onay/audit/kapatma barındıranın işi.</summary>
-    public event Action? LogoutRequested;
-
-    /// <summary>Kapanma isteği — pencerede pencereyi, kabukta sekmeyi kapatır.</summary>
+    /// <summary>Kapanma isteği — kabukta sekmeyi kapatır.</summary>
     public event Action? CloseRequested;
 
     private readonly IServiceProvider     _services;
@@ -93,16 +84,13 @@ public partial class CargoDashboardScreen : UserControl, IShellLogoutSource, ISh
     /// </summary>
     private async Task InitializeAsync()
     {
-        ApplyNavBarVisibility();
         PopulateFilterCombos();
         await LoadCargoCompaniesAsync();
 
-        // Açılışta güncelleme kontrolü uygulama seviyesi bir iştir. Kabukta
-        // ShellWindow yürütüyor; burada tekrarlanırsa kullanıcı aynı bildirimi
-        // iki kez görürdü. Yalnızca DONDURULMUŞ ince barındırıcı pencere
-        // yolunda anlamlı (bkz. Legacy - Shell Migration).
-        if (!InShell)
-            await Services.StartupUpdateChecker.RunOnceAsync(_services, _dialogService);
+        // Açılışta güncelleme kontrolü BURADA DEĞİL: uygulama seviyesi bir iş
+        // ve artık tek yerde, ShellWindow'da yürüyor. Bu ekran yalnızca ince
+        // barındırıcı pencerede barınırken kendi kontrolünü yapıyordu; o
+        // pencere kaldırıldı (Faz F1).
     }
 
     /// <summary>
@@ -549,138 +537,17 @@ public partial class CargoDashboardScreen : UserControl, IShellLogoutSource, ISh
             "Operasyon Merkezi");
     }
 
-    // ── Navigasyon — cargo-only modda diğer ekranlara erişim ─────────────────
+    // Bu ekranın kendi navigasyon şeridi (Gelen/Giden/Rehber düğmeleri, yardım
+    // menüsü, çıkış) KALDIRILDI (Faz F1). Şerit yalnızca ince barındırıcı
+    // pencerede görünüyordu; kabukta her zaman gizliydi çünkü kabuğun kendi
+    // navigasyon rayı, araç bloğu ve çıkış düğmesi var — ikisi birden ikinci
+    // bir kabuk kurmak olurdu. Barındırıcı pencere silindiği için şerit,
+    // görünürlük kuralları ve yedek pencere fabrikaları da gitti.
 
-    private void ApplyNavBarVisibility()
-    {
-        // KABUKTA ŞERİT YOK. Navigasyon rayı, yardım menüsü ve çıkış düğmesi
-        // kabuğun kendi öğeleri; burada da göstermek ikinci bir kabuk kurmak
-        // olurdu. Aynı yetki kuralları kabuk tarafında ScreenRegistry'de
-        // tanımlı — kural kopyalanmıyor, yalnızca bu şerit gizleniyor.
-        if (InShell)
-        {
-            NavBar.Visibility = Visibility.Collapsed;
-            return;
-        }
-
-        var ctx = _services.GetRequiredService<IUserContext>();
-
-        var canGelen    = ctx.HasPermission(PermissionType.CanViewIncomingCargo)
-                       || ctx.HasPermission(PermissionType.CanManageIncomingCargo);
-        var canGiden    = ctx.HasPermission(PermissionType.CanViewOutgoingCargo)
-                       || ctx.HasPermission(PermissionType.CanManageOutgoingCargo);
-        var canRehber   = ctx.HasPermission(PermissionType.CanManageCompanyDirectory)
-                       || ctx.HasPermission(PermissionType.CanViewCargoModule);
-        var canFirmalar = ctx.HasPermission(PermissionType.CanManageCargoCompanies)
-                       || ctx.HasPermission(PermissionType.CanViewCargoModule);
-
-        NavGelenButton.Visibility          = canGelen    ? Visibility.Visible : Visibility.Collapsed;
-        NavGidenButton.Visibility          = canGiden    ? Visibility.Visible : Visibility.Collapsed;
-        NavFirmaRehberiButton.Visibility   = canRehber   ? Visibility.Visible : Visibility.Collapsed;
-        NavKargoFirmalariButton.Visibility = canFirmalar ? Visibility.Visible : Visibility.Collapsed;
-        // Ortak WhatsApp rehberi: görüntüleme tüm kargo kullanıcılarına açık
-        // (MainWindow'daki menü kuralıyla aynı); yazma işlemleri handler guard'ı +
-        // liste ekranındaki buton görünürlüğüyle korunur
-        NavWhatsAppRehberiButton.Visibility = Visibility.Visible;
-
-        // Yardım menüsü her kullanıcıda görünür: Kullanıcı Ayarlarım (Harf Duyarlılığı)
-        // kişisel ayardır, izin gerektirmez. Teknik öğeler izinle tek tek gizlenir —
-        // CanAccessHelpMenu kapsamı genişletilmez.
-        var canHelp = ctx.HasPermission(PermissionType.CanAccessHelpMenu);
-        MenuYardim.Visibility = Visibility.Visible;
-        var helpVisibility = canHelp ? Visibility.Visible : Visibility.Collapsed;
-        MenuItemCheckUpdates.Visibility = helpVisibility;
-        MenuItemPersonalMail.Visibility = helpVisibility;
-        MenuItemLogFolder.Visibility    = helpVisibility;
-
-        // Navigasyon çubuğu: Yardım menüsü artık her zaman görünür olduğundan çubuk da görünür
-        NavBar.Visibility = Visibility.Visible;
-    }
-
-    /// <summary>
-    /// Ekran açar. Kabukta sekme olur, ince barındırıcı pencerede eskisi gibi
-    /// modal pencere. Yetki kontrolü kabuk tarafında (ShellViewModel.Resolve);
-    /// pencere yolunda ise eskiden olduğu gibi şeritteki buton görünürlüğü
-    /// kapıyı tutar.
-    /// </summary>
-    private void OpenScreen(ScreenKey key, Func<Window> asWindow)
-    {
-        if (Navigator is not null)
-        {
-            Navigator.OpenScreen(key);
-            return;
-        }
-
-        var window = asWindow();
-        window.Owner = HostWindow;
-        window.ShowDialog();
-    }
-
-    // LEGACY - SHELL MIGRATION (Faz E3)
-    //
-    // Aşağıdaki yedek fabrikalar YALNIZCA Navigator null iken, yani ekran
-    // dondurulmuş ince barındırıcı pencerede barınırken çalışır. Kabukta
-    // Navigator her zaman atanır (bkz. ShellViewModel.Attach), dolayısıyla
-    // bu dallar pratikte ölüdür.
-    //
-    // Bu sprintte SİLİNMEDİ (bilinçli karar: önce kabuk gerçek kullanımda
-    // sınansın). Uyarı bastırma kapsamı bilerek dar: yeni bir legacy
-    // kullanımı buraya sızarsa derleme yine uyarır.
-    // Kaldırma: sonraki sprint — bkz. LegacyShellMigration.
-#pragma warning disable CS0618 // dondurulmuş pencereler
-
-    private void NavGelenButton_Click(object sender, RoutedEventArgs e)
-        => OpenScreen(ScreenKey.IncomingCargo,
-                      () => new CargoShipmentListWindow(_services, CargoShipmentDirection.Incoming));
-
-    private void NavGidenButton_Click(object sender, RoutedEventArgs e)
-        => OpenScreen(ScreenKey.OutgoingCargo,
-                      () => new CargoShipmentListWindow(_services, CargoShipmentDirection.Outgoing));
-
-    private void NavFirmaRehberiButton_Click(object sender, RoutedEventArgs e)
-        => OpenScreen(ScreenKey.CompanyDirectory, () => new CompanyDirectoryListWindow(_services));
-
-    private void NavKargoFirmalariButton_Click(object sender, RoutedEventArgs e)
-        => OpenScreen(ScreenKey.CargoCompanies, () => new CargoCompanyListWindow(_services));
-
-    private void NavWhatsAppRehberiButton_Click(object sender, RoutedEventArgs e)
-        => OpenScreen(ScreenKey.WhatsAppContacts, () => new Views.WhatsApp.WhatsAppContactListWindow(_services));
-
-#pragma warning restore CS0618
-
-    // ── Pencere Kapat ─────────────────────────────────────────────────────
-
-    private void OpenPersonalMailSettings_Click(object sender, RoutedEventArgs e)
-    {
-        new Views.Settings.MailSettingsWindow(_services, isPersonal: true) { Owner = HostWindow }.ShowDialog();
-    }
-
-    /// <summary>
-    /// Kişisel Harf Duyarlılığı ayarı — MainWindow ile aynı pencere/handler altyapısı.
-    /// Yalnızca kargo yetkili kullanıcı finans ekranına geçmeden tercihini yönetebilir.
-    /// </summary>
-    private void OpenTextCaseSettings_Click(object sender, RoutedEventArgs e)
-    {
-        new Views.Settings.TextCaseSettingsWindow(_services) { Owner = HostWindow }.ShowDialog();
-    }
-
-
-
-    // Akisin govdesi Common/UpdateCheckFlow icinde: ayni akis birden fazla
-    // giris noktasindan baslatiliyor ve kopyalanirsa metinler/onay sirasi
-    // birinde duzeltilip digerinde eski kalir.
-    private async void CheckUpdates_Click(object sender, RoutedEventArgs e)
-        => await Common.UpdateCheckFlow.RunAsync(_services, _dialogService);
-
-    private void OpenLogDirectory_Click(object sender, RoutedEventArgs e)
-        => Common.ToolActions.OpenLogDirectory(_dialogService);
-
-    public bool IsLogoutRequested { get; private set; }
-
-    // Çıkış: ekran yalnızca HABER VERİR. Onay, UserLoggedOut audit'i ve
-    // pencerenin kapatılması barındıranın işi — MainWindow, CargoDashboardWindow
-    // ve ShellWindow aynı Common/SessionLogout yardımcısını kullanır.
-    private void Logout_Click(object sender, RoutedEventArgs e) => LogoutRequested?.Invoke();
+    // Kişisel ayarlar (Mail Ayarlarım, Harf Duyarlılığı), güncelleme denetimi,
+    // log klasörü ve çıkış BU EKRANDAN KALDIRILDI (Faz F1). Hepsi kabuğun
+    // "Araçlar" bloğunda ve navigasyon rayında zaten var; buradaki kopyaları
+    // yalnızca ince barındırıcı pencere yolunda erişilebiliyordu.
 
     private void CloseButton_Click(object sender, RoutedEventArgs e) => CloseRequested?.Invoke();
 }

@@ -238,39 +238,18 @@ public partial class CargoShipmentListScreen : UserControl, IShellCloseSource, I
     /// Seçili kargo için Operasyon Merkezini açar.
     /// Etiket, WhatsApp, Mail, Takip, Durum Değiştir işlemleri buradan yapılır.
     ///
-    /// KABUKTA sekme olarak açılır: farklı kargolar ayrı sekmelerde durabilir,
-    /// aynı kargo ikinci kez açılmaz. Sekme modal olmadığı için "kapanınca
-    /// yenile" beklenemez — operasyon merkezi değişikliği kendisi haber verir
-    /// (bkz. CargoOperationCenterScreen.Modified).
-    ///
-    /// İNCE BARINDIRICI PENCEREDE (kabuk yoksa) eski modal davranış sürer:
-    /// pencere kapanınca WasModified true ise liste yenilenir.
-    ///
-    /// Kabuk yolunda tazeleme sekmeye geri dönüldüğünde yapılır (bkz. kurucu).
+    /// Sekme olarak açılır: farklı kargolar ayrı sekmelerde durabilir, aynı
+    /// kargo ikinci kez açılmaz. Sekme modal olmadığı için "kapanınca yenile"
+    /// beklenemez; tazeleme bu sekmeye geri dönüldüğünde yapılır (bkz. kurucu).
     /// </summary>
-    private async void OperationButton_Click(object sender, RoutedEventArgs e)
+    private void OperationButton_Click(object sender, RoutedEventArgs e)
     {
         if (_vm.Selected is null) return;
 
-        if (Navigator is not null)
-        {
-            Navigator.OpenScreen(ScreenKey.CargoOperationCenter, _vm.Selected);
-            return;
-        }
-
-        // LEGACY - SHELL MIGRATION (Faz E3): yalnızca dondurulmuş ince
-        // barındırıcı pencere yolunda çalışır; kabukta Navigator hep atanır.
-        // Kaldırma sonraki sprintte — bkz. LegacyShellMigration.
-#pragma warning disable CS0618 // dondurulmuş pencereler
-        var opCenter = new CargoOperationCenterWindow(_services, _vm.Selected)
-        {
-            Owner = HostWindow
-        };
-#pragma warning restore CS0618
-
-        opCenter.ShowDialog();
-        if (opCenter.WasModified)
-            await _vm.LoadAsync();
+        // Operasyon merkezi AYRI BİR SEKMEDE açılır. Modal pencere yolu
+        // kaldırıldı (Faz F1); tazeleme sekmeye geri dönüldüğünde yapılıyor
+        // (bkz. kurucu).
+        Navigator?.OpenScreen(ScreenKey.CargoOperationCenter, _vm.Selected);
     }
 
     /// <summary>Takip linkine tıklandığında default tarayıcıda açar.</summary>

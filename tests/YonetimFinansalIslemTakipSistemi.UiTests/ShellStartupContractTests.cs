@@ -80,29 +80,32 @@ public class ShellStartupContractTests
     }
 
     /// <summary>
-    /// Mevcut iki kabuk yerinde duruyor ve dosyaları silinmedi.
+    /// TEK BAŞLANGIÇ PENCERESİ. Uygulamada login dışında pencere olarak açılan
+    /// başka bir "kabuk" kalmamalı; ekranlar yalnızca sekme olur.
+    ///
+    /// Eskiden burada eski kabukların dosyalarının DURDUĞU doğrulanıyordu
+    /// (geri dönüş yolu). Faz F1'de kaldırıldılar; sözleşme tersine döndü.
     /// </summary>
-    [Theory]
-    [InlineData("MainWindow.xaml")]
-    [InlineData("MainWindow.xaml.cs")]
-    [InlineData("Views/Cargo/CargoDashboardWindow.xaml")]
-    [InlineData("Views/Cargo/CargoDashboardWindow.xaml.cs")]
-    public void Mevcut_kabuklar_yerinde(string relativePath)
+    [Fact]
+    public void Baslangicta_yalnizca_kabuk_penceresi_var()
     {
-        var path = Path.Combine(
-            UiSourceLocator.UiProjectDirectory,
-            relativePath.Replace('/', Path.DirectorySeparatorChar));
+        var shellWindows = Directory
+            .EnumerateFiles(UiSourceLocator.UiProjectDirectory, "*Window.xaml", SearchOption.AllDirectories)
+            .Select(Path.GetFileName)
+            .Where(name => name is "MainWindow.xaml" or "CargoDashboardWindow.xaml")
+            .ToList();
 
-        Assert.True(File.Exists(path), $"{relativePath} bulunamadı.");
+        Assert.True(shellWindows.Count == 0,
+            "Eski kabuk pencereleri geri gelmiş: " + string.Join(", ", shellWindows));
     }
 
     /// <summary>
     /// Kargo yetkili kullanıcının kişisel Harf Duyarlılığı erişimi kaybolmamalı
     /// (bkz. docs/03-Modules/UserSettings.md).
     ///
-    /// Kargo kullanıcısı artık kabuğu görüyor; erişim kabuğun araç bölümünden.
-    /// Kargo panosu ekranındaki yardım menüsü de duruyor — ince barındırıcı
-    /// pencerede barındığında tek yol o.
+    /// Erişim TEK YERDE: kabuğun "Araçlar" bloğu. Kargo panosu ekranındaki
+    /// ikinci kopya (yardım menüsü) Faz F1'de kaldırıldı — kargo kullanıcısı
+    /// da kabuğu gördüğü için o kopya yalnızca aynı işi iki yerde tutuyordu.
     /// </summary>
     [Fact]
     public void Kargo_kullanicisinin_harf_duyarliligi_erisimi_duruyor()
@@ -113,10 +116,8 @@ public class ShellStartupContractTests
         Assert.Contains("Harf Duyarlılığı", shell, StringComparison.Ordinal);
         Assert.Contains("OpenTextCaseSettings_Click", shell, StringComparison.Ordinal);
 
-        var dashboard = File.ReadAllText(
-            Path.Combine(UiSourceLocator.UiProjectDirectory, "Views", "Cargo", "CargoDashboardScreen.xaml"), Encoding.UTF8);
-
-        Assert.Contains("Harf Duyarlılığı", dashboard, StringComparison.Ordinal);
+        // Kabuk rayı yetki kapısı taşımaz: kişisel ayar, giriş yapan herkese açık
+        Assert.DoesNotContain("CanAccessHelpMenu", shell, StringComparison.Ordinal);
     }
 
     /// <summary>

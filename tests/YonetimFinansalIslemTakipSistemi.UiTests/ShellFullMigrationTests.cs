@@ -292,55 +292,52 @@ public class ShellFullMigrationTests
 
         Assert.Contains("StartupUpdateChecker.RunOnceAsync", shell, StringComparison.Ordinal);
 
-        // Kargo panosu ekranı kabuk DIŞINDA barındığında hâlâ çalıştırır;
-        // kabukta çalıştırmaması için koşula bağlı olmalı.
+        // Açılış kontrolü TEK YERDE. Kargo panosu ekranı barındırıcı pencere
+        // döneminde kendi kontrolünü yapıyordu; o pencere kaldırıldı (Faz F1)
+        // ve ekranda hiç çağrı kalmadı — kalsaydı kullanıcı aynı bildirimi
+        // iki kez görürdü.
         var dashboard = File.ReadAllText(
             Path.Combine(UiSourceLocator.UiProjectDirectory, "Views", "Cargo", "CargoDashboardScreen.xaml.cs"),
             Encoding.UTF8);
 
-        Assert.Matches(@"if \(!InShell\)\s*\r?\n\s*await Services\.StartupUpdateChecker", dashboard);
+        Assert.DoesNotContain("StartupUpdateChecker.RunOnceAsync", dashboard, StringComparison.Ordinal);
     }
 
     // ── İnce barındırıcılar ──────────────────────────────────────────────
 
     /// <summary>
-    /// Eski pencereler silinmedi ve iş mantığı taşımıyor: her biri ekranı
-    /// barındıran ince bir kabuk olmalı.
+    /// Ekranı barındıran ESKİ PENCERELER SİLİNDİ. Faz D'de ince barındırıcıya
+    /// dönüştürülüp geri dönüş yolu olarak bırakılmışlardı; Faz E'de
+    /// donduruldular, Faz F1'de kaldırıldılar.
     ///
-    /// Silinselerdi MainWindow'un menüleri derlenmezdi ve geri dönüş yolu
-    /// kapanırdı.
+    /// Bu test dosyaların YOKLUĞUNU sabitler: biri geri gelirse uygulamada
+    /// ikinci bir gezinme modeli doğar ve hangi yolun canlı olduğu belirsizleşir.
     /// </summary>
     [Theory]
-    [InlineData("Views/Analysis/AnalysisWindow.xaml.cs",              "AnalysisScreen")]
-    [InlineData("Views/Reports/ReportWindow.xaml.cs",                 "ReportScreen")]
-    [InlineData("Views/ExchangeRates/ExchangeRateWindow.xaml.cs",     "ExchangeRateScreen")]
-    [InlineData("Views/Cargo/CargoDashboardWindow.xaml.cs",           "CargoDashboardScreen")]
-    [InlineData("Views/Cargo/CargoShipmentListWindow.xaml.cs",        "CargoShipmentListScreen")]
-    [InlineData("Views/Cargo/CargoOperationCenterWindow.xaml.cs",     "CargoOperationCenterScreen")]
-    [InlineData("Views/Cargo/CompanyDirectoryListWindow.xaml.cs",     "CompanyDirectoryListScreen")]
-    [InlineData("Views/Cargo/CargoCompanyListWindow.xaml.cs",         "CargoCompanyListScreen")]
-    [InlineData("Views/WhatsApp/WhatsAppContactListWindow.xaml.cs",   "WhatsAppContactListScreen")]
-    [InlineData("Views/Mail/MailContactListWindow.xaml.cs",           "MailContactListScreen")]
-    [InlineData("Views/Users/UserManagementWindow.xaml.cs",           "UserManagementScreen")]
-    [InlineData("Views/Permissions/UserPermissionWindow.xaml.cs",     "UserPermissionScreen")]
-    [InlineData("Views/AuditLogs/AuditLogWindow.xaml.cs",             "AuditLogScreen")]
-    [InlineData("Views/SystemLogs/SystemLogsWindow.xaml.cs",          "SystemLogsScreen")]
-    [InlineData("Views/Health/SystemHealthWindow.xaml.cs",            "SystemHealthScreen")]
-    public void Pencere_ince_barindirici_oldu(string relativePath, string screenClass)
+    [InlineData("MainWindow.xaml")]
+    [InlineData("MainWindow.xaml.cs")]
+    [InlineData("Views/Analysis/AnalysisWindow.xaml.cs")]
+    [InlineData("Views/Reports/ReportWindow.xaml.cs")]
+    [InlineData("Views/ExchangeRates/ExchangeRateWindow.xaml.cs")]
+    [InlineData("Views/Cargo/CargoDashboardWindow.xaml.cs")]
+    [InlineData("Views/Cargo/CargoShipmentListWindow.xaml.cs")]
+    [InlineData("Views/Cargo/CargoOperationCenterWindow.xaml.cs")]
+    [InlineData("Views/Cargo/CompanyDirectoryListWindow.xaml.cs")]
+    [InlineData("Views/Cargo/CargoCompanyListWindow.xaml.cs")]
+    [InlineData("Views/WhatsApp/WhatsAppContactListWindow.xaml.cs")]
+    [InlineData("Views/Mail/MailContactListWindow.xaml.cs")]
+    [InlineData("Views/Users/UserManagementWindow.xaml.cs")]
+    [InlineData("Views/Permissions/UserPermissionWindow.xaml.cs")]
+    [InlineData("Views/AuditLogs/AuditLogWindow.xaml.cs")]
+    [InlineData("Views/SystemLogs/SystemLogsWindow.xaml.cs")]
+    [InlineData("Views/Health/SystemHealthWindow.xaml.cs")]
+    public void Legacy_pencere_geri_gelmedi(string relativePath)
     {
         var path = Path.Combine(UiSourceLocator.UiProjectDirectory,
                                 relativePath.Replace('/', Path.DirectorySeparatorChar));
 
-        Assert.True(File.Exists(path), $"{relativePath} silinmiş — geri dönüş yolu kapanır.");
-
-        var source = File.ReadAllText(path, Encoding.UTF8);
-
-        Assert.Contains($"new {screenClass}(", source, StringComparison.Ordinal);
-        Assert.Contains("ScreenHost.Content", source, StringComparison.Ordinal);
-
-        // İnce barındırıcı iş mantığı taşımaz: 60 satırı geçmemeli
-        var lines = source.Split('\n').Length;
-        Assert.True(lines <= 60, $"{relativePath} {lines} satır — ince barındırıcı olmaktan çıkmış.");
+        Assert.False(File.Exists(path),
+            $"{relativePath} geri gelmiş — ekranlar yalnızca kabuk sekmesi olarak açılmalı.");
     }
 
     /// <summary>

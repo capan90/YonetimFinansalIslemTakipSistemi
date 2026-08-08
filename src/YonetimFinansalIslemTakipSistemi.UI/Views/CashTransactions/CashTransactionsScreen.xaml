@@ -121,18 +121,11 @@
                  orada başka çıkış yolu yok. Çıkış DAVRANIŞI her iki
                  durumda da barındıranın: buton yalnızca LogoutRequested
                  olayını yayar (bkz. CashTransactionsScreen.xaml.cs). -->
-            <StackPanel x:Name="SessionBar"
-                        DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock x:Name="LoggedInUserText"
-                           VerticalAlignment="Center"
-                           Margin="0,0,10,0"
-                           Foreground="{DynamicResource Theme.LabelText}"
-                           Style="{StaticResource Text.Body}"/>
-                <Button Content="Çıkış Yap"
-                        Width="90"
-                        Style="{StaticResource SecondaryButton}"
-                        Click="Logout_Click"/>
-            </StackPanel>
+            <!-- OTURUM ŞERİDİ YOK (Faz F1). Kullanıcı adı kabuğun durum
+                 şeridinde, "Çıkış Yap" navigasyon rayında. Bu ekran pencereyken
+                 ikisini de kendisi taşıyordu; kabukta zaten gizleniyordu,
+                 barındırıcı pencere kaldırılınca tamamen çıktı. -->
+
             <!-- Sol: işlem butonları -->
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <Button Content="+ Yeni İşlem"

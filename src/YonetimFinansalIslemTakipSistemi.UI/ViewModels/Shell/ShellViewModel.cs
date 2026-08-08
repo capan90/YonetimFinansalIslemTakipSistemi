@@ -192,24 +192,18 @@ public sealed class ShellViewModel : INotifyPropertyChanged, IShellNavigator
 
     // ── Ekran ↔ kabuk bağlantısı ──────────────────────────────────────────
     //
-    // Bazı ekranların araç çubuğunda kendi "Çıkış Yap" düğmesi var (bkz.
-    // IShellLogoutSource). Kabuk hangi ekranın böyle olduğunu BİLMEZ; sadece
-    // sözleşmeyi uygulayanı dinler. Böylece o düğme kabuk içinde de aynı
-    // çıkış yoluna çıkar, ölü kalmaz.
+    // Kabuk ekranların TÜRÜNÜ bilmez; yalnızca uyguladıkları sözleşmeyi
+    // dinler. Bağlanan her şey Detach'te sökülür — kapanan sekme kabukta
+    // referansla tutulmamalı (bkz. Faz F4 bellek ölçümü).
 
     private void Attach(ShellTab tab)
     {
-        if (tab.View is IShellLogoutSource source)
-            source.LogoutRequested += OnScreenLogoutRequested;
-
-        // Başka ekran açması gereken ekranlara gezgin verilir. Kabuk dışında
-        // (MainWindow) barındıklarında bu atanmaz ve null kalır.
+        // Başka ekran açması gereken ekranlara gezgin verilir.
         if (tab.View is IShellNavigationAware aware)
             aware.Navigator = this;
 
-        // "Kapat" düğmesi/Esc: pencerede pencereyi kapatıyordu, kabukta
-        // SEKMEYİ kapatmalı. Hangi sekme olduğunu ekran bilmediği için
-        // kapanış eylemi burada, sekmeye bağlı olarak kurulur.
+        // "Kapat" düğmesi/Esc: ekran yalnızca haber verir, hangi sekme
+        // olduğunu bilmez; kapanış eylemi burada sekmeye bağlanır.
         if (tab.View is IShellCloseSource closable)
         {
             tab.CloseHandler = () => CloseTab(tab);
@@ -219,9 +213,6 @@ public sealed class ShellViewModel : INotifyPropertyChanged, IShellNavigator
 
     private void Detach(ShellTab tab)
     {
-        if (tab.View is IShellLogoutSource source)
-            source.LogoutRequested -= OnScreenLogoutRequested;
-
         if (tab.View is IShellNavigationAware aware)
             aware.Navigator = null;
 
@@ -232,7 +223,6 @@ public sealed class ShellViewModel : INotifyPropertyChanged, IShellNavigator
         }
     }
 
-    private void OnScreenLogoutRequested() => RequestLogout();
 
     // ── IShellNavigator ───────────────────────────────────────────────────
     //

@@ -285,30 +285,10 @@ public class ShellPilotTests
         Assert.False(shell.IsLogoutRequested);
     });
 
-    /// <summary>
-    /// Ekranın kendi araç çubuğundaki çıkış düğmesi kabuk içinde de aynı
-    /// akışa çıkar — MainWindow dışında ölü kalmamalı.
-    /// </summary>
-    [Fact]
-    public void Ekran_ici_cikis_dugmesi_kabuk_akisina_baglanir() => ThemeTestHost.Run(() =>
-    {
-        var screen  = new LogoutScreen();
-        var dialogs = new FakeDialogService { ConfirmationResult = false };
-        var shell   = BuildShell([CashScreen(_ => screen)],
-                                 dialogs,
-                                 PermissionType.CanCreateTransaction);
-
-        screen.RaiseLogout();
-
-        // Onay sorulduysa istek kabuğa ulaşmış demektir
-        Assert.Equal(1, dialogs.ConfirmationCount);
-    });
-
-    private sealed class LogoutScreen : UserControl, IShellLogoutSource
-    {
-        public event Action? LogoutRequested;
-        public void RaiseLogout() => LogoutRequested?.Invoke();
-    }
+    // "Ekran içi çıkış düğmesi kabuk akışına bağlanır" testi KALDIRILDI
+    // (Faz F1). Ekranların kendi çıkış düğmesi yoktu artık: o düğmeler
+    // pencere modelinin kalıntısıydı ve kabukta zaten gizleniyordu. Çıkış
+    // tek yerde — navigasyon rayında (bkz. Cikis_akisi testleri).
 
     // ── Kaynak sözleşmeleri ──────────────────────────────────────────────
 

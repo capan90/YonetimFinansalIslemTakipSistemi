@@ -7,9 +7,9 @@ namespace YonetimFinansalIslemTakipSistemi.UI.ViewModels.Import;
 
 /// <summary>
 /// İçe aktarma önizleme satırının ortak grid modeli: durum simgesi, mesajlar,
-/// dahil et seçimi. Alan'a özgü görüntü kolonları türeyen sınıflarda tanımlanır.
-/// (Not: CargoImportViewModel bu tabandan önce yazıldı ve kendi kopyasını taşır —
-/// bir sonraki dokunuşta bu tabana taşınması teknik borç olarak notludur.)
+/// dahil et seçimi. Alana özgü görüntü kolonları türeyen sınıflarda tanımlanır.
+///
+/// Dört sihirbazın DÖRDÜ de bu tabanı kullanır (Faz F3'te kargo da geçti).
 /// </summary>
 public abstract class ImportRowItemBase : INotifyPropertyChanged
 {
